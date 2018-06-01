@@ -1,0 +1,103 @@
+###############################################################################
+#
+# This is an example of configuration file, wherein global paths and parameters
+# related to the migration procedure are defined. At least one configuration file 
+# should reside in the folder in which you intend to run your scripts. 
+# The configuration file(s) can have any name, as long as the extension is 'cnf':
+# e.g., 'migration.cnf', 'migration_config.cnf', 'myconfig.cnf', 'test.cnf'...
+#
+# The parameters are divided in several sections:
+# - [paths]             : default paths to input/output folders
+# - [maps]              : parameters to plot maps
+# - [time]              : parameters to calculate the time
+# - [piercing]          : parameters to calculate the piercing points
+# - [migration]         : parameters of the migration
+#
+# Before using the scripts, you should at least make sure
+# that the paths in section [paths] and shapefiles in section [maps] are
+# consistent with your own files and folders organization. And, of course, you
+# should make sure to set the phases to calculate the time and piercing points.
+# The other parameters can be fine-tuned later as you analyze your data.
+#
+###############################################################################
+
+
+#======
+[paths]
+#======
+
+# directory of receiver functions files.
+# In the current version of the program, you just need to set the directory and
+# the suffix of the files organized inside their directory as:
+# FILENAME.fileextention, e.g.:
+# .../a_1/BDCO/2015/251/2015.8.13.2/SYN.BDCO.2015.8.13.2.T:a=1.0.eqr
+# file per event and per station.
+
+
+#/home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/transition_zone/syngine_filtered_PP/a_05/
+#/home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/transition_zone/rede_BB/event_data_PP_selected/a_05/
+
+RF_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/transition_zone/syngine_filtered_PP/a_05/                                  ; dir of receiver functions
+RF_EXT = '.eqr'                                                                                                                                       ; extension of receiver functions
+ 
+#Directory of the model of IASP91 model of 10 km thick
+MODEL_DIR_NPZ = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/transition_zone/MIGRATION_NON_PLANE_program/IASP91_velocity_model/iasp91_10.npz  ; dir of model 10km thick
+
+# dir of the time results
+DIST_T_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/transition_zone/MIGRATION_NON_PLANE_program/OUTPUT/Phases/dist_event/  ; dir of distance results
+DEPTH_T_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/transition_zone/MIGRATION_NON_PLANE_program/OUTPUT/Phases/depth/      ; dir of depth results
+TIME_T_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/transition_zone/MIGRATION_NON_PLANE_program/OUTPUT/Phases/time/        ; dir of time results
+
+# dir of the piercing points results
+DIST_PP_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/transition_zone/MIGRATION_NON_PLANE_program/OUTPUT/Piercing_points/dist/   ; dir of distance results
+DEPTH_PP_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/transition_zone/MIGRATION_NON_PLANE_program/OUTPUT/Piercing_points/depth/ ; dir of depth results
+TIME_PP_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/transition_zone/MIGRATION_NON_PLANE_program/OUTPUT/Piercing_points/time/   ; dir of time results
+LAT_PP_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/transition_zone/MIGRATION_NON_PLANE_program/OUTPUT/Piercing_points/lat/     ; dir of lat results
+LON_PP_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/transition_zone/MIGRATION_NON_PLANE_program/OUTPUT/Piercing_points/lon/     ; dir of lon results
+
+#=====
+[maps]
+#=====
+
+# paths to shapefiles (coasts, tectonic provinces), used
+# to plot maps:
+#
+# - ``BOUNDARY_SHP`` should be a shapefile containing lines or polygons
+#   representing any boundary (you can also include borders).
+#
+# - ``TECTO_SHP`` should be a shapefile containing polygons representing
+#   tectonic provinces, AND AN ATTRIBUTE TABLE whose first field
+#   contains the province's category, which will be used to affect
+#   a color to the polygon (see below).
+#
+
+BOUNDARY_1_SHP = /home/diogo/dados_doutorado/parnaiba_basin/SIG_dados/shapes/bacia_parnaiba/bacia_parnaiba
+BOUNDARY_2_SHP = /home/diogo/dados_doutorado/parnaiba_basin/SIG_dados/shapes/Estados/Brasil
+TECTO_SHP = /home/diogo/dados_doutorado/parnaiba_basin/SIG_dados/shapes/Geologico_Simplificado/Litologia/geologicosimplificado_lito
+
+# bounding box of (large) global maps and (small) inset maps
+# (min lon, max lon, min lat, max lat in JSON lists)
+
+BBOX_LARGE = [-60, -30, -20, 5]
+BBOX_SMALL = [-55, -35, -15, 0]
+
+
+#==================
+[time]
+#==================
+
+MIN_DEPTH = 300                 ; minimum depth of the migration
+MAX_DEPTH = 800                 ; maximum depth of the migration
+INTER_DEPTH = 10                ; depth interval of the migration
+
+#=====
+[piercing]
+#=====
+
+PHASES_PIERCING_POINTS_PS = [P410s,P660s]
+PHASES_PIERCING_POINTS_PPvs = [PPv410s,PPv660s]
+
+# ==========
+[migration]
+# ==========
+
