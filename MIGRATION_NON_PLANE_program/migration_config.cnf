@@ -29,66 +29,99 @@
 # directory of receiver functions files.
 # In the current version of the program, you just need to set the directory and
 # the suffix of the files organized inside their directory as:
-# FILENAME.fileextention, e.g.:
+# FILENAME.fileextention, e.g., like:
 # .../a_1/BDCO/2015/251/2015.8.13.2/SYN.BDCO.2015.8.13.2.T:a=1.0.eqr
+# the directory is a_1 and the extention is '.eqr'
 # file per event and per station.
 
 
 #/home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/transition_zone/syngine_filtered_PP/a_05/
 #/home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/transition_zone/rede_BB/event_data_PP_selected/a_05/
 
-RF_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/transition_zone/syngine_filtered_PP/a_05/                                  ; dir of receiver functions
-RF_EXT = '.eqr'                                                                                                                                       ; extension of receiver functions
- 
+# dir of receiver functions
+RF_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/transition_zone/syngine_filtered_PP/a_05/
+# extension of receiver functions
+RF_EXT = '.eqr'
+
+#Directory of the program
+PROG_MIGRATION_DIR = /home/diogo/diogo_git/codes_escritos/MIGRATION_NON_PLANE_program/
+
+
 #Directory of the model of IASP91 model of 10 km thick
-MODEL_DIR_NPZ = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/transition_zone/MIGRATION_NON_PLANE_program/IASP91_velocity_model/iasp91_10.npz  ; dir of model 10km thick
+MODEL_FILE_NPZ = /home/diogo/diogo_git/codes_escritos/MIGRATION_NON_PLANE_program/velocity_model/iasp91_10.npz
 
 # dir of the time results
-DIST_T_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/transition_zone/MIGRATION_NON_PLANE_program/OUTPUT/Phases/dist_event/  ; dir of distance results
-DEPTH_T_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/transition_zone/MIGRATION_NON_PLANE_program/OUTPUT/Phases/depth/      ; dir of depth results
-TIME_T_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/transition_zone/MIGRATION_NON_PLANE_program/OUTPUT/Phases/time/        ; dir of time results
+# dir of distance results
+DIST_T_DIR = /home/diogo/diogo_git/codes_escritos/MIGRATION_NON_PLANE_program/OUTPUT/Phases/dist_event/
+# dir of depth results
+DEPTH_T_DIR = /home/diogo/diogo_git/codes_escritos/MIGRATION_NON_PLANE_program/OUTPUT/Phases/depth/
+# dir of time results
+TIME_T_DIR = /home/diogo/diogo_git/codes_escritos/MIGRATION_NON_PLANE_program/OUTPUT/Phases/time/
 
 # dir of the piercing points results
-DIST_PP_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/transition_zone/MIGRATION_NON_PLANE_program/OUTPUT/Piercing_points/dist/   ; dir of distance results
-DEPTH_PP_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/transition_zone/MIGRATION_NON_PLANE_program/OUTPUT/Piercing_points/depth/ ; dir of depth results
-TIME_PP_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/transition_zone/MIGRATION_NON_PLANE_program/OUTPUT/Piercing_points/time/   ; dir of time results
-LAT_PP_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/transition_zone/MIGRATION_NON_PLANE_program/OUTPUT/Piercing_points/lat/     ; dir of lat results
-LON_PP_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/transition_zone/MIGRATION_NON_PLANE_program/OUTPUT/Piercing_points/lon/     ; dir of lon results
+# dir of distance results
+DIST_PP_DIR = /home/diogo/diogo_git/codes_escritos/MIGRATION_NON_PLANE_program/OUTPUT/Piercing_points/dist/
+# dir of depth results
+DEPTH_PP_DIR = /home/diogo/diogo_git/codes_escritos/MIGRATION_NON_PLANE_program/OUTPUT/Piercing_points/depth/
+# dir of time results
+TIME_PP_DIR = /home/diogo/diogo_git/codes_escritos/MIGRATION_NON_PLANE_program/OUTPUT/Piercing_points/time/
+# dir of lat results
+LAT_PP_DIR = /home/diogo/diogo_git/codes_escritos/MIGRATION_NON_PLANE_program/OUTPUT/Piercing_points/lat/
+# dir of lon results
+LON_PP_DIR = /home/diogo/diogo_git/codes_escritos/MIGRATION_NON_PLANE_program/OUTPUT/Piercing_points/lon/
 
 #=====
 [maps]
 #=====
 
-# paths to shapefiles (coasts, tectonic provinces), used
+# paths to shapefiles (boundaries, tectonic provinces), used
 # to plot maps:
 #
 # - ``BOUNDARY_SHP`` should be a shapefile containing lines or polygons
 #   representing any boundary (you can also include borders).
 #
 # - ``TECTO_SHP`` should be a shapefile containing polygons representing
-#   tectonic provinces, AND AN ATTRIBUTE TABLE whose first field
-#   contains the province's category, which will be used to affect
-#   a color to the polygon (see below).
-#
+#   tectonic provinces
+
 
 BOUNDARY_1_SHP = /home/diogo/dados_doutorado/parnaiba_basin/SIG_dados/shapes/bacia_parnaiba/bacia_parnaiba
+BOUNDARY_1_SHP_NAME = bacia
+
 BOUNDARY_2_SHP = /home/diogo/dados_doutorado/parnaiba_basin/SIG_dados/shapes/Estados/Brasil
+BOUNDARY_2_SHP_NAME = estados
+
 TECTO_SHP = /home/diogo/dados_doutorado/parnaiba_basin/SIG_dados/shapes/Geologico_Simplificado/Litologia/geologicosimplificado_lito
+TECTO_SHP_name = geologia
 
-# bounding box of (large) global maps and (small) inset maps
-# (min lon, max lon, min lat, max lat in JSON lists)
+# Lat and Lon of large maps and small maps
+# center (lat/lon) of the map
 
-BBOX_LARGE = [-60, -30, -20, 5]
-BBOX_SMALL = [-55, -35, -15, 0]
+PROJECT_LAT = -5
+PROJECT_LON = -45
 
+#lower and upper corner (lat/lon) of the large map
+
+LLCRNRLON_LARGE=-60
+LLCRNRLAT_LARGE=-20
+URCRNRLON_LARGE=-30
+URCRNRLAT_LARGE=5
+
+#lower and upper corner (lat/lon) of the small map
+
+LLCRNRLON_SMALL=-55
+LLCRNRLAT_SMALL=-15
+URCRNRLON_SMALL=-35
+URCRNRLAT_SMALL=0
 
 #==================
 [time]
 #==================
-
-MIN_DEPTH = 300                 ; minimum depth of the migration
-MAX_DEPTH = 800                 ; maximum depth of the migration
-INTER_DEPTH = 10                ; depth interval of the migration
+#minimum depth of the migration
+MIN_DEPTH = 300
+#maximum depth of the migration
+MAX_DEPTH = 800
+#depth interval of the migration
+INTER_DEPTH = 10
 
 #=====
 [piercing]
@@ -100,4 +133,7 @@ PHASES_PIERCING_POINTS_PPvs = [PPv410s,PPv660s]
 # ==========
 [migration]
 # ==========
-
+#distance between grid points and piercing points
+DIST_GRID_PP = 1
+#number of piercing points per bin
+NUMBER_PP_PER_BIN = 10

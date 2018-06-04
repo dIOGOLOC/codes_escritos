@@ -84,6 +84,7 @@ for i,j in enumerate(ev):
 
 camadas_terra_10_km = np.arange(MIN_DEPTH,MAX_DEPTH+INTER_DEPTH,INTER_DEPTH)
 
+# Importing piercing points to P410s
 
 PP_dist_P410s_str = np.genfromtxt('/home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/transition_zone/velocity_model/Piercing_points/dist/P410s_dist.txt',delimiter='[]',dtype='str')
 PP_dist_P410s = [[]]*len(PP_dist_P410s_str)
@@ -130,7 +131,7 @@ for i,j in enumerate(PP_depth_P410s_str):
     PP_depth_P410s[i] = [float(l) for l in c.split(',')]
 
 
-# ## Importando os piercing points para P660s
+# Importing piercing points to P660s
 
 PP_dist_P660s_str = np.genfromtxt('/home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/transition_zone/velocity_model/Piercing_points/dist/P660s_dist.txt',delimiter='[]',dtype='str')
 PP_dist_P660s = [[]]*len(PP_dist_P660s_str)
@@ -139,9 +140,6 @@ for i,j in enumerate(PP_dist_P660s_str):
     b = a[1].split(']')
     c = b[0]
     PP_dist_P660s[i] = [float(l) for l in c.split(',')]
-
-
-# In[13]:
 
 
 PP_time_P660s_str = np.genfromtxt('/home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/transition_zone/velocity_model/Piercing_points/time/P660s_time.txt',delimiter='[]',dtype='str')
@@ -153,9 +151,6 @@ for i,j in enumerate(PP_time_P660s_str):
     PP_time_P660s[i] = [float(l) for l in c.split(',')]
 
 
-# In[14]:
-
-
 PP_lat_P660s_str = np.genfromtxt('/home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/transition_zone/velocity_model/Piercing_points/lat/P660s_lat.txt',delimiter='[]',dtype='str')
 PP_lat_P660s = [[]]*len(PP_lat_P660s_str)
 for i,j in enumerate(PP_lat_P660s_str):
@@ -163,9 +158,6 @@ for i,j in enumerate(PP_lat_P660s_str):
     b = a[1].split(']')
     c = b[0]
     PP_lat_P660s[i] = [float(l) for l in c.split(',')]
-
-
-# In[15]:
 
 
 PP_lon_P660s_str = np.genfromtxt('/home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/transition_zone/velocity_model/Piercing_points/lon/P660s_lon.txt',delimiter='[]',dtype='str')
@@ -177,9 +169,6 @@ for i,j in enumerate(PP_lon_P660s_str):
     PP_lon_P660s[i] = [float(l) for l in c.split(',')]
 
 
-# In[16]:
-
-
 PP_depth_P660s_str = np.genfromtxt('/home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/transition_zone/velocity_model/Piercing_points/depth/P660s_depth.txt',delimiter='[]',dtype='str')
 PP_depth_P660s = [[]]*len(PP_depth_P660s_str)
 for i,j in enumerate(PP_depth_P660s_str):
@@ -189,14 +178,10 @@ for i,j in enumerate(PP_depth_P660s_str):
     PP_depth_P660s[i] = [float(l) for l in c.split(',')]
 
 
-# ## Gráfico dos raios
-
-# In[17]:
+# Ray Trace PLOTS
 
 
 fig, (ax1,ax2)= plt.subplots(nrows=1, ncols=2,figsize=(30, 10))
-
-
 
     
 for i,j in enumerate(PP_depth_P410s):
@@ -241,10 +226,7 @@ ax2.legend(loc=0,edgecolor='w',fancybox=True)
 ax2.set_xlim(-55,-35)
 
 
-#fig.savefig('/home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/transition_zone/ray_path.png',dpi=300)
-
-
-# In[18]:
+fig.savefig('/home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/transition_zone/ray_path.png',dpi=300)
 
 
 fig, (ax1,ax2)= plt.subplots(nrows=1, ncols=2,figsize=(30, 10))
@@ -341,21 +323,12 @@ shape = (abs(abs(area_lon[1]) - abs(area_lon[0]))*3, abs(abs(area_lat[1]) - abs(
 # First, we need to know the real data at the grid points
 grdx, grdy = gridder.regular(area, shape)
 
-
-# In[23]:
-
-
 fig=plt.figure(figsize=(20,10))
 
+m = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_LARGE,
+            llcrnrlat=LLCRNRLAT_LARGE,urcrnrlon=URCRNRLON_LARGE,urcrnrlat=URCRNRLAT_LARGE)
 
-
-project_Lat = -5
-project_Lon = -45
-
-m = Basemap(resolution='l',projection='merc',lat_0=project_Lat, lon_0=project_Lon,llcrnrlon=-60.,
-            llcrnrlat=-20.,urcrnrlon=-30.,urcrnrlat=5.)
-
-m.readshapefile('/home/diogo/dados_doutorado/parnaiba_basin/SIG_dados/shapes/bacia_parnaiba/bacia_parnaiba',name='bacia')
+m.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME)
 
 for lon, lat in zip(sta_long,sta_lat):
     x,y = m(lon, lat)
@@ -382,14 +355,10 @@ m.fillcontinents(color='whitesmoke',lake_color=None)
 m.drawcoastlines(color='dimgray',zorder=10)
 m.drawmeridians(np.arange(0, 360, 5),color='lightgrey',labels=[True,True,True,True])
 m.drawparallels(np.arange(-90, 90, 5),color='lightgrey',labels=[True,True,True,True])
+plt.title('BINNED DATA', y=1.08)
 
 
-plt.title('BIN DATA', y=1.08)
-
-
-# # Filtrando os pontos do GRID
-
-# In[24]:
+# Filtering grid points
 
 
 dist_pp_grid_min = [[]]*len(grdx)
@@ -401,11 +370,9 @@ for i,j in enumerate(grdx):
     dist_pp_grid_max[i] = [np.sqrt((j - pp_660_long[k])**2 + (grdy[i] - l)**2) for k,l in enumerate(pp_660_lat)]
 
 
-# In[25]:
 
-
-dist_grid_piercing_points = 1
-number_piercing_points_per_bin = 10 
+dist_grid_piercing_points = DIST_GRID_PP
+number_piercing_points_per_bin = NUMBER_PP_PER_BIN 
 
 grid_sel_min = []
 grid_sel_min_data = []
@@ -425,19 +392,10 @@ for i,j in enumerate(dist_pp_grid_max):
         grid_sel_max.append((grdx[i],grdy[i]))
 
 
-# In[26]:
-
-
 grid_sel = grid_sel_min+grid_sel_max
 
 
-# In[27]:
-
-
 grid_selected = set(map(tuple,grid_sel))
-
-
-# In[28]:
 
 
 grid_sel_x = []
@@ -447,21 +405,13 @@ for i,j in enumerate(grid_selected):
     grid_sel_y.append(j[1])
 
 
-# In[29]:
-
-
 fig=plt.figure(figsize=(20,10))
 
+m = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_SMALL,
+            llcrnrlat=LLCRNRLAT_SMALL,urcrnrlon=URCRNRLON_SMALL,urcrnrlat=URCRNRLAT_SMALL)
 
-
-project_Lat = -5
-project_Lon = -45
-
-m = Basemap(resolution='l',projection='merc',lat_0=project_Lat, lon_0=project_Lon,llcrnrlon=-55.,
-            llcrnrlat=-15.,urcrnrlon=-35.,urcrnrlat=0)
-
-m.readshapefile('/home/diogo/dados_doutorado/parnaiba_basin/SIG_dados/shapes/bacia_parnaiba/bacia_parnaiba',name='bacia',linewidth=3)
-m.readshapefile('/home/diogo/dados_doutorado/parnaiba_basin/SIG_dados/shapes/Estados/Brasil',name='estados',linewidth=0.7)
+m.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
+m.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
 for lon, lat in zip(grdx,grdy):
     x,y = m(lon, lat)
@@ -498,15 +448,12 @@ m.drawparallels(np.arange(-90, 90, 5),color='lightgrey',labels=[True,True,True,T
 label=['Stations','Piercing Points 410','Piercing Points 660','Filtered Grid Points','Grid Points']
 plt.legend([l1,l2,l3,l4,l5],label,scatterpoints=1, frameon=True,labelspacing=1, loc='lower right',facecolor='w')
 
-#plt.title('BIN DATA', y=1.08)
+plt.title('SELECTED BINNED DATA', y=1.08)
 
 
-# # Importando as profundidades e os tempos para a conversão Ps para os eventos das estações BP
+#Importing depths and times to the Ps conversion to each event for all stations
 
-# In[30]:
-
-
-P_depth_str = np.genfromtxt('/home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/transition_zone/velocity_model/Phases/depth/Ps_depth.txt',delimiter='[]',dtype='str')
+P_depth_str = np.genfromtxt(DEPTH_T_DIR,delimiter='[]',dtype='str')
 P_depth = [[]]*len(P_depth_str)
 for i,j in enumerate(P_depth_str):
     a = j.split('[')
@@ -515,10 +462,7 @@ for i,j in enumerate(P_depth_str):
     P_depth[i] = [float(l) for l in c.split(',')]
 
 
-# In[31]:
-
-
-P_time_str = np.genfromtxt('/home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/transition_zone/velocity_model/Phases/time/Ps_time.txt',delimiter='[]',dtype='str')
+P_time_str = np.genfromtxt(TIME_T_DIR,delimiter='[]',dtype='str')
 P_time = [[]]*len(P_time_str)
 for i,j in enumerate(P_time_str):
     a = j.split('[')
@@ -527,10 +471,7 @@ for i,j in enumerate(P_time_str):
     P_time[i] = [float(l) for l in c.split(',')]
 
 
-# In[32]:
-
-
-P_dist_str = np.genfromtxt('/home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/transition_zone/velocity_model/Phases/dist_event/Ps_dist_event.txt',delimiter='[]',dtype='str')
+P_dist_str = np.genfromtxt(DIST_T_DIR,delimiter='[]',dtype='str')
 P_dist = [[]]*len(P_dist_str)
 for i,j in enumerate(P_dist_str):
     a = j.split('[')
@@ -538,30 +479,13 @@ for i,j in enumerate(P_dist_str):
     c = b[0]
     P_dist[i] = [float(l) for l in c.split(',')]
 
-
-# In[33]:
-
-
-for i,j in enumerate(P_depth):
-    [plt.plot(P_dist[i][k],P_time[i][k],'ko') for k,l in enumerate(j) if l == 410]
-    [plt.plot(P_dist[i][k],P_time[i][k],'ko') for k,l in enumerate(j) if l == 660] 
-
-plt.ylim(100,0)
-
-
-# # Migrando os dados de tempo para profundidade
-
-# In[34]:
-
+# Migrando os dados de tempo para profundidade
 
 RF_amplitude_time = [[]]*len(P_depth)
 for i,j in enumerate(P_depth):
     sta_t = j
     RF_t = camadas_terra_10_km
     RF_amplitude_time[i] = [P_time[i][sta_t.index(l)] for k,l in enumerate(RF_t)]
-
-
-# In[35]:
 
 
 RF_amplitude = []
@@ -571,17 +495,11 @@ for i,j in enumerate(RF_amplitude_time):
     RF_amplitude.append([sta_data[i][sta_t.index(l)] for k,l in enumerate(RF_t)])
 
 
-# In[36]:
-
-
 RF_amplitude_time = [[]]*len(P_depth)
 for i,j in enumerate(P_depth):
     sta_t = j
     RF_t = camadas_terra_10_km
     RF_amplitude_time[i] = [P_time[i][sta_t.index(l)] if l in sta_t else -1 for k,l in enumerate(RF_t)]
-
-
-# In[37]:
 
 
 RF_amplitude = [[]]*len(RF_amplitude_time)
@@ -591,16 +509,7 @@ for i,j in enumerate(RF_amplitude_time):
     RF_amplitude[i] = [sta_data[i][sta_t.index(l)] if l != -1 else 0 for k,l in enumerate(RF_t)]
 
 
-# In[38]:
-
-
-print(len(pp_410_lat))
-
-
-# # Empilhando os dados nos pontos do GRID filtrado
-
-# In[39]:
-
+# Data stacking in each point of the filtered grid
 
 dist_between_grid_piercing_points = 0.5
 dados_grid_lat = pp_410_lat

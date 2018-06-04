@@ -6,6 +6,10 @@ import os
 from obspy.taup import TauPyModel
 from obspy.geodetics import kilometer2degrees
 
+from variable_scripts.mgconfig import (
+					RF_DIR,RF_EXT,PROG_MIGRATION_DIR,MODEL_FILE_NPZ,MIN_DEPTH,MAX_DEPTH,INTER_DEPTH,
+					DIST_T_DIR,DEPTH_T_DIR,TIME_T_DIR
+				      )
 
 print('Looking for receiver functions files in '+RF_DIR)
 ev_list = []
@@ -15,7 +19,6 @@ for root, dirs, files in os.walk(RF_DIR):
         if datafile.endswith(RF_EXT):
             ev_list.append(os.path.join(root, datafile))
 ev_listS = sorted(ev_list)
-
 
 ev = obspy.Stream()
 for i,j in enumerate(ev_listS):
@@ -72,8 +75,8 @@ for i,j in enumerate(ev):
 
 
 print('Importing earth model from obspy.taup.TauPyModel')
-model_10_km = TauPyModel(model=MODEL_DIR_NPZ)
-
+print('Importing earth model from : '+MODEL_FILE_NPZ)
+model_10_km = TauPyModel(model=MODEL_FILE_NPZ)
 
 print('P-wave time calculation')
 arrivalsP = []
@@ -112,7 +115,7 @@ for i,j in enumerate(arrivals):
 
 
 print('Saving .TXT files')
-
+os.makedirs(DIST_T_DIR,exist_ok=True)
 dist_event_txt = open(DIST_T_DIR+'Ps_dist_event.txt', 'w')
 
 for i,j in enumerate(dist_event):
@@ -120,14 +123,14 @@ for i,j in enumerate(dist_event):
 dist_event_txt.close()
 
 
-
+os.makedirs(DEPTH_T_DIR,exist_ok=True)
 depth_txt = open(DEPTH_T_DIR+'Ps_depth.txt', 'w')
 
 for i,j in enumerate(depth):
     depth_txt.write(str(list(j))+'\n')
 depth_txt.close()
 
-
+os.makedirs(TIME_T_DIR,exist_ok=True)
 time_txt = open(TIME_T_DIR+'Ps_time.txt', 'w')
 
 for i,j in enumerate(time):
