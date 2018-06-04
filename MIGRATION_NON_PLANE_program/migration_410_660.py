@@ -15,9 +15,10 @@ and converted phase (Ppds) at the discontinuities to simultaneously determine th
 depth of mantle discontinuities and velocity anomalies in the overlying layer. 
 Note that all the parameters are defined in the configuration file.
 """
-
-from time_scripts import time_P_Pds
-from variable_scripts import mgconfig
+from parameters_py import mgconfig
+from time_py import time_P_Pds
+from piercing_points_py import piercing_points_P410s,piercing_points_P660s
+from migration_py import migration_Ps
 import os
 import sys
 import warnings
@@ -26,7 +27,11 @@ import warnings
 # parsing configuration file to import some parameters
 # ====================================================
 
-from variable_scripts.mgconfig import (RF_DIR,PROG_MIGRATION_DIR,MODEL_FILE_NPZ,DIST_T_DIR)
+from parameters_py.mgconfig import (
+					RF_DIR,RF_EXT,PROG_MIGRATION_DIR,MODEL_FILE_NPZ,MIN_DEPTH,MAX_DEPTH,INTER_DEPTH,
+					DIST_T_DIR,DEPTH_T_DIR,TIME_T_DIR,DIST_PP_DIR,DEPTH_PP_DIR,TIME_PP_DIR,LAT_PP_DIR,
+					LON_PP_DIR
+				   )
 
 print("- dir of receiver function data: " + RF_DIR)
 print("- dir of dist time: " + DIST_T_DIR)

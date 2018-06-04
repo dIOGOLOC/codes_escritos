@@ -39,9 +39,9 @@
 #/home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/transition_zone/rede_BB/event_data_PP_selected/a_05/
 
 # dir of receiver functions
-RF_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/transition_zone/syngine_filtered_PP/a_05/
+RF_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/transition_zone/rede_BB/event_data_PP_selected/a_05
 # extension of receiver functions
-RF_EXT = '.eqr'
+RF_EXT = .eqr
 
 #Directory of the program
 PROG_MIGRATION_DIR = /home/diogo/diogo_git/codes_escritos/MIGRATION_NON_PLANE_program/
@@ -69,6 +69,13 @@ TIME_PP_DIR = /home/diogo/diogo_git/codes_escritos/MIGRATION_NON_PLANE_program/O
 LAT_PP_DIR = /home/diogo/diogo_git/codes_escritos/MIGRATION_NON_PLANE_program/OUTPUT/Piercing_points/lat/
 # dir of lon results
 LON_PP_DIR = /home/diogo/diogo_git/codes_escritos/MIGRATION_NON_PLANE_program/OUTPUT/Piercing_points/lon/
+
+# dir of ray path figures
+RAY_PATH_FIGURE = /home/diogo/diogo_git/codes_escritos/MIGRATION_NON_PLANE_program/OUTPUT/Figures/ray_path/
+
+# dir of piercing points figures
+PP_FIGURE = /home/diogo/diogo_git/codes_escritos/MIGRATION_NON_PLANE_program/OUTPUT/Figures/piercing_points/
+
 
 #=====
 [maps]
@@ -123,13 +130,6 @@ MAX_DEPTH = 800
 #depth interval of the migration
 INTER_DEPTH = 10
 
-#=====
-[piercing]
-#=====
-
-PHASES_PIERCING_POINTS_PS = [P410s,P660s]
-PHASES_PIERCING_POINTS_PPvs = [PPv410s,PPv660s]
-
 # ==========
 [migration]
 # ==========
@@ -137,3 +137,7 @@ PHASES_PIERCING_POINTS_PPvs = [PPv410s,PPv660s]
 DIST_GRID_PP = 1
 #number of piercing points per bin
 NUMBER_PP_PER_BIN = 10
+#False or True for plotting Ray Trace
+RAY_TRACE_PLOT = True 
+#False or True for plotting Ray Trace 410 and 660
+RAY_TRACE_410_660_PLOT = True 
