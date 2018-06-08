@@ -80,6 +80,9 @@ RAY_PATH_FIGURE = config.get('paths', 'RAY_PATH_FIGURE')
 # dir of piercing points Figures
 PP_FIGURE = config.get('paths', 'PP_FIGURE')
 
+# dir of selected piercing points txt
+PP_SELEC_DIR = config.get('paths', 'PP_SELEC_DIR')
+
 # ---------------
 # maps parameters
 # ---------------
@@ -114,6 +117,11 @@ LLCRNRLAT_SMALL= config.getfloat('maps', 'LLCRNRLAT_SMALL')
 URCRNRLON_SMALL= config.getfloat('maps', 'URCRNRLON_SMALL')
 URCRNRLAT_SMALL= config.getfloat('maps', 'URCRNRLAT_SMALL')
 
+#figures extention and dpi
+EXT_FIG= config.get('maps', 'EXT_FIG')
+DPI_FIG= config.getfloat('maps', 'DPI_FIG')
+
+
 # ---------------
 # time
 # ---------------
@@ -127,6 +135,6 @@ INTER_DEPTH = config.getint('time', 'INTER_DEPTH')
 # ---------------
 
 DIST_GRID_PP = config.getfloat('migration', 'DIST_GRID_PP')           
-NUMBER_PP_PER_BIN = config.getfloat('migration', 'NUMBER_PP_PER_BIN')  
+NUMBER_PP_PER_BIN = config.getint('migration', 'NUMBER_PP_PER_BIN')  
 RAY_TRACE_PLOT = config.getboolean('migration', 'RAY_TRACE_PLOT')  
 RAY_TRACE_410_660_PLOT = config.getboolean('migration', 'RAY_TRACE_410_660_PLOT')  

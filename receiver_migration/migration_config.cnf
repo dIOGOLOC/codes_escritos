@@ -76,6 +76,9 @@ RAY_PATH_FIGURE = /home/diogo/diogo_git/codes_escritos/receiver_migration/OUTPUT
 # dir of piercing points figures
 PP_FIGURE = /home/diogo/diogo_git/codes_escritos/receiver_migration/OUTPUT/Figures/piercing_points/
 
+# dir of selected piercing points txt
+PP_SELEC_DIR = /home/diogo/diogo_git/codes_escritos/receiver_migration/OUTPUT/Piercing_points/selected/
+
 
 #=====
 [maps]
@@ -119,6 +122,12 @@ LLCRNRLON_SMALL=-55
 LLCRNRLAT_SMALL=-15
 URCRNRLON_SMALL=-35
 URCRNRLAT_SMALL=0
+
+
+#figures extention and dpi
+EXT_FIG=png
+DPI_FIG=300
+
 
 #==================
 [time]
