@@ -29,17 +29,24 @@ from parameters_py.mgconfig import (
 					BOUNDARY_1_SHP,BOUNDARY_1_SHP_NAME,BOUNDARY_2_SHP,BOUNDARY_2_SHP_NAME,					
 					RAY_PATH_FIGURE,PP_FIGURE,EXT_FIG,DPI_FIG
 				   )
+
+#importing selected binned data
+
 filename = PP_SELEC_DIR+'SELECTED_BINNED.json'
 
-print(filename)
 SELECTED_BINNED_DATA_dic = json.load(open(filename))
 
 
-#definition of the coor catcher
 
+lats = SELECTED_BINNED_DATA_dic['lat']
+lons = SELECTED_BINNED_DATA_dic['lon']
+RF_number = SELECTED_BINNED_DATA_dic['len']
+RF_stacking = SELECTED_BINNED_DATA_dic['data']
 
-fig_receiver_function_per_bin=plt.figure(figsize=(10,5))
+#calculating earth model boundaries
+camadas_terra_10_km = np.arange(MIN_DEPTH,MAX_DEPTH+INTER_DEPTH,INTER_DEPTH)
 
+fig_receiver_function_per_bin,ax = plt.subplots(1,1,figsize=(10,5))
 project_Lat = PROJECT_LAT
 project_Lon = PROJECT_LON
 
@@ -50,9 +57,73 @@ m.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
 
-lats = SELECTED_BINNED_DATA_dic['lat']
-lons = SELECTED_BINNED_DATA_dic['lon']
-RF_number = SELECTED_BINNED_DATA_dic['len']
+
+x, y = m(lons,lats)
+sc = m.scatter(x,y,40,RF_number,cmap='viridis',marker='o')
+plt.colorbar(sc,label='Total of Receiver Functions per bin')
+
+
+
+m.fillcontinents(color='whitesmoke',lake_color=None,zorder=2,alpha=0.1)
+m.drawcoastlines(color='k',zorder=1)
+m.drawmeridians(np.arange(0, 360, 5),color='lightgrey',labels=[True,True,True,True])
+m.drawparallels(np.arange(-90, 90, 5),color='lightgrey',labels=[True,True,True,True])
+
+plt.title('Choose two points for cross-section and them close the windows', y=1.08)
+
+
+lon_click = []
+lat_click = []
+def onclick(event):
+	dist = []
+	for i,j in enumerate(lons):
+		lon_x,lat_y = m(j,lats[i])
+		dist.append(np.sqrt((event.xdata-lon_x)**2+(event.ydata-lat_y)**2))
+	ind= np.argmin(dist)
+	print('Cross section lon and lat selected')
+	print('lon=%f, lat=%f' %(lons[ind],lats[ind]))
+	lon_click.append(lons[ind])
+	lat_click.append(lats[ind])
+	ax.plot(event.xdata,event.ydata,'xr',ms=10)
+	plt.draw()
+	if len(lon_click) == 2:
+		fig_receiver_function_per_bin.canvas.mpl_disconnect(cid)
+
+	return lon_click,lat_click
+
+cid = fig_receiver_function_per_bin.canvas.mpl_connect('button_press_event', onclick)
+
+plt.show()
+
+#Insert A-B line coordinates:
+
+
+AB_lon_line = lon_click
+AB_lat_line = lat_click
+
+AB_lon = np.linspace(AB_lon_line[0],AB_lon_line[1],abs(abs(AB_lon_line[1])-abs(AB_lon_line[0]))*4)
+AB_lat = np.linspace(AB_lat_line[0],AB_lat_line[1],abs(abs(AB_lon_line[1])-abs(AB_lon_line[0]))*4)
+
+fig_receiver_function_profile = plt.figure(figsize=(10,5))
+
+project_Lat = PROJECT_LAT
+project_Lon = PROJECT_LON
+
+m = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_SMALL,
+            llcrnrlat=LLCRNRLAT_SMALL,urcrnrlon=URCRNRLON_SMALL,urcrnrlat=URCRNRLAT_SMALL)
+
+m.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
+m.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
+
+xA, yA = m(AB_lon_line[0],AB_lat_line[0])
+#plt.text(xA-100000, yA, 'A',fontsize=20)
+
+xB, yB = m(AB_lon_line[1],AB_lat_line[1])
+#plt.text(xB+40000, yB, 'B',fontsize=20)
+
+m.drawgreatcircle(AB_lon_line[0],AB_lat_line[0],AB_lon_line[1],AB_lat_line[1],linewidth=4,color='r')
+
+
 x, y = m(lons,lats)
 sc = m.scatter(x,y,40,RF_number,cmap='viridis',marker='o')
 plt.colorbar(sc,label='Total of Receiver Functions per bin')
@@ -65,140 +136,31 @@ m.drawmeridians(np.arange(0, 360, 5),color='lightgrey',labels=[True,True,True,Tr
 m.drawparallels(np.arange(-90, 90, 5),color='lightgrey',labels=[True,True,True,True])
 
 plt.title('Receiver Functions per bin', y=1.08)
-
-ax1 = fig_receiver_function_per_bin.add_subplot(111)
-ax1.set_title('custom picker for line data')
-line, = ax1.plot(rand(100), rand(100), 'o', picker=line_picker)
-fig.canvas.mpl_connect('pick_event', onpick2)
-
 plt.show()
 
 
-'''
-
-# Creating cross-section
-
-# A-B cross-section
-
-AB_lon_line = [-50,-41]
-AB_lat_line = [-6,-4]
-
-#AB_lon_line = [-50,-41]
-#AB_lat_line = [-7.5,-5.5]
-
-AB_lon = np.linspace(AB_lon_line[0],AB_lon_line[1],abs(abs(AB_lon_line[1])-abs(AB_lon_line[0]))*4)
-AB_lat = np.linspace(AB_lat_line[0],AB_lat_line[1],abs(abs(AB_lon_line[1])-abs(AB_lon_line[0]))*4)
-
-fig=plt.figure(figsize=(20,10))
-
-project_Lat = -5
-project_Lon = -45
-
-m = Basemap(resolution='l',projection='merc',lat_0=project_Lat, lon_0=project_Lon,llcrnrlon=-51.,
-            llcrnrlat=-12.,urcrnrlon=-40.,urcrnrlat=-2)
-
-m.readshapefile('/home/diogo/dados_doutorado/parnaiba_basin/SIG_dados/shapes/bacia_parnaiba/bacia_parnaiba',name='bacia',linewidth=3)
-m.readshapefile('/home/diogo/dados_doutorado/parnaiba_basin/SIG_dados/shapes/Estados/Brasil',name='estados',linewidth=0.7)
-
-
-xA, yA = m(AB_lon_line[0],AB_lat_line[0])
-plt.text(xA-100000, yA, 'A',fontsize=20)
-
-xB, yB = m(AB_lon_line[1],AB_lat_line[1])
-plt.text(xB+40000, yB, 'B',fontsize=20)
-
-m.drawgreatcircle(AB_lon_line[0],AB_lat_line[0],AB_lon_line[1],AB_lat_line[1],linewidth=5,color='r')
-
-for lon, lat in zip(AB_lon,AB_lat):
-    x,y = m(lon, lat)
-    msize = 10
-    #l1, = m.plot(x, y, 'o',markersize=msize,markeredgecolor='k',markerfacecolor='y')
-
-lats = grid_sel_y
-lons = grid_sel_x
-RF_number = len_RF_stacking
-x, y = m(lons,lats)
-sc = m.scatter(x,y,40,RF_number,cmap='viridis',marker='o')
-plt.colorbar(sc,label='Total of Receiver Functions per bin')
-
-for lon, lat in zip(sta_long,sta_lat):
-    x,y = m(lon, lat)
-    msize = 10
-    l1, = m.plot(x, y, '^',markersize=msize,markeredgecolor='k',markerfacecolor='grey')
-
-m.fillcontinents(color='whitesmoke',lake_color='#46bcec',zorder=0)
-m.drawcoastlines(color='dimgray',zorder=1)
-m.drawmeridians(np.arange(0, 360, 5),color='lightgrey',labels=[True,True,True,True])
-m.drawparallels(np.arange(-90, 90, 5),color='lightgrey',labels=[True,True,True,True])
-
-plt.legend([l1,sc],['Stations','Grid Points'],scatterpoints=1, frameon=True,labelspacing=1, loc='upper right',facecolor='w')
-plt.title('BIN DATA and Profile', y=1.08)
-
+#Calculating the distance between the line and the grid
 
 RF_data_profile = []
-RF_RAY_profile = []
 
 for i,j in enumerate(AB_lon):
-    dist = [np.sqrt((j - grid_sel_x[k])**2 + (AB_lat[i] - l)**2)  for k,l in enumerate(grid_sel_y)]
-    RF_data_profile.append(RF_stacking[dist.index(min(dist))])
-    RF_RAY_profile.append(RF_ray_stacking[dist.index(min(dist))])
-
-
-# In[46]:
+	dist = [np.sqrt((j - lons[k])**2 + (AB_lat[i] - l)**2)  for k,l in enumerate(lats)]
+	RF_data_profile.append(RF_stacking[dist.index(min(dist))])
 
 
 RF_data_profile_stacking = []
-RF_RAY_profile_stacking = []
 for i,j in enumerate(RF_data_profile):
     if len(j) > 10:
         RF_data_profile_stacking.append(j)
-        RF_RAY_profile_stacking.append(RF_RAY_profile[i])
 
     #else:
         #RF_data_profile_stacking.append(np.zeros_like(camadas_terra_10_km))
-        #RF_RAY_profile_stacking.append(0)
 
 
-# In[47]:
 
+# # Figure
 
-factor = 80
-
-fig, ax = plt.subplots(1, 1, figsize=(15, 5))
-#fig, ax = plt.subplots(1, 1)
-
-majorLocatorX = MultipleLocator(10)
-majorLocatorY = MultipleLocator(50)
-minorLocatorY = MultipleLocator(10)
-minorLocatorX = MultipleLocator(5)
-
-
-for i, j in enumerate(RF_data_profile_stacking): 
-    #plt.plot(time_real-10,i/factor+j,'k',linewidth=0.5)
-    #ax.text(i/factor,-25,"{0:.2f}".format(RF_RAY_profile_stacking[i]),rotation=45)
-    ax.plot(i/factor+j,camadas_terra_10_km,'k',linewidth=0.5)
-    ax.yaxis.set_major_locator(majorLocatorY)
-    ax.xaxis.set_minor_locator(minorLocatorX)
-    ax.yaxis.set_minor_locator(minorLocatorY)
-    ax.grid(True,which='minor',linestyle='--')
-    ax.grid(True,which='major',color='k',linewidth=1)
-
-    ax.yaxis.set_ticks_position('both')
-
-    ax.fill_betweenx(camadas_terra_10_km,i/factor+j,i/factor,where=(i/factor+j)>=i/factor, facecolor='black',alpha=0.6, interpolate=True)
-    ax.fill_betweenx(camadas_terra_10_km,i/factor+j,i/factor,where=(i/factor+j)<=i/factor, facecolor='gray',alpha=0.6, interpolate=True)
-    ax.set_title('Funcoes do Receptor - a = 0.5')
-    ax.set_xticks([])
-    ax.set_ylabel('Depth (km)')
-    
-    ax.tick_params(labelright=True)
-    ax.set_ylim(800,300)
-
-
-# # Figura completa
-
-# In[48]:
-
+#Cross section figure
 
 fig, (ax1,ax) = plt.subplots(1,2, figsize=(20, 10))
 
@@ -225,25 +187,26 @@ for lon, lat in zip(AB_lon,AB_lat):
     msize = 10
     #l1, = m.plot(x, y, 'o',markersize=msize,markeredgecolor='k',markerfacecolor='y')
 
-lats = grid_sel_y
-lons = grid_sel_x
-RF_number = len_RF_stacking
 x, y = m(lons,lats)
 sc = m.scatter(x,y,40,RF_number,cmap='viridis',marker='o')
 plt.colorbar(sc,label='Total of Receiver Functions per bin')
 
-for lon, lat in zip(sta_long,sta_lat):
-    x,y = m(lon, lat)
-    msize = 10
-    l1, = m.plot(x, y, '^',markersize=msize,markeredgecolor='k',markerfacecolor='grey')
+#for lon, lat in zip(sta_long,sta_lat):
+#    x,y = m(lon, lat)
+#    msize = 10
+#    l1, = m.plot(x, y, '^',markersize=msize,markeredgecolor='k',markerfacecolor='grey')
 
 m.fillcontinents(color='whitesmoke',lake_color='#46bcec',zorder=0)
 m.drawcoastlines(color='dimgray',zorder=1)
 m.drawmeridians(np.arange(0, 360, 5),color='lightgrey',labels=[True,True,True,True])
 m.drawparallels(np.arange(-90, 90, 5),color='lightgrey',labels=[True,True,True,True])
 
-plt.legend([l1,sc],['Stations','Grid Points'],scatterpoints=1, frameon=True,labelspacing=1, loc='lower right',facecolor='w')
-plt.title('BIN DATA and Profile', y=1.08)
+#plt.legend([l1,sc],['Stations','Grid Points'],scatterpoints=1, frameon=True,labelspacing=1, loc='lower right',facecolor='w')
+plt.title('BINNED DATA and Profile', y=1.08)
+
+
+#Migration figure
+
 
 factor = 100
 
@@ -253,24 +216,24 @@ minorLocatorY = MultipleLocator(10)
 minorLocatorX = MultipleLocator(5)
 
 
-for i, j in enumerate(RF_data_profile_stacking): 
-    #plt.plot(time_real-10,i/factor+j,'k',linewidth=0.5)
-    #ax.text(i/factor,-25,"{0:.2f}".format(RF_RAY_profile_stacking[i]),rotation=45)
-    ax1.plot(i/factor+j,camadas_terra_10_km,'k',linewidth=0.5)
-    ax1.yaxis.set_major_locator(majorLocatorY)
-    ax1.xaxis.set_minor_locator(minorLocatorX)
-    ax1.yaxis.set_minor_locator(minorLocatorY)
-    ax1.grid(True,which='minor',linestyle='--')
-    ax1.grid(True,which='major',color='k',linewidth=1)
+for _i, _j in enumerate(RF_data_profile_stacking):
+	RF_data_factor = [_i/factor+l for k, l in enumerate(_j)]
+	ax1.text(_i/factor,820,"{0:.1f}".format(AB_lon[_i]),rotation=45)
+	ax1.plot(RF_data_factor,camadas_terra_10_km,'k',linewidth=0.5)
+	ax1.yaxis.set_major_locator(majorLocatorY)
+	#ax1.xaxis.set_minor_locator(minorLocatorX)
+	ax1.yaxis.set_minor_locator(minorLocatorY)
+	ax1.grid(True,which='minor',linestyle='--')
+	ax1.grid(True,which='major',color='k',linewidth=1)
 
-    ax1.yaxis.set_ticks_position('both')
+	ax1.yaxis.set_ticks_position('both')
 
-    ax1.fill_betweenx(camadas_terra_10_km,i/factor+j,i/factor,where=(i/factor+j)>=i/factor, facecolor='black',alpha=0.6, interpolate=True)
-    ax1.fill_betweenx(camadas_terra_10_km,i/factor+j,i/factor,where=(i/factor+j)<=i/factor, facecolor='gray',alpha=0.6, interpolate=True)
-    ax1.set_title('Receiver Function - a = 0.5')
-    ax1.set_xticks([])
-    ax1.set_ylabel('Depth (km)')
-    
-    ax1.tick_params(labelright=True)
-    ax1.set_ylim(800,300)
-'''
+	ax1.fill_betweenx(camadas_terra_10_km,RF_data_factor,_i/factor,where=np.array(RF_data_factor)>=_i/factor, facecolor='black',alpha=0.8, interpolate=True)
+	ax1.fill_betweenx(camadas_terra_10_km,RF_data_factor,_i/factor,where=np.array(RF_data_factor)<=_i/factor, facecolor='gray',alpha=0.6, interpolate=True)
+	ax1.set_title('Receiver Function - a = 0.5')
+	ax1.set_xticks([])
+	ax1.set_ylabel('Depth (km)')
+	ax1.set_xlabel('Longitude')
+	ax1.tick_params(labelright=True)
+	ax1.set_ylim(800,300)
+plt.show()
