@@ -1,8 +1,5 @@
-Receiver Migration
-
 ![receiver_migration_logo](receiver_migration_logo.png)
 
-========================
 This project is dedicated to provide a Python framework for receiver functions migration, 
 based on [ObsPy](https://github.com/obspy/obspy/wiki).
 
