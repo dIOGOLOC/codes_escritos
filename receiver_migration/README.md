@@ -1,4 +1,7 @@
 Receiver Migration
+
+![receiver_migration_logo](receiver_migration_logo.png)
+
 ========================
 This project is dedicated to provide a Python framework for receiver functions migration, 
 based on [ObsPy](https://github.com/obspy/obspy/wiki).
@@ -33,5 +36,5 @@ functions and imaging upper mantle discontinuities. *Geophys. J. Int.*, **117**(
 \[[doi](https://doi.org/10.1111/j.1365-246X.1994.tb03942.x)\]
 
 - Dueker, K.G., Sheehan, A.F., (1997). Mantle discontinuity structure from midpoint stacks 
-of converted P to S waves across the Yellowstone hotspot track. *J. of Geophys. Res.,*, **102**(B4), p. 8313-8327.
+of converted P to S waves across the Yellowstone hotspot track. *J. of Geophys. Res.*, **102**(B4), p. 8313-8327.
 \[[doi](https://doi.org/10.1029/96JB03857)\]
