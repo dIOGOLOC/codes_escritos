@@ -6,11 +6,15 @@ import obspy
 import os
 from obspy.taup import TauPyModel
 from obspy.geodetics import kilometer2degrees
+import json
 
 from parameters_py.mgconfig import (
-					RF_DIR,RF_EXT,PROG_MIGRATION_DIR,MODEL_FILE_NPZ,MIN_DEPTH,MAX_DEPTH,INTER_DEPTH,
-					DIST_T_DIR,DEPTH_T_DIR,TIME_T_DIR,DIST_PP_DIR,DEPTH_PP_DIR,TIME_PP_DIR,LAT_PP_DIR,
-					LON_PP_DIR
+					RF_DIR,RF_EXT,PROG_MIGRATION_DIR,MODEL_FILE_NPZ,MIN_DEPTH,MAX_DEPTH,INTER_DEPTH,PdS_DIR,
+					PP_DIR,PP_SELEC_DIR,NUMBER_PP_PER_BIN,RAY_TRACE_PLOT,RAY_TRACE_410_660_PLOT,
+					LLCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLON_LARGE,URCRNRLAT_LARGE,LLCRNRLON_SMALL,
+					URCRNRLON_SMALL,LLCRNRLAT_SMALL,URCRNRLAT_SMALL,PROJECT_LAT,PROJECT_LON,
+					BOUNDARY_1_SHP,BOUNDARY_1_SHP_NAME,BOUNDARY_2_SHP,BOUNDARY_2_SHP_NAME,					
+					RAY_PATH_FIGURE,PP_FIGURE,EXT_FIG,DPI_FIG
 				   )
 
 print('Looking for receiver functions files in '+RF_DIR)
@@ -106,50 +110,21 @@ for i,j in enumerate(arrivalsP410s):
 	lat_P410s[i] = [l.pierce['lat'] for k,l in enumerate(j)][0]
 	lon_P410s[i] = [l.pierce['lon'] for k,l in enumerate(j)][0]
 
-print('Saving .TXT files')
-#distance
-os.makedirs(DIST_PP_DIR,exist_ok=True)
-P410s_dist_txt = open(DIST_PP_DIR+fase+'_dist.txt', 'w')
+#Saving Piercing Points in JSON file
+print('Saving Piercing Points in JSON file')
 
+os.makedirs(PP_DIR,exist_ok=True)
+
+PP_dic = {'dist':[],'depth':[],'time':[],'lat':[],'lon':[]}
 for i,j in enumerate(dist_P410s):
-    P410s_dist_txt.write(str(list(j))+'\n')
-P410s_dist_txt.close()
+	PP_dic['dist'].append(j.tolist())
+	PP_dic['depth'].append(depth_P410s[i].tolist())
+	PP_dic['time'].append(time_P410s[i].tolist())
+	PP_dic['lat'].append(lat_P410s[i].tolist())
+	PP_dic['lon'].append(lon_P410s[i].tolist())
 
 
-#depth
-os.makedirs(DEPTH_PP_DIR,exist_ok=True)
-depth_P410s_txt = open(DEPTH_PP_DIR+fase+'_depth.txt', 'w')
+with open(PP_DIR+'PP_'+fase+'_dic.json', 'w') as fp:
+	json.dump(PP_dic, fp)
 
-for i,j in enumerate(depth_P410s):
-    depth_P410s_txt.write(str(list(j))+'\n')
-depth_P410s_txt.close()
-
-
-#time
-os.makedirs(TIME_PP_DIR,exist_ok=True)
-time_P410s_txt = open(TIME_PP_DIR+fase+'_time.txt', 'w')
-
-for i,j in enumerate(time_P410s):
-    time_P410s_txt.write(str(list(j))+'\n')
-time_P410s_txt.close()
-
-
-#latitude
-os.makedirs(LAT_PP_DIR,exist_ok=True)
-lat_P410s_txt = open(LAT_PP_DIR+fase+'_lat.txt', 'w')
-
-for i,j in enumerate(lat_P410s):
-    lat_P410s_txt.write(str(list(j))+'\n')
-lat_P410s_txt.close()
-
-
-#longitude
-os.makedirs(LON_PP_DIR,exist_ok=True)
-lon_P410s_txt = open(LON_PP_DIR+fase+'_lon.txt', 'w')
-
-for i,j in enumerate(lon_P410s):
-    lon_P410s_txt.write(str(list(j))+'\n')
-lon_P410s_txt.close()
-
-print("Piercing Points to 660 km estimated!")
-
+print('Piercing Points to '+fase+' km estimated!')

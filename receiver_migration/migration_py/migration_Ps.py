@@ -21,13 +21,12 @@ from matplotlib.ticker import MultipleLocator, FormatStrFormatter
 import json
 
 from parameters_py.mgconfig import (
-					RF_DIR,RF_EXT,PROG_MIGRATION_DIR,MODEL_FILE_NPZ,MIN_DEPTH,MAX_DEPTH,INTER_DEPTH,
-					DIST_T_DIR,DEPTH_T_DIR,TIME_T_DIR,DIST_PP_DIR,DEPTH_PP_DIR,TIME_PP_DIR,LAT_PP_DIR,
-					LON_PP_DIR,PP_SELEC_DIR,DIST_GRID_PP,NUMBER_PP_PER_BIN,RAY_TRACE_PLOT,RAY_TRACE_410_660_PLOT,
+					RF_DIR,RF_EXT,PROG_MIGRATION_DIR,MODEL_FILE_NPZ,MIN_DEPTH,MAX_DEPTH,INTER_DEPTH,PdS_DIR,
+					PP_DIR,PP_SELEC_DIR,NUMBER_PP_PER_BIN,RAY_TRACE_PLOT,RAY_TRACE_410_660_PLOT,
 					LLCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLON_LARGE,URCRNRLAT_LARGE,LLCRNRLON_SMALL,
 					URCRNRLON_SMALL,LLCRNRLAT_SMALL,URCRNRLAT_SMALL,PROJECT_LAT,PROJECT_LON,
 					BOUNDARY_1_SHP,BOUNDARY_1_SHP_NAME,BOUNDARY_2_SHP,BOUNDARY_2_SHP_NAME,					
-					RAY_PATH_FIGURE,PP_FIGURE,EXT_FIG,DPI_FIG
+					RAY_PATH_FIGURE,PP_FIGURE,EXT_FIG,DPI_FIG,DIST_GRID_PP
 				   )
 
 
@@ -97,97 +96,32 @@ camadas_terra_10_km = np.arange(MIN_DEPTH,MAX_DEPTH+INTER_DEPTH,INTER_DEPTH)
 
 # Importing piercing points to P410s
 
-PP_dist_P410s_str = np.genfromtxt(DIST_PP_DIR+'P410s_dist.txt',delimiter='[]',dtype='str')
-PP_dist_P410s = [[]]*len(PP_dist_P410s_str)
-for i,j in enumerate(PP_dist_P410s_str):
-    a = j.split('[')
-    b = a[1].split(']')
-    c = b[0]
-    PP_dist_P410s[i] = [float(l) for l in c.split(',')]
+filename_P410s = PP_DIR+'PP_P410s_dic.json'
+
+PP_P410s_dic = json.load(open(filename_P410s))
 
 
-PP_time_P410s_str = np.genfromtxt(TIME_PP_DIR+'P410s_time.txt',delimiter='[]',dtype='str')
-PP_time_P410s = [[]]*len(PP_time_P410s_str)
-for i,j in enumerate(PP_time_P410s_str):
-    a = j.split('[')
-    b = a[1].split(']')
-    c = b[0]
-    PP_time_P410s[i] = [float(l) for l in c.split(',')]
 
-
-PP_lat_P410s_str = np.genfromtxt(LAT_PP_DIR+'P410s_lat.txt',delimiter='[]',dtype='str')
-PP_lat_P410s = [[]]*len(PP_lat_P410s_str)
-for i,j in enumerate(PP_lat_P410s_str):
-    a = j.split('[')
-    b = a[1].split(']')
-    c = b[0]
-    PP_lat_P410s[i] = [float(l) for l in c.split(',')]
-
-
-PP_lon_P410s_str = np.genfromtxt(LON_PP_DIR+'P410s_lon.txt',delimiter='[]',dtype='str')
-PP_lon_P410s = [[]]*len(PP_lon_P410s_str)
-for i,j in enumerate(PP_lon_P410s_str):
-    a = j.split('[')
-    b = a[1].split(']')
-    c = b[0]
-    PP_lon_P410s[i] = [float(l) for l in c.split(',')]
-
-
-PP_depth_P410s_str = np.genfromtxt(DEPTH_PP_DIR+'P410s_depth.txt',delimiter='[]',dtype='str')
-PP_depth_P410s = [[]]*len(PP_depth_P410s_str)
-for i,j in enumerate(PP_depth_P410s_str):
-    a = j.split('[')
-    b = a[1].split(']')
-    c = b[0]
-    PP_depth_P410s[i] = [float(l) for l in c.split(',')]
+PP_dist_P410s = PP_P410s_dic['dist']
+PP_time_P410s = PP_P410s_dic['time']
+PP_lat_P410s = PP_P410s_dic['lat']
+PP_lon_P410s = PP_P410s_dic['lon']
+PP_depth_P410s = PP_P410s_dic['depth']
 
 
 # Importing piercing points to P660s
 
-PP_dist_P660s_str = np.genfromtxt(DIST_PP_DIR+'P660s_dist.txt',delimiter='[]',dtype='str')
-PP_dist_P660s = [[]]*len(PP_dist_P660s_str)
-for i,j in enumerate(PP_dist_P660s_str):
-    a = j.split('[')
-    b = a[1].split(']')
-    c = b[0]
-    PP_dist_P660s[i] = [float(l) for l in c.split(',')]
+filename_P660s = PP_DIR+'PP_P660s_dic.json'
+
+PP_P660s_dic = json.load(open(filename_P410s))
 
 
-PP_time_P660s_str = np.genfromtxt(TIME_PP_DIR+'P660s_time.txt',delimiter='[]',dtype='str')
-PP_time_P660s = [[]]*len(PP_time_P660s_str)
-for i,j in enumerate(PP_time_P660s_str):
-    a = j.split('[')
-    b = a[1].split(']')
-    c = b[0]
-    PP_time_P660s[i] = [float(l) for l in c.split(',')]
 
-
-PP_lat_P660s_str = np.genfromtxt(LAT_PP_DIR+'P660s_lat.txt',delimiter='[]',dtype='str')
-PP_lat_P660s = [[]]*len(PP_lat_P660s_str)
-for i,j in enumerate(PP_lat_P660s_str):
-    a = j.split('[')
-    b = a[1].split(']')
-    c = b[0]
-    PP_lat_P660s[i] = [float(l) for l in c.split(',')]
-
-
-PP_lon_P660s_str = np.genfromtxt(LON_PP_DIR+'P660s_lon.txt',delimiter='[]',dtype='str')
-PP_lon_P660s = [[]]*len(PP_lon_P660s_str)
-for i,j in enumerate(PP_lon_P660s_str):
-    a = j.split('[')
-    b = a[1].split(']')
-    c = b[0]
-    PP_lon_P660s[i] = [float(l) for l in c.split(',')]
-
-
-PP_depth_P660s_str = np.genfromtxt(DEPTH_PP_DIR+'P660s_depth.txt',delimiter='[]',dtype='str')
-PP_depth_P660s = [[]]*len(PP_depth_P660s_str)
-for i,j in enumerate(PP_depth_P660s_str):
-    a = j.split('[')
-    b = a[1].split(']')
-    c = b[0]
-    PP_depth_P660s[i] = [float(l) for l in c.split(',')]
-
+PP_dist_P660s = PP_P660s_dic['dist']
+PP_time_P660s = PP_P660s_dic['time']
+PP_lat_P660s = PP_P660s_dic['lat']
+PP_lon_P660s = PP_P660s_dic['lon']
+PP_depth_P660s = PP_P660s_dic['depth']
 
 # Ray Trace PLOTS
 
@@ -453,35 +387,18 @@ plt.title('SELECTED BINNED DATA', y=1.08)
 fig_grid_points_filtered.savefig(PP_FIGURE+'SELECTED_BINNED_DATA.'+EXT_FIG,dpi=DPI_FIG)
 
 
-#Importing depths and times to the Ps conversion to each event for all stations
+print('Importing depths and times to the Ps conversion to each event for all stations')
 
-P_depth_str = np.genfromtxt(DEPTH_T_DIR+'Ps_depth.txt',delimiter='[]',dtype='str')
-P_depth = [[]]*len(P_depth_str)
-for i,j in enumerate(P_depth_str):
-    a = j.split('[')
-    b = a[1].split(']')
-    c = b[0]
-    P_depth[i] = [float(l) for l in c.split(',')]
+filename_Pds = PdS_DIR+'Pds_dic.json'
 
+PdS_Dic = json.load(open(filename_Pds))
 
-P_time_str = np.genfromtxt(TIME_T_DIR+'Ps_time.txt',delimiter='[]',dtype='str')
-P_time = [[]]*len(P_time_str)
-for i,j in enumerate(P_time_str):
-    a = j.split('[')
-    b = a[1].split(']')
-    c = b[0]
-    P_time[i] = [float(l) for l in c.split(',')]
+P_dist = PdS_Dic['dist']
+P_time = PdS_Dic['time']
+P_depth = PdS_Dic['depth']
 
 
-P_dist_str = np.genfromtxt(DIST_T_DIR+'Ps_dist_event.txt',delimiter='[]',dtype='str')
-P_dist = [[]]*len(P_dist_str)
-for i,j in enumerate(P_dist_str):
-    a = j.split('[')
-    b = a[1].split(']')
-    c = b[0]
-    P_dist[i] = [float(l) for l in c.split(',')]
-
-# Migrando os dados de tempo para profundidade
+print('Migrating data...')
 
 RF_amplitude_time = [[]]*len(P_depth)
 for i,j in enumerate(P_depth):

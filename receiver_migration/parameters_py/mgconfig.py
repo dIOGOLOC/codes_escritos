@@ -62,17 +62,11 @@ PROG_MIGRATION_DIR = config.get('paths', 'PROG_MIGRATION_DIR')
 #Directory of the model of IASP91 model of 10 km thick
 MODEL_FILE_NPZ = config.get('paths', 'MODEL_FILE_NPZ')
 
-# dir of the time results
-DIST_T_DIR = config.get('paths', 'DIST_T_DIR')
-DEPTH_T_DIR = config.get('paths', 'DEPTH_T_DIR')
-TIME_T_DIR = config.get('paths', 'TIME_T_DIR')
+# dir of the Pds results
+PdS_DIR = config.get('paths', 'PdS_DIR')
 
 # dir of the piercing points results
-DIST_PP_DIR = config.get('paths', 'DIST_PP_DIR')
-DEPTH_PP_DIR = config.get('paths', 'DEPTH_PP_DIR')
-TIME_PP_DIR = config.get('paths', 'TIME_PP_DIR')
-LAT_PP_DIR = config.get('paths', 'LAT_PP_DIR')
-LON_PP_DIR = config.get('paths', 'LON_PP_DIR')
+PP_DIR = config.get('paths', 'PP_DIR')
 
 # dir of Ray Path Figures
 RAY_PATH_FIGURE = config.get('paths', 'RAY_PATH_FIGURE')

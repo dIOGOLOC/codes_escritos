@@ -5,11 +5,15 @@ import obspy
 import os
 from obspy.taup import TauPyModel
 from obspy.geodetics import kilometer2degrees
+import json
 
 from parameters_py.mgconfig import (
-					RF_DIR,RF_EXT,PROG_MIGRATION_DIR,MODEL_FILE_NPZ,MIN_DEPTH,MAX_DEPTH,INTER_DEPTH,
-					DIST_T_DIR,DEPTH_T_DIR,TIME_T_DIR,DIST_PP_DIR,DEPTH_PP_DIR,TIME_PP_DIR,LAT_PP_DIR,
-					LON_PP_DIR
+					RF_DIR,RF_EXT,PROG_MIGRATION_DIR,MODEL_FILE_NPZ,MIN_DEPTH,MAX_DEPTH,INTER_DEPTH,PdS_DIR,
+					PP_DIR,PP_SELEC_DIR,NUMBER_PP_PER_BIN,RAY_TRACE_PLOT,RAY_TRACE_410_660_PLOT,
+					LLCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLON_LARGE,URCRNRLAT_LARGE,LLCRNRLON_SMALL,
+					URCRNRLON_SMALL,LLCRNRLAT_SMALL,URCRNRLAT_SMALL,PROJECT_LAT,PROJECT_LON,
+					BOUNDARY_1_SHP,BOUNDARY_1_SHP_NAME,BOUNDARY_2_SHP,BOUNDARY_2_SHP_NAME,					
+					RAY_PATH_FIGURE,PP_FIGURE,EXT_FIG,DPI_FIG
 				   )
 
 print('Looking for receiver functions files in '+RF_DIR)
@@ -117,26 +121,19 @@ for i,j in enumerate(arrivals):
             dist_event[i] = [l.distance for k,l in enumerate(j)]
 
 
-print('Saving .TXT files')
+#Saving times in JSON file
+print('Saving Pds times in JSON file')
 
-os.makedirs(DIST_T_DIR,exist_ok=True)
-dist_event_txt = open(DIST_T_DIR+'Ps_dist_event.txt', 'w')
+os.makedirs(PdS_DIR,exist_ok=True)
+
+Pds_dic = {'dist':[],'depth':[],'time':[]}
 for i,j in enumerate(dist_event):
-    dist_event_txt.write(str(list(j))+'\n')
-dist_event_txt.close()
+	Pds_dic['dist'].append(j)
+	Pds_dic['depth'].append(depth[i])
+	Pds_dic['time'].append(time[i])
 
-
-os.makedirs(DEPTH_T_DIR,exist_ok=True)
-depth_txt = open(DEPTH_T_DIR+'Ps_depth.txt', 'w')
-for i,j in enumerate(depth):
-    depth_txt.write(str(list(j))+'\n')
-depth_txt.close()
-
-os.makedirs(TIME_T_DIR,exist_ok=True)
-time_txt = open(TIME_T_DIR+'Ps_time.txt', 'w')
-for i,j in enumerate(time):
-    time_txt.write(str(list(j))+'\n')
-time_txt.close()
+with open(PdS_DIR+'Pds_dic.json', 'w') as fp:
+	json.dump(Pds_dic, fp)
 
 print("Pds estimated!")
 

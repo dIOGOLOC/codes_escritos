@@ -21,9 +21,8 @@ import json
 
 
 from parameters_py.mgconfig import (
-					RF_DIR,RF_EXT,PROG_MIGRATION_DIR,MODEL_FILE_NPZ,MIN_DEPTH,MAX_DEPTH,INTER_DEPTH,
-					DIST_T_DIR,DEPTH_T_DIR,TIME_T_DIR,DIST_PP_DIR,DEPTH_PP_DIR,TIME_PP_DIR,LAT_PP_DIR,
-					LON_PP_DIR,PP_SELEC_DIR,DIST_GRID_PP,NUMBER_PP_PER_BIN,RAY_TRACE_PLOT,RAY_TRACE_410_660_PLOT,
+					RF_DIR,RF_EXT,PROG_MIGRATION_DIR,MODEL_FILE_NPZ,MIN_DEPTH,MAX_DEPTH,INTER_DEPTH,PdS_DIR,
+					PP_DIR,PP_SELEC_DIR,NUMBER_PP_PER_BIN,RAY_TRACE_PLOT,RAY_TRACE_410_660_PLOT,
 					LLCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLON_LARGE,URCRNRLAT_LARGE,LLCRNRLON_SMALL,
 					URCRNRLON_SMALL,LLCRNRLAT_SMALL,URCRNRLAT_SMALL,PROJECT_LAT,PROJECT_LON,
 					BOUNDARY_1_SHP,BOUNDARY_1_SHP_NAME,BOUNDARY_2_SHP,BOUNDARY_2_SHP_NAME,					
@@ -167,11 +166,15 @@ fig, (ax1,ax) = plt.subplots(1,2, figsize=(20, 10))
 project_Lat = -5
 project_Lon = -45
 
-m = Basemap(resolution='l',projection='merc',lat_0=project_Lat, lon_0=project_Lon,llcrnrlon=-51.,
-            llcrnrlat=-12.,urcrnrlon=-40.,urcrnrlat=-2,ax=ax)
+project_Lat = PROJECT_LAT
+project_Lon = PROJECT_LON
 
-m.readshapefile('/home/diogo/dados_doutorado/parnaiba_basin/SIG_dados/shapes/bacia_parnaiba/bacia_parnaiba',name='bacia',linewidth=3)
-m.readshapefile('/home/diogo/dados_doutorado/parnaiba_basin/SIG_dados/shapes/Estados/Brasil',name='estados',linewidth=0.7)
+m = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_SMALL,
+            llcrnrlat=LLCRNRLAT_SMALL,urcrnrlon=URCRNRLON_SMALL,urcrnrlat=URCRNRLAT_SMALL)
+
+m.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
+m.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
+
 
 
 xA, yA = m(AB_lon_line[0],AB_lat_line[0])
@@ -237,3 +240,4 @@ for _i, _j in enumerate(RF_data_profile_stacking):
 	ax1.tick_params(labelright=True)
 	ax1.set_ylim(800,300)
 plt.show()
+fig.savefig(PP_FIGURE+'SELECTED_BINNED_DATA_CROSS_SECTION.'+EXT_FIG,dpi=DPI_FIG)

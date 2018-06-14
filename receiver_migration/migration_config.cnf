@@ -50,25 +50,12 @@ PROG_MIGRATION_DIR = /home/diogo/diogo_git/codes_escritos/receiver_migration/
 #Directory of the model of IASP91 model of 10 km thick
 MODEL_FILE_NPZ = /home/diogo/diogo_git/codes_escritos/receiver_migration/velocity_model/iasp91_10.npz
 
-# dir of the time results
-# dir of distance results
-DIST_T_DIR = /home/diogo/diogo_git/codes_escritos/receiver_migration/OUTPUT/Phases/dist_event/
-# dir of depth results
-DEPTH_T_DIR = /home/diogo/diogo_git/codes_escritos/receiver_migration/OUTPUT/Phases/depth/
-# dir of time results
-TIME_T_DIR = /home/diogo/diogo_git/codes_escritos/receiver_migration/OUTPUT/Phases/time/
+# dir of the Pds results
+PdS_DIR = /home/diogo/diogo_git/codes_escritos/receiver_migration/OUTPUT/Phases/
 
 # dir of the piercing points results
-# dir of distance results
-DIST_PP_DIR = /home/diogo/diogo_git/codes_escritos/receiver_migration/OUTPUT/Piercing_points/dist/
-# dir of depth results
-DEPTH_PP_DIR = /home/diogo/diogo_git/codes_escritos/receiver_migration/OUTPUT/Piercing_points/depth/
-# dir of time results
-TIME_PP_DIR = /home/diogo/diogo_git/codes_escritos/receiver_migration/OUTPUT/Piercing_points/time/
-# dir of lat results
-LAT_PP_DIR = /home/diogo/diogo_git/codes_escritos/receiver_migration/OUTPUT/Piercing_points/lat/
-# dir of lon results
-LON_PP_DIR = /home/diogo/diogo_git/codes_escritos/receiver_migration/OUTPUT/Piercing_points/lon/
+PP_DIR = /home/diogo/diogo_git/codes_escritos/receiver_migration/OUTPUT/Piercing_points/
+
 
 # dir of ray path figures
 RAY_PATH_FIGURE = /home/diogo/diogo_git/codes_escritos/receiver_migration/OUTPUT/Figures/ray_path/
@@ -76,7 +63,7 @@ RAY_PATH_FIGURE = /home/diogo/diogo_git/codes_escritos/receiver_migration/OUTPUT
 # dir of piercing points figures
 PP_FIGURE = /home/diogo/diogo_git/codes_escritos/receiver_migration/OUTPUT/Figures/piercing_points/
 
-# dir of selected piercing points txt
+# dir of selected piercing points
 PP_SELEC_DIR = /home/diogo/diogo_git/codes_escritos/receiver_migration/OUTPUT/Piercing_points/selected/
 
 
