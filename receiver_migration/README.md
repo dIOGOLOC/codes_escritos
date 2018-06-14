@@ -21,6 +21,14 @@ How to update
 The code is still experimental so you should regularly check for (and pull) 
 updates.
 
+ToDo list
+-------------
+- Improve the time catcher -->  migration code
+- Improve the coordinates catcher for vertical cross sections --> Cross section code
+- Improve ray path plots --> migration code
+- Create code about depth estimation --> probability with bootstrap code
+
+
 References
 ----------
 

@@ -15,7 +15,7 @@ and converted phase (Ppds) at the discontinuities to simultaneously determine th
 depth of mantle discontinuities and velocity anomalies in the overlying layer. 
 Note that all the parameters are defined in the configuration file.
 """
-from parameters_py import mgconfig
+from parameters_py import mgconfig,get_header_data_RF
 from time_py import time_P_Pds
 from piercing_points_py import piercing_points_P410s,piercing_points_P660s
 import os
@@ -28,7 +28,7 @@ import warnings
 
 from parameters_py.mgconfig import (
 					RF_DIR,RF_EXT,PROG_MIGRATION_DIR,MODEL_FILE_NPZ,MIN_DEPTH,MAX_DEPTH,INTER_DEPTH,PdS_DIR,
-					PP_DIR,PP_SELEC_DIR,NUMBER_PP_PER_BIN,RAY_TRACE_PLOT,RAY_TRACE_410_660_PLOT,
+					PP_DIR,PP_SELEC_DIR,NUMBER_PP_PER_BIN,RAY_TRACE_PLOT,RAY_TRACE_410_660_PLOT,STA_DIR,
 					LLCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLON_LARGE,URCRNRLAT_LARGE,LLCRNRLON_SMALL,
 					URCRNRLON_SMALL,LLCRNRLAT_SMALL,URCRNRLAT_SMALL,PROJECT_LAT,PROJECT_LON,
 					BOUNDARY_1_SHP,BOUNDARY_1_SHP_NAME,BOUNDARY_2_SHP,BOUNDARY_2_SHP_NAME,					

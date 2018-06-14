@@ -62,6 +62,9 @@ PROG_MIGRATION_DIR = config.get('paths', 'PROG_MIGRATION_DIR')
 #Directory of the model of IASP91 model of 10 km thick
 MODEL_FILE_NPZ = config.get('paths', 'MODEL_FILE_NPZ')
 
+# dir of the stations data
+STA_DIR = config.get('paths', 'STA_DIR')
+
 # dir of the Pds results
 PdS_DIR = config.get('paths', 'PdS_DIR')
 

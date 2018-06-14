@@ -22,7 +22,7 @@ import json
 
 from parameters_py.mgconfig import (
 					RF_DIR,RF_EXT,PROG_MIGRATION_DIR,MODEL_FILE_NPZ,MIN_DEPTH,MAX_DEPTH,INTER_DEPTH,PdS_DIR,
-					PP_DIR,PP_SELEC_DIR,NUMBER_PP_PER_BIN,RAY_TRACE_PLOT,RAY_TRACE_410_660_PLOT,
+					PP_DIR,PP_SELEC_DIR,NUMBER_PP_PER_BIN,RAY_TRACE_PLOT,RAY_TRACE_410_660_PLOT,STA_DIR,
 					LLCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLON_LARGE,URCRNRLAT_LARGE,LLCRNRLON_SMALL,
 					URCRNRLON_SMALL,LLCRNRLAT_SMALL,URCRNRLAT_SMALL,PROJECT_LAT,PROJECT_LON,
 					BOUNDARY_1_SHP,BOUNDARY_1_SHP_NAME,BOUNDARY_2_SHP,BOUNDARY_2_SHP_NAME,					
@@ -30,67 +30,23 @@ from parameters_py.mgconfig import (
 				   )
 
 
-print('Looking for receiver functions files in '+RF_DIR)
-ev_list = []
-ev_listS = []
-for root, dirs, files in os.walk(RF_DIR):
-    for datafile in files:
-        if datafile.endswith(RF_EXT):
-            ev_list.append(os.path.join(root, datafile))
-ev_listS = sorted(ev_list)
+print('Looking for receiver functions data in JSON file in '+STA_DIR)
 
+filename_STA = STA_DIR+'sta_dic.json'
 
-ev = obspy.Stream()
-for i,j in enumerate(ev_listS):
-    ev += obspy.read(j)
+sta_dic = json.load(open(filename_STA))
 
-event_DD = []
-event_MM = []
-event_YYYY = []
-event_hh = []
-event_mm = []
-event_julday = []
-event_depth = []
-event_lat = []
-event_long = []
-event_dist = []
-event_gcarc = []
-event_sta = []
-event_channel = []
-event_ray = []
-sta_lat = []
-sta_long = []
-sta_channel = []
-sta_data = []
-sta_time = []
-event_starttime = []
-event_endtime = []
-
-
-for i,j in enumerate(ev):
-    if j.stats.sac.gcarc > 30:
-            event_time = (j.stats.starttime)
-            event_starttime.append(j.stats.starttime)
-            event_endtime.append(j.stats.endtime)
-            event_DD.append("{0:02.0f}".format(event_time.day))
-            event_MM.append("{0:02.0f}".format(event_time.month))
-            event_YYYY.append(event_time.year)
-            event_hh.append("{0:02.0f}".format(event_time.hour))
-            event_mm.append("{0:02.0f}".format(event_time.minute))
-            event_julday.append(event_time.julday)
-            #event_depth.append(j.stats.sac.evdp)
-            event_depth.append(j.stats.sac.evdp/1000) #para os dados sintéticos
-            event_lat.append(j.stats.sac.evla)
-            event_long.append(j.stats.sac.evlo)
-            event_dist.append(j.stats.sac.dist)
-            event_gcarc.append(j.stats.sac.gcarc)
-            event_sta.append(j.stats.station)
-            event_ray.append(j.stats.sac.user8)
-            sta_lat.append(j.stats.sac.stla)
-            sta_long.append(j.stats.sac.stlo)
-            sta_data.append(j.data[100:2700])
-            sta_time.append(j.times()[100:2700]-10)
-
+event_depth = sta_dic['event_depth']
+event_lat = sta_dic['event_lat']
+event_long = sta_dic['event_long']
+event_dist = sta_dic['event_dist']
+event_gcarc = sta_dic['event_gcarc']
+event_sta = sta_dic['event_sta']
+event_ray = sta_dic['event_ray']
+sta_lat = sta_dic['sta_lat']
+sta_long = sta_dic['sta_long']
+sta_data = sta_dic['sta_data']
+sta_time = sta_dic['sta_time']
 
 camadas_terra_10_km = np.arange(MIN_DEPTH,MAX_DEPTH+INTER_DEPTH,INTER_DEPTH)
 

@@ -50,6 +50,10 @@ PROG_MIGRATION_DIR = /home/diogo/diogo_git/codes_escritos/receiver_migration/
 #Directory of the model of IASP91 model of 10 km thick
 MODEL_FILE_NPZ = /home/diogo/diogo_git/codes_escritos/receiver_migration/velocity_model/iasp91_10.npz
 
+# dir of the stations data
+STA_DIR = /home/diogo/diogo_git/codes_escritos/receiver_migration/OUTPUT/Stations/
+
+
 # dir of the Pds results
 PdS_DIR = /home/diogo/diogo_git/codes_escritos/receiver_migration/OUTPUT/Phases/
 
