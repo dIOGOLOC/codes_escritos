@@ -48,6 +48,11 @@ sta_long = sta_dic['sta_long']
 sta_data = sta_dic['sta_data']
 sta_time = sta_dic['sta_time']
 
+sta_lat_set = list(set(sta_lat))
+sta_long_set = list(set(sta_long))
+
+#Creating the earth slices
+
 camadas_terra_10_km = np.arange(MIN_DEPTH,MAX_DEPTH+INTER_DEPTH,INTER_DEPTH)
 
 # Importing piercing points to P410s
@@ -124,7 +129,7 @@ if RAY_TRACE_PLOT == True:
 	ax2.set_xlabel('Longitude')
 
 	ax2.legend(loc=0,edgecolor='w',fancybox=True)
-	ax2.set_xlim(max(sta_long),URCRNRLON_SMALL)
+	ax2.set_xlim(LLCRNRLON_SMALL,URCRNRLON_SMALL)
 
 	os.makedirs(RAY_PATH_FIGURE,exist_ok=True)
 	fig_ray_path.savefig(RAY_PATH_FIGURE+'ray_path.'+EXT_FIG,dpi=DPI_FIG)
@@ -228,7 +233,7 @@ for lon, lat in zip(pp_410_long,pp_410_lat):
     x,y = m(lon, lat)
     msize = 3
     m.plot(x, y, '+',markersize=msize,markeredgecolor='r',markerfacecolor='k')
-    
+
 for lon, lat in zip(pp_660_long,pp_660_lat):
     x,y = m(lon, lat)
     msize = 3
@@ -238,6 +243,13 @@ for lon, lat in zip(grdx,grdy):
     x,y = m(lon, lat)
     msize = 5
     m.plot(x, y, '.',markersize=msize,markeredgecolor='k',markerfacecolor="None")
+
+for lon, lat in zip(sta_long_set,sta_lat_set):
+    x,y = m(lon, lat)
+    msize = 10
+    l1, = m.plot(x, y, '^',markersize=msize,markeredgecolor='k',markerfacecolor='grey')
+
+
 
 m.fillcontinents(color='whitesmoke',lake_color=None)
 m.drawcoastlines(color='dimgray',zorder=10)
@@ -325,7 +337,7 @@ for lon, lat in zip(pp_660_long,pp_660_lat):
     l2, = m.plot(x, y, '+',markersize=msize,markeredgecolor='b',markerfacecolor='k')
     
 
-for lon, lat in zip(sta_long,sta_lat):
+for lon, lat in zip(sta_long_set,sta_lat_set):
     x,y = m(lon, lat)
     msize = 10
     l1, = m.plot(x, y, '^',markersize=msize,markeredgecolor='k',markerfacecolor='grey')
