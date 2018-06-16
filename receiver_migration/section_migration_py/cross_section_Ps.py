@@ -30,7 +30,11 @@ from parameters_py.mgconfig import (
 				   )
 
 
+print('Starting Cross section CODE')
+print('\n')
+
 print('Looking for receiver functions data in JSON file in '+STA_DIR)
+print('\n')
 
 filename_STA = STA_DIR+'sta_dic.json'
 
@@ -48,7 +52,8 @@ sta_long = sta_dic['sta_long']
 sta_data = sta_dic['sta_data']
 sta_time = sta_dic['sta_time']
 
-#importing selected binned data
+print('Importing selected binned data')
+print('\n')
 
 filename = PP_SELEC_DIR+'SELECTED_BINNED.json'
 
@@ -61,10 +66,17 @@ lons = SELECTED_BINNED_DATA_dic['lon']
 RF_number = SELECTED_BINNED_DATA_dic['len']
 RF_stacking = SELECTED_BINNED_DATA_dic['data']
 
-#calculating earth model boundaries
+
+print('Calculating earth model layers')
+print('\n')
+
 camadas_terra_10_km = np.arange(MIN_DEPTH,MAX_DEPTH+INTER_DEPTH,INTER_DEPTH)
 
+print('Plotting Total of Receiver Functions per bin')
+print('\n')
+
 fig_receiver_function_per_bin,ax = plt.subplots(1,1,figsize=(10,5))
+
 project_Lat = PROJECT_LAT
 project_Lon = PROJECT_LON
 
@@ -87,7 +99,7 @@ m.drawcoastlines(color='k',zorder=1)
 m.drawmeridians(np.arange(0, 360, 5),color='lightgrey',labels=[True,True,True,True])
 m.drawparallels(np.arange(-90, 90, 5),color='lightgrey',labels=[True,True,True,True])
 
-plt.title('Choose two points for cross-section and them close the windows', y=1.08)
+plt.title('Pick two points for cross-section and them close the windows', y=1.08)
 
 
 lon_click = []
@@ -113,8 +125,8 @@ cid = fig_receiver_function_per_bin.canvas.mpl_connect('button_press_event', onc
 
 plt.show()
 
-#Insert A-B line coordinates:
-
+print('Calculating cross section coordinates')
+print('\n')
 
 AB_lon_line = lon_click
 AB_lat_line = lat_click
@@ -162,7 +174,8 @@ plt.title('Receiver Functions per bin', y=1.08)
 plt.show()
 
 
-#Calculating the distance between the line and the grid
+print('Calculating the distance between cross section and selected grid')
+print('\n')
 
 RF_data_profile = []
 
@@ -181,7 +194,7 @@ for i,j in enumerate(RF_data_profile):
 
 
 
-# # Figure
+print('Plotting the Final Figure')
 
 #Cross section figure
 
@@ -257,3 +270,5 @@ for _i, _j in enumerate(RF_data_profile_stacking):
 	ax1.set_ylim(MAX_DEPTH,MIN_DEPTH,MAX_DEPTH)
 plt.show()
 fig.savefig(PP_FIGURE+'SELECTED_BINNED_DATA_CROSS_SECTION.'+EXT_FIG,dpi=DPI_FIG)
+
+print('Ending the Cross section CODE')

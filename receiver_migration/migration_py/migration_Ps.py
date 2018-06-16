@@ -24,14 +24,19 @@ from parameters_py.mgconfig import (
 					RF_DIR,RF_EXT,PROG_MIGRATION_DIR,MODEL_FILE_NPZ,MIN_DEPTH,MAX_DEPTH,INTER_DEPTH,PdS_DIR,
 					PP_DIR,PP_SELEC_DIR,NUMBER_PP_PER_BIN,RAY_TRACE_PLOT,RAY_TRACE_410_660_PLOT,STA_DIR,
 					LLCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLON_LARGE,URCRNRLAT_LARGE,LLCRNRLON_SMALL,
-					URCRNRLON_SMALL,LLCRNRLAT_SMALL,URCRNRLAT_SMALL,PROJECT_LAT,PROJECT_LON,
-					BOUNDARY_1_SHP,BOUNDARY_1_SHP_NAME,BOUNDARY_2_SHP,BOUNDARY_2_SHP_NAME,					
+					URCRNRLON_SMALL,LLCRNRLAT_SMALL,URCRNRLAT_SMALL,PROJECT_LAT,PROJECT_LON,PHASES_LST,
+					BOUNDARY_1_SHP,BOUNDARY_1_SHP_NAME,BOUNDARY_2_SHP,BOUNDARY_2_SHP_NAME,DEPTH_1,DEPTH_2,					
 					RAY_PATH_FIGURE,PP_FIGURE,EXT_FIG,DPI_FIG,DIST_GRID_PP
 				   )
 
+print('Starting Receiver Functions migration code')
+print('\n')
+
+
+
 
 print('Looking for receiver functions data in JSON file in '+STA_DIR)
-
+print('\n')
 filename_STA = STA_DIR+'sta_dic.json'
 
 sta_dic = json.load(open(filename_STA))
@@ -48,55 +53,61 @@ sta_long = sta_dic['sta_long']
 sta_data = sta_dic['sta_data']
 sta_time = sta_dic['sta_time']
 
-sta_lat_set = list(set(sta_lat))
-sta_long_set = list(set(sta_long))
-
-#Creating the earth slices
+print('Creating the earth layers')
+print('\n')
 
 camadas_terra_10_km = np.arange(MIN_DEPTH,MAX_DEPTH+INTER_DEPTH,INTER_DEPTH)
 
-# Importing piercing points to P410s
+print('Importing piercing points to each PHASE')
+print('\n')
 
-filename_P410s = PP_DIR+'PP_P410s_dic.json'
+PHASES = PHASES_LST.split(',')
 
-PP_P410s_dic = json.load(open(filename_P410s))
+print('Importing Piercing Points -DEPTH_1')
+print('\n')
 
+filename_1 = PP_DIR+'PP_'+PHASES[0]+'_dic.json'
 
-
-PP_dist_P410s = PP_P410s_dic['dist']
-PP_time_P410s = PP_P410s_dic['time']
-PP_lat_P410s = PP_P410s_dic['lat']
-PP_lon_P410s = PP_P410s_dic['lon']
-PP_depth_P410s = PP_P410s_dic['depth']
-
-
-# Importing piercing points to P660s
-
-filename_P660s = PP_DIR+'PP_P660s_dic.json'
-
-PP_P660s_dic = json.load(open(filename_P410s))
+PP_1_dic = json.load(open(filename_1))
 
 
 
-PP_dist_P660s = PP_P660s_dic['dist']
-PP_time_P660s = PP_P660s_dic['time']
-PP_lat_P660s = PP_P660s_dic['lat']
-PP_lon_P660s = PP_P660s_dic['lon']
-PP_depth_P660s = PP_P660s_dic['depth']
+PP_dist_1 = PP_1_dic['dist']
+PP_time_1 = PP_1_dic['time']
+PP_lat_1 = PP_1_dic['lat']
+PP_lon_1 = PP_1_dic['lon']
+PP_depth_1 = PP_1_dic['depth']
 
-# Ray Trace PLOTS
+
+print('Importing Piercing Points -DEPTH_2')
+print('\n')
+
+filename_2 = PP_DIR+'PP_'+PHASES[1]+'_dic.json'
+
+PP_2_dic = json.load(open(filename_2))
+
+
+
+PP_depth_2 = PP_2_dic['dist']
+PP_time_2 = PP_2_dic['time']
+PP_lat_2 = PP_2_dic['lat']
+PP_lon_2 = PP_2_dic['lon']
+PP_depth_2 = PP_2_dic['depth']
+
+print('Plotting ray paths')
+print('\n')
 
 if RAY_TRACE_PLOT == True:
 	fig_ray_path, (ax1,ax2)= plt.subplots(nrows=1, ncols=2,figsize=(30, 10))
 
 	    
-	for i,j in enumerate(PP_depth_P410s):
-	    ax1.plot(PP_lon_P410s[i],j,'g--',lw=0.5,alpha=0.5)
-	ax1.set_title('Ps 410 km')
+	for i,j in enumerate(PP_depth_1):
+	    ax1.plot(PP_lon_1[i],j,'g--',lw=0.5,alpha=0.5)
+	ax1.set_title(PHASES[0])
 
-	for i,j in enumerate(PP_depth_P660s):
-	    ax2.plot(PP_lon_P660s[i],j,'b--',lw=0.5,alpha=0.5)
-	ax2.set_title('Ps 660 km')
+	for i,j in enumerate(PP_depth_2):
+	    ax2.plot(PP_lon_2[i],j,'b--',lw=0.5,alpha=0.5)
+	ax1.set_title(PHASES[1])
 	    
 	for i,j in enumerate(camadas_terra_10_km):
 	    ax1.hlines(j,LLCRNRLON_SMALL,URCRNRLON_SMALL,lw=0.5,alpha=0.5)
@@ -108,9 +119,8 @@ if RAY_TRACE_PLOT == True:
 
 	    
 	ax1.hlines(0,LLCRNRLON_SMALL,URCRNRLON_SMALL,colors='k',linestyles='solid')
-	ax1.hlines(40,LLCRNRLON_SMALL,URCRNRLON_SMALL,colors='orange',linestyles='dashed',label='Moho')
-	ax1.hlines(410,LLCRNRLON_SMALL,URCRNRLON_SMALL,colors='g',linestyles='dashed',label='410 km')
-	ax1.hlines(660,LLCRNRLON_SMALL,URCRNRLON_SMALL,colors='b',linestyles='dashed',label='660 km')
+	ax1.hlines(DEPTH_1,LLCRNRLON_SMALL,URCRNRLON_SMALL,colors='g',linestyles='dashed',label=str(DEPTH_1)+' km')
+	ax1.hlines(DEPTH_2,LLCRNRLON_SMALL,URCRNRLON_SMALL,colors='b',linestyles='dashed',label=str(DEPTH_2)+' km')
 
 	ax1.set_ylim(1000,-200)
 	ax1.set_ylabel('Depth (km)')
@@ -120,9 +130,8 @@ if RAY_TRACE_PLOT == True:
 	ax1.set_xlim(LLCRNRLON_SMALL,URCRNRLON_SMALL)
 
 	ax2.hlines(0,LLCRNRLON_SMALL,URCRNRLON_SMALL,colors='k',linestyles='solid')
-	ax2.hlines(40,LLCRNRLON_SMALL,URCRNRLON_SMALL,colors='orange',linestyles='dashed',label='Moho')
-	ax2.hlines(410,LLCRNRLON_SMALL,URCRNRLON_SMALL,colors='g',linestyles='dashed',label='410 km')
-	ax2.hlines(660,LLCRNRLON_SMALL,URCRNRLON_SMALL,colors='b',linestyles='dashed',label='660 km')
+	ax2.hlines(DEPTH_1,LLCRNRLON_SMALL,URCRNRLON_SMALL,colors='g',linestyles='dashed',label=str(DEPTH_1)+' km')
+	ax2.hlines(DEPTH_2,LLCRNRLON_SMALL,URCRNRLON_SMALL,colors='b',linestyles='dashed',label=str(DEPTH_2)+' km')
 
 	ax2.set_ylim(1000,-200)
 	ax2.set_ylabel('Depth (km)')
@@ -140,22 +149,21 @@ if RAY_TRACE_410_660_PLOT == True:
 	fig_ray_path_410_660, (ax1,ax2)= plt.subplots(nrows=1, ncols=2,figsize=(30, 10))
 
 	   
-	for i,j in enumerate(PP_depth_P410s):
-	    ax1.plot(PP_time_P410s[i],j,'g--',lw=0.5,alpha=0.5)
-	ax1.set_title('Ps 410 km')
+	for i,j in enumerate(PP_depth_1):
+	    ax1.plot(PP_time_1[i],j,'g--',lw=0.5,alpha=0.5)
+	ax1.set_title(PHASES[0])
 
-	for i,j in enumerate(PP_depth_P660s):
-	    ax2.plot(PP_time_P660s[i],j,'b--',lw=0.5,alpha=0.5)
-	ax2.set_title('Ps 660 km')
+	for i,j in enumerate(PP_depth_2):
+	    ax2.plot(PP_time_2[i],j,'b--',lw=0.5,alpha=0.5)
+	ax2.set_title(PHASES[1])
 	    
 	for i,j in enumerate(camadas_terra_10_km):
 	    ax1.hlines(j,0,1000,lw=0.5,alpha=0.5)
 	    ax2.hlines(j,0,1000,lw=0.5,alpha=0.5)
 
 	ax1.hlines(0,200,850,colors='k',linestyles='solid')
-	ax1.hlines(40,200,850,colors='orange',linestyles='dashed',label='Moho')
-	ax1.hlines(410,200,850,colors='g',linestyles='dashed',label='410 km')
-	ax1.hlines(660,200,850,colors='b',linestyles='dashed',label='660 km')
+	ax1.hlines(DEPTH_1,200,850,colors='g',linestyles='dashed',label=str(DEPTH_1)+' km')
+	ax1.hlines(DEPTH_2,200,850,colors='b',linestyles='dashed',label=str(DEPTH_2)+' km')
 
 	ax1.set_xlim(200,850)
 	ax1.set_ylim(1000,0)
@@ -165,9 +173,8 @@ if RAY_TRACE_410_660_PLOT == True:
 	ax1.legend(loc=0,edgecolor='w',fancybox=True)
 
 	ax2.hlines(0,200,850,colors='k',linestyles='solid')
-	ax2.hlines(40,200,850,colors='orange',linestyles='dashed',label='Moho')
-	ax2.hlines(410,200,850,colors='g',linestyles='dashed',label='410 km')
-	ax2.hlines(660,200,850,colors='b',linestyles='dashed',label='660 km')
+	ax2.hlines(DEPTH_1,200,850,colors='g',linestyles='dashed',label=str(DEPTH_1)+' km')
+	ax2.hlines(DEPTH_2,200,850,colors='b',linestyles='dashed',label=str(DEPTH_2)+' km')
 
 	ax2.set_xlim(200,850)
 	ax2.set_ylim(1000,0)
@@ -176,44 +183,47 @@ if RAY_TRACE_410_660_PLOT == True:
 
 	ax2.legend(loc=0,edgecolor='w',fancybox=True)
 
-	fig_ray_path_410_660.savefig(RAY_PATH_FIGURE+'ray_path_410_660.'+EXT_FIG,dpi=DPI_FIG)
+	fig_ray_path_410_660.savefig(RAY_PATH_FIGURE+'ray_path_'+str(DEPTH_1)+'_'+str(DEPTH_2).'+EXT_FIG,dpi=DPI_FIG)
 else: 
 	pass
 
 
-# Piercing Points -410 km
+print('Piercing Points - '+str(DEPTH_1))
+print('\n')
 
-pp_410_lat  = [[]]*len(PP_lon_P410s)
-pp_410_long  = [[]]*len(PP_lon_P410s)
+pp_1_lat  = [[]]*len(PP_lon_1)
+pp_1_long  = [[]]*len(PP_lon_1)
 
 
-for i,j in enumerate(PP_lon_P410s):
+for i,j in enumerate(PP_lon_1):
     for k,l in enumerate(j):
-        if LLCRNRLON_SMALL<= l <= URCRNRLON_SMALL and PP_depth_P410s[i][k] == 410:
-                pp_410_lat[i] = PP_lat_P410s[i][k] 
-                pp_410_long[i] = l
+        if LLCRNRLON_SMALL<= l <= URCRNRLON_SMALL and PP_depth_1[i][k] == DEPTH_1:
+                pp_1_lat[i] = PP_lat_1[i][k] 
+                pp_1_long[i] = l
 
 
-# Piercing Points -660 km
-
-pp_660_lat  = [[]]*len(PP_lon_P660s)
-pp_660_long  = [[]]*len(PP_lon_P660s)
+print('Piercing Points - '+str(DEPTH_2))
+print('\n')
 
 
-for i,j in enumerate(PP_lon_P660s):
+pp_2_lat  = [[]]*len(PP_lon_2)
+pp_2_long  = [[]]*len(PP_lon_2)
+
+
+for i,j in enumerate(PP_lon_2):
     for k,l in enumerate(j):
-        if LLCRNRLON_SMALL <= l <= URCRNRLON_SMALL and PP_depth_P660s[i][k] == 660:
-                pp_660_lat[i] = PP_lat_P660s[i][k] 
-                pp_660_long[i] = l
+        if LLCRNRLON_SMALL <= l <= URCRNRLON_SMALL and PP_depth_2[i][k] == DEPTH_2:
+                pp_2_lat[i] = PP_lat_2[i][k] 
+                pp_2_long[i] = l
 
 
 print('Creating GRID POINTS')
+print('\n')
 
 area = (LLCRNRLON_SMALL,URCRNRLON_SMALL, LLCRNRLAT_SMALL, URCRNRLAT_SMALL)
 
 shape = (abs(abs(URCRNRLON_SMALL) - abs(LLCRNRLON_SMALL))*3, abs(abs(URCRNRLAT_SMALL) - abs(LLCRNRLAT_SMALL))*3)
 
-# First, we need to know the real data at the grid points
 grdx, grdy = gridder.regular(area, shape)
 
 fig_grid_points=plt.figure(figsize=(20,10))
@@ -229,12 +239,12 @@ for lon, lat in zip(sta_long,sta_lat):
     m.plot(x, y, '^',markersize=msize,markeredgecolor='k',markerfacecolor='grey')
 
     
-for lon, lat in zip(pp_410_long,pp_410_lat):
+for lon, lat in zip(pp_1_long,pp_1_lat):
     x,y = m(lon, lat)
     msize = 3
     m.plot(x, y, '+',markersize=msize,markeredgecolor='r',markerfacecolor='k')
 
-for lon, lat in zip(pp_660_long,pp_660_lat):
+for lon, lat in zip(pp_2_long,pp_2_lat):
     x,y = m(lon, lat)
     msize = 3
     m.plot(x, y, '+',markersize=msize,markeredgecolor='b',markerfacecolor='k')
@@ -244,7 +254,7 @@ for lon, lat in zip(grdx,grdy):
     msize = 5
     m.plot(x, y, '.',markersize=msize,markeredgecolor='k',markerfacecolor="None")
 
-for lon, lat in zip(sta_long_set,sta_lat_set):
+for lon, lat in zip(sta_long,sta_lat):
     x,y = m(lon, lat)
     msize = 10
     l1, = m.plot(x, y, '^',markersize=msize,markeredgecolor='k',markerfacecolor='grey')
@@ -261,16 +271,17 @@ os.makedirs(PP_FIGURE,exist_ok=True)
 fig_grid_points.savefig(PP_FIGURE+'BINNED_DATA.'+EXT_FIG,dpi=DPI_FIG)
 
 
-# Filtering grid points
+print('Filtering grid points')
+print('\n')
 
 
 dist_pp_grid_min = [[]]*len(grdx)
 for i,j in enumerate(grdx):
-    dist_pp_grid_min[i] = [np.sqrt((j - pp_410_long[k])**2 + (grdy[i] - l)**2) for k,l in enumerate(pp_410_lat)]
+    dist_pp_grid_min[i] = [np.sqrt((j - pp_1_long[k])**2 + (grdy[i] - l)**2) for k,l in enumerate(pp_1_lat)]
     
 dist_pp_grid_max = [[]]*len(grdx)
 for i,j in enumerate(grdx):
-    dist_pp_grid_max[i] = [np.sqrt((j - pp_660_long[k])**2 + (grdy[i] - l)**2) for k,l in enumerate(pp_660_lat)]
+    dist_pp_grid_max[i] = [np.sqrt((j - pp_2_long[k])**2 + (grdy[i] - l)**2) for k,l in enumerate(pp_2_lat)]
 
 
 
@@ -326,18 +337,18 @@ for lon, lat in zip(grid_sel_x, grid_sel_y):
     msize = 4
     l4, = m.plot(x, y, 'o',markersize=msize,markeredgecolor='k',markerfacecolor="None")
     
-for lon, lat in zip(pp_410_long,pp_410_lat):
+for lon, lat in zip(pp_1_long,pp_1_lat):
     x,y = m(lon, lat)
     msize = 3
     l3, = m.plot(x, y, '+',markersize=msize,markeredgecolor='r',markerfacecolor='k')
     
-for lon, lat in zip(pp_660_long,pp_660_lat):
+for lon, lat in zip(pp_2_long,pp_2_lat):
     x,y = m(lon, lat)
     msize = 3
     l2, = m.plot(x, y, '+',markersize=msize,markeredgecolor='b',markerfacecolor='k')
     
 
-for lon, lat in zip(sta_long_set,sta_lat_set):
+for lon, lat in zip(sta_long,sta_lat):
     x,y = m(lon, lat)
     msize = 10
     l1, = m.plot(x, y, '^',markersize=msize,markeredgecolor='k',markerfacecolor='grey')
@@ -347,8 +358,7 @@ m.drawcoastlines(color='dimgray',zorder=10)
 m.drawmeridians(np.arange(0, 360, 5),color='lightgrey',labels=[True,True,True,True])
 m.drawparallels(np.arange(-90, 90, 5),color='lightgrey',labels=[True,True,True,True])
 
-        
-label=['Stations','Piercing Points 410','Piercing Points 660','Filtered Grid Points','Grid Points']
+label=['Stations','Piercing Points '+str(DEPTH_1),'Piercing Points '+str(DEPTH_2),'Filtered Grid Points','Grid Points']
 plt.legend([l1,l2,l3,l4,l5],label,scatterpoints=1, frameon=True,labelspacing=1, loc='lower right',facecolor='w')
 
 plt.title('SELECTED BINNED DATA', y=1.08)
@@ -356,6 +366,7 @@ fig_grid_points_filtered.savefig(PP_FIGURE+'SELECTED_BINNED_DATA.'+EXT_FIG,dpi=D
 
 
 print('Importing depths and times to the Ps conversion to each event for all stations')
+print('\n')
 
 filename_Pds = PdS_DIR+'Pds_dic.json'
 
@@ -367,6 +378,7 @@ P_depth = PdS_Dic['depth']
 
 
 print('Migrating data...')
+print('\n')
 
 RF_amplitude_time = [[]]*len(P_depth)
 for i,j in enumerate(P_depth):
@@ -396,11 +408,12 @@ for i,j in enumerate(RF_amplitude_time):
     RF_amplitude[i] = [sta_data[i][sta_t.index(l)] if l != -1 else 0 for k,l in enumerate(RF_t)]
 
 
-# Data stacking in each point of the filtered grid
+print('Data stacking in each point of the filtered grid')
+print('\n')
 
 dist_between_grid_piercing_points = DIST_GRID_PP
-dados_grid_lat = pp_410_lat
-dados_grid_lon = pp_410_long
+dados_grid_lat = pp_1_lat
+dados_grid_lon = pp_1_long
 
 
 RF_data_raw = [[]]*len(grid_sel_x)
@@ -457,7 +470,8 @@ plt.legend([l1,sc],['Stations','Filtered Grid Points'],scatterpoints=1, frameon=
 plt.title('Receiver Functions per bin', y=1.08)
 fig_receiver_function_per_bin.savefig(PP_FIGURE+'RECEIVER_FUNCTION_PER_BIN.'+EXT_FIG,dpi=DPI_FIG)
 
-#Saving Selected Piercing Points in JSON file
+print('Saving Selected Piercing Points in JSON file')
+print('\n')
 
 os.makedirs(PP_SELEC_DIR,exist_ok=True)
 

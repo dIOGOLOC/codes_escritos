@@ -23,9 +23,9 @@ updates.
 
 ToDo list
 -------------
-- Improve the time catcher -->  migration code
-- Create code about depth estimation --> probability with bootstrap code
-
+- Create code about depth estimation --> bootstrap code
+- Create another type of stacking --> phase-weight
+- Improve plots parameters
 
 References
 ----------

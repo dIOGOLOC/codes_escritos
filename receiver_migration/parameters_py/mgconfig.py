@@ -128,6 +128,16 @@ MAX_DEPTH = config.getint('time', 'MAX_DEPTH')
 INTER_DEPTH = config.getint('time', 'INTER_DEPTH')
 
 # ---------------
+# piercings
+# ---------------
+#phase list to calculate piercing points
+PHASES_LST = config.get('piercings', 'PHASES_LST')
+
+#depth list to calculate piercing points
+DEPTH_1 = config.getfloat('piercings', 'DEPTH_1')
+DEPTH_2 = config.getfloat('piercings', 'DEPTH_2')
+
+# ---------------
 # migration
 # ---------------
 

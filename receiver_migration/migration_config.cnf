@@ -130,6 +130,16 @@ MAX_DEPTH = 800
 #depth interval of the migration
 INTER_DEPTH = 10
 
+#==================
+[piercings]
+#==================
+#phase list to calculate piercing points
+PHASES_LST = P410s,P660s
+
+#depth list to calculate piercing points
+DEPTH_1 = 410
+DEPTH_2 = 660
+
 # ==========
 [migration]
 # ==========
