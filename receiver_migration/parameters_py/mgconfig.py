@@ -133,6 +133,8 @@ INTER_DEPTH = config.getint('time', 'INTER_DEPTH')
 #phase list to calculate piercing points
 PHASES_LST = config.get('piercings', 'PHASES_LST')
 
+PHASES_PPvs_LST = config.get('piercings', 'PHASES_PPvs_LST')
+
 #depth list to calculate piercing points
 DEPTH_1 = config.getfloat('piercings', 'DEPTH_1')
 DEPTH_2 = config.getfloat('piercings', 'DEPTH_2')

@@ -39,7 +39,7 @@
 #/home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/transition_zone/rede_BB/event_data_PP_selected/a_05/
 
 # dir of receiver functions
-RF_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/transition_zone/rede_BB/event_data_PP_selected/a_05
+RF_DIR = #/home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/transition_zone/syngine_filtered_PP/a_05
 # extension of receiver functions
 RF_EXT = .eqr
 
@@ -133,8 +133,11 @@ INTER_DEPTH = 10
 #==================
 [piercings]
 #==================
-#phase list to calculate piercing points
+#phase conversion list to calculate piercing points
 PHASES_LST = P410s,P660s
+
+#phase reverberation list to calculate piercing points
+PHASES_PPvs_LST = PPv410s,PPv660s
 
 #depth list to calculate piercing points
 DEPTH_1 = 410

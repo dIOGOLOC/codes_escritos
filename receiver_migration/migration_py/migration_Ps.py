@@ -26,7 +26,7 @@ from parameters_py.mgconfig import (
 					LLCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLON_LARGE,URCRNRLAT_LARGE,LLCRNRLON_SMALL,
 					URCRNRLON_SMALL,LLCRNRLAT_SMALL,URCRNRLAT_SMALL,PROJECT_LAT,PROJECT_LON,PHASES_LST,
 					BOUNDARY_1_SHP,BOUNDARY_1_SHP_NAME,BOUNDARY_2_SHP,BOUNDARY_2_SHP_NAME,DEPTH_1,DEPTH_2,					
-					RAY_PATH_FIGURE,PP_FIGURE,EXT_FIG,DPI_FIG,DIST_GRID_PP
+					RAY_PATH_FIGURE,PP_FIGURE,EXT_FIG,DPI_FIG,DIST_GRID_PP,PHASES_PPvs_LST
 				   )
 
 print('Starting Receiver Functions migration code')
@@ -63,7 +63,7 @@ print('\n')
 
 PHASES = PHASES_LST.split(',')
 
-print('Importing Piercing Points -DEPTH_1')
+print('Importing Piercing Points '+PHASES[0])
 print('\n')
 
 filename_1 = PP_DIR+'PP_'+PHASES[0]+'_dic.json'
@@ -79,7 +79,7 @@ PP_lon_1 = PP_1_dic['lon']
 PP_depth_1 = PP_1_dic['depth']
 
 
-print('Importing Piercing Points -DEPTH_2')
+print('Importing Piercing Points '+PHASES[1])
 print('\n')
 
 filename_2 = PP_DIR+'PP_'+PHASES[1]+'_dic.json'
@@ -183,7 +183,7 @@ if RAY_TRACE_410_660_PLOT == True:
 
 	ax2.legend(loc=0,edgecolor='w',fancybox=True)
 
-	fig_ray_path_410_660.savefig(RAY_PATH_FIGURE+'ray_path_'+str(DEPTH_1)+'_'+str(DEPTH_2).'+EXT_FIG,dpi=DPI_FIG)
+	fig_ray_path_410_660.savefig(RAY_PATH_FIGURE+'ray_path_'+str(DEPTH_1)+'_'+str(DEPTH_2)+'.'+EXT_FIG,dpi=DPI_FIG)
 else: 
 	pass
 
@@ -482,5 +482,5 @@ for i,j in enumerate(RF_stacking):
 	SELECTED_BINNED_DATA_dic['len'].append(len_RF_stacking[i])
 	SELECTED_BINNED_DATA_dic['data'].append(j)
 
-with open(PP_SELEC_DIR+'SELECTED_BINNED.json', 'w') as fp:
+with open(PP_SELEC_DIR+'SELECTED_BINNED_Ps.json', 'w') as fp:
 	json.dump(SELECTED_BINNED_DATA_dic, fp)

@@ -16,7 +16,7 @@ depth of mantle discontinuities and velocity anomalies in the overlying layer.
 Note that all the parameters are defined in the configuration file.
 """
 from parameters_py import mgconfig
-from migration_py import migration_Ps
+from migration_py import migration_PPvs
 import os
 import sys
 import warnings

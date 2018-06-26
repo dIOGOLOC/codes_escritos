@@ -73,7 +73,7 @@ time = [[]]*len(arrivals)
 
 for i,j in enumerate(arrivals):
             time[i] = [l.time - arrivalsP[i][0].time for k,l in enumerate(j)]
-            depth[i] = [float(l.name[1:-1]) for k,l in enumerate(j)]
+            depth[i] = [float(l.name[3:-1]) for k,l in enumerate(j)]
             dist_event[i] = [l.distance for k,l in enumerate(j)]
 
 

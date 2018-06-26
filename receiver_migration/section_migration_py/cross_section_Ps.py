@@ -55,7 +55,7 @@ sta_time = sta_dic['sta_time']
 print('Importing selected binned data')
 print('\n')
 
-filename = PP_SELEC_DIR+'SELECTED_BINNED.json'
+filename = PP_SELEC_DIR+'SELECTED_BINNED_Ps.json'
 
 SELECTED_BINNED_DATA_dic = json.load(open(filename))
 
@@ -269,6 +269,6 @@ for _i, _j in enumerate(RF_data_profile_stacking):
 	ax1.tick_params(labelright=True)
 	ax1.set_ylim(MAX_DEPTH,MIN_DEPTH,MAX_DEPTH)
 plt.show()
-fig.savefig(PP_FIGURE+'SELECTED_BINNED_DATA_CROSS_SECTION.'+EXT_FIG,dpi=DPI_FIG)
+fig.savefig(PP_FIGURE+'SELECTED_BINNED_DATA_CROSS_SECTION_Ps.'+EXT_FIG,dpi=DPI_FIG)
 
 print('Ending the Cross section CODE')
