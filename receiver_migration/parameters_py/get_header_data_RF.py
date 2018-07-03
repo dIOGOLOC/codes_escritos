@@ -6,6 +6,7 @@ import os
 from obspy.taup import TauPyModel
 from obspy.geodetics import kilometer2degrees
 import json
+from scipy.signal import triang
 
 from parameters_py.mgconfig import (
 					RF_DIR,RF_EXT,PROG_MIGRATION_DIR,MODEL_FILE_NPZ,MIN_DEPTH,MAX_DEPTH,INTER_DEPTH,PdS_DIR,
@@ -13,7 +14,7 @@ from parameters_py.mgconfig import (
 					LLCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLON_LARGE,URCRNRLAT_LARGE,LLCRNRLON_SMALL,
 					URCRNRLON_SMALL,LLCRNRLAT_SMALL,URCRNRLAT_SMALL,PROJECT_LAT,PROJECT_LON,
 					BOUNDARY_1_SHP,BOUNDARY_1_SHP_NAME,BOUNDARY_2_SHP,BOUNDARY_2_SHP_NAME,					
-					RAY_PATH_FIGURE,PP_FIGURE,EXT_FIG,DPI_FIG
+					RAY_PATH_FIGURE,PP_FIGURE,EXT_FIG,DPI_FIG,WINDOWED_STACKING
 				   )
 
 print('Looking for receiver functions files in '+RF_DIR)
@@ -49,8 +50,11 @@ sta_dic = {
 
 for i,j in enumerate(ev):
 	if j.stats.sac.gcarc > 30:
-		sta_dic['event_depth'].append(float(j.stats.sac.evdp))
-		#sta_dic['event_depth'].append(float(j.stats.sac.evdp/1000)) #para os dados sintéticos
+		#check if the event depth is in km 
+		if j.stats.sac.evdp > 1000:
+			sta_dic['event_depth'].append(float(j.stats.sac.evdp/1000))
+		else:
+			sta_dic['event_depth'].append(float(j.stats.sac.evdp))
 		sta_dic['event_lat'].append(float(j.stats.sac.evla))
 		sta_dic['event_long'].append(float(j.stats.sac.evlo))
 		sta_dic['event_dist'].append(float(j.stats.sac.dist))

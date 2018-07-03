@@ -142,8 +142,20 @@ DEPTH_2 = config.getfloat('piercings', 'DEPTH_2')
 # ---------------
 # migration
 # ---------------
+DIST_GRID_PP = config.getfloat('migration', 'DIST_GRID_PP') 
+DIST_GRID_PP_MED = config.getfloat('migration', 'DIST_GRID_PP_MED') 
 
-DIST_GRID_PP = config.getfloat('migration', 'DIST_GRID_PP')           
+# number of piercing points per bin 
 NUMBER_PP_PER_BIN = config.getint('migration', 'NUMBER_PP_PER_BIN')  
+
+# True or false to plot RAY TRACE 
 RAY_TRACE_PLOT = config.getboolean('migration', 'RAY_TRACE_PLOT')  
+
+#False or True for Linear stacking
+LINEAR_STACKING = config.getboolean('migration', 'LINEAR_STACKING')  
+
+#False or True for depth estimation
+DEPTH_ESTIMATION = config.getboolean('migration', 'DEPTH_ESTIMATION')  
+
+#False or True for plotting Ray Trace 410 and 660
 RAY_TRACE_410_660_PLOT = config.getboolean('migration', 'RAY_TRACE_410_660_PLOT')  

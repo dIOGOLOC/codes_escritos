@@ -15,7 +15,8 @@ from parameters_py.mgconfig import (
 					URCRNRLON_SMALL,LLCRNRLAT_SMALL,URCRNRLAT_SMALL,PROJECT_LAT,PROJECT_LON,
 					BOUNDARY_1_SHP,BOUNDARY_1_SHP_NAME,BOUNDARY_2_SHP,BOUNDARY_2_SHP_NAME,					
 					RAY_PATH_FIGURE,PP_FIGURE,EXT_FIG,DPI_FIG
-print('\n')				   )
+				   )
+print('\n')
 print('Looking for receiver functions data in JSON file in '+STA_DIR)
 print('\n')
 

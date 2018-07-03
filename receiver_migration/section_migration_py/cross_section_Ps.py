@@ -24,9 +24,9 @@ from parameters_py.mgconfig import (
 					RF_DIR,RF_EXT,PROG_MIGRATION_DIR,MODEL_FILE_NPZ,MIN_DEPTH,MAX_DEPTH,INTER_DEPTH,PdS_DIR,
 					PP_DIR,PP_SELEC_DIR,NUMBER_PP_PER_BIN,RAY_TRACE_PLOT,RAY_TRACE_410_660_PLOT,STA_DIR,
 					LLCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLON_LARGE,URCRNRLAT_LARGE,LLCRNRLON_SMALL,
-					URCRNRLON_SMALL,LLCRNRLAT_SMALL,URCRNRLAT_SMALL,PROJECT_LAT,PROJECT_LON,
-					BOUNDARY_1_SHP,BOUNDARY_1_SHP_NAME,BOUNDARY_2_SHP,BOUNDARY_2_SHP_NAME,					
-					RAY_PATH_FIGURE,PP_FIGURE,EXT_FIG,DPI_FIG,DIST_GRID_PP
+					URCRNRLON_SMALL,LLCRNRLAT_SMALL,URCRNRLAT_SMALL,PROJECT_LAT,PROJECT_LON,PHASES_LST,
+					BOUNDARY_1_SHP,BOUNDARY_1_SHP_NAME,BOUNDARY_2_SHP,BOUNDARY_2_SHP_NAME,DEPTH_1,DEPTH_2,					
+					RAY_PATH_FIGURE,PP_FIGURE,EXT_FIG,DPI_FIG,DIST_GRID_PP_MED,PHASES_PPvs_LST,DIST_GRID_PP
 				   )
 
 
@@ -65,7 +65,10 @@ lats = SELECTED_BINNED_DATA_dic['lat']
 lons = SELECTED_BINNED_DATA_dic['lon']
 RF_number = SELECTED_BINNED_DATA_dic['len']
 RF_stacking = SELECTED_BINNED_DATA_dic['data']
-
+RF_DEPTH_mean_1 = SELECTED_BINNED_DATA_dic['mean_1']
+RF_DEPTH_std_1 = SELECTED_BINNED_DATA_dic['std_1']
+RF_DEPTH_mean_2 = SELECTED_BINNED_DATA_dic['mean_2']
+RF_DEPTH_std_2 = SELECTED_BINNED_DATA_dic['std_2']
 
 print('Calculating earth model layers')
 print('\n')
@@ -178,19 +181,33 @@ print('Calculating the distance between cross section and selected grid')
 print('\n')
 
 RF_data_profile = []
+RF_DEPTH_mean_1_profile = []
+RF_DEPTH_std_1_profile = []
+RF_DEPTH_mean_2_profile = []
+RF_DEPTH_std_2_profile = []
 
 for i,j in enumerate(AB_lon):
 	dist = [np.sqrt((j - lons[k])**2 + (AB_lat[i] - l)**2)  for k,l in enumerate(lats)]
 	RF_data_profile.append(RF_stacking[dist.index(min(dist))])
-
+	RF_DEPTH_mean_1_profile.append(RF_DEPTH_mean_1[dist.index(min(dist))])
+	RF_DEPTH_std_1_profile.append(RF_DEPTH_std_1[dist.index(min(dist))])
+	RF_DEPTH_mean_2_profile.append(RF_DEPTH_mean_2[dist.index(min(dist))])
+	RF_DEPTH_std_2_profile.append(RF_DEPTH_std_2[dist.index(min(dist))])
 
 RF_data_profile_stacking = []
-for i,j in enumerate(RF_data_profile):
-    if len(j) > 10:
-        RF_data_profile_stacking.append(j)
+RF_DEPTH_mean_1_profile_stacking = []
+RF_DEPTH_std_1_profile_stacking = []
+RF_DEPTH_mean_2_profile_stacking = []
+RF_DEPTH_std_2_profile_stacking = []
 
-    #else:
-        #RF_data_profile_stacking.append(np.zeros_like(camadas_terra_10_km))
+for i,j in enumerate(RF_data_profile):
+	if len(j) > NUMBER_PP_PER_BIN:
+		RF_data_profile_stacking.append(j)
+		RF_DEPTH_mean_1_profile_stacking.append(RF_DEPTH_mean_1_profile[i])
+		RF_DEPTH_std_1_profile_stacking.append(RF_DEPTH_std_1_profile[i])
+		RF_DEPTH_mean_2_profile_stacking.append(RF_DEPTH_mean_2_profile[i])
+		RF_DEPTH_std_2_profile_stacking.append(RF_DEPTH_std_2_profile[i])
+
 
 
 
@@ -258,10 +275,16 @@ for _i, _j in enumerate(RF_data_profile_stacking):
 	ax1.grid(True,which='minor',linestyle='--')
 	ax1.grid(True,which='major',color='k',linewidth=1)
 
+	ax1.plot(_i/factor,RF_DEPTH_mean_1_profile_stacking[_i],'_k',markeredgewidth=3,ms=10)
+	ax1.plot(_i/factor,RF_DEPTH_mean_2_profile_stacking[_i],'_k',markeredgewidth=3,ms=10)
+
+	ax1.errorbar(_i/factor,RF_DEPTH_mean_1_profile_stacking[_i], yerr=RF_DEPTH_std_1_profile_stacking[_i], ecolor='k',elinewidth=2,capsize=2,capthick=2)
+	ax1.errorbar(_i/factor,RF_DEPTH_mean_2_profile_stacking[_i], yerr=RF_DEPTH_std_2_profile_stacking[_i], ecolor='k',elinewidth=2,capsize=2,capthick=2)
+
 	ax1.yaxis.set_ticks_position('both')
 
-	ax1.fill_betweenx(camadas_terra_10_km,RF_data_factor,_i/factor,where=np.array(RF_data_factor)>=_i/factor, facecolor='black',alpha=0.8, interpolate=True)
-	ax1.fill_betweenx(camadas_terra_10_km,RF_data_factor,_i/factor,where=np.array(RF_data_factor)<=_i/factor, facecolor='gray',alpha=0.6, interpolate=True)
+	ax1.fill_betweenx(camadas_terra_10_km,RF_data_factor,_i/factor,where=np.array(RF_data_factor)>=_i/factor, facecolor='black',alpha=0.5, interpolate=True)
+	ax1.fill_betweenx(camadas_terra_10_km,RF_data_factor,_i/factor,where=np.array(RF_data_factor)<=_i/factor, facecolor='gray',alpha=0.5, interpolate=True)
 	ax1.set_title('Receiver Function - a = 0.5')
 	ax1.set_xticks([])
 	ax1.set_ylabel('Depth (km)')

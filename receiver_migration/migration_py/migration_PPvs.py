@@ -19,6 +19,7 @@ import scipy.io
 import matplotlib.cm as cm
 from matplotlib.ticker import MultipleLocator, FormatStrFormatter
 import json
+from scipy.signal import triang
 
 from parameters_py.mgconfig import (
 					RF_DIR,RF_EXT,PROG_MIGRATION_DIR,MODEL_FILE_NPZ,MIN_DEPTH,MAX_DEPTH,INTER_DEPTH,PdS_DIR,
@@ -26,8 +27,10 @@ from parameters_py.mgconfig import (
 					LLCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLON_LARGE,URCRNRLAT_LARGE,LLCRNRLON_SMALL,
 					URCRNRLON_SMALL,LLCRNRLAT_SMALL,URCRNRLAT_SMALL,PROJECT_LAT,PROJECT_LON,PHASES_LST,
 					BOUNDARY_1_SHP,BOUNDARY_1_SHP_NAME,BOUNDARY_2_SHP,BOUNDARY_2_SHP_NAME,DEPTH_1,DEPTH_2,					
-					RAY_PATH_FIGURE,PP_FIGURE,EXT_FIG,DPI_FIG,DIST_GRID_PP,PHASES_PPvs_LST
+					RAY_PATH_FIGURE,PP_FIGURE,EXT_FIG,DPI_FIG,DIST_GRID_PP_MED,PHASES_PPvs_LST,DIST_GRID_PP,
+					LINEAR_STACKING,DEPTH_ESTIMATION
 				   )
+
 
 print('Starting Receiver Functions migration code')
 print('\n')
@@ -379,28 +382,16 @@ P_depth = PdS_Dic['depth']
 print('Migrating data...')
 print('\n')
 
-'''RF_amplitude_time = [[]]*len(P_depth)
-for i,j in enumerate(P_depth):
-    sta_t = j
-    RF_t = camadas_terra_10_km
-    RF_amplitude_time[i] = [P_time[i][sta_t.index(l)] for k,l in enumerate(RF_t)]
-
-
-RF_amplitude = []
-for i,j in enumerate(RF_amplitude_time):
-    sta_t = [round(l,1) for k,l in enumerate(sta_time[i])]
-    RF_t = [round(l,1) for k,l in enumerate(j)]
-    RF_amplitude.append([sta_data[i][sta_t.index(l)] for k,l in enumerate(RF_t)])'''
-
-
 RF_amplitude_time = [[]]*len(P_depth)
+RF_amplitude_depth = [[]]*len(P_depth)
 for i,j in enumerate(P_depth):
     sta_t = j
     RF_t = camadas_terra_10_km
     RF_amplitude_time[i] = [P_time[i][sta_t.index(l)] if l in sta_t else -1 for k,l in enumerate(RF_t)]
-
+    RF_amplitude_depth[i] = [sta_t[sta_t.index(l)] for k,l in enumerate(RF_t) if l in sta_t]
 
 RF_amplitude = [[]]*len(RF_amplitude_time)
+
 for i,j in enumerate(RF_amplitude_time):
     sta_t = [round(l,1) for k,l in enumerate(sta_time[i])]
     RF_t = [round(l,1) for k,l in enumerate(j)]
@@ -410,30 +401,72 @@ for i,j in enumerate(RF_amplitude_time):
 print('Data stacking in each point of the filtered grid')
 print('\n')
 
-dist_between_grid_piercing_points = DIST_GRID_PP
 dados_grid_lat = pp_1_lat
 dados_grid_lon = pp_1_long
 
+if LINEAR_STACKING == True: 
+	RF_data_raw = [[]]*len(grid_sel_x)
+	RF_amplitude_depth_raw = [[]]*len(grid_sel_x)
+	for i,j in enumerate(grid_sel_x):
+		RF_data_raw[i] = [RF_amplitude[k]  for k,l in enumerate(dados_grid_lat) if np.sqrt((j - dados_grid_lon[k])**2 + (grid_sel_y[i] - l)**2) < DIST_GRID_PP_MED]
+		RF_amplitude_depth_raw[i] = [RF_amplitude_depth[k]  for k,l in enumerate(dados_grid_lat) if np.sqrt((j - dados_grid_lon[k])**2 + (grid_sel_y[i] - l)**2) < DIST_GRID_PP_MED]
+	
+	if DEPTH_ESTIMATION == True: 
+		print('Depth mean and std estimation in each point of the filtered grid')
+		print('\n')
 
-RF_data_raw = [[]]*len(grid_sel_x)
-RF_RAY_raw = [[]]*len(grid_sel_x)
+		RF_DEPTH_raw_1 = [[]]*len(RF_data_raw)
+		for i,j in enumerate(RF_data_raw):
+			lst_DEPTH_raw = []
+			for k,l in enumerate(j):
+				lst_depth_amp = [l[x] for x,c in enumerate(RF_amplitude_depth_raw[i][k]) if DEPTH_1-50 < c < DEPTH_1+50]
+				lst_depth_pp = [c for x,c in enumerate(RF_amplitude_depth_raw[i][k]) if DEPTH_1-50 < c < DEPTH_1+50]
+				lst_DEPTH_raw.append(lst_depth_pp[lst_depth_amp.index(max(lst_depth_amp))])
+			RF_DEPTH_raw_1[i] = lst_DEPTH_raw
+			
+		RF_DEPTH_mean_1 = []
+		RF_DEPTH_std_1 = []
+		for i,j in enumerate(RF_DEPTH_raw_1):
+			if len(j) > NUMBER_PP_PER_BIN:
+				RF_DEPTH_mean_1.append(np.mean(j))
+				RF_DEPTH_std_1.append(np.std(j))
+			else:
+				RF_DEPTH_mean_1.append([])
+				RF_DEPTH_std_1.append([])
 
-for i,j in enumerate(grid_sel_x):
-    RF_data_raw[i] = [RF_amplitude[k]  for k,l in enumerate(dados_grid_lat) if np.sqrt((j - dados_grid_lon[k])**2 + (grid_sel_y[i] - l)**2) < dist_between_grid_piercing_points]
-    RF_RAY_raw[i] = [event_ray[k]  for k,l in enumerate(dados_grid_lat) if np.sqrt((j - dados_grid_lon[k])**2 + (grid_sel_y[i] - l)**2) < dist_between_grid_piercing_points]
+
+		RF_DEPTH_raw_2 = [[]]*len(RF_data_raw)
+		for i,j in enumerate(RF_data_raw):
+			lst_DEPTH_raw = []
+			for k,l in enumerate(j):
+				lst_depth_amp = [l[x] for x,c in enumerate(RF_amplitude_depth_raw[i][k]) if DEPTH_2-40 < c < DEPTH_2+40]
+				lst_depth_pp = [c for x,c in enumerate(RF_amplitude_depth_raw[i][k]) if DEPTH_2-40 < c < DEPTH_2+40]
+				lst_DEPTH_raw.append(lst_depth_pp[lst_depth_amp.index(max(lst_depth_amp))])
+			RF_DEPTH_raw_2[i] = lst_DEPTH_raw
+			
+		RF_DEPTH_mean_2 = []
+		RF_DEPTH_std_2 = []
+		for i,j in enumerate(RF_DEPTH_raw_2):
+			if len(j) > NUMBER_PP_PER_BIN:
+				RF_DEPTH_mean_2.append(np.mean(j))
+				RF_DEPTH_std_2.append(np.std(j))
+			else:
+				RF_DEPTH_mean_2.append([])
+				RF_DEPTH_std_2.append([])
+
+	RF_stacking = []
+	len_RF_stacking = []
 
 
-RF_stacking = []
-len_RF_stacking = []
-
-for i,j in enumerate(RF_data_raw):
-    if len(j) > NUMBER_PP_PER_BIN:
-        RF_stacking.append([sum(x)/len(j)  for x in zip(*j)])
-        len_RF_stacking.append(len(j))
-    else:
-        RF_stacking.append([])
-        len_RF_stacking.append(0)
-
+	for i,j in enumerate(RF_data_raw):
+		if len(j) > NUMBER_PP_PER_BIN:
+			RF_stacking.append([sum(x)/len(j)  for x in zip(*j)])
+			len_RF_stacking.append(len(j))
+		else:
+			RF_stacking.append([])
+			len_RF_stacking.append(0)
+else: 
+	pass
 
 fig_receiver_function_per_bin=plt.figure(figsize=(20,10))
 
@@ -474,11 +507,15 @@ print('\n')
 
 os.makedirs(PP_SELEC_DIR,exist_ok=True)
 
-SELECTED_BINNED_DATA_dic = {'lat':[],'lon':[],'len':[],'data':[]}
+SELECTED_BINNED_DATA_dic = {'lat':[],'lon':[],'len':[],'mean_1':[],'std_1':[],'mean_2':[],'std_2':[],'data':[]}
 for i,j in enumerate(RF_stacking):
 	SELECTED_BINNED_DATA_dic['lat'].append(grid_sel_y[i])
 	SELECTED_BINNED_DATA_dic['lon'].append(grid_sel_x[i])
 	SELECTED_BINNED_DATA_dic['len'].append(len_RF_stacking[i])
+	SELECTED_BINNED_DATA_dic['mean_1'].append(RF_DEPTH_mean_1[i])
+	SELECTED_BINNED_DATA_dic['std_1'].append(RF_DEPTH_std_1[i])
+	SELECTED_BINNED_DATA_dic['mean_2'].append(RF_DEPTH_mean_2[i])
+	SELECTED_BINNED_DATA_dic['std_2'].append(RF_DEPTH_std_2[i])
 	SELECTED_BINNED_DATA_dic['data'].append(j)
 
 with open(PP_SELEC_DIR+'SELECTED_BINNED_PPvs.json', 'w') as fp:

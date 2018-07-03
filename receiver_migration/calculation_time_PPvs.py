@@ -17,7 +17,6 @@ Note that all the parameters are defined in the configuration file.
 """
 from parameters_py import mgconfig,get_header_data_RF
 from time_py import time_P_PPvs
-from piercing_points_py import piercing_points_PPvs
 import os
 import sys
 import warnings

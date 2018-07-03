@@ -36,10 +36,11 @@
 
 
 #/home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/transition_zone/syngine_filtered_PP/a_05/
+#/home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/transition_zone/syngine_filtered/a_05
 #/home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/transition_zone/rede_BB/event_data_PP_selected/a_05/
 
 # dir of receiver functions
-RF_DIR = #/home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/transition_zone/syngine_filtered_PP/a_05
+RF_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/transition_zone/rede_BB/event_data_PP_selected/a_05
 # extension of receiver functions
 RF_EXT = .eqr
 
@@ -146,11 +147,23 @@ DEPTH_2 = 660
 # ==========
 [migration]
 # ==========
-#distance between grid points and piercing points
-DIST_GRID_PP = 1
+# distance between grid points and piercing points for each depth (degree)
+DIST_GRID_PP = 1.0
+
+# mean distance between grid points and piercing points (degree)
+DIST_GRID_PP_MED = 0.75
+
 #number of piercing points per bin
 NUMBER_PP_PER_BIN = 10
+
+#False or True for depth estimation
+DEPTH_ESTIMATION = True 
+
+#False or True for Linear stacking
+LINEAR_STACKING = True 
+
 #False or True for plotting Ray Trace
 RAY_TRACE_PLOT = True 
+
 #False or True for plotting Ray Trace 410 and 660
 RAY_TRACE_410_660_PLOT = True 
