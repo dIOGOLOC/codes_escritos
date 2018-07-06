@@ -151,13 +151,19 @@ DEPTH_2 = 660
 DIST_GRID_PP = 1.0
 
 # mean distance between grid points and piercing points (degree)
-DIST_GRID_PP_MED = 0.75
+DIST_GRID_PP_MED = 0.7
 
 #number of piercing points per bin
 NUMBER_PP_PER_BIN = 10
 
 #False or True for depth estimation
 DEPTH_ESTIMATION = True 
+
+#False or True for depth estimation with bootstrap
+BOOTSTRAP_DEPTH_ESTIMATION = True 
+
+#Number of interations to compute bootstrapping
+BOOTSTRAP_INTERATOR = 100
 
 #False or True for Linear stacking
 LINEAR_STACKING = True 
@@ -167,3 +173,9 @@ RAY_TRACE_PLOT = True
 
 #False or True for plotting Ray Trace 410 and 660
 RAY_TRACE_410_660_PLOT = True 
+
+#Number that multiply the difference between the cross-section points
+SECTION_NUM = 3
+
+#Depth range that we need to find the maximum amplitude
+DEPTH_RANGE = 50

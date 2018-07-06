@@ -19,7 +19,9 @@ import scipy.io
 import matplotlib.cm as cm
 from matplotlib.ticker import MultipleLocator, FormatStrFormatter
 import json
-from scipy.signal import triang
+import random
+
+
 
 from parameters_py.mgconfig import (
 					RF_DIR,RF_EXT,PROG_MIGRATION_DIR,MODEL_FILE_NPZ,MIN_DEPTH,MAX_DEPTH,INTER_DEPTH,PdS_DIR,
@@ -28,7 +30,7 @@ from parameters_py.mgconfig import (
 					URCRNRLON_SMALL,LLCRNRLAT_SMALL,URCRNRLAT_SMALL,PROJECT_LAT,PROJECT_LON,PHASES_LST,
 					BOUNDARY_1_SHP,BOUNDARY_1_SHP_NAME,BOUNDARY_2_SHP,BOUNDARY_2_SHP_NAME,DEPTH_1,DEPTH_2,					
 					RAY_PATH_FIGURE,PP_FIGURE,EXT_FIG,DPI_FIG,DIST_GRID_PP_MED,PHASES_PPvs_LST,DIST_GRID_PP,
-					LINEAR_STACKING,DEPTH_ESTIMATION
+					LINEAR_STACKING,DEPTH_ESTIMATION,DEPTH_RANGE,BOOTSTRAP_INTERATOR,BOOTSTRAP_DEPTH_ESTIMATION
 				   )
 
 print('Starting Receiver Functions migration code')
@@ -143,7 +145,7 @@ if RAY_TRACE_PLOT == True:
 	ax2.set_xlim(LLCRNRLON_SMALL,URCRNRLON_SMALL)
 
 	os.makedirs(RAY_PATH_FIGURE,exist_ok=True)
-	fig_ray_path.savefig(RAY_PATH_FIGURE+'ray_path.'+EXT_FIG,dpi=DPI_FIG)
+	fig_ray_path.savefig(RAY_PATH_FIGURE+'ray_path_Pds.'+EXT_FIG,dpi=DPI_FIG)
 else: 
 	pass
 
@@ -185,7 +187,7 @@ if RAY_TRACE_410_660_PLOT == True:
 
 	ax2.legend(loc=0,edgecolor='w',fancybox=True)
 
-	fig_ray_path_410_660.savefig(RAY_PATH_FIGURE+'ray_path_'+str(DEPTH_1)+'_'+str(DEPTH_2)+'.'+EXT_FIG,dpi=DPI_FIG)
+	fig_ray_path_410_660.savefig(RAY_PATH_FIGURE+'ray_path_'+str(PHASES[0])+'_'+str(PHASES[1])+'.'+EXT_FIG,dpi=DPI_FIG)
 else: 
 	pass
 
@@ -364,8 +366,8 @@ m.drawparallels(np.arange(-90, 90, 5),color='lightgrey',labels=[True,True,True,T
 label=['Stations','Piercing Points '+str(DEPTH_1),'Piercing Points '+str(DEPTH_2),'Filtered Grid Points','Grid Points']
 plt.legend([l1,l2,l3,l4,l5],label,scatterpoints=1, frameon=True,labelspacing=1, loc='lower right',facecolor='w')
 
-plt.title('SELECTED BINNED DATA', y=1.08)
-fig_grid_points_filtered.savefig(PP_FIGURE+'SELECTED_BINNED_DATA.'+EXT_FIG,dpi=DPI_FIG)
+plt.title('SELECTED BINNED DATA Pds', y=1.08)
+fig_grid_points_filtered.savefig(PP_FIGURE+'SELECTED_BINNED_DATA_Pds.'+EXT_FIG,dpi=DPI_FIG)
 
 
 print('Importing depths and times to the Ps conversion to each event for all stations')
@@ -408,8 +410,8 @@ if LINEAR_STACKING == True:
 	RF_data_raw = [[]]*len(grid_sel_x)
 	RF_amplitude_depth_raw = [[]]*len(grid_sel_x)
 	for i,j in enumerate(grid_sel_x):
-		RF_data_raw[i] = [RF_amplitude[k]  for k,l in enumerate(dados_grid_lat) if np.sqrt((j - dados_grid_lon[k])**2 + (grid_sel_y[i] - l)**2) < DIST_GRID_PP_MED]
-		RF_amplitude_depth_raw[i] = [RF_amplitude_depth[k]  for k,l in enumerate(dados_grid_lat) if np.sqrt((j - dados_grid_lon[k])**2 + (grid_sel_y[i] - l)**2) < DIST_GRID_PP_MED]
+		RF_data_raw[i] = [RF_amplitude[k] for k,l in enumerate(dados_grid_lat) if np.sqrt((j - dados_grid_lon[k])**2 + (grid_sel_y[i] - l)**2) < DIST_GRID_PP_MED]
+		RF_amplitude_depth_raw[i] = [RF_amplitude_depth[k] for k,l in enumerate(dados_grid_lat) if np.sqrt((j - dados_grid_lon[k])**2 + (grid_sel_y[i] - l)**2) < DIST_GRID_PP_MED]
 	
 	if DEPTH_ESTIMATION == True: 
 		print('Depth mean and std estimation in each point of the filtered grid')
@@ -419,40 +421,78 @@ if LINEAR_STACKING == True:
 		for i,j in enumerate(RF_data_raw):
 			lst_DEPTH_raw = []
 			for k,l in enumerate(j):
-				lst_depth_amp = [l[x] for x,c in enumerate(RF_amplitude_depth_raw[i][k]) if DEPTH_1-50 < c < DEPTH_1+50]
-				lst_depth_pp = [c for x,c in enumerate(RF_amplitude_depth_raw[i][k]) if DEPTH_1-50 < c < DEPTH_1+50]
+				lst_depth_amp = [l[x] for x,c in enumerate(RF_amplitude_depth_raw[i][k]) if DEPTH_1-DEPTH_RANGE < c < DEPTH_1+DEPTH_RANGE]
+				lst_depth_pp = [c for x,c in enumerate(RF_amplitude_depth_raw[i][k]) if DEPTH_1-DEPTH_RANGE < c < DEPTH_1+DEPTH_RANGE]
 				lst_DEPTH_raw.append(lst_depth_pp[lst_depth_amp.index(max(lst_depth_amp))])
 			RF_DEPTH_raw_1[i] = lst_DEPTH_raw
 			
 		RF_DEPTH_mean_1 = []
 		RF_DEPTH_std_1 = []
 		for i,j in enumerate(RF_DEPTH_raw_1):
-			if len(j) > NUMBER_PP_PER_BIN:
-				RF_DEPTH_mean_1.append(np.mean(j))
-				RF_DEPTH_std_1.append(np.std(j))
+			if BOOTSTRAP_DEPTH_ESTIMATION == True:
+				print('Bootstrap estimation')
+				print('\n')
+				if len(j) > NUMBER_PP_PER_BIN:
+					std_1_lst = []
+					mean_1_lst = []
+					for _k in range(BOOTSTRAP_INTERATOR):
+						print('Bootstrap estimation '+str(1+_k))
+						BOOTSTRAP_LST = [random.choice(j) for _ in j]
+						std_1_lst.append(np.std(BOOTSTRAP_LST))
+						print('Standard deviation = #'+str(std_1_lst[_k]))
+					RF_DEPTH_std_1.append(np.mean(std_1_lst))
+					RF_DEPTH_mean_1.append(np.mean(j))
+					print('\n')
+					print('Mean = '+str(RF_DEPTH_mean_1[i])+' -  Standard deviation = '+str(RF_DEPTH_std_1[i]))
+				else:
+					RF_DEPTH_mean_1.append([])
+					RF_DEPTH_std_1.append([])
 			else:
-				RF_DEPTH_mean_1.append([])
-				RF_DEPTH_std_1.append([])
+				if len(j) > NUMBER_PP_PER_BIN:
+					RF_DEPTH_mean_1.append(np.mean(j))
+					RF_DEPTH_std_1.append(np.std(j))
+				else:
+					RF_DEPTH_mean_1.append([])
+					RF_DEPTH_std_1.append([])
 
 
 		RF_DEPTH_raw_2 = [[]]*len(RF_data_raw)
 		for i,j in enumerate(RF_data_raw):
 			lst_DEPTH_raw = []
 			for k,l in enumerate(j):
-				lst_depth_amp = [l[x] for x,c in enumerate(RF_amplitude_depth_raw[i][k]) if DEPTH_2-50 < c < DEPTH_2+50]
-				lst_depth_pp = [c for x,c in enumerate(RF_amplitude_depth_raw[i][k]) if DEPTH_2-50 < c < DEPTH_2+50]
+				lst_depth_amp = [l[x] for x,c in enumerate(RF_amplitude_depth_raw[i][k]) if DEPTH_2-DEPTH_RANGE < c < DEPTH_2+DEPTH_RANGE]
+				lst_depth_pp = [c for x,c in enumerate(RF_amplitude_depth_raw[i][k]) if DEPTH_2-DEPTH_RANGE < c < DEPTH_2+DEPTH_RANGE]
 				lst_DEPTH_raw.append(lst_depth_pp[lst_depth_amp.index(max(lst_depth_amp))])
 			RF_DEPTH_raw_2[i] = lst_DEPTH_raw
 			
 		RF_DEPTH_mean_2 = []
 		RF_DEPTH_std_2 = []
 		for i,j in enumerate(RF_DEPTH_raw_2):
-			if len(j) > NUMBER_PP_PER_BIN:
-				RF_DEPTH_mean_2.append(np.mean(j))
-				RF_DEPTH_std_2.append(np.std(j))
+			if BOOTSTRAP_DEPTH_ESTIMATION == True:
+				print('Bootstrap estimation')
+				print('\n')
+				if len(j) > NUMBER_PP_PER_BIN:
+					std_2_lst = []
+					mean_2_lst = []
+					for _k in range(BOOTSTRAP_INTERATOR):
+						print('Bootstrap estimation #'+str(1+_k))
+						BOOTSTRAP_LST = [random.choice(j) for _ in j]
+						std_2_lst.append(np.std(BOOTSTRAP_LST))
+						print('Standard deviation = '+str(std_2_lst[_k]))
+					RF_DEPTH_std_2.append(np.mean(std_2_lst))
+					RF_DEPTH_mean_2.append(np.mean(j))
+					print('\n')
+					print('Mean = '+str(RF_DEPTH_mean_2[i])+' -  Standard deviation = '+str(RF_DEPTH_std_2[i]))
+				else:
+					RF_DEPTH_mean_2.append([])
+					RF_DEPTH_std_2.append([])
 			else:
-				RF_DEPTH_mean_2.append([])
-				RF_DEPTH_std_2.append([])
+				if len(j) > NUMBER_PP_PER_BIN:
+					RF_DEPTH_mean_2.append(np.mean(j))
+					RF_DEPTH_std_2.append(np.std(j))
+				else:
+					RF_DEPTH_mean_2.append([])
+					RF_DEPTH_std_2.append([])
 
 	RF_stacking = []
 	len_RF_stacking = []
