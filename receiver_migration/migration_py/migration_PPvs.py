@@ -368,7 +368,7 @@ plt.title('SELECTED BINNED DATA', y=1.08)
 fig_grid_points_filtered.savefig(PP_FIGURE+'SELECTED_BINNED_DATA_PPvs.'+EXT_FIG,dpi=DPI_FIG)
 
 
-print('Importing depths and times to the Ps conversion to each event for all stations')
+print('Importing depths and times to the Ppds conversion to each event for all stations')
 print('\n')
 
 filename_Pds = PdS_DIR+'PPvs_dic.json'

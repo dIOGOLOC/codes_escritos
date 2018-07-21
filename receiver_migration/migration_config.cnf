@@ -110,14 +110,14 @@ URCRNRLAT_LARGE=5
 
 #lower and upper corner (lat/lon) of the small map
 
-LLCRNRLON_SMALL=-55
-LLCRNRLAT_SMALL=-15
-URCRNRLON_SMALL=-35
-URCRNRLAT_SMALL=0
+LLCRNRLON_SMALL=-50
+LLCRNRLAT_SMALL=-9
+URCRNRLON_SMALL=-40
+URCRNRLAT_SMALL=-3
 
 
 #figures extention and dpi
-EXT_FIG=png
+EXT_FIG=pdf
 DPI_FIG=300
 
 
@@ -173,6 +173,14 @@ RAY_TRACE_PLOT = True
 
 #False or True for plotting Ray Trace 410 and 660
 RAY_TRACE_410_660_PLOT = True 
+
+#The gamma value is a function of temperature, rock composition, 
+#and degree of partial melting. This value is found to be in the 
+#range of 1.5–2.5 for most continental areas. A γ value of 2.0
+#is used to obtain the velocity anomalies and MTZ discontinuity
+#depths.
+
+GAMMA = 2
 
 #Number that multiply the difference between the cross-section points
 SECTION_NUM = 3

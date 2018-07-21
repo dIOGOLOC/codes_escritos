@@ -166,6 +166,9 @@ BOOTSTRAP_INTERATOR = config.getint('migration', 'BOOTSTRAP_INTERATOR')
 #False or True for plotting Ray Trace 410 and 660
 RAY_TRACE_410_660_PLOT = config.getboolean('migration', 'RAY_TRACE_410_660_PLOT')  
 
+#GAMMA Number
+GAMMA = config.getfloat('migration', 'GAMMA') 
+
 #Number that multiply the difference between the cross-section points
 SECTION_NUM = config.getfloat('migration', 'SECTION_NUM') 
 
