@@ -20,6 +20,10 @@ import matplotlib.cm as cm
 from matplotlib.ticker import MultipleLocator, FormatStrFormatter
 import json
 import random
+from matplotlib.colors import Normalize
+from numpy import ma
+from matplotlib import cbook
+
 
 
 
@@ -471,6 +475,7 @@ if LINEAR_STACKING == True:
 				lst_DEPTH_raw.append(lst_depth_pp[lst_depth_amp.index(max(lst_depth_amp))])
 			RF_DEPTH_raw_2_Ppds[i] = lst_DEPTH_raw
 			
+		RF_DEPTH_delta_Vp = []
 
 		RF_DEPTH_mean_2_Pds = []
 		RF_DEPTH_std_2_Pds = []
@@ -508,6 +513,7 @@ if LINEAR_STACKING == True:
 
 					delta_Vp = [(alfa*beta*(depth_Ppds[_t] - _y))/(alfa*(1+gamma_vp_vs)*_y - 
 								   (beta*(1-gamma_vp_vs)*depth_Ppds[_t])) for _t,_y in enumerate(depth_Pds)]
+					
 
 					delta_Vs = [_delta_vp * GAMMA * Vp_Vs_ratio_depth_2 for _delta_vp in delta_Vp]
 
@@ -519,6 +525,7 @@ if LINEAR_STACKING == True:
 											 (((Vs_depth_2+delta_Vs[_t])*(Vp_depth_2+delta_Vp[_t]))/(Vp_depth_2+delta_Vp[_t]-Vs_depth_2-delta_Vs[_t]))
 											 for _t,_y in enumerate(depth_Ppds)] 	
 							
+					RF_DEPTH_delta_Vp.append(np.mean(delta_Vp))
 
 					RF_DEPTH_mean_2_Pds.append(np.mean(j))
 					RF_DEPTH_mean_2_Ppds.append(np.mean(RF_DEPTH_raw_2_Ppds[i]))
@@ -586,6 +593,9 @@ if LINEAR_STACKING == True:
 					print('\n')
 				else:
 
+
+					RF_DEPTH_delta_Vp.append(0)
+
 					RF_DEPTH_std_2_Pds.append(0)
 					RF_DEPTH_mean_2_Pds.append(0)
 
@@ -638,12 +648,14 @@ if LINEAR_STACKING == True:
 else: 
 	pass
 
+RF_lst_delta_Vp = []
 RF_lst_DEPTH_mean_1_true_Pds = []
 RF_lst_lon_mean_1_true_Pds = []
 RF_lst_lat_mean_1_true_Pds = []
 
 for _i,true_Pds_1 in enumerate(RF_DEPTH_mean_1_true_Pds):
 	if true_Pds_1 > 0:
+		RF_lst_delta_Vp.append(RF_DEPTH_delta_Vp[_i])		
 		RF_lst_lon_mean_1_true_Pds.append(grid_sel_x[_i])
 		RF_lst_lat_mean_1_true_Pds.append(grid_sel_y[_i])
 		RF_lst_DEPTH_mean_1_true_Pds.append(true_Pds_1)
@@ -681,6 +693,72 @@ for _i,true_Ppds_2 in enumerate(RF_DEPTH_mean_2_true_Ppds):
 		RF_lst_DEPTH_mean_2_true_Ppds.append(true_Ppds_2)
 		
 
+## FUnction to set midpoint in plots
+
+class MidPointNorm(Normalize):    
+    def __init__(self, midpoint=0, vmin=None, vmax=None, clip=False):
+        Normalize.__init__(self,vmin, vmax, clip)
+        self.midpoint = midpoint
+
+    def __call__(self, value, clip=None):
+        if clip is None:
+            clip = self.clip
+
+        result, is_scalar = self.process_value(value)
+
+        self.autoscale_None(result)
+        vmin, vmax, midpoint = self.vmin, self.vmax, self.midpoint
+
+        if not (vmin < midpoint < vmax):
+            raise ValueError("midpoint must be between maxvalue and minvalue.")       
+        elif vmin == vmax:
+            result.fill(0) # Or should it be all masked? Or 0.5?
+        elif vmin > vmax:
+            raise ValueError("maxvalue must be bigger than minvalue")
+        else:
+            vmin = float(vmin)
+            vmax = float(vmax)
+            if clip:
+                mask = ma.getmask(result)
+                result = ma.array(np.clip(result.filled(vmax), vmin, vmax),
+                                  mask=mask)
+
+            # ma division is very slow; we can take a shortcut
+            resdat = result.data
+
+            #First scale to -1 to 1 range, than to from 0 to 1.
+            resdat -= midpoint            
+            resdat[resdat>0] /= abs(vmax - midpoint)            
+            resdat[resdat<0] /= abs(vmin - midpoint)
+
+            resdat /= 2.
+            resdat += 0.5
+            result = ma.array(resdat, mask=result.mask, copy=False)                
+
+        if is_scalar:
+            result = result[0]            
+        return result
+
+    def inverse(self, value):
+        if not self.scaled():
+            raise ValueError("Not invertible until scaled")
+        vmin, vmax, midpoint = self.vmin, self.vmax, self.midpoint
+
+        if cbook.iterable(value):
+            val = ma.asarray(value)
+            val = 2 * (val-0.5)  
+            val[val>0]  *= abs(vmax - midpoint)
+            val[val<0] *= abs(vmin - midpoint)
+            val += midpoint
+            return val
+        else:
+            val = 2 * (val - 0.5)
+            if val < 0: 
+                return  val*abs(vmin-midpoint) + midpoint
+            else:
+                return  val*abs(vmax-midpoint) + midpoint
+
+
 
 fig, axes = plt.subplots(nrows=2, ncols=2,figsize=(10,10),squeeze=False,sharex=False,sharey=False)
 
@@ -689,11 +767,7 @@ ax = axes[0, 1]
 ax2 = axes[1, 0]
 ax3 = axes[1, 1]
 
-colormap = 'bwr'
-
-
-project_Lat = PROJECT_LAT
-project_Lon = PROJECT_LON
+colormap = 'seismic'
 
 m1 = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_SMALL,
             llcrnrlat=LLCRNRLAT_SMALL,urcrnrlon=URCRNRLON_SMALL,urcrnrlat=URCRNRLAT_SMALL,ax=ax1)
@@ -701,9 +775,9 @@ m1 = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_L
 m1.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m1.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
-
+norm1 = MidPointNorm(midpoint=DEPTH_1)
 x, y = m1(RF_lst_lon_mean_1_true_Pds,RF_lst_lat_mean_1_true_Pds)
-sc = m1.scatter(x,y,40,RF_lst_DEPTH_mean_1_true_Pds,cmap=colormap,marker='o')
+sc = m1.scatter(x,y,40,RF_lst_DEPTH_mean_1_true_Pds,cmap=colormap,marker='o',norm=norm1)
 
 
 for lon, lat in zip(sta_long,sta_lat):
@@ -727,9 +801,9 @@ m = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LO
 m.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
-
+norm = MidPointNorm(midpoint=DEPTH_1)
 x, y = m(RF_lst_lon_mean_1_true_Ppds,RF_lst_lat_mean_1_true_Ppds)
-sc1 = m.scatter(x,y,40,RF_lst_DEPTH_mean_1_true_Ppds,cmap=colormap,marker='o')
+sc1 = m.scatter(x,y,40,RF_lst_DEPTH_mean_1_true_Ppds,cmap=colormap,marker='o',norm=norm)
 
 
 
@@ -746,8 +820,8 @@ m.drawparallels(np.arange(-90, 90, 5),color='lightgrey',labels=[True,True,True,T
 ax.set_title(str(int(DEPTH_1))+' Ppds conversion', y=1.08)
 
 
-project_Lat = PROJECT_LAT
-project_Lon = PROJECT_LON
+
+
 
 m2 = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_SMALL,
             llcrnrlat=LLCRNRLAT_SMALL,urcrnrlon=URCRNRLON_SMALL,urcrnrlat=URCRNRLAT_SMALL,ax=ax2)
@@ -755,9 +829,9 @@ m2 = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_L
 m2.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m2.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
-
+norm2 = MidPointNorm(midpoint=DEPTH_2)
 x, y = m2(RF_lst_lon_mean_2_true_Pds,RF_lst_lat_mean_2_true_Pds)
-sc = m2.scatter(x,y,40,RF_lst_DEPTH_mean_2_true_Pds,cmap=colormap,marker='o')
+sc = m2.scatter(x,y,40,RF_lst_DEPTH_mean_2_true_Pds,cmap=colormap,marker='o',norm=norm2)
 
 
 for lon, lat in zip(sta_long,sta_lat):
@@ -780,9 +854,9 @@ m3 = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_L
 m3.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m3.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
-
+norm3 = MidPointNorm(midpoint=DEPTH_2)
 x, y = m3(RF_lst_lon_mean_2_true_Ppds,RF_lst_lat_mean_2_true_Ppds)
-sc2 = m3.scatter(x,y,40,RF_lst_DEPTH_mean_2_true_Ppds,cmap=colormap,marker='o')
+sc2 = m3.scatter(x,y,40,RF_lst_DEPTH_mean_2_true_Ppds,cmap=colormap,marker='o',norm=norm3)
 
 
 for lon, lat in zip(sta_long,sta_lat):
@@ -806,11 +880,102 @@ fig.colorbar(sc2, cax=cbar_ax2,orientation='horizontal')
 
 
 fig.savefig(PP_FIGURE+'TRUE_DEPTH_PER_BIN.'+EXT_FIG,dpi=DPI_FIG)
+
+
+
+#Delta VP of each bin
+
+
+fig_delta_vp, ax_delta_vp = plt.subplots(nrows=1, ncols=1,figsize=(10,10),squeeze=False)
+
+
+m_delta_vp = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_SMALL,
+            llcrnrlat=LLCRNRLAT_SMALL,urcrnrlon=URCRNRLON_SMALL,urcrnrlat=URCRNRLAT_SMALL)
+
+m_delta_vp.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
+m_delta_vp.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
+
+norm_delta_vp = MidPointNorm(midpoint=0)
+x, y = m_delta_vp(RF_lst_lon_mean_1_true_Pds,RF_lst_lat_mean_1_true_Pds)
+sc_delta_vp = m_delta_vp.scatter(x,y,40,RF_lst_delta_Vp,cmap=colormap,marker='o',norm=norm_delta_vp)
+
+
+for lon, lat in zip(sta_long,sta_lat):
+    x,y = m_delta_vp(lon, lat)
+    msize = 10
+    l1, = m_delta_vp.plot(x, y, '^',markersize=msize,markeredgecolor='k',markerfacecolor='grey')
+
+m_delta_vp.fillcontinents(color='whitesmoke',lake_color=None,zorder=2,alpha=0.1)
+m_delta_vp.drawcoastlines(color='k',zorder=1)
+m_delta_vp.drawmeridians(np.arange(0, 360, 5),color='lightgrey',labels=[True,True,True,True])
+m_delta_vp.drawparallels(np.arange(-90, 90, 5),color='lightgrey',labels=[True,True,True,True])
+fig_delta_vp.colorbar(sc_delta_vp,orientation='horizontal')
+
+fig_delta_vp.suptitle('Delta Vp for each bin')
+
+#Thickness of the Mantle Transition Zone
+thickness_MTZ_Pds = []
+thickness_MTZ_Ppds = []
+
+for i,j in enumerate(RF_lst_DEPTH_mean_2_true_Pds):
+	thickness_MTZ_Pds.append(j-RF_lst_DEPTH_mean_1_true_Pds[i])
+	thickness_MTZ_Ppds.append(RF_lst_DEPTH_mean_2_true_Ppds[i]-RF_lst_DEPTH_mean_1_true_Ppds[i])
+
+
+fig_thickness, (ax_thickness1, ax_thickness2) = plt.subplots(nrows=1, ncols=2,figsize=(10,5))
+
+m_thickness1 = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_SMALL,
+            llcrnrlat=LLCRNRLAT_SMALL,urcrnrlon=URCRNRLON_SMALL,urcrnrlat=URCRNRLAT_SMALL,ax=ax_thickness1)
+
+m_thickness1.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
+m_thickness1.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
+
+norm_thickness1 = MidPointNorm(midpoint=250)
+x, y = m_thickness1(RF_lst_lon_mean_1_true_Pds,RF_lst_lat_mean_1_true_Pds)
+sc_thickness1 = m_thickness1.scatter(x,y,40,thickness_MTZ_Pds,cmap=colormap,marker='o',norm=norm_thickness1)
+
+
+for lon, lat in zip(sta_long,sta_lat):
+    x,y = m_thickness1(lon, lat)
+    msize = 10
+    l1, = m_thickness1.plot(x, y, '^',markersize=msize,markeredgecolor='k',markerfacecolor='grey')
+
+m_thickness1.fillcontinents(color='whitesmoke',lake_color=None,zorder=2,alpha=0.1)
+m_thickness1.drawcoastlines(color='k',zorder=1)
+m_thickness1.drawmeridians(np.arange(0, 360, 5),color='lightgrey',labels=[True,True,True,True])
+m_thickness1.drawparallels(np.arange(-90, 90, 5),color='lightgrey',labels=[True,True,True,True])
+fig_thickness.colorbar(sc_thickness1,ax=ax_thickness1,orientation='horizontal')
+ax_thickness1.set_title('Thickness of MTZ (Pds)',y=1.08)
+
+
+m_thickness2 = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_SMALL,
+            llcrnrlat=LLCRNRLAT_SMALL,urcrnrlon=URCRNRLON_SMALL,urcrnrlat=URCRNRLAT_SMALL,ax=ax_thickness2)
+
+m_thickness2.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
+m_thickness2.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
+
+norm_thickness2 = MidPointNorm(midpoint=250)
+x, y = m_thickness2(RF_lst_lon_mean_1_true_Pds,RF_lst_lat_mean_1_true_Pds)
+sc_thickness2 = m_thickness2.scatter(x,y,40,thickness_MTZ_Pds,cmap=colormap,marker='o',norm=norm_thickness2)
+
+
+for lon, lat in zip(sta_long,sta_lat):
+    x,y = m_thickness2(lon, lat)
+    msize = 10
+    l1, = m_thickness2.plot(x, y, '^',markersize=msize,markeredgecolor='k',markerfacecolor='grey')
+
+m_thickness2.fillcontinents(color='whitesmoke',lake_color=None,zorder=2,alpha=0.1)
+m_thickness2.drawcoastlines(color='k',zorder=1)
+m_thickness2.drawmeridians(np.arange(0, 360, 5),color='lightgrey',labels=[True,True,True,True])
+m_thickness2.drawparallels(np.arange(-90, 90, 5),color='lightgrey',labels=[True,True,True,True])
+fig_thickness.colorbar(sc_thickness2,ax=ax_thickness2,orientation='horizontal')
+ax_thickness2.set_title('Thickness of MTZ (Ppds)',y=1.08)
+
+
 plt.show()
-
-
-#####################################################################	TERMINAR DE FAZER AS COMPRAÇÔES ENTRE TRUE E NORMAL!   #####################################################################
 '''
+#####################################################################	TERMINAR DE FAZER AS COMPRAÇÔES ENTRE TRUE E NORMAL!   #####################################################################
+
 
 print('Saving Selected Piercing Points in JSON file')
 print('\n')
