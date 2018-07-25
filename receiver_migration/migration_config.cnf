@@ -40,7 +40,7 @@
 #/home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/transition_zone/rede_BB/event_data_PP_selected/a_05/
 
 # dir of receiver functions
-RF_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/transition_zone/rede_BB/event_data_PP_selected/a_05
+RF_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/transition_zone/syngine_filtered/a_05
 # extension of receiver functions
 RF_EXT = .eqr
 
@@ -148,13 +148,13 @@ DEPTH_2 = 660
 [migration]
 # ==========
 # distance between grid points and piercing points for each depth (degree)
-DIST_GRID_PP = 1.0
+DIST_GRID_PP = 1
 
 # mean distance between grid points and piercing points (degree)
 DIST_GRID_PP_MED = 0.7
 
 #number of piercing points per bin
-NUMBER_PP_PER_BIN = 10
+NUMBER_PP_PER_BIN = 20
 
 #False or True for depth estimation
 DEPTH_ESTIMATION = True 
@@ -163,7 +163,7 @@ DEPTH_ESTIMATION = True
 BOOTSTRAP_DEPTH_ESTIMATION = True 
 
 #Number of interations to compute bootstrapping
-BOOTSTRAP_INTERATOR = 100
+BOOTSTRAP_INTERATOR = 200
 
 #False or True for Linear stacking
 LINEAR_STACKING = True 
@@ -185,5 +185,5 @@ GAMMA = 2
 #Number that multiply the difference between the cross-section points
 SECTION_NUM = 3
 
-#Depth range that we need to find the maximum amplitude
-DEPTH_RANGE = 50
+#Depth range (+/-) that we will use to find the maximum amplitude
+DEPTH_RANGE = 30

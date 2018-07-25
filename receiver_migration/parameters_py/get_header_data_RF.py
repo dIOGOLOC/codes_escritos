@@ -29,7 +29,7 @@ ev_listS = sorted(ev_list)
 
 ev = obspy.Stream()
 for i,j in enumerate(ev_listS):
-    ev += obspy.read(j)
+	ev += obspy.read(j)
 
 
 print('Get Header Parameters')
