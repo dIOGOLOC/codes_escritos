@@ -71,15 +71,15 @@ RF_number = SELECTED_BINNED_DATA_dic['len']
 RF_stacking_Pds = SELECTED_BINNED_DATA_dic['data_Pds']
 RF_stacking_Ppds = SELECTED_BINNED_DATA_dic['data_Ppds']
 
-RF_DEPTH_mean_1_Pds = SELECTED_BINNED_DATA_dic['true_mean_1_Pds']
-RF_DEPTH_std_1_Pds = SELECTED_BINNED_DATA_dic['true_std_1_Pds']
-RF_DEPTH_mean_2_Pds = SELECTED_BINNED_DATA_dic['true_mean_2_Pds']
-RF_DEPTH_std_2_Pds = SELECTED_BINNED_DATA_dic['true_std_2_Pds']
+RF_DEPTH_mean_1_Pds = SELECTED_BINNED_DATA_dic['mean_1_Pds']
+RF_DEPTH_std_1_Pds = SELECTED_BINNED_DATA_dic['std_1_Pds']
+RF_DEPTH_mean_2_Pds = SELECTED_BINNED_DATA_dic['mean_2_Pds']
+RF_DEPTH_std_2_Pds = SELECTED_BINNED_DATA_dic['std_2_Pds']
 
-RF_DEPTH_mean_1_Ppds = SELECTED_BINNED_DATA_dic['true_mean_1_Ppds']
-RF_DEPTH_std_1_Ppds = SELECTED_BINNED_DATA_dic['true_std_1_Ppds']
-RF_DEPTH_mean_2_Ppds = SELECTED_BINNED_DATA_dic['true_mean_2_Ppds']
-RF_DEPTH_std_2_Ppds = SELECTED_BINNED_DATA_dic['true_std_2_Ppds']
+RF_DEPTH_mean_1_Ppds = SELECTED_BINNED_DATA_dic['mean_1_Ppds']
+RF_DEPTH_std_1_Ppds = SELECTED_BINNED_DATA_dic['std_1_Ppds']
+RF_DEPTH_mean_2_Ppds = SELECTED_BINNED_DATA_dic['mean_2_Ppds']
+RF_DEPTH_std_2_Ppds = SELECTED_BINNED_DATA_dic['std_2_Ppds']
 
 RF_DEPTH_mtz_thickness_Pds = SELECTED_BINNED_DATA_dic['mtz_thickness_Pds']
 RF_DEPTH_mtz_thickness_Ppds = SELECTED_BINNED_DATA_dic['mtz_thickness_Ppds']
@@ -153,32 +153,6 @@ if abs(abs(AB_lon_line[1]) - abs(AB_lon_line[0])) > abs(abs(AB_lat_line[1]) - ab
 else:
 	AB_lon = np.linspace(AB_lon_line[0],AB_lon_line[1],abs(abs(AB_lat_line[1])-abs(AB_lat_line[0]))*SECTION_NUM)
 	AB_lat = np.linspace(AB_lat_line[0],AB_lat_line[1],abs(abs(AB_lat_line[1])-abs(AB_lat_line[0]))*SECTION_NUM)
-
-
-fig_receiver_function_profile = plt.figure(figsize=(10,5))
-
-m = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_SMALL,
-            llcrnrlat=LLCRNRLAT_SMALL,urcrnrlon=URCRNRLON_SMALL,urcrnrlat=URCRNRLAT_SMALL)
-
-m.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
-m.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
-
-m.drawgreatcircle(AB_lon_line[0],AB_lat_line[0],AB_lon_line[1],AB_lat_line[1],linewidth=4,color='r')
-
-
-x, y = m(lons,lats)
-sc = m.scatter(x,y,40,RF_number,cmap='viridis',marker='o')
-plt.colorbar(sc,label='Total of Receiver Functions per bin')
-
-
-
-m.fillcontinents(color='whitesmoke',lake_color=None,zorder=2,alpha=0.1)
-m.drawcoastlines(color='k',zorder=1)
-m.drawmeridians(np.arange(0, 360, 5),color='lightgrey',labels=[True,True,True,True])
-m.drawparallels(np.arange(-90, 90, 5),color='lightgrey',labels=[True,True,True,True])
-
-plt.title('Receiver Functions per bin', y=1.08)
-plt.show()
 
 
 print('Calculating the distance between cross section and selected grid')
@@ -287,17 +261,14 @@ fig.suptitle('BINNED DATA and Cross section for Pds and Ppds')
 
 factor_Pds = 100
 
-majorLocatorX = MultipleLocator(10)
 majorLocatorY = MultipleLocator(50)
 minorLocatorY = MultipleLocator(10)
-minorLocatorX = MultipleLocator(5)
 
 
 for _i, _j in enumerate(RF_data_profile_stacking_Pds):
 	RF_data_factor_Pds = [_i/factor_Pds+l for k, l in enumerate(_j)]
 	ax1.plot(RF_data_factor_Pds,camadas_terra_10_km,'k',linewidth=0.5)
 	ax1.yaxis.set_major_locator(majorLocatorY)
-	#ax1.xaxis.set_minor_locator(minorLocatorX)
 	ax1.yaxis.set_minor_locator(minorLocatorY)
 	ax1.grid(True,which='minor',linestyle='--')
 	ax1.grid(True,which='major',color='k',linewidth=1)
@@ -324,18 +295,14 @@ for _i, _j in enumerate(RF_data_profile_stacking_Pds):
 
 factor_Ppds = 50
 
-majorLocatorX = MultipleLocator(10)
 majorLocatorY = MultipleLocator(50)
 minorLocatorY = MultipleLocator(10)
-minorLocatorX = MultipleLocator(5)
 
 
 for _i, _j in enumerate(RF_data_profile_stacking_Ppds):
 	RF_data_factor_Ppds = [_i/factor_Ppds+l for k, l in enumerate(_j)]
-	ax2.text(_i/factor_Ppds*0.95,820,"{0:.1f}".format(AB_lon[_i]),rotation=-45,fontsize=10)
 	ax2.plot(RF_data_factor_Ppds,camadas_terra_10_km,'k',linewidth=0.5)
 	ax2.yaxis.set_major_locator(majorLocatorY)
-	#ax1.xaxis.set_minor_locator(minorLocatorX)
 	ax2.yaxis.set_minor_locator(minorLocatorY)
 	ax2.grid(True,which='minor',linestyle='--')
 	ax2.grid(True,which='major',color='k',linewidth=1)
@@ -353,9 +320,17 @@ for _i, _j in enumerate(RF_data_profile_stacking_Ppds):
 	ax2.set_xticks([])
 	ax2.set_title('True Depth - Pds')
 	ax2.set_ylabel('Depth (km)')
-	ax2.set_xlabel('Longitude ($^\circ$)',labelpad=30)
+
 	ax2.tick_params(labelright=True)
 	ax2.set_ylim(MAX_DEPTH,MIN_DEPTH,MAX_DEPTH)
+	if abs(abs(AB_lon_line[1]) - abs(AB_lon_line[0])) > abs(abs(AB_lat_line[1]) - abs(AB_lat_line[0])):
+		ax2.text(_i/factor_Ppds*0.95,820,"{0:.1f}".format(AB_lon[_i]),rotation=-45,fontsize=10)
+		ax2.set_xlabel('Longitude ($^\circ$)',labelpad=30)
+	else:
+		ax2.text(_i/factor_Ppds*0.95,820,"{0:.1f}".format(AB_lat[_i]),rotation=-45,fontsize=10)
+		ax2.set_xlabel('Latitude ($^\circ$)',labelpad=30)
+
+
 plt.show()
 
 fig.savefig(PP_FIGURE+'SELECTED_BINNED_DATA_CROSS_SECTION_Pds_Ppds.'+EXT_FIG,dpi=DPI_FIG)

@@ -94,8 +94,6 @@ filename_1 = PP_DIR+'PP_'+PHASES[0]+'_dic.json'
 
 PP_1_dic = json.load(open(filename_1))
 
-
-
 PP_dist_1 = PP_1_dic['dist']
 PP_time_1 = PP_1_dic['time']
 PP_lat_1 = PP_1_dic['lat']
@@ -109,8 +107,6 @@ print('\n')
 filename_2 = PP_DIR+'PP_'+PHASES[1]+'_dic.json'
 
 PP_2_dic = json.load(open(filename_2))
-
-
 
 PP_depth_2 = PP_2_dic['dist']
 PP_time_2 = PP_2_dic['time']
@@ -367,8 +363,6 @@ for i,j in enumerate(RF_amplitude_time_Pds):
     RF_t_Pds = [round(l,1) for k,l in enumerate(j)]
     RF_amplitude_Pds[i] = [sta_data[i][sta_t_Pds.index(l)] if l != -1 else 0 for k,l in enumerate(RF_t_Pds)]
 
-
-
 print('Migrating Ppds data...')
 print('\n')
 
@@ -415,8 +409,10 @@ if LINEAR_STACKING == True:
 
 		RF_DEPTH_raw_1_Pds = [[]]*len(RF_data_raw_Pds)
 		RF_DEPTH_raw_1_Ppds = [[]]*len(RF_data_raw_Ppds)
-		for i,j in enumerate(RF_data_raw_Pds[0:1]):
+
+		for i,j in enumerate(RF_data_raw_Pds):
 			lst_DEPTH_raw = []
+			lst_depth_weights = [] 
 			for k,l in enumerate(j):
 				lst_depth_amp = [l[x] for x,c in enumerate(RF_amplitude_depth_raw_Pds[i][k]) if DEPTH_1-DEPTH_RANGE <= c <= DEPTH_1+DEPTH_RANGE]
 				lst_depth_pp = [c for x,c in enumerate(RF_amplitude_depth_raw_Pds[i][k]) if DEPTH_1-DEPTH_RANGE <= c <= DEPTH_1+DEPTH_RANGE]
@@ -425,13 +421,14 @@ if LINEAR_STACKING == True:
 
 		for i,j in enumerate(RF_data_raw_Ppds):
 			lst_DEPTH_raw = []
+			lst_depth_weights = [] 
 			for k,l in enumerate(j):
 				lst_depth_amp = [l[x] for x,c in enumerate(RF_amplitude_depth_raw_Ppds[i][k]) if DEPTH_1-DEPTH_RANGE <= c <= DEPTH_1+DEPTH_RANGE]
 				lst_depth_pp = [c for x,c in enumerate(RF_amplitude_depth_raw_Ppds[i][k]) if DEPTH_1-DEPTH_RANGE <= c <= DEPTH_1+DEPTH_RANGE]
 				lst_DEPTH_raw.append(lst_depth_pp[lst_depth_amp.index(max(lst_depth_amp))])
 			RF_DEPTH_raw_1_Ppds[i] = lst_DEPTH_raw
-			
 
+			
 		RF_DEPTH_mean_1_Pds = []
 		RF_DEPTH_std_1_Pds = []
 
@@ -485,7 +482,7 @@ if LINEAR_STACKING == True:
 
 					RF_DEPTH_mean_1_true_Pds.append(np.mean(depth_true_Pds))
 					RF_DEPTH_mean_1_true_Ppds.append(np.mean(depth_true_Ppds))
-
+					
 					for _k in range(BOOTSTRAP_INTERATOR):
 						print('Bootstrap estimation '+str(1+_k))
 						BOOTSTRAP_LST_Pds = np.random.choice(j,size=len(j),replace=True)
@@ -768,7 +765,8 @@ RF_lst_DEPTH_mean_1_true_Pds = []
 RF_lst_DEPTH_std_1_true_Pds = []
 RF_lst_lon_mean_1_true_Pds = []
 RF_lst_lat_mean_1_true_Pds = []
-
+RF_lst_DEPTH_mean_1_Pds = []
+RF_lst_DEPTH_std_1_Pds = []
 
 for _i,true_Pds_1 in enumerate(RF_DEPTH_mean_1_true_Pds):
 	if true_Pds_1 > 0:
@@ -777,33 +775,47 @@ for _i,true_Pds_1 in enumerate(RF_DEPTH_mean_1_true_Pds):
 		RF_lst_lat_mean_1_true_Pds.append(grid_sel_y[_i])
 		RF_lst_DEPTH_mean_1_true_Pds.append(true_Pds_1)
 		RF_lst_DEPTH_std_1_true_Pds.append(RF_DEPTH_std_1_true_Pds[_i])		
+		RF_lst_DEPTH_mean_1_Pds.append(RF_DEPTH_mean_1_Pds[_i])
+		RF_lst_DEPTH_std_1_Pds.append(RF_DEPTH_std_1_Pds[_i])		
 
 RF_lst_DEPTH_mean_1_true_Ppds = []
 RF_lst_lon_mean_1_true_Ppds = []
 RF_lst_lat_mean_1_true_Ppds = []
 RF_lst_DEPTH_std_1_true_Ppds = [] 
+RF_lst_DEPTH_mean_1_Ppds = []
+RF_lst_DEPTH_std_1_Ppds = [] 
+
 for _i,true_Ppds_1 in enumerate(RF_DEPTH_mean_1_true_Ppds):
 	if true_Ppds_1 > 0:
 		RF_lst_lon_mean_1_true_Ppds.append(grid_sel_x[_i])
 		RF_lst_lat_mean_1_true_Ppds.append(grid_sel_y[_i])
 		RF_lst_DEPTH_mean_1_true_Ppds.append(true_Ppds_1)
 		RF_lst_DEPTH_std_1_true_Ppds.append(RF_DEPTH_std_1_true_Ppds[_i])
+		RF_lst_DEPTH_mean_1_Ppds.append(RF_DEPTH_mean_1_Ppds[_i])
+		RF_lst_DEPTH_std_1_Ppds.append(RF_DEPTH_std_1_Ppds[_i])
 
 RF_lst_DEPTH_mean_2_true_Pds = []
 RF_lst_lon_mean_2_true_Pds = []
 RF_lst_lat_mean_2_true_Pds = []
 RF_lst_DEPTH_std_2_true_Pds = [] 
+RF_lst_DEPTH_mean_2_Pds = []
+RF_lst_DEPTH_std_2_Pds = [] 
+
 for _i,true_Pds_2 in enumerate(RF_DEPTH_mean_2_true_Pds):
 	if true_Pds_2 > 0:
 		RF_lst_lon_mean_2_true_Pds.append(grid_sel_x[_i])
 		RF_lst_lat_mean_2_true_Pds.append(grid_sel_y[_i])
 		RF_lst_DEPTH_mean_2_true_Pds.append(true_Pds_2)
 		RF_lst_DEPTH_std_2_true_Pds.append(RF_DEPTH_std_2_true_Pds[_i])
+		RF_lst_DEPTH_mean_2_Pds.append(RF_DEPTH_mean_2_Pds[_i])
+		RF_lst_DEPTH_std_2_Pds.append(RF_DEPTH_std_2_Pds[_i])
 
 RF_lst_DEPTH_mean_2_true_Ppds = []
 RF_lst_lon_mean_2_true_Ppds = []
 RF_lst_lat_mean_2_true_Ppds = []
 RF_lst_DEPTH_std_2_true_Ppds = []
+RF_lst_DEPTH_mean_2_Ppds = []
+RF_lst_DEPTH_std_2_Ppds = []
 
 for _i,true_Ppds_2 in enumerate(RF_DEPTH_mean_2_true_Ppds):
 	if true_Ppds_2 > 0:
@@ -811,6 +823,8 @@ for _i,true_Ppds_2 in enumerate(RF_DEPTH_mean_2_true_Ppds):
 		RF_lst_lat_mean_2_true_Ppds.append(grid_sel_y[_i])
 		RF_lst_DEPTH_mean_2_true_Ppds.append(true_Ppds_2)
 		RF_lst_DEPTH_std_2_true_Ppds.append(RF_DEPTH_std_2_true_Ppds[_i])
+		RF_lst_DEPTH_mean_2_Ppds.append(RF_DEPTH_mean_2_Ppds[_i])
+		RF_lst_DEPTH_std_2_Ppds.append(RF_DEPTH_std_2_Ppds[_i])
 
 ## Function to get midpoint scale in plots
 
@@ -876,6 +890,139 @@ class MidPointNorm(Normalize):
                 return  val*abs(vmin-midpoint) + midpoint
             else:
                 return  val*abs(vmax-midpoint) + midpoint
+
+##################################################################################################
+print('Plotting Figure: Depth of the Mantle Transition Zone for Pds and Ppds phases for 410 and 660 km ...')
+#Figure Depth of the Mantle Transition Zone for Pds and Ppds phases for 410 and 660 km
+
+fig, axes = plt.subplots(nrows=2, ncols=2,figsize=(10,10),squeeze=False,sharex=False,sharey=False)
+
+ax1 = axes[0, 0]
+ax = axes[0, 1]
+ax2 = axes[1, 0]
+ax3 = axes[1, 1]
+
+colormap = 'viridis'
+
+#Figure Depth of the Mantle Transition Zone for Pds phase for 410 km
+
+m1 = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_SMALL,
+            llcrnrlat=LLCRNRLAT_SMALL,urcrnrlon=URCRNRLON_SMALL,urcrnrlat=URCRNRLAT_SMALL,ax=ax1)
+
+m1.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
+m1.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
+
+#norm1 = MidPointNorm(midpoint=DEPTH_1)
+x, y = m1(RF_lst_lon_mean_1_true_Pds,RF_lst_lat_mean_1_true_Pds)
+#sc = m1.scatter(x,y,40,RF_lst_DEPTH_mean_1_true_Pds,cmap=colormap,marker='o',norm=norm1)
+sc1 = m1.scatter(x,y,40,RF_lst_DEPTH_mean_1_Pds,cmap=colormap,marker='o')
+
+for lon, lat in zip(sta_long,sta_lat):
+    x,y = m1(lon, lat)
+    msize = 10
+    l1, = m1.plot(x, y, '^',markersize=msize,markeredgecolor='k',markerfacecolor='grey')
+
+m1.fillcontinents(color='whitesmoke',lake_color=None,zorder=2,alpha=0.1)
+m1.drawcoastlines(color='k',zorder=1)
+m1.drawmeridians(np.arange(0, 360, 5),color='lightgrey',labels=[True,True,True,True])
+m1.drawparallels(np.arange(-90, 90, 5),color='lightgrey',labels=[True,True,True,True])
+
+
+ax1.set_title(str(int(DEPTH_1))+'km Pds', y=1.08)
+
+#Figure Depth of the Mantle Transition Zone for Ppds phase for 410 km
+
+m = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_SMALL,
+            llcrnrlat=LLCRNRLAT_SMALL,urcrnrlon=URCRNRLON_SMALL,urcrnrlat=URCRNRLAT_SMALL,ax=ax)
+
+m.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
+m.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
+
+#norm = MidPointNorm(midpoint=DEPTH_1)
+x, y = m(RF_lst_lon_mean_1_true_Ppds,RF_lst_lat_mean_1_true_Ppds)
+#sc1 = m.scatter(x,y,40,RF_lst_DEPTH_mean_1_true_Ppds,cmap=colormap,marker='o',norm=norm)
+sc = m.scatter(x,y,40,RF_lst_DEPTH_mean_1_Ppds,cmap=colormap,marker='o')
+
+
+for lon, lat in zip(sta_long,sta_lat):
+    x,y = m(lon, lat)
+    msize = 10
+    l1, = m.plot(x, y, '^',markersize=msize,markeredgecolor='k',markerfacecolor='grey')
+
+m.fillcontinents(color='whitesmoke',lake_color=None,zorder=2,alpha=0.1)
+m.drawcoastlines(color='k',zorder=1)
+m.drawmeridians(np.arange(0, 360, 5),color='lightgrey',labels=[True,True,True,True])
+m.drawparallels(np.arange(-90, 90, 5),color='lightgrey',labels=[True,True,True,True])
+
+ax.set_title(str(int(DEPTH_1))+'km Ppds', y=1.08)
+
+
+#Figure Depth of the Mantle Transition Zone for Pds phase for 660 km
+
+
+m2 = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_SMALL,
+            llcrnrlat=LLCRNRLAT_SMALL,urcrnrlon=URCRNRLON_SMALL,urcrnrlat=URCRNRLAT_SMALL,ax=ax2)
+
+m2.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
+m2.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
+
+#norm2 = MidPointNorm(midpoint=DEPTH_2)
+x, y = m2(RF_lst_lon_mean_2_true_Pds,RF_lst_lat_mean_2_true_Pds)
+#sc2 = m2.scatter(x,y,40,RF_lst_DEPTH_mean_2_true_Pds,cmap=colormap,marker='o',norm=norm2)
+sc2 = m2.scatter(x,y,40,RF_lst_DEPTH_mean_2_Pds,cmap=colormap,marker='o')
+for lon, lat in zip(sta_long,sta_lat):
+    x,y = m2(lon, lat)
+    msize = 10
+    l1, = m2.plot(x, y, '^',markersize=msize,markeredgecolor='k',markerfacecolor='grey')
+
+m2.fillcontinents(color='whitesmoke',lake_color=None,zorder=2,alpha=0.1)
+m2.drawcoastlines(color='k',zorder=1)
+m2.drawmeridians(np.arange(0, 360, 5),color='lightgrey',labels=[True,True,True,True])
+m2.drawparallels(np.arange(-90, 90, 5),color='lightgrey',labels=[True,True,True,True])
+
+ax2.set_title(str(int(DEPTH_2))+'km Pds', y=1.08)
+
+#Figure Depth of the Mantle Transition Zone for Ppds phase for 660 km
+
+m3 = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_SMALL,
+            llcrnrlat=LLCRNRLAT_SMALL,urcrnrlon=URCRNRLON_SMALL,urcrnrlat=URCRNRLAT_SMALL,ax=ax3)
+
+m3.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
+m3.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
+
+#norm3 = MidPointNorm(midpoint=DEPTH_2)
+x, y = m3(RF_lst_lon_mean_2_true_Ppds,RF_lst_lat_mean_2_true_Ppds)
+#sc2 = m3.scatter(x,y,40,RF_lst_DEPTH_mean_2_true_Ppds,cmap=colormap,marker='o',norm=norm3)
+sc3 = m3.scatter(x,y,40,RF_lst_DEPTH_mean_2_Ppds,cmap=colormap,marker='o')
+
+for lon, lat in zip(sta_long,sta_lat):
+    x,y = m3(lon, lat)
+    msize = 10
+    l1, = m3.plot(x, y, '^',markersize=msize,markeredgecolor='k',markerfacecolor='grey')
+
+m3.fillcontinents(color='whitesmoke',lake_color=None,zorder=2,alpha=0.1)
+m3.drawcoastlines(color='k',zorder=1)
+m3.drawmeridians(np.arange(0, 360, 5),color='lightgrey',labels=[True,True,True,True])
+m3.drawparallels(np.arange(-90, 90, 5),color='lightgrey',labels=[True,True,True,True])
+
+ax3.set_title(str(int(DEPTH_2))+'km Ppds', y=1.08)
+
+fig.colorbar(sc, ax=ax,orientation='horizontal')
+fig.colorbar(sc1, ax=ax1,orientation='horizontal')
+fig.colorbar(sc2, ax=ax2,orientation='horizontal')
+fig.colorbar(sc3, ax=ax3,orientation='horizontal')
+
+fig.subplots_adjust(wspace=0.25, hspace=0.25)
+
+fig.suptitle('Depth per bin')
+
+plt.show()
+
+fig.savefig(PP_FIGURE+'DEPTH_PER_BIN.'+EXT_FIG,dpi=DPI_FIG)
+
+###################################################################################################################
+
+
 ##################################################################################################
 print('Plotting Figure: True depth of the Mantle Transition Zone for Pds and Ppds phases for 410 and 660 km ...')
 #Figure True depth of the Mantle Transition Zone for Pds and Ppds phases for 410 and 660 km
@@ -1181,12 +1328,17 @@ print('Plotting Figure: Thickness of the Mantle Transition Zone...')
 thickness_MTZ_Pds = []
 thickness_MTZ_Ppds = []
 
+true_thickness_MTZ_Pds = []
+true_thickness_MTZ_Ppds = []
+
+
+for i,j in enumerate(RF_lst_DEPTH_mean_2_Pds):
+	thickness_MTZ_Pds.append(j-RF_lst_DEPTH_mean_1_Pds[i])
+	thickness_MTZ_Ppds.append(RF_lst_DEPTH_mean_2_Ppds[i]-RF_lst_DEPTH_mean_1_Ppds[i])
+	true_thickness_MTZ_Pds.append(RF_lst_DEPTH_mean_2_true_Pds[i]-RF_lst_DEPTH_mean_1_true_Pds[i])
+	true_thickness_MTZ_Ppds.append(RF_lst_DEPTH_mean_2_true_Ppds[i]-RF_lst_DEPTH_mean_1_true_Ppds[i])
+
 colormap_MTZ = 'seismic'
-
-for i,j in enumerate(RF_lst_DEPTH_mean_2_true_Pds):
-	thickness_MTZ_Pds.append(j-RF_lst_DEPTH_mean_1_true_Pds[i])
-	thickness_MTZ_Ppds.append(RF_lst_DEPTH_mean_2_true_Ppds[i]-RF_lst_DEPTH_mean_1_true_Ppds[i])
-
 
 fig_thickness, (ax_thickness1, ax_thickness2) = plt.subplots(nrows=1, ncols=2,figsize=(10,5))
 
@@ -1240,14 +1392,74 @@ fig_thickness.savefig(PP_FIGURE+'THICKNESS_MTZ_PER_BIN.'+EXT_FIG,dpi=DPI_FIG)
 
 ###################################################################################################################
 
+###################################################################################################################
+
+print('Plotting Figure: True Thickness of the Mantle Transition Zone...')
+#Figure Thickness of the Mantle Transition Zone
+
+colormap_MTZ = 'seismic'
+
+fig_thickness, (ax_thickness1, ax_thickness2) = plt.subplots(nrows=1, ncols=2,figsize=(10,5))
+
+m_thickness1 = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_SMALL,
+            llcrnrlat=LLCRNRLAT_SMALL,urcrnrlon=URCRNRLON_SMALL,urcrnrlat=URCRNRLAT_SMALL,ax=ax_thickness1)
+
+m_thickness1.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
+m_thickness1.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
+
+norm_thickness1 = MidPointNorm(midpoint=250)
+x, y = m_thickness1(RF_lst_lon_mean_1_true_Pds,RF_lst_lat_mean_1_true_Pds)
+sc_thickness1 = m_thickness1.scatter(x,y,40,true_thickness_MTZ_Pds,cmap=colormap_MTZ,marker='o',norm=norm_thickness1)
+
+for lon, lat in zip(sta_long,sta_lat):
+    x,y = m_thickness1(lon, lat)
+    msize = 10
+    l1, = m_thickness1.plot(x, y, '^',markersize=msize,markeredgecolor='k',markerfacecolor='grey')
+
+m_thickness1.fillcontinents(color='whitesmoke',lake_color=None,zorder=2,alpha=0.1)
+m_thickness1.drawcoastlines(color='k',zorder=1)
+m_thickness1.drawmeridians(np.arange(0, 360, 5),color='lightgrey',labels=[True,True,True,True])
+m_thickness1.drawparallels(np.arange(-90, 90, 5),color='lightgrey',labels=[True,True,True,True])
+fig_thickness.colorbar(sc_thickness1,ax=ax_thickness1,orientation='horizontal')
+ax_thickness1.set_title('True Thickness of MTZ (Pds)',y=1.08)
+
+
+m_thickness2 = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_SMALL,
+            llcrnrlat=LLCRNRLAT_SMALL,urcrnrlon=URCRNRLON_SMALL,urcrnrlat=URCRNRLAT_SMALL,ax=ax_thickness2)
+
+m_thickness2.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
+m_thickness2.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
+
+norm_thickness2 = MidPointNorm(midpoint=250)
+x, y = m_thickness2(RF_lst_lon_mean_1_true_Pds,RF_lst_lat_mean_1_true_Pds)
+sc_thickness2 = m_thickness2.scatter(x,y,40,true_thickness_MTZ_Ppds,cmap=colormap_MTZ,marker='o',norm=norm_thickness2)
+
+for lon, lat in zip(sta_long,sta_lat):
+    x,y = m_thickness2(lon, lat)
+    msize = 10
+    l1, = m_thickness2.plot(x, y, '^',markersize=msize,markeredgecolor='k',markerfacecolor='grey')
+
+m_thickness2.fillcontinents(color='whitesmoke',lake_color=None,zorder=2,alpha=0.1)
+m_thickness2.drawcoastlines(color='k',zorder=1)
+m_thickness2.drawmeridians(np.arange(0, 360, 5),color='lightgrey',labels=[True,True,True,True])
+m_thickness2.drawparallels(np.arange(-90, 90, 5),color='lightgrey',labels=[True,True,True,True])
+fig_thickness.colorbar(sc_thickness2,ax=ax_thickness2,orientation='horizontal')
+ax_thickness2.set_title('True Thickness of MTZ (Ppds)',y=1.08)
+
+plt.show()
+fig_thickness.savefig(PP_FIGURE+'TRUE_THICKNESS_MTZ_PER_BIN.'+EXT_FIG,dpi=DPI_FIG)
+
+###################################################################################################################
+
 print('Saving Selected Piercing Points in JSON file')
 print('\n')
 
 os.makedirs(PP_SELEC_DIR,exist_ok=True)
 
 SELECTED_BINNED_DATA_dic = {'lat':[],'lon':[],'len':[],'true_mean_1_Pds':[],'true_std_1_Pds':[],'true_mean_2_Pds':[],'true_std_2_Pds':[],
-'true_mean_1_Ppds':[],'true_std_1_Ppds':[],'true_mean_2_Ppds':[],'true_std_2_Ppds':[],'data_Pds':[],'data_Ppds':[],'mtz_thickness_Pds':[],
-'mtz_thickness_Ppds':[]}
+'true_mean_1_Ppds':[],'true_std_1_Ppds':[],'true_mean_2_Ppds':[],'true_std_2_Ppds':[],'mean_1_Pds':[],'std_1_Pds':[],'mean_2_Pds':[],'std_2_Pds':[],
+'mean_1_Ppds':[],'std_1_Ppds':[],'mean_2_Ppds':[],'std_2_Ppds':[],'data_Pds':[],'data_Ppds':[],'mtz_thickness_Pds':[],'true_thickness_MTZ_Pds':[],
+'mtz_thickness_Ppds':[],'true_thickness_MTZ_Ppds':[]}
 for i,j in enumerate(RF_stacking_Pds):
 
 	SELECTED_BINNED_DATA_dic['lat'].append(RF_lst_lat_mean_1_true_Pds[i])
@@ -1260,16 +1472,29 @@ for i,j in enumerate(RF_stacking_Pds):
 	SELECTED_BINNED_DATA_dic['true_mean_2_Pds'].append(RF_lst_DEPTH_mean_2_true_Pds[i])
 	SELECTED_BINNED_DATA_dic['true_std_2_Pds'].append(RF_lst_DEPTH_std_2_true_Pds[i])
 
+	SELECTED_BINNED_DATA_dic['mean_1_Pds'].append(RF_lst_DEPTH_mean_1_Pds[i])
+	SELECTED_BINNED_DATA_dic['std_1_Pds'].append(RF_lst_DEPTH_std_1_Pds[i])
+	SELECTED_BINNED_DATA_dic['mean_2_Pds'].append(RF_lst_DEPTH_mean_2_Pds[i])
+	SELECTED_BINNED_DATA_dic['std_2_Pds'].append(RF_lst_DEPTH_std_2_Pds[i])
+
 	SELECTED_BINNED_DATA_dic['true_mean_1_Ppds'].append(RF_lst_DEPTH_mean_1_true_Ppds[i])
 	SELECTED_BINNED_DATA_dic['true_std_1_Ppds'].append(RF_lst_DEPTH_std_1_true_Ppds[i])
 	SELECTED_BINNED_DATA_dic['true_mean_2_Ppds'].append(RF_lst_DEPTH_mean_2_true_Ppds[i])
 	SELECTED_BINNED_DATA_dic['true_std_2_Ppds'].append(RF_lst_DEPTH_std_2_true_Ppds[i])
+
+	SELECTED_BINNED_DATA_dic['mean_1_Ppds'].append(RF_lst_DEPTH_mean_1_Ppds[i])
+	SELECTED_BINNED_DATA_dic['std_1_Ppds'].append(RF_lst_DEPTH_std_1_Ppds[i])
+	SELECTED_BINNED_DATA_dic['mean_2_Ppds'].append(RF_lst_DEPTH_mean_2_Ppds[i])
+	SELECTED_BINNED_DATA_dic['std_2_Ppds'].append(RF_lst_DEPTH_std_2_Ppds[i])
 
 	SELECTED_BINNED_DATA_dic['data_Pds'].append(j)
 	SELECTED_BINNED_DATA_dic['data_Ppds'].append(RF_stacking_Ppds[i])
 
 	SELECTED_BINNED_DATA_dic['mtz_thickness_Pds'].append(thickness_MTZ_Pds[i])
 	SELECTED_BINNED_DATA_dic['mtz_thickness_Ppds'].append(thickness_MTZ_Ppds[i])
+
+	SELECTED_BINNED_DATA_dic['true_thickness_MTZ_Pds'].append(true_thickness_MTZ_Pds[i])
+	SELECTED_BINNED_DATA_dic['true_thickness_MTZ_Ppds'].append(true_thickness_MTZ_Ppds[i])
 
 
 with open(PP_SELEC_DIR+'SELECTED_BINNED_Ps.json', 'w') as fp:

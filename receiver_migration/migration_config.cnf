@@ -40,7 +40,7 @@
 #/home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/transition_zone/rede_BB/event_data_PP_selected/a_05/
 
 # dir of receiver functions
-RF_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/transition_zone/syngine_filtered/a_05
+RF_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/transition_zone/syngine_filtered/a_1
 # extension of receiver functions
 RF_EXT = .eqr
 
@@ -129,7 +129,7 @@ MIN_DEPTH = 300
 #maximum depth of the migration
 MAX_DEPTH = 800
 #depth interval of the migration
-INTER_DEPTH = 10
+INTER_DEPTH = 5
 
 #==================
 [piercings]
@@ -151,10 +151,10 @@ DEPTH_2 = 660
 DIST_GRID_PP = 1
 
 # mean distance between grid points and piercing points (degree)
-DIST_GRID_PP_MED = 0.7
+DIST_GRID_PP_MED = 0.5
 
 #number of piercing points per bin
-NUMBER_PP_PER_BIN = 20
+NUMBER_PP_PER_BIN = 15
 
 #False or True for depth estimation
 DEPTH_ESTIMATION = True 
