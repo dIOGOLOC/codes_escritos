@@ -30,10 +30,10 @@ from matplotlib import cbook
 from parameters_py.mgconfig import (
 					RF_DIR,RF_EXT,PROG_MIGRATION_DIR,MODEL_FILE_NPZ,MIN_DEPTH,MAX_DEPTH,INTER_DEPTH,PdS_DIR,
 					PP_DIR,PP_SELEC_DIR,NUMBER_PP_PER_BIN,RAY_TRACE_PLOT,RAY_TRACE_410_660_PLOT,STA_DIR,
-					LLCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLON_LARGE,URCRNRLAT_LARGE,LLCRNRLON_SMALL,PHASES_PPvs_LST,
-					URCRNRLON_SMALL,LLCRNRLAT_SMALL,URCRNRLAT_SMALL,PROJECT_LAT,PROJECT_LON,PHASES_LST,
+					LLCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLON_LARGE,URCRNRLAT_LARGE,LLCRNRLON_SMALL,
+					URCRNRLON_SMALL,LLCRNRLAT_SMALL,URCRNRLAT_SMALL,PROJECT_LAT,PROJECT_LON,GRID_PP_MULT,
 					BOUNDARY_1_SHP,BOUNDARY_1_SHP_NAME,BOUNDARY_2_SHP,BOUNDARY_2_SHP_NAME,DEPTH_1,DEPTH_2,					
-					RAY_PATH_FIGURE,PP_FIGURE,EXT_FIG,DPI_FIG,DIST_GRID_PP_MED,PHASES_PPvs_LST,DIST_GRID_PP,
+					RAY_PATH_FIGURE,PP_FIGURE,EXT_FIG,DPI_FIG,DIST_GRID_PP_MED,DIST_GRID_PP,
 					LINEAR_STACKING,DEPTH_ESTIMATION,DEPTH_RANGE,BOOTSTRAP_INTERATOR,BOOTSTRAP_DEPTH_ESTIMATION,
 					GAMMA
 				   )
@@ -85,9 +85,9 @@ camadas_terra_10_km = np.arange(MIN_DEPTH,MAX_DEPTH+INTER_DEPTH,INTER_DEPTH)
 print('Importing Pds piercing points to each PHASE')
 print('\n')
 
-PHASES = PHASES_LST.split(',')
+PHASES = 'P'+"{0:.0f}".format(DEPTH_1)+'s','P'+"{0:.0f}".format((DEPTH_1+DEPTH_2)/2)+'s','P'+"{0:.0f}".format(DEPTH_2)+'s'
 
-print('Importing Pds Piercing Points '+PHASES[0])
+print('Importing Pds Piercing Points for '+PHASES[0])
 print('\n')
 
 filename_1 = PP_DIR+'PP_'+PHASES[0]+'_dic.json'
@@ -101,10 +101,23 @@ PP_lon_1 = PP_1_dic['lon']
 PP_depth_1 = PP_1_dic['depth']
 
 
-print('Importing Pds Piercing Points '+PHASES[1])
+print('Importing Pds Piercing Points for '+PHASES[1])
 print('\n')
 
-filename_2 = PP_DIR+'PP_'+PHASES[1]+'_dic.json'
+filename_med = PP_DIR+'PP_'+PHASES[1]+'_dic.json'
+
+PP_med_dic = json.load(open(filename_med))
+
+PP_dist_med = PP_med_dic['dist']
+PP_time_med = PP_med_dic['time']
+PP_lat_med = PP_med_dic['lat']
+PP_lon_med = PP_med_dic['lon']
+PP_depth_med = PP_med_dic['depth']
+
+print('Importing Pds Piercing Points for '+PHASES[2])
+print('\n')
+
+filename_2 = PP_DIR+'PP_'+PHASES[2]+'_dic.json'
 
 PP_2_dic = json.load(open(filename_2))
 
@@ -114,7 +127,7 @@ PP_lat_2 = PP_2_dic['lat']
 PP_lon_2 = PP_2_dic['lon']
 PP_depth_2 = PP_2_dic['depth']
 
-print('Pds Piercing Points - '+str(DEPTH_1))
+print('Pds Piercing Points - '+"{0:.0f}".format(DEPTH_1))
 print('\n')
 
 pp_1_lat  = [[]]*len(PP_lon_1)
@@ -128,7 +141,29 @@ for i,j in enumerate(PP_lon_1):
                 pp_1_long[i] = l
 
 
-print('Pds Piercing Points - '+str(DEPTH_2))
+
+print('Pds Piercing Points - '+"{0:.0f}".format((DEPTH_1+DEPTH_2)/2))
+print('\n')
+
+pp_med_lat  = [[]]*len(PP_lon_med)
+pp_med_long  = [[]]*len(PP_lon_med)
+
+
+for i,j in enumerate(PP_lon_med):
+	for k,l in enumerate(j):
+		if (DEPTH_1+DEPTH_2)/2 in camadas_terra_10_km:
+			if LLCRNRLON_SMALL<= l <= URCRNRLON_SMALL and PP_depth_med[i][k] == (DEPTH_1+DEPTH_2)/2:
+				pp_med_lat[i] = PP_lat_med[i][k] 
+				pp_med_long[i] = l
+		else: 
+			dist_med_camada_terra = [abs(c - ((DEPTH_1+DEPTH_2)/2)) for x,c in enumerate(camadas_terra_10_km)]
+			if LLCRNRLON_SMALL<= l <= URCRNRLON_SMALL and PP_depth_med[i][k] == camadas_terra_10_km[dist_med_camada_terra.index(min(dist_med_camada_terra))]:
+				pp_med_lat[i] = PP_lat_med[i][k] 
+				pp_med_long[i] = l
+					
+				
+
+print('Pds Piercing Points - '+"{0:.0f}".format(DEPTH_2))
 print('\n')
 
 
@@ -146,7 +181,7 @@ for i,j in enumerate(PP_lon_2):
 print('Importing Ppds piercing points to each PHASE')
 print('\n')
 
-PHASES_Ppds = PHASES_PPvs_LST.split(',')
+PHASES_Ppds = 'PPv'+"{0:.0f}".format(DEPTH_1)+'s','PPv'+"{0:.0f}".format((DEPTH_1+DEPTH_2)/2)+'s','PPv'+"{0:.0f}".format(DEPTH_2)+'s'
 
 print('Importing Ppds Piercing Points '+PHASES_Ppds[0])
 print('\n')
@@ -167,7 +202,23 @@ PP_depth_1_Ppds = PP_1_dic_Ppds['depth']
 print('Importing Ppds Piercing Points '+PHASES_Ppds[1])
 print('\n')
 
-filename_2_Ppds = PP_DIR+'PP_'+PHASES_Ppds[1]+'_dic.json'
+filename_med_Ppds = PP_DIR+'PP_'+PHASES_Ppds[1]+'_dic.json'
+
+PP_med_dic_Ppds = json.load(open(filename_med_Ppds))
+
+
+PP_dist_med_Ppds = PP_med_dic_Ppds['dist']
+PP_time_med_Ppds = PP_med_dic_Ppds['time']
+PP_lat_med_Ppds = PP_med_dic_Ppds['lat']
+PP_lon_med_Ppds = PP_med_dic_Ppds['lon']
+PP_depth_med_Ppds = PP_med_dic_Ppds['depth']
+
+
+
+print('Importing Ppds Piercing Points '+PHASES_Ppds[2])
+print('\n')
+
+filename_2_Ppds = PP_DIR+'PP_'+PHASES_Ppds[2]+'_dic.json'
 
 PP_2_dic_Ppds = json.load(open(filename_2_Ppds))
 
@@ -179,7 +230,7 @@ PP_lat_2_Ppds = PP_2_dic_Ppds['lat']
 PP_lon_2_Ppds = PP_2_dic_Ppds['lon']
 PP_depth_2_Ppds = PP_2_dic_Ppds['depth']
 
-print('Ppds Piercing Points - '+str(DEPTH_1))
+print('Ppds Piercing Points - '+"{0:.0f}".format(DEPTH_1))
 print('\n')
 
 pp_1_lat_Ppds  = [[]]*len(PP_lon_1_Ppds)
@@ -193,7 +244,29 @@ for i,j in enumerate(PP_lon_1_Ppds):
                 pp_1_long_Ppds[i] = l
 
 
-print('Ppds Piercing Points - '+str(DEPTH_2))
+
+print('Ppds Piercing Points - '+"{0:.0f}".format((DEPTH_1+DEPTH_2)/2))
+print('\n')
+
+pp_med_lat_Ppds  = [[]]*len(PP_lon_med_Ppds)
+pp_med_long_Ppds  = [[]]*len(PP_lon_med_Ppds)
+
+
+for i,j in enumerate(PP_lon_med_Ppds):
+	for k,l in enumerate(j):
+		if (DEPTH_1+DEPTH_2)/2 in camadas_terra_10_km:
+			if LLCRNRLON_SMALL<= l <= URCRNRLON_SMALL and PP_depth_med_Ppds[i][k] == (DEPTH_1+DEPTH_2)/2:
+				pp_med_lat_Ppds[i] = PP_lat_med_Ppds[i][k] 
+				pp_med_long_Ppds[i] = l
+		else: 
+			dist_med_camada_terra = [abs(c - ((DEPTH_1+DEPTH_2)/2)) for x,c in enumerate(camadas_terra_10_km)]
+			if LLCRNRLON_SMALL<= l <= URCRNRLON_SMALL and PP_depth_med_Ppds[i][k] == camadas_terra_10_km[dist_med_camada_terra.index(min(dist_med_camada_terra))]:
+				pp_med_lat_Ppds[i] = PP_lat_med_Ppds[i][k] 
+				pp_med_long_Ppds[i] = l
+
+
+
+print('Ppds Piercing Points - '+"{0:.0f}".format(DEPTH_2))
 print('\n')
 
 
@@ -212,7 +285,7 @@ print('\n')
 
 area = (LLCRNRLON_SMALL,URCRNRLON_SMALL, LLCRNRLAT_SMALL, URCRNRLAT_SMALL)
 
-shape = (abs(abs(URCRNRLON_SMALL) - abs(LLCRNRLON_SMALL))*3, abs(abs(URCRNRLAT_SMALL) - abs(LLCRNRLAT_SMALL))*3)
+shape = (abs(abs(URCRNRLON_SMALL) - abs(LLCRNRLON_SMALL))*GRID_PP_MULT, abs(abs(URCRNRLAT_SMALL) - abs(LLCRNRLAT_SMALL))*GRID_PP_MULT)
 
 grdx, grdy = gridder.regular(area, shape)
 
@@ -224,6 +297,10 @@ print('\n')
 dist_pp_grid_min = [[]]*len(grdx)
 for i,j in enumerate(grdx):
     dist_pp_grid_min[i] = [np.sqrt((j - pp_1_long[k])**2 + (grdy[i] - l)**2) for k,l in enumerate(pp_1_lat)]
+
+dist_pp_grid_med = [[]]*len(grdx)
+for i,j in enumerate(grdx):
+    dist_pp_grid_med[i] = [np.sqrt((j - pp_med_long[k])**2 + (grdy[i] - l)**2) for k,l in enumerate(pp_med_lat)]
     
 dist_pp_grid_max = [[]]*len(grdx)
 for i,j in enumerate(grdx):
@@ -238,6 +315,16 @@ for i,j in enumerate(dist_pp_grid_min):
     indices = vect_j.argsort()
     if vect_j[indices[NUMBER_PP_PER_BIN]] < DIST_GRID_PP:
         grid_sel_min.append((grdx[i],grdy[i]))
+
+
+grid_sel_med = []
+grid_sel_med_data = []
+for i,j in enumerate(dist_pp_grid_med):
+    vect_j = np.array(j) 
+    indices = vect_j.argsort()
+    if vect_j[indices[NUMBER_PP_PER_BIN]] < DIST_GRID_PP:
+        grid_sel_med.append((grdx[i],grdy[i]))
+
         
 grid_sel_max = []
 grid_sel_min_data = []
@@ -249,7 +336,7 @@ for i,j in enumerate(dist_pp_grid_max):
         grid_sel_max.append((grdx[i],grdy[i]))
 
 
-grid_sel = grid_sel_min+grid_sel_max
+grid_sel = grid_sel_min+grid_sel_med+grid_sel_max
 
 
 grid_selected = set(map(tuple,grid_sel))
@@ -264,14 +351,15 @@ for i,j in enumerate(grid_selected):
 
 
 ###################################################################################################################
-#Figure Pds and Ppds Piercing Points
+print('Plotting: Figure Pds and Ppds Piercing Points')
 
 
-fig_PP,ax =  plt.subplots(nrows=1, ncols=1,figsize=(10,10),squeeze=True)
+fig_PP, (ax, ax1) =  plt.subplots(nrows=1, ncols=2,figsize=(10,10))
 
+#Figure Ppds
 
-m_PP = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_SMALL,
-            llcrnrlat=LLCRNRLAT_SMALL,urcrnrlon=URCRNRLON_SMALL,urcrnrlat=URCRNRLAT_SMALL)
+m_PP = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_LARGE,
+            llcrnrlat=LLCRNRLAT_LARGE,urcrnrlon=URCRNRLON_LARGE,urcrnrlat=URCRNRLAT_LARGE,ax=ax)
 
 m_PP.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m_PP.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
@@ -285,41 +373,81 @@ for lon, lat in zip(sta_long,sta_lat):
 for lon_1_Pds, lat_1_Pds in zip(pp_1_long,pp_1_lat):
     x_1_Pds,y_1_Pds = m_PP(lon_1_Pds, lat_1_Pds)
     msize_1 = 5
-    l2, = m_PP.plot(x_1_Pds, y_1_Pds, '+',markersize=msize_1,markeredgecolor='b',markerfacecolor='b')
+    l2, = m_PP.plot(x_1_Pds, y_1_Pds, '.',markersize=msize_1,markeredgecolor='k',markerfacecolor='b')
+
+
+for lon_med_Pds, lat_med_Pds in zip(pp_med_long,pp_med_lat):
+    x_med_Pds,y_med_Pds = m_PP(lon_med_Pds, lat_med_Pds)
+    msize_1 = 5
+    l3, = m_PP.plot(x_med_Pds, y_med_Pds, '.',markersize=msize_1,markeredgecolor='k',markerfacecolor='g')
+
 
 for lon_2_Pds, lat_2_Pds in zip(pp_2_long,pp_2_lat):
     x_2_Pds,y_2_Pds = m_PP(lon_2_Pds, lat_2_Pds)
     msize_2 = 5
-    l3, = m_PP.plot(x_2_Pds, y_2_Pds, '>',markersize=msize_2,markeredgecolor='r',markerfacecolor='r')
+    l4, = m_PP.plot(x_2_Pds, y_2_Pds, '.',markersize=msize_2,markeredgecolor='k',markerfacecolor='r')
 
 
-for lon_1_Ppds, lat_1_Ppds in zip(pp_1_long_Ppds,pp_1_lat_Ppds):
-    x_1_Ppds,y_1_Ppds = m_PP(lon_1_Ppds, lat_1_Ppds)
-    msize = 5
-    l4, = m_PP.plot(x_1_Ppds, y_1_Ppds, '.',markersize=msize,markeredgecolor='b',markerfacecolor='b')
-
-for lon_2_Ppds, lat_2_Ppds in zip(pp_2_long_Ppds,pp_2_lat_Ppds):
-    x_2_Ppds,y_2_Ppds = m_PP(lon_2_Ppds, lat_2_Ppds)
-    msize_2 = 5
-    l5, = m_PP.plot(x_2_Ppds, y_2_Ppds, 'p',markersize=msize_2,markeredgecolor='r',markerfacecolor='r')
 
 for lon_sel, lat_sel in zip(grid_sel_x,grid_sel_y):
     x_sel,y_sel = m_PP(lon_sel, lat_sel)
     msize_2 = 7
-    l6, = m_PP.plot(x_sel, y_sel, 'o',markersize=msize_2,markeredgecolor='k',markerfacecolor='None')
+    l5, = m_PP.plot(x_sel, y_sel, 'o',markersize=msize_2,markeredgecolor='k',markerfacecolor='None')
 
 m_PP.fillcontinents(color='whitesmoke',lake_color=None,zorder=2,alpha=0.1)
 m_PP.drawcoastlines(color='k',zorder=1)
 m_PP.drawmeridians(np.arange(0, 360, 5),color='lightgrey',labels=[True,True,True,True])
 m_PP.drawparallels(np.arange(-90, 90, 5),color='lightgrey',labels=[True,True,True,True])
 
-fig_PP.suptitle('Pds and Ppds Piercing Points at 410 and 660 km',ha='center',va='top')
-fig_PP.legend([l1,l2,l3,l4,l5,l6],['Stations','Piercing Points Pds 410 km','Piercing Points Pds 660 km','Piercing Points Ppds 410 km','Piercing Points Ppds 660 km','Grid Selected'],
-scatterpoints=1, frameon=True,labelspacing=1, loc='lower right',facecolor='w')
+ax.set_title('Pds Piercing Points',ha='center',va='top',y=1.08)
+ax.legend([l1,l2,l3,l4,l5],['Stations','Piercing Points Pds '+"{0:.0f}".format(DEPTH_1)+' km','Piercing Points Pds '+"{0:.0f}".format((DEPTH_1+DEPTH_2)/2)+' km','Piercing Points Pds '+"{0:.0f}".format(DEPTH_2)+' km','Grid Selected'],scatterpoints=1, frameon=True,labelspacing=1, loc='lower right',facecolor='w',fontsize='smaller')
+
+#Figure Ppds
+
+m_PP1 = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_LARGE,
+            llcrnrlat=LLCRNRLAT_LARGE,urcrnrlon=URCRNRLON_LARGE,urcrnrlat=URCRNRLAT_LARGE,ax=ax1)
+
+m_PP1.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
+m_PP1.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
+
+for lon, lat in zip(sta_long,sta_lat):
+    x,y = m_PP1(lon, lat)
+    msize = 10
+    l6, = m_PP1.plot(x, y, '^',markersize=msize,markeredgecolor='k',markerfacecolor='grey')
+
+
+for lon_1_Ppds, lat_1_Ppds in zip(pp_1_long_Ppds,pp_1_lat_Ppds):
+    x_1_Ppds,y_1_Ppds = m_PP1(lon_1_Ppds, lat_1_Ppds)
+    msize = 5
+    l7, = m_PP1.plot(x_1_Ppds, y_1_Ppds, '.',markersize=msize,markeredgecolor='k',markerfacecolor='b')
+
+for lon_med_Ppds, lat_med_Ppds in zip(pp_med_long_Ppds,pp_med_lat_Ppds):
+    x_med_Ppds,y_med_Ppds = m_PP1(lon_med_Ppds, lat_med_Ppds)
+    msize = 5
+    l8, = m_PP1.plot(x_1_Ppds, y_1_Ppds, '.',markersize=msize,markeredgecolor='k',markerfacecolor='g')
+
+for lon_2_Ppds, lat_2_Ppds in zip(pp_2_long_Ppds,pp_2_lat_Ppds):
+    x_2_Ppds,y_2_Ppds = m_PP1(lon_2_Ppds, lat_2_Ppds)
+    msize_2 = 5
+    l9, = m_PP1.plot(x_2_Ppds, y_2_Ppds, '.',markersize=msize_2,markeredgecolor='k',markerfacecolor='r')
+
+for lon_sel, lat_sel in zip(grid_sel_x,grid_sel_y):
+    x_sel,y_sel = m_PP1(lon_sel, lat_sel)
+    msize_2 = 7
+    l10, = m_PP1.plot(x_sel, y_sel, 'o',markersize=msize_2,markeredgecolor='k',markerfacecolor='None')
+
+m_PP1.fillcontinents(color='whitesmoke',lake_color=None,zorder=2,alpha=0.1)
+m_PP1.drawcoastlines(color='k',zorder=1)
+m_PP1.drawmeridians(np.arange(0, 360, 5),color='lightgrey',labels=[True,True,True,True])
+m_PP1.drawparallels(np.arange(-90, 90, 5),color='lightgrey',labels=[True,True,True,True])
+
+ax1.set_title('Pds and Ppds Piercing Points at 410 and 660 km',ha='center',va='top',y=1.08)
+ax1.legend([l6,l7,l8,l9,l10],['Stations','Piercing Points Ppds '+"{0:.0f}".format(DEPTH_1)+' km','Piercing Points Ppds '+"{0:.0f}".format((DEPTH_1+DEPTH_2)/2)+' km','Piercing Points Ppds '+"{0:.0f}".format(DEPTH_2)+' km','Grid Selected'],scatterpoints=1, frameon=True,labelspacing=0.5, loc='lower right',facecolor='w',fontsize='smaller')
+
 
 plt.show()
 
-fig_PP.savefig(PP_FIGURE+'PP_Pds_Ppds_410_660.'+EXT_FIG,dpi=DPI_FIG)
+fig_PP.savefig(PP_FIGURE+'PP_Pds_Ppds.'+EXT_FIG,dpi=DPI_FIG)
 
 ##########################################################################################################################################
 
@@ -389,8 +517,8 @@ for i,j in enumerate(RF_amplitude_time_Ppds):
 print('Data stacking in each point of the filtered grid')
 print('\n')
 
-dados_grid_lat = pp_1_lat
-dados_grid_lon = pp_1_long
+dados_grid_lat = pp_med_lat
+dados_grid_lon = pp_med_long
 
 if LINEAR_STACKING == True: 
 	RF_data_raw_Pds = [[]]*len(grid_sel_x)

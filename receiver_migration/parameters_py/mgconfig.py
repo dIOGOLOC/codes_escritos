@@ -130,10 +130,6 @@ INTER_DEPTH = config.getint('time', 'INTER_DEPTH')
 # ---------------
 # piercings
 # ---------------
-#phase list to calculate piercing points
-PHASES_LST = config.get('piercings', 'PHASES_LST')
-
-PHASES_PPvs_LST = config.get('piercings', 'PHASES_PPvs_LST')
 
 #depth list to calculate piercing points
 DEPTH_1 = config.getfloat('piercings', 'DEPTH_1')
@@ -142,7 +138,13 @@ DEPTH_2 = config.getfloat('piercings', 'DEPTH_2')
 # ---------------
 # migration
 # ---------------
+#GRID POINTS multiplyer
+GRID_PP_MULT = config.getfloat('migration', 'GRID_PP_MULT') 
+
+# distance between grid points and piercing points for each depth (degree)
 DIST_GRID_PP = config.getfloat('migration', 'DIST_GRID_PP') 
+
+# mean distance between grid points and piercing points (degree)
 DIST_GRID_PP_MED = config.getfloat('migration', 'DIST_GRID_PP_MED') 
 
 # number of piercing points per bin 

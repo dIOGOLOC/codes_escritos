@@ -40,7 +40,7 @@
 #/home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/transition_zone/rede_BB/event_data_PP_selected/a_05/
 
 # dir of receiver functions
-RF_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/transition_zone/rede_BB/event_data_PP_selected/a_05
+RF_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/transition_zone/rede_BB/event_data_PP_selected/a_1/
 # extension of receiver functions
 RF_EXT = .eqr
 
@@ -48,8 +48,8 @@ RF_EXT = .eqr
 PROG_MIGRATION_DIR = /home/diogo/diogo_git/codes_escritos/receiver_migration/
 
 
-#Directory of the model of IASP91 model of 10 km thick
-MODEL_FILE_NPZ = /home/diogo/diogo_git/codes_escritos/receiver_migration/velocity_model/iasp91_10.npz
+#Directory of the model of IASP91 models
+MODEL_FILE_NPZ = /home/diogo/diogo_git/codes_escritos/receiver_migration/velocity_model/iasp91_5.npz
 
 # dir of the stations data
 STA_DIR = /home/diogo/diogo_git/codes_escritos/receiver_migration/OUTPUT/Stations/
@@ -103,10 +103,10 @@ PROJECT_LON = -45
 
 #lower and upper corner (lat/lon) of the large map
 
-LLCRNRLON_LARGE=-60
-LLCRNRLAT_LARGE=-20
-URCRNRLON_LARGE=-30
-URCRNRLAT_LARGE=5
+LLCRNRLON_LARGE=-52
+LLCRNRLAT_LARGE=-10
+URCRNRLON_LARGE=-38
+URCRNRLAT_LARGE=-2
 
 #lower and upper corner (lat/lon) of the small map
 
@@ -129,16 +129,11 @@ MIN_DEPTH = 300
 #maximum depth of the migration
 MAX_DEPTH = 800
 #depth interval of the migration
-INTER_DEPTH = 10
+INTER_DEPTH = 5
 
 #==================
 [piercings]
 #==================
-#phase conversion list to calculate piercing points
-PHASES_LST = P410s,P660s
-
-#phase reverberation list to calculate piercing points
-PHASES_PPvs_LST = PPv410s,PPv660s
 
 #depth list to calculate piercing points
 DEPTH_1 = 410
@@ -147,6 +142,9 @@ DEPTH_2 = 660
 # ==========
 [migration]
 # ==========
+#GRID POINTS multiplyer
+GRID_PP_MULT = 3
+
 # distance between grid points and piercing points for each depth (degree)
 DIST_GRID_PP = 1
 
