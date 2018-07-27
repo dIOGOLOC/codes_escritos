@@ -262,6 +262,7 @@ for i,j in enumerate(grid_selected):
     grid_sel_x.append(j[0])
     grid_sel_y.append(j[1])
 
+
 ###################################################################################################################
 #Figure Pds and Ppds Piercing Points
 
@@ -345,6 +346,8 @@ Ppds_dist = Ppds_Dic['dist']
 Ppds_time = Ppds_Dic['time']
 Ppds_depth = Ppds_Dic['depth']
 
+###################################################################################################################
+
 print('Migrating Pds data...')
 print('\n')
 
@@ -381,6 +384,7 @@ for i,j in enumerate(RF_amplitude_time_Ppds):
     RF_t_Ppds = [round(l,1) for k,l in enumerate(j)]
     RF_amplitude_Ppds[i] = [sta_data[i][sta_t_Ppds.index(l)] if l != -1 else 0 for k,l in enumerate(RF_t_Ppds)]
 
+###################################################################################################################
 
 print('Data stacking in each point of the filtered grid')
 print('\n')
@@ -403,428 +407,174 @@ if LINEAR_STACKING == True:
 		RF_amplitude_depth_raw_Ppds[i] = [RF_amplitude_depth_Ppds[k] for k,l in enumerate(dados_grid_lat) if np.sqrt((j - dados_grid_lon[k])**2 + (grid_sel_y[i] - l)**2) < DIST_GRID_PP_MED]
 
 
-	if DEPTH_ESTIMATION == True: 
-		print('Depth mean and std estimation in each point of the filtered grid')
+	print('Depth mean and std estimation for each point of the filtered grid to the '+str(DEPTH_1)+'km')
+	print('\n')
+
+	RF_DEPTH_raw_1_Pds = [[]]*len(RF_data_raw_Pds)
+	RF_DEPTH_raw_1_Ppds = [[]]*len(RF_data_raw_Ppds)
+
+	for i,j in enumerate(RF_data_raw_Pds):
+		lst_DEPTH_raw = []
+		for k,l in enumerate(j):
+			lst_depth_amp = [l[x] for x,c in enumerate(RF_amplitude_depth_raw_Pds[i][k]) if DEPTH_1-DEPTH_RANGE <= c <= DEPTH_1+DEPTH_RANGE]
+			lst_depth_pp = [c for x,c in enumerate(RF_amplitude_depth_raw_Pds[i][k]) if DEPTH_1-DEPTH_RANGE <= c <= DEPTH_1+DEPTH_RANGE]
+			lst_DEPTH_raw.append(lst_depth_pp[lst_depth_amp.index(max(lst_depth_amp))])	
+		RF_DEPTH_raw_1_Pds[i] = lst_DEPTH_raw
+
+	for i,j in enumerate(RF_data_raw_Ppds):
+		lst_DEPTH_raw = []
+		for k,l in enumerate(j):
+			lst_depth_amp = [l[x] for x,c in enumerate(RF_amplitude_depth_raw_Ppds[i][k]) if DEPTH_1-DEPTH_RANGE <= c <= DEPTH_1+DEPTH_RANGE]
+			lst_depth_pp = [c for x,c in enumerate(RF_amplitude_depth_raw_Ppds[i][k]) if DEPTH_1-DEPTH_RANGE <= c <= DEPTH_1+DEPTH_RANGE]
+			lst_DEPTH_raw.append(lst_depth_pp[lst_depth_amp.index(max(lst_depth_amp))])
+		RF_DEPTH_raw_1_Ppds[i] = lst_DEPTH_raw
+
+			
+	RF_DEPTH_mean_1_Pds = []
+	RF_DEPTH_std_1_Pds = []
+
+	RF_DEPTH_mean_1_Ppds = []
+	RF_DEPTH_std_1_Ppds = []
+
+	RF_lon = []
+	RF_lat = []
+
+
+	for i,j in enumerate(RF_DEPTH_raw_1_Pds):
+		print('Bootstrap estimation of the true depths')
 		print('\n')
+		if len(j) > NUMBER_PP_PER_BIN:
+			std_1_lst_Pds = []
+			std_1_lst_Ppds = []
 
-		RF_DEPTH_raw_1_Pds = [[]]*len(RF_data_raw_Pds)
-		RF_DEPTH_raw_1_Ppds = [[]]*len(RF_data_raw_Ppds)
+			RF_DEPTH_mean_1_Pds.append(np.mean(j))
+			RF_DEPTH_mean_1_Ppds.append(np.mean(RF_DEPTH_raw_1_Ppds[i]))
 
-		for i,j in enumerate(RF_data_raw_Pds):
-			lst_DEPTH_raw = []
-			lst_depth_weights = [] 
-			for k,l in enumerate(j):
-				lst_depth_amp = [l[x] for x,c in enumerate(RF_amplitude_depth_raw_Pds[i][k]) if DEPTH_1-DEPTH_RANGE <= c <= DEPTH_1+DEPTH_RANGE]
-				lst_depth_pp = [c for x,c in enumerate(RF_amplitude_depth_raw_Pds[i][k]) if DEPTH_1-DEPTH_RANGE <= c <= DEPTH_1+DEPTH_RANGE]
-				lst_DEPTH_raw.append(lst_depth_pp[lst_depth_amp.index(max(lst_depth_amp))])	
-			RF_DEPTH_raw_1_Pds[i] = lst_DEPTH_raw
+			RF_lon.append(grid_sel_x[i])
+			RF_lat.append(grid_sel_y[i])
 
-		for i,j in enumerate(RF_data_raw_Ppds):
-			lst_DEPTH_raw = []
-			lst_depth_weights = [] 
-			for k,l in enumerate(j):
-				lst_depth_amp = [l[x] for x,c in enumerate(RF_amplitude_depth_raw_Ppds[i][k]) if DEPTH_1-DEPTH_RANGE <= c <= DEPTH_1+DEPTH_RANGE]
-				lst_depth_pp = [c for x,c in enumerate(RF_amplitude_depth_raw_Ppds[i][k]) if DEPTH_1-DEPTH_RANGE <= c <= DEPTH_1+DEPTH_RANGE]
-				lst_DEPTH_raw.append(lst_depth_pp[lst_depth_amp.index(max(lst_depth_amp))])
-			RF_DEPTH_raw_1_Ppds[i] = lst_DEPTH_raw
+			for _k in range(BOOTSTRAP_INTERATOR):
+				print('Bootstrap estimation '+str(1+_k))
+				BOOTSTRAP_LST_Pds = np.random.choice(j,size=len(j),replace=True)
+				BOOTSTRAP_LST_Ppds = np.random.choice(RF_DEPTH_raw_1_Ppds[i],size=len(RF_DEPTH_raw_1_Ppds[i]),replace=True)
 
+
+				std_1_lst_Pds.append(np.std(BOOTSTRAP_LST_Pds))
+				std_1_lst_Ppds.append(np.std(BOOTSTRAP_LST_Ppds))
+						
+				print('Depth - mean = '+str(np.mean(BOOTSTRAP_LST_Pds))+' -  Standard deviation = '+str(np.mean(std_1_lst_Pds))+' of Pds Conversions')
+				print('Depth - mean = '+str(np.mean(BOOTSTRAP_LST_Ppds))+' -  Standard deviation = '+str(np.mean(std_1_lst_Ppds))+' of Ppds Conversions')
+
+			RF_DEPTH_std_1_Pds.append(np.mean(std_1_lst_Pds))
+			RF_DEPTH_std_1_Ppds.append(np.mean(std_1_lst_Ppds))
+
+	print('Depth mean and std estimation for each point of the filtered grid to the '+str(DEPTH_2)+'km')
+	print('\n')
+
+	RF_DEPTH_raw_2_Pds = [[]]*len(RF_data_raw_Pds)
+	RF_DEPTH_raw_2_Ppds = [[]]*len(RF_data_raw_Ppds)
+	for i,j in enumerate(RF_data_raw_Pds):
+		lst_DEPTH_raw = []
+		for k,l in enumerate(j):
+			lst_depth_amp = [l[x] for x,c in enumerate(RF_amplitude_depth_raw_Pds[i][k]) if DEPTH_2-DEPTH_RANGE <= c <= DEPTH_2+DEPTH_RANGE]
+			lst_depth_pp = [c for x,c in enumerate(RF_amplitude_depth_raw_Pds[i][k]) if DEPTH_2-DEPTH_RANGE <= c <= DEPTH_2+DEPTH_RANGE]
+			lst_DEPTH_raw.append(lst_depth_pp[lst_depth_amp.index(max(lst_depth_amp))])
+		RF_DEPTH_raw_2_Pds[i] = lst_DEPTH_raw
+
+	for i,j in enumerate(RF_data_raw_Ppds):
+		lst_DEPTH_raw = []
+		for k,l in enumerate(j):
+			lst_depth_amp = [l[x] for x,c in enumerate(RF_amplitude_depth_raw_Ppds[i][k]) if DEPTH_2-DEPTH_RANGE <= c <= DEPTH_2+DEPTH_RANGE]
+			lst_depth_pp = [c for x,c in enumerate(RF_amplitude_depth_raw_Ppds[i][k]) if DEPTH_2-DEPTH_RANGE <= c <= DEPTH_2+DEPTH_RANGE]
+			lst_DEPTH_raw.append(lst_depth_pp[lst_depth_amp.index(max(lst_depth_amp))])
+		RF_DEPTH_raw_2_Ppds[i] = lst_DEPTH_raw
 			
-		RF_DEPTH_mean_1_Pds = []
-		RF_DEPTH_std_1_Pds = []
+	RF_DEPTH_mean_2_Pds = []
+	RF_DEPTH_std_2_Pds = []
 
-		RF_DEPTH_mean_1_Ppds = []
-		RF_DEPTH_std_1_Ppds = []
+	RF_DEPTH_mean_2_Ppds = []
+	RF_DEPTH_std_2_Ppds = []
 
-		RF_DEPTH_mean_1_true_Pds = []
-		RF_DEPTH_std_1_true_Pds = []
-
-		RF_DEPTH_mean_1_true_Ppds = []
-		RF_DEPTH_std_1_true_Ppds = []
-
-		for i,j in enumerate(RF_DEPTH_raw_1_Pds):
+	for i,j in enumerate(RF_DEPTH_raw_2_Pds):
+			if len(j) > NUMBER_PP_PER_BIN:
 				print('Bootstrap estimation of the true depths')
-				print('\n')
-				if len(j) > NUMBER_PP_PER_BIN:
-					std_1_lst_Pds = []
-					std_1_lst_Ppds = []
+				print('\n')				
+				std_2_lst_Pds = []
+				std_2_lst_Ppds = []
 
+				RF_DEPTH_mean_2_Pds.append(np.mean(j))
+				RF_DEPTH_mean_2_Ppds.append(np.mean(RF_DEPTH_raw_2_Ppds[i]))
 
-					std_1_lst_true_Pds = []
-					std_1_lst_true_Ppds = []
+				for _k in range(BOOTSTRAP_INTERATOR):
+					print('Bootstrap estimation '+str(1+_k))
+					BOOTSTRAP_LST_Pds = np.random.choice(j,size=len(j),replace=True)
+					BOOTSTRAP_LST_Ppds = np.random.choice(RF_DEPTH_raw_2_Ppds[i],size=len(RF_DEPTH_raw_2_Ppds[i]),replace=True)
 
-					lst_1_std_true_Pds  = []
-					lst_1_std_true_Ppds  = []
-
-					Vp_Vs_ratio_depth_1 = Vs_depth_1/Vp_depth_1
-					alfa = Vp_depth_1 - Vs_depth_1
-					beta = Vp_depth_1 + Vs_depth_1
-					gamma_vp_vs = GAMMA*Vp_Vs_ratio_depth_1
-
-					depth_Pds = j
-					depth_Ppds = RF_DEPTH_raw_1_Ppds[i]
-
-					delta_Vp = [(alfa*beta*(depth_Ppds[_t] - _y))/(alfa*(1+gamma_vp_vs)*_y - 
-								   (beta*(1-gamma_vp_vs)*depth_Ppds[_t])) for _t,_y in enumerate(depth_Pds)]
-
-					delta_Vs = [_delta_vp * GAMMA * Vp_Vs_ratio_depth_1 for _delta_vp in delta_Vp]
-
-					depth_true_Pds = [_y * ((Vp_depth_1-Vs_depth_1)/(Vp_depth_1*Vs_depth_1)) *
-											 (((Vs_depth_1+delta_Vs[_t])*(Vp_depth_1+delta_Vp[_t]))/(Vp_depth_1+delta_Vp[_t]-Vs_depth_1-delta_Vs[_t]))
-											 for _t,_y in enumerate(depth_Pds)] 
-
-					depth_true_Ppds = [_y * ((Vp_depth_1-Vs_depth_1)/(Vp_depth_1*Vs_depth_1)) *
-											 (((Vs_depth_1+delta_Vs[_t])*(Vp_depth_1+delta_Vp[_t]))/(Vp_depth_1+delta_Vp[_t]-Vs_depth_1-delta_Vs[_t]))
-											 for _t,_y in enumerate(depth_Ppds)] 	
-							
-
-					RF_DEPTH_mean_1_Pds.append(np.mean(j))
-					RF_DEPTH_mean_1_Ppds.append(np.mean(RF_DEPTH_raw_1_Ppds[i]))
-
-					RF_DEPTH_mean_1_true_Pds.append(np.mean(depth_true_Pds))
-					RF_DEPTH_mean_1_true_Ppds.append(np.mean(depth_true_Ppds))
-					
-					for _k in range(BOOTSTRAP_INTERATOR):
-						print('Bootstrap estimation '+str(1+_k))
-						BOOTSTRAP_LST_Pds = np.random.choice(j,size=len(j),replace=True)
-						BOOTSTRAP_LST_Ppds = np.random.choice(RF_DEPTH_raw_1_Ppds[i],size=len(RF_DEPTH_raw_1_Ppds[i]),replace=True)
-
-
-						std_1_lst_Pds.append(np.std(BOOTSTRAP_LST_Pds))
-						std_1_lst_Ppds.append(np.std(BOOTSTRAP_LST_Ppds))
+					std_2_lst_Pds.append(np.std(BOOTSTRAP_LST_Pds))
+					std_2_lst_Ppds.append(np.std(BOOTSTRAP_LST_Ppds))
 						
-						print('Depth - mean = '+str(np.mean(BOOTSTRAP_LST_Pds))+' -  Standard deviation = '+str(np.mean(std_1_lst_Pds))+' of Pds Conversions')
-						print('Depth - mean = '+str(np.mean(BOOTSTRAP_LST_Ppds))+' -  Standard deviation = '+str(np.mean(std_1_lst_Ppds))+' of Ppds Conversions')
-			
-						depth_Pds_bootstrap = BOOTSTRAP_LST_Pds
-						depth_Ppds_bootstrap = BOOTSTRAP_LST_Ppds
-
-						delta_Vp_bootstrap = [(alfa*beta*(depth_Ppds_bootstrap[_t] - _y))/(alfa*(1+gamma_vp_vs)*_y - 
-									   (beta*(1-gamma_vp_vs)*depth_Ppds_bootstrap[_t])) for _t,_y in enumerate(depth_Pds_bootstrap)]
-
-						delta_Vs_bootstrap = [_delta_vp * GAMMA * Vp_Vs_ratio_depth_1 for _delta_vp in delta_Vp_bootstrap]
-
-						depth_true_Pds_bootstrap = [_y * ((Vp_depth_1-Vs_depth_1)/(Vp_depth_1*Vs_depth_1)) *
-												 (((Vs_depth_1+delta_Vs_bootstrap[_t])*(Vp_depth_1+delta_Vp_bootstrap[_t]))/
-												(Vp_depth_1+delta_Vp_bootstrap[_t]-Vs_depth_1-delta_Vs[_t]))
-												 for _t,_y in enumerate(depth_Pds_bootstrap)] 
-
-
-						depth_true_Ppds_bootstrap = [_y * ((Vp_depth_1-Vs_depth_1)/(Vp_depth_1*Vs_depth_1)) *
-												 (((Vs_depth_1+delta_Vs_bootstrap[_t])*(Vp_depth_1+delta_Vp_bootstrap[_t]))/
-												(Vp_depth_1+delta_Vp_bootstrap[_t]-Vs_depth_1-delta_Vs[_t]))
-												 for _t,_y in enumerate(depth_Ppds_bootstrap)] 			
-
-
-						lst_1_std_true_Pds.append(np.std(depth_true_Pds_bootstrap))
-						lst_1_std_true_Ppds.append(np.std(depth_true_Ppds_bootstrap))
-
-						print('True Depth - mean = '+str(RF_DEPTH_mean_1_true_Pds[i])+' -  Standard deviation = '+str(np.mean(lst_1_std_true_Pds))+' of Pds Conversions')
-						print('True Depth - mean = '+str(RF_DEPTH_mean_1_true_Ppds[i])+' -  Standard deviation = '+str(np.mean(lst_1_std_true_Ppds))+' of Ppds Conversions')
+					print('Depth - mean = '+str(np.mean(BOOTSTRAP_LST_Pds))+' -  Standard deviation = '+str(np.mean(std_2_lst_Pds))+' of Pds Conversions')
+					print('Depth - mean = '+str(np.mean(BOOTSTRAP_LST_Ppds))+' -  Standard deviation = '+str(np.mean(std_2_lst_Ppds))+' of Ppds Conversions')
 
 						
 
-					RF_DEPTH_std_1_Pds.append(np.mean(std_1_lst_Pds))
+				RF_DEPTH_std_2_Pds.append(np.mean(std_2_lst_Pds))
+				RF_DEPTH_std_2_Ppds.append(np.mean(std_2_lst_Ppds))
 
-					RF_DEPTH_std_1_Ppds.append(np.mean(std_1_lst_Ppds))
-
-					RF_DEPTH_std_1_true_Pds.append(np.mean(lst_1_std_true_Pds))
-
-
-					RF_DEPTH_std_1_true_Ppds.append(np.mean(lst_1_std_true_Ppds))
-					print('\n')
-					print('Depth - mean = '+str(RF_DEPTH_mean_1_Pds[i])+' -  Standard deviation = '+str(RF_DEPTH_std_1_Pds[i])+' of Pds Conversions')
-					print('\n')
-					print('Depth - mean = '+str(RF_DEPTH_mean_1_Ppds[i])+' -  Standard deviation = '+str(RF_DEPTH_std_1_Ppds[i])+' of Ppds Conversions')
-
-					print('\n')
-					print('True Depth - mean = '+str(RF_DEPTH_mean_1_true_Pds[i])+' -  Standard deviation = '+str(RF_DEPTH_std_1_true_Pds[i])+' of Pds Conversions')
-					print('\n')
-					print('True Depth - mean = '+str(RF_DEPTH_mean_1_true_Ppds[i])+' -  Standard deviation = '+str(RF_DEPTH_std_1_true_Ppds[i])+' of Ppds Conversions')
-					print('\n')
-				else:
-
-					RF_DEPTH_std_1_Pds.append(0)
-					RF_DEPTH_mean_1_Pds.append(0)
-
-					RF_DEPTH_std_1_Ppds.append(0)
-					RF_DEPTH_mean_1_Ppds.append(0)
-
-					RF_DEPTH_mean_1_true_Pds.append(0)
-					RF_DEPTH_std_1_true_Pds.append(0)
-
-					RF_DEPTH_mean_1_true_Ppds.append(0)
-					RF_DEPTH_std_1_true_Ppds.append(0)
-
-					print('\n')
-					print('Depth - mean = '+str(RF_DEPTH_mean_1_Pds[i])+' -  Standard deviation = '+str(RF_DEPTH_std_1_Pds[i])+' of Pds Conversions')
-					print('\n')
-					print('Depth - mean = '+str(RF_DEPTH_mean_1_Ppds[i])+' -  Standard deviation = '+str(RF_DEPTH_std_1_Ppds[i])+' of Ppds Conversions')
-
-					print('\n')
-					print('True Depth - mean = '+str(RF_DEPTH_mean_1_true_Pds[i])+' -  Standard deviation = '+str(RF_DEPTH_std_1_true_Pds[i])+' of Pds Conversions')
-					print('\n')
-					print('True Depth - mean = '+str(RF_DEPTH_mean_1_true_Ppds[i])+' -  Standard deviation = '+str(RF_DEPTH_std_1_true_Ppds[i])+' of Ppds Conversions')
-					print('\n')
-
-
-
-
-
-	if DEPTH_ESTIMATION == True: 
-		print('Depth mean and std estimation in each point of the filtered grid')
-		print('\n')
-
-		RF_DEPTH_raw_2_Pds = [[]]*len(RF_data_raw_Pds)
-		RF_DEPTH_raw_2_Ppds = [[]]*len(RF_data_raw_Ppds)
-		for i,j in enumerate(RF_data_raw_Pds):
-			lst_DEPTH_raw = []
-			for k,l in enumerate(j):
-				lst_depth_amp = [l[x] for x,c in enumerate(RF_amplitude_depth_raw_Pds[i][k]) if DEPTH_2-DEPTH_RANGE <= c <= DEPTH_2+DEPTH_RANGE]
-				lst_depth_pp = [c for x,c in enumerate(RF_amplitude_depth_raw_Pds[i][k]) if DEPTH_2-DEPTH_RANGE <= c <= DEPTH_2+DEPTH_RANGE]
-				lst_DEPTH_raw.append(lst_depth_pp[lst_depth_amp.index(max(lst_depth_amp))])
-			RF_DEPTH_raw_2_Pds[i] = lst_DEPTH_raw
-
-		for i,j in enumerate(RF_data_raw_Ppds):
-			lst_DEPTH_raw = []
-			for k,l in enumerate(j):
-				lst_depth_amp = [l[x] for x,c in enumerate(RF_amplitude_depth_raw_Ppds[i][k]) if DEPTH_2-DEPTH_RANGE <= c <= DEPTH_2+DEPTH_RANGE]
-				lst_depth_pp = [c for x,c in enumerate(RF_amplitude_depth_raw_Ppds[i][k]) if DEPTH_2-DEPTH_RANGE <= c <= DEPTH_2+DEPTH_RANGE]
-				lst_DEPTH_raw.append(lst_depth_pp[lst_depth_amp.index(max(lst_depth_amp))])
-			RF_DEPTH_raw_2_Ppds[i] = lst_DEPTH_raw
-			
-		RF_DEPTH_delta_Vp = []
-
-		RF_DEPTH_mean_2_Pds = []
-		RF_DEPTH_std_2_Pds = []
-
-		RF_DEPTH_mean_2_Ppds = []
-		RF_DEPTH_std_2_Ppds = []
-
-		RF_DEPTH_mean_2_true_Pds = []
-		RF_DEPTH_std_2_true_Pds = []
-
-		RF_DEPTH_mean_2_true_Ppds = []
-		RF_DEPTH_std_2_true_Ppds = []
-
-		for i,j in enumerate(RF_DEPTH_raw_2_Pds):
-				print('Bootstrap estimation of the true depths')
-				print('\n')
-				if len(j) > NUMBER_PP_PER_BIN:
-					std_2_lst_Pds = []
-					std_2_lst_Ppds = []
-
-
-					std_2_lst_true_Pds = []
-					std_2_lst_true_Ppds = []
-
-					lst_2_std_true_Pds  = []
-					lst_2_std_true_Ppds  = []
-
-					Vp_Vs_ratio_depth_2 = Vs_depth_2/Vp_depth_2
-					alfa = Vp_depth_2 - Vs_depth_2
-					beta = Vp_depth_2 + Vs_depth_2
-					gamma_vp_vs = GAMMA*Vp_Vs_ratio_depth_2
-
-					depth_Pds = j
-					depth_Ppds = RF_DEPTH_raw_2_Ppds[i]
-
-					delta_Vp = [(alfa*beta*(depth_Ppds[_t] - _y))/(alfa*(1+gamma_vp_vs)*_y - 
-								   (beta*(1-gamma_vp_vs)*depth_Ppds[_t])) for _t,_y in enumerate(depth_Pds)]
-					
-
-					delta_Vs = [_delta_vp * GAMMA * Vp_Vs_ratio_depth_2 for _delta_vp in delta_Vp]
-
-					depth_true_Pds = [_y * ((Vp_depth_2-Vs_depth_2)/(Vp_depth_2*Vs_depth_2)) *
-											 (((Vs_depth_2+delta_Vs[_t])*(Vp_depth_2+delta_Vp[_t]))/(Vp_depth_2+delta_Vp[_t]-Vs_depth_2-delta_Vs[_t]))
-											 for _t,_y in enumerate(depth_Pds)] 
-
-					depth_true_Ppds = [_y * ((Vp_depth_2-Vs_depth_2)/(Vp_depth_2*Vs_depth_2)) *
-											 (((Vs_depth_2+delta_Vs[_t])*(Vp_depth_2+delta_Vp[_t]))/(Vp_depth_2+delta_Vp[_t]-Vs_depth_2-delta_Vs[_t]))
-											 for _t,_y in enumerate(depth_Ppds)] 	
-							
-					RF_DEPTH_delta_Vp.append(np.mean(delta_Vp))
-
-					RF_DEPTH_mean_2_Pds.append(np.mean(j))
-					RF_DEPTH_mean_2_Ppds.append(np.mean(RF_DEPTH_raw_2_Ppds[i]))
-
-					RF_DEPTH_mean_2_true_Pds.append(np.mean(depth_true_Pds))
-					RF_DEPTH_mean_2_true_Ppds.append(np.mean(depth_true_Ppds))
-
-					for _k in range(BOOTSTRAP_INTERATOR):
-						print('Bootstrap estimation '+str(1+_k))
-						BOOTSTRAP_LST_Pds = np.random.choice(j,size=len(j),replace=True)
-						BOOTSTRAP_LST_Ppds = np.random.choice(RF_DEPTH_raw_2_Ppds[i],size=len(RF_DEPTH_raw_2_Ppds[i]),replace=True)
-
-
-						std_2_lst_Pds.append(np.std(BOOTSTRAP_LST_Pds))
-						std_2_lst_Ppds.append(np.std(BOOTSTRAP_LST_Ppds))
-						
-						print('Depth - mean = '+str(np.mean(BOOTSTRAP_LST_Pds))+' -  Standard deviation = '+str(np.mean(std_2_lst_Pds))+' of Pds Conversions')
-						print('Depth - mean = '+str(np.mean(BOOTSTRAP_LST_Ppds))+' -  Standard deviation = '+str(np.mean(std_2_lst_Ppds))+' of Ppds Conversions')
-			
-						depth_Pds_bootstrap = BOOTSTRAP_LST_Pds
-						depth_Ppds_bootstrap = BOOTSTRAP_LST_Ppds
-
-						delta_Vp_bootstrap = [(alfa*beta*(depth_Ppds_bootstrap[_t] - _y))/(alfa*(1+gamma_vp_vs)*_y - 
-									   (beta*(1-gamma_vp_vs)*depth_Ppds_bootstrap[_t])) for _t,_y in enumerate(depth_Pds_bootstrap)]
-
-						delta_Vs_bootstrap = [_delta_vp * GAMMA * Vp_Vs_ratio_depth_2 for _delta_vp in delta_Vp_bootstrap]
-
-						depth_true_Pds_bootstrap = [_y * ((Vp_depth_2-Vs_depth_2)/(Vp_depth_2*Vs_depth_2)) *
-												 (((Vs_depth_2+delta_Vs_bootstrap[_t])*(Vp_depth_2+delta_Vp_bootstrap[_t]))/
-												(Vp_depth_2+delta_Vp_bootstrap[_t]-Vs_depth_2-delta_Vs[_t]))
-												 for _t,_y in enumerate(depth_Pds_bootstrap)] 
-
-
-						depth_true_Ppds_bootstrap = [_y * ((Vp_depth_2-Vs_depth_2)/(Vp_depth_2*Vs_depth_2)) *
-												 (((Vs_depth_2+delta_Vs_bootstrap[_t])*(Vp_depth_2+delta_Vp_bootstrap[_t]))/
-												(Vp_depth_2+delta_Vp_bootstrap[_t]-Vs_depth_2-delta_Vs[_t]))
-												 for _t,_y in enumerate(depth_Ppds_bootstrap)] 			
-
-
-						lst_2_std_true_Pds.append(np.std(depth_true_Pds_bootstrap))
-						lst_2_std_true_Ppds.append(np.std(depth_true_Ppds_bootstrap))
-
-						print('True Depth - mean = '+str(RF_DEPTH_mean_2_true_Pds[i])+' -  Standard deviation = '+str(np.mean(lst_2_std_true_Pds))+' of Pds Conversions')
-						print('True Depth - mean = '+str(RF_DEPTH_mean_2_true_Ppds[i])+' -  Standard deviation = '+str(np.mean(lst_2_std_true_Ppds))+' of Ppds Conversions')
-
-						
-
-					RF_DEPTH_std_2_Pds.append(np.mean(std_2_lst_Pds))
-
-					RF_DEPTH_std_2_Ppds.append(np.mean(std_2_lst_Ppds))
-
-					RF_DEPTH_std_2_true_Pds.append(np.mean(lst_2_std_true_Pds))
-
-
-					RF_DEPTH_std_2_true_Ppds.append(np.mean(lst_2_std_true_Ppds))
-					print('\n')
-					print('Depth - mean = '+str(RF_DEPTH_mean_2_Pds[i])+' -  Standard deviation = '+str(RF_DEPTH_std_2_Pds[i])+' of Pds Conversions')
-					print('\n')
-					print('Depth - mean = '+str(RF_DEPTH_mean_2_Ppds[i])+' -  Standard deviation = '+str(RF_DEPTH_std_2_Ppds[i])+' of Ppds Conversions')
-
-					print('\n')
-					print('True Depth - mean = '+str(RF_DEPTH_mean_2_true_Pds[i])+' -  Standard deviation = '+str(RF_DEPTH_std_2_true_Pds[i])+' of Pds Conversions')
-					print('\n')
-					print('True Depth - mean = '+str(RF_DEPTH_mean_2_true_Ppds[i])+' -  Standard deviation = '+str(RF_DEPTH_std_2_true_Ppds[i])+' of Ppds Conversions')
-					print('\n')
-				else:
-
-
-					RF_DEPTH_delta_Vp.append(0)
-
-					RF_DEPTH_std_2_Pds.append(0)
-					RF_DEPTH_mean_2_Pds.append(0)
-
-					RF_DEPTH_std_2_Ppds.append(0)
-					RF_DEPTH_mean_2_Ppds.append(0)
-
-					RF_DEPTH_mean_2_true_Pds.append(0)
-					RF_DEPTH_std_2_true_Pds.append(0)
-
-					RF_DEPTH_mean_2_true_Ppds.append(0)
-					RF_DEPTH_std_2_true_Ppds.append(0)
-
-					print('\n')
-					print('Depth - mean = '+str(RF_DEPTH_mean_2_Pds[i])+' -  Standard deviation = '+str(RF_DEPTH_std_2_Pds[i])+' of Pds Conversions')
-					print('\n')
-					print('Depth - mean = '+str(RF_DEPTH_mean_2_Ppds[i])+' -  Standard deviation = '+str(RF_DEPTH_std_2_Ppds[i])+' of Ppds Conversions')
-
-					print('\n')
-					print('True Depth - mean = '+str(RF_DEPTH_mean_2_true_Pds[i])+' -  Standard deviation = '+str(RF_DEPTH_std_2_true_Pds[i])+' of Pds Conversions')
-					print('\n')
-					print('True Depth - mean = '+str(RF_DEPTH_mean_2_true_Ppds[i])+' -  Standard deviation = '+str(RF_DEPTH_std_2_true_Ppds[i])+' of Ppds Conversions')
-					print('\n')
-
-
+#############################################################################################################################################################################################
+	print('Stacking RF for each point of the filtered grid')
 
 	RF_stacking_Pds = []
 	len_RF_stacking_Pds = []
-
 
 	for i,j in enumerate(RF_data_raw_Pds):
 		if len(j) > NUMBER_PP_PER_BIN:
 			RF_stacking_Pds.append([sum(x)/len(j)  for x in zip(*j)])
 			len_RF_stacking_Pds.append(len(j))
 
-
 	RF_stacking_Ppds = []
 	len_RF_stacking_Ppds = []
-
 
 	for i,j in enumerate(RF_data_raw_Ppds):
 		if len(j) > NUMBER_PP_PER_BIN:
 			RF_stacking_Ppds.append([sum(x)/len(j)  for x in zip(*j)])
 			len_RF_stacking_Ppds.append(len(j))
 
+	Vp_Vs_ratio_depth_1 = Vs_depth_1/Vp_depth_1
+	alfa = Vp_depth_1 - Vs_depth_1
+	beta = Vp_depth_1 + Vs_depth_1
+	gamma_vp_vs = GAMMA*Vp_Vs_ratio_depth_1
+
+	delta_1_Vp = [(alfa*beta*(RF_DEPTH_mean_1_Ppds[_t] - _y))/(alfa*(1+gamma_vp_vs)*_y - 
+		   (beta*(1-gamma_vp_vs)*RF_DEPTH_mean_1_Ppds[_t])) for _t,_y in enumerate(RF_DEPTH_mean_1_Pds)]
+
+	delta_1_Vs = [_delta_vp * GAMMA * Vp_Vs_ratio_depth_1 for _delta_vp in delta_1_Vp]
+
+	RF_DEPTH_mean_1_true_Pds = [_y * ((Vp_depth_1-Vs_depth_1)/(Vp_depth_1*Vs_depth_1)) *
+			 (((Vs_depth_1+delta_1_Vs[_t])*(Vp_depth_1+delta_1_Vp[_t]))/(Vp_depth_1+delta_1_Vp[_t]-Vs_depth_1-delta_1_Vs[_t]))
+			 for _t,_y in enumerate(RF_DEPTH_mean_1_Pds)] 
+
+	RF_DEPTH_mean_1_true_Ppds = [_y * ((Vp_depth_1-Vs_depth_1)/(Vp_depth_1*Vs_depth_1)) *
+			 (((Vs_depth_1+delta_1_Vs[_t])*(Vp_depth_1+delta_1_Vp[_t]))/(Vp_depth_1+delta_1_Vp[_t]-Vs_depth_1-delta_1_Vs[_t]))
+			 for _t,_y in enumerate(RF_DEPTH_mean_1_Ppds)] 	
+
+
+
+	delta_2_Vp = [(alfa*beta*(RF_DEPTH_mean_2_Ppds[_t] - _y))/(alfa*(1+gamma_vp_vs)*_y - 
+		   (beta*(1-gamma_vp_vs)*RF_DEPTH_mean_2_Ppds[_t])) for _t,_y in enumerate(RF_DEPTH_mean_2_Pds)]
+
+	delta_2_Vs = [_delta_vp * GAMMA * Vp_Vs_ratio_depth_1 for _delta_vp in delta_2_Vp]
+
+	RF_DEPTH_mean_2_true_Pds = [_y * ((Vp_depth_1-Vs_depth_1)/(Vp_depth_1*Vs_depth_1)) *
+			 (((Vs_depth_1+delta_2_Vs[_t])*(Vp_depth_1+delta_2_Vp[_t]))/(Vp_depth_1+delta_2_Vp[_t]-Vs_depth_1-delta_2_Vs[_t]))
+			 for _t,_y in enumerate(RF_DEPTH_mean_2_Pds)] 
+
+	RF_DEPTH_mean_2_true_Ppds = [_y * ((Vp_depth_1-Vs_depth_1)/(Vp_depth_1*Vs_depth_1)) *
+			 (((Vs_depth_1+delta_2_Vs[_t])*(Vp_depth_1+delta_2_Vp[_t]))/(Vp_depth_1+delta_2_Vp[_t]-Vs_depth_1-delta_2_Vs[_t]))
+			 for _t,_y in enumerate(RF_DEPTH_mean_2_Ppds)] 	
+
 else: 
 	pass
-
-RF_lst_delta_Vp = []
-RF_lst_DEPTH_mean_1_true_Pds = []
-RF_lst_DEPTH_std_1_true_Pds = []
-RF_lst_lon_mean_1_true_Pds = []
-RF_lst_lat_mean_1_true_Pds = []
-RF_lst_DEPTH_mean_1_Pds = []
-RF_lst_DEPTH_std_1_Pds = []
-
-for _i,true_Pds_1 in enumerate(RF_DEPTH_mean_1_true_Pds):
-	if true_Pds_1 > 0:
-		RF_lst_delta_Vp.append(RF_DEPTH_delta_Vp[_i])
-		RF_lst_lon_mean_1_true_Pds.append(grid_sel_x[_i])
-		RF_lst_lat_mean_1_true_Pds.append(grid_sel_y[_i])
-		RF_lst_DEPTH_mean_1_true_Pds.append(true_Pds_1)
-		RF_lst_DEPTH_std_1_true_Pds.append(RF_DEPTH_std_1_true_Pds[_i])		
-		RF_lst_DEPTH_mean_1_Pds.append(RF_DEPTH_mean_1_Pds[_i])
-		RF_lst_DEPTH_std_1_Pds.append(RF_DEPTH_std_1_Pds[_i])		
-
-RF_lst_DEPTH_mean_1_true_Ppds = []
-RF_lst_lon_mean_1_true_Ppds = []
-RF_lst_lat_mean_1_true_Ppds = []
-RF_lst_DEPTH_std_1_true_Ppds = [] 
-RF_lst_DEPTH_mean_1_Ppds = []
-RF_lst_DEPTH_std_1_Ppds = [] 
-
-for _i,true_Ppds_1 in enumerate(RF_DEPTH_mean_1_true_Ppds):
-	if true_Ppds_1 > 0:
-		RF_lst_lon_mean_1_true_Ppds.append(grid_sel_x[_i])
-		RF_lst_lat_mean_1_true_Ppds.append(grid_sel_y[_i])
-		RF_lst_DEPTH_mean_1_true_Ppds.append(true_Ppds_1)
-		RF_lst_DEPTH_std_1_true_Ppds.append(RF_DEPTH_std_1_true_Ppds[_i])
-		RF_lst_DEPTH_mean_1_Ppds.append(RF_DEPTH_mean_1_Ppds[_i])
-		RF_lst_DEPTH_std_1_Ppds.append(RF_DEPTH_std_1_Ppds[_i])
-
-RF_lst_DEPTH_mean_2_true_Pds = []
-RF_lst_lon_mean_2_true_Pds = []
-RF_lst_lat_mean_2_true_Pds = []
-RF_lst_DEPTH_std_2_true_Pds = [] 
-RF_lst_DEPTH_mean_2_Pds = []
-RF_lst_DEPTH_std_2_Pds = [] 
-
-for _i,true_Pds_2 in enumerate(RF_DEPTH_mean_2_true_Pds):
-	if true_Pds_2 > 0:
-		RF_lst_lon_mean_2_true_Pds.append(grid_sel_x[_i])
-		RF_lst_lat_mean_2_true_Pds.append(grid_sel_y[_i])
-		RF_lst_DEPTH_mean_2_true_Pds.append(true_Pds_2)
-		RF_lst_DEPTH_std_2_true_Pds.append(RF_DEPTH_std_2_true_Pds[_i])
-		RF_lst_DEPTH_mean_2_Pds.append(RF_DEPTH_mean_2_Pds[_i])
-		RF_lst_DEPTH_std_2_Pds.append(RF_DEPTH_std_2_Pds[_i])
-
-RF_lst_DEPTH_mean_2_true_Ppds = []
-RF_lst_lon_mean_2_true_Ppds = []
-RF_lst_lat_mean_2_true_Ppds = []
-RF_lst_DEPTH_std_2_true_Ppds = []
-RF_lst_DEPTH_mean_2_Ppds = []
-RF_lst_DEPTH_std_2_Ppds = []
-
-for _i,true_Ppds_2 in enumerate(RF_DEPTH_mean_2_true_Ppds):
-	if true_Ppds_2 > 0:
-		RF_lst_lon_mean_2_true_Ppds.append(grid_sel_x[_i])
-		RF_lst_lat_mean_2_true_Ppds.append(grid_sel_y[_i])
-		RF_lst_DEPTH_mean_2_true_Ppds.append(true_Ppds_2)
-		RF_lst_DEPTH_std_2_true_Ppds.append(RF_DEPTH_std_2_true_Ppds[_i])
-		RF_lst_DEPTH_mean_2_Ppds.append(RF_DEPTH_mean_2_Ppds[_i])
-		RF_lst_DEPTH_std_2_Ppds.append(RF_DEPTH_std_2_Ppds[_i])
 
 ## Function to get midpoint scale in plots
 
@@ -913,9 +663,9 @@ m1.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m1.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
 #norm1 = MidPointNorm(midpoint=DEPTH_1)
-x, y = m1(RF_lst_lon_mean_1_true_Pds,RF_lst_lat_mean_1_true_Pds)
+x, y = m1(RF_lon,RF_lat)
 #sc = m1.scatter(x,y,40,RF_lst_DEPTH_mean_1_true_Pds,cmap=colormap,marker='o',norm=norm1)
-sc1 = m1.scatter(x,y,40,RF_lst_DEPTH_mean_1_Pds,cmap=colormap,marker='o')
+sc1 = m1.scatter(x,y,40,RF_DEPTH_mean_1_Pds,cmap=colormap,marker='o')
 
 for lon, lat in zip(sta_long,sta_lat):
     x,y = m1(lon, lat)
@@ -930,6 +680,7 @@ m1.drawparallels(np.arange(-90, 90, 5),color='lightgrey',labels=[True,True,True,
 
 ax1.set_title(str(int(DEPTH_1))+'km Pds', y=1.08)
 
+
 #Figure Depth of the Mantle Transition Zone for Ppds phase for 410 km
 
 m = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_SMALL,
@@ -939,9 +690,9 @@ m.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
 #norm = MidPointNorm(midpoint=DEPTH_1)
-x, y = m(RF_lst_lon_mean_1_true_Ppds,RF_lst_lat_mean_1_true_Ppds)
+x, y = m(RF_lon,RF_lat)
 #sc1 = m.scatter(x,y,40,RF_lst_DEPTH_mean_1_true_Ppds,cmap=colormap,marker='o',norm=norm)
-sc = m.scatter(x,y,40,RF_lst_DEPTH_mean_1_Ppds,cmap=colormap,marker='o')
+sc = m.scatter(x,y,40,RF_DEPTH_mean_1_Ppds,cmap=colormap,marker='o')
 
 
 for lon, lat in zip(sta_long,sta_lat):
@@ -967,9 +718,9 @@ m2.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m2.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
 #norm2 = MidPointNorm(midpoint=DEPTH_2)
-x, y = m2(RF_lst_lon_mean_2_true_Pds,RF_lst_lat_mean_2_true_Pds)
+x, y = m2(RF_lon,RF_lat)
 #sc2 = m2.scatter(x,y,40,RF_lst_DEPTH_mean_2_true_Pds,cmap=colormap,marker='o',norm=norm2)
-sc2 = m2.scatter(x,y,40,RF_lst_DEPTH_mean_2_Pds,cmap=colormap,marker='o')
+sc2 = m2.scatter(x,y,40,RF_DEPTH_mean_2_Pds,cmap=colormap,marker='o')
 for lon, lat in zip(sta_long,sta_lat):
     x,y = m2(lon, lat)
     msize = 10
@@ -991,9 +742,9 @@ m3.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m3.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
 #norm3 = MidPointNorm(midpoint=DEPTH_2)
-x, y = m3(RF_lst_lon_mean_2_true_Ppds,RF_lst_lat_mean_2_true_Ppds)
+x, y = m3(RF_lon,RF_lat)
 #sc2 = m3.scatter(x,y,40,RF_lst_DEPTH_mean_2_true_Ppds,cmap=colormap,marker='o',norm=norm3)
-sc3 = m3.scatter(x,y,40,RF_lst_DEPTH_mean_2_Ppds,cmap=colormap,marker='o')
+sc3 = m3.scatter(x,y,40,RF_DEPTH_mean_2_Ppds,cmap=colormap,marker='o')
 
 for lon, lat in zip(sta_long,sta_lat):
     x,y = m3(lon, lat)
@@ -1020,8 +771,6 @@ plt.show()
 
 fig.savefig(PP_FIGURE+'DEPTH_PER_BIN.'+EXT_FIG,dpi=DPI_FIG)
 
-###################################################################################################################
-
 
 ##################################################################################################
 print('Plotting Figure: True depth of the Mantle Transition Zone for Pds and Ppds phases for 410 and 660 km ...')
@@ -1045,9 +794,9 @@ m1.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m1.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
 #norm1 = MidPointNorm(midpoint=DEPTH_1)
-x, y = m1(RF_lst_lon_mean_1_true_Pds,RF_lst_lat_mean_1_true_Pds)
+x, y = m1(RF_lon,RF_lat)
 #sc = m1.scatter(x,y,40,RF_lst_DEPTH_mean_1_true_Pds,cmap=colormap,marker='o',norm=norm1)
-sc1 = m1.scatter(x,y,40,RF_lst_DEPTH_mean_1_true_Pds,cmap=colormap,marker='o')
+sc1 = m1.scatter(x,y,40,RF_DEPTH_mean_1_true_Pds,cmap=colormap,marker='o')
 
 for lon, lat in zip(sta_long,sta_lat):
     x,y = m1(lon, lat)
@@ -1071,9 +820,9 @@ m.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
 #norm = MidPointNorm(midpoint=DEPTH_1)
-x, y = m(RF_lst_lon_mean_1_true_Ppds,RF_lst_lat_mean_1_true_Ppds)
+x, y = m(RF_lon,RF_lat)
 #sc1 = m.scatter(x,y,40,RF_lst_DEPTH_mean_1_true_Ppds,cmap=colormap,marker='o',norm=norm)
-sc = m.scatter(x,y,40,RF_lst_DEPTH_mean_1_true_Ppds,cmap=colormap,marker='o')
+sc = m.scatter(x,y,40,RF_DEPTH_mean_1_true_Ppds,cmap=colormap,marker='o')
 
 
 for lon, lat in zip(sta_long,sta_lat):
@@ -1099,9 +848,9 @@ m2.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m2.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
 #norm2 = MidPointNorm(midpoint=DEPTH_2)
-x, y = m2(RF_lst_lon_mean_2_true_Pds,RF_lst_lat_mean_2_true_Pds)
+x, y = m2(RF_lon,RF_lat)
 #sc2 = m2.scatter(x,y,40,RF_lst_DEPTH_mean_2_true_Pds,cmap=colormap,marker='o',norm=norm2)
-sc2 = m2.scatter(x,y,40,RF_lst_DEPTH_mean_2_true_Pds,cmap=colormap,marker='o')
+sc2 = m2.scatter(x,y,40,RF_DEPTH_mean_2_true_Pds,cmap=colormap,marker='o')
 for lon, lat in zip(sta_long,sta_lat):
     x,y = m2(lon, lat)
     msize = 10
@@ -1123,9 +872,9 @@ m3.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m3.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
 #norm3 = MidPointNorm(midpoint=DEPTH_2)
-x, y = m3(RF_lst_lon_mean_2_true_Ppds,RF_lst_lat_mean_2_true_Ppds)
+x, y = m3(RF_lon,RF_lat)
 #sc2 = m3.scatter(x,y,40,RF_lst_DEPTH_mean_2_true_Ppds,cmap=colormap,marker='o',norm=norm3)
-sc3 = m3.scatter(x,y,40,RF_lst_DEPTH_mean_2_true_Ppds,cmap=colormap,marker='o')
+sc3 = m3.scatter(x,y,40,RF_DEPTH_mean_2_true_Ppds,cmap=colormap,marker='o')
 
 for lon, lat in zip(sta_long,sta_lat):
     x,y = m3(lon, lat)
@@ -1156,7 +905,7 @@ plt.show()
 fig.savefig(PP_FIGURE+'TRUE_DEPTH_PER_BIN.'+EXT_FIG,dpi=DPI_FIG)
 
 ###################################################################################################################
-print('Plotting Figure: True std (bootstraping) of the Mantle Transition Zone for Pds and Ppds phases for 410 and 660 km ...')
+print('Plotting Figure: Std (bootstraping) of the Mantle Transition Zone for Pds and Ppds phases for 410 and 660 km ...')
 
 #Figure True std (bootstraping) of the Mantle Transition Zone for Pds and Ppds phases for 410 and 660 km
 
@@ -1177,8 +926,8 @@ m1_std = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJE
 m1_std.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m1_std.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
-x1_std, y1_std = m1(RF_lst_lon_mean_1_true_Pds,RF_lst_lat_mean_1_true_Pds)
-sc1_std = m1_std.scatter(x1_std,y1_std,40,RF_lst_DEPTH_std_1_true_Pds,cmap=colormap_std,marker='o')
+x1_std, y1_std = m1(RF_lon,RF_lat)
+sc1_std = m1_std.scatter(x1_std,y1_std,40,RF_DEPTH_std_1_Pds,cmap=colormap_std,marker='o')
 
 
 for lon1_std, lat1_std in zip(sta_long,sta_lat):
@@ -1202,8 +951,8 @@ m_std = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJEC
 m_std.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m_std.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
-x_std, y_std = m_std(RF_lst_lon_mean_1_true_Ppds,RF_lst_lat_mean_1_true_Ppds)
-sc_std = m_std.scatter(x_std,y_std,40,RF_lst_DEPTH_std_1_true_Ppds,cmap=colormap_std,marker='o')
+x_std, y_std = m_std(RF_lon,RF_lat)
+sc_std = m_std.scatter(x_std,y_std,40,RF_DEPTH_std_1_Ppds,cmap=colormap_std,marker='o')
 
 
 
@@ -1229,8 +978,8 @@ m2_std = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJE
 m2_std.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m2_std.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
-x2_std, y2_std = m2_std(RF_lst_lon_mean_2_true_Pds,RF_lst_lat_mean_2_true_Pds)
-sc2_std = m2_std.scatter(x2_std,y2_std,40,RF_lst_DEPTH_std_2_true_Pds,cmap=colormap_std,marker='o')
+x2_std, y2_std = m2_std(RF_lon,RF_lat)
+sc2_std = m2_std.scatter(x2_std,y2_std,40,RF_DEPTH_std_2_Pds,cmap=colormap_std,marker='o')
 
 
 for lon, lat in zip(sta_long,sta_lat):
@@ -1254,8 +1003,8 @@ m3_std = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJE
 m3_std.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m3_std.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
-x3_std, y3_std = m3(RF_lst_lon_mean_2_true_Ppds,RF_lst_lat_mean_2_true_Ppds)
-sc3_std = m3_std.scatter(x3_std,y3_std,40,RF_lst_DEPTH_std_2_true_Ppds,cmap=colormap_std,marker='o')
+x3_std, y3_std = m3(RF_lon,RF_lat)
+sc3_std = m3_std.scatter(x3_std,y3_std,40,RF_DEPTH_std_2_Ppds,cmap=colormap_std,marker='o')
 
 
 for lon3_std, lat3_std in zip(sta_long,sta_lat):
@@ -1280,26 +1029,47 @@ plt.show()
 
 fig_std.savefig(PP_FIGURE+'TRUE_STD_PER_BIN.'+EXT_FIG,dpi=DPI_FIG)
 
-
 ###################################################################################################################
 print('Plotting Figure: Delta Vp of each bin...')
 #Figure Delta Vp of each bin
 
 colormap_delta_vp = 'magma'
 
-fig_delta_vp, ax_delta_vp = plt.subplots(nrows=1, ncols=1,figsize=(10,10),squeeze=False)
+fig_delta_vp, (ax1_delta_vp, ax2_delta_vp) =  plt.subplots(nrows=1, ncols=2,figsize=(10,5))
 
+m1_delta_vp = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_SMALL,
+            llcrnrlat=LLCRNRLAT_SMALL,urcrnrlon=URCRNRLON_SMALL,urcrnrlat=URCRNRLAT_SMALL,ax=ax1_delta_vp)
+
+m1_delta_vp.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
+m1_delta_vp.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
+
+#norm_delta_vp = MidPointNorm(midpoint=0)
+x, y = m1_delta_vp(RF_lon,RF_lat)
+#sc_delta_vp = m_delta_vp.scatter(x,y,40,RF_lst_delta_Vp,cmap=colormap,marker='o',norm=norm_delta_vp)
+sc1_delta_vp = m1_delta_vp.scatter(x,y,40,delta_1_Vp,cmap=colormap_delta_vp,marker='o')
+
+for lon, lat in zip(sta_long,sta_lat):
+    x,y = m1_delta_vp(lon, lat)
+    msize = 10
+    l1, = m1_delta_vp.plot(x, y, '^',markersize=msize,markeredgecolor='k',markerfacecolor='grey')
+
+m1_delta_vp.fillcontinents(color='whitesmoke',lake_color=None,zorder=2,alpha=0.1)
+m1_delta_vp.drawcoastlines(color='k',zorder=1)
+m1_delta_vp.drawmeridians(np.arange(0, 360, 5),color='lightgrey',labels=[True,True,True,True])
+m1_delta_vp.drawparallels(np.arange(-90, 90, 5),color='lightgrey',labels=[True,True,True,True])
+fig_delta_vp.colorbar(sc1_delta_vp,ax=ax1_delta_vp,orientation='horizontal')
+ax1_delta_vp.set_title('Delta Vp (Pds)',y=1.08)
 
 m_delta_vp = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_SMALL,
-            llcrnrlat=LLCRNRLAT_SMALL,urcrnrlon=URCRNRLON_SMALL,urcrnrlat=URCRNRLAT_SMALL)
+            llcrnrlat=LLCRNRLAT_SMALL,urcrnrlon=URCRNRLON_SMALL,urcrnrlat=URCRNRLAT_SMALL,ax=ax2_delta_vp)
 
 m_delta_vp.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m_delta_vp.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
 #norm_delta_vp = MidPointNorm(midpoint=0)
-x, y = m_delta_vp(RF_lst_lon_mean_1_true_Pds,RF_lst_lat_mean_1_true_Pds)
+x, y = m_delta_vp(RF_lon,RF_lat)
 #sc_delta_vp = m_delta_vp.scatter(x,y,40,RF_lst_delta_Vp,cmap=colormap,marker='o',norm=norm_delta_vp)
-sc_delta_vp = m_delta_vp.scatter(x,y,40,RF_lst_delta_Vp,cmap=colormap_delta_vp,marker='o')
+sc_delta_vp = m_delta_vp.scatter(x,y,40,delta_2_Vp,cmap=colormap_delta_vp,marker='o')
 
 for lon, lat in zip(sta_long,sta_lat):
     x,y = m_delta_vp(lon, lat)
@@ -1310,7 +1080,8 @@ m_delta_vp.fillcontinents(color='whitesmoke',lake_color=None,zorder=2,alpha=0.1)
 m_delta_vp.drawcoastlines(color='k',zorder=1)
 m_delta_vp.drawmeridians(np.arange(0, 360, 5),color='lightgrey',labels=[True,True,True,True])
 m_delta_vp.drawparallels(np.arange(-90, 90, 5),color='lightgrey',labels=[True,True,True,True])
-fig_delta_vp.colorbar(sc_delta_vp,orientation='horizontal')
+fig_delta_vp.colorbar(sc_delta_vp,ax=ax2_delta_vp,orientation='horizontal')
+ax2_delta_vp.set_title('Delta Vp (Ppds)',y=1.08)
 
 fig_delta_vp.suptitle(r'$\delta V_{p}$ for each bin'+'\n'+
 r'$\delta V_{p} = \frac{\alpha . \beta . (H_{A}^{(Ppds)} - H_{A}^{(Pds)})}{\alpha . (1 + \frac{\gamma.V_{s0}}{V_{p0}}) . H_{A}^{(Pds)} - \beta . (1 - \frac{\gamma.V_{s0}}{V_{p0}}). H_{A}^{(Ppds)}}$',
@@ -1332,11 +1103,11 @@ true_thickness_MTZ_Pds = []
 true_thickness_MTZ_Ppds = []
 
 
-for i,j in enumerate(RF_lst_DEPTH_mean_2_Pds):
-	thickness_MTZ_Pds.append(j-RF_lst_DEPTH_mean_1_Pds[i])
-	thickness_MTZ_Ppds.append(RF_lst_DEPTH_mean_2_Ppds[i]-RF_lst_DEPTH_mean_1_Ppds[i])
-	true_thickness_MTZ_Pds.append(RF_lst_DEPTH_mean_2_true_Pds[i]-RF_lst_DEPTH_mean_1_true_Pds[i])
-	true_thickness_MTZ_Ppds.append(RF_lst_DEPTH_mean_2_true_Ppds[i]-RF_lst_DEPTH_mean_1_true_Ppds[i])
+for i,j in enumerate(RF_DEPTH_mean_2_Pds):
+	thickness_MTZ_Pds.append(j-RF_DEPTH_mean_1_Pds[i])
+	thickness_MTZ_Ppds.append(RF_DEPTH_mean_2_Ppds[i]-RF_DEPTH_mean_1_Ppds[i])
+	true_thickness_MTZ_Pds.append(RF_DEPTH_mean_2_true_Pds[i]-RF_DEPTH_mean_1_true_Pds[i])
+	true_thickness_MTZ_Ppds.append(RF_DEPTH_mean_2_true_Ppds[i]-RF_DEPTH_mean_1_true_Ppds[i])
 
 colormap_MTZ = 'seismic'
 
@@ -1349,7 +1120,7 @@ m_thickness1.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m_thickness1.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
 norm_thickness1 = MidPointNorm(midpoint=250)
-x, y = m_thickness1(RF_lst_lon_mean_1_true_Pds,RF_lst_lat_mean_1_true_Pds)
+x, y = m_thickness1(RF_lon,RF_lat)
 sc_thickness1 = m_thickness1.scatter(x,y,40,thickness_MTZ_Pds,cmap=colormap_MTZ,marker='o',norm=norm_thickness1)
 
 for lon, lat in zip(sta_long,sta_lat):
@@ -1372,7 +1143,7 @@ m_thickness2.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m_thickness2.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
 norm_thickness2 = MidPointNorm(midpoint=250)
-x, y = m_thickness2(RF_lst_lon_mean_1_true_Pds,RF_lst_lat_mean_1_true_Pds)
+x, y = m_thickness2(RF_lon,RF_lat)
 sc_thickness2 = m_thickness2.scatter(x,y,40,thickness_MTZ_Ppds,cmap=colormap_MTZ,marker='o',norm=norm_thickness2)
 
 for lon, lat in zip(sta_long,sta_lat):
@@ -1408,7 +1179,7 @@ m_thickness1.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m_thickness1.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
 norm_thickness1 = MidPointNorm(midpoint=250)
-x, y = m_thickness1(RF_lst_lon_mean_1_true_Pds,RF_lst_lat_mean_1_true_Pds)
+x, y = m_thickness1(RF_lon,RF_lat)
 sc_thickness1 = m_thickness1.scatter(x,y,40,true_thickness_MTZ_Pds,cmap=colormap_MTZ,marker='o',norm=norm_thickness1)
 
 for lon, lat in zip(sta_long,sta_lat):
@@ -1431,7 +1202,7 @@ m_thickness2.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m_thickness2.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
 norm_thickness2 = MidPointNorm(midpoint=250)
-x, y = m_thickness2(RF_lst_lon_mean_1_true_Pds,RF_lst_lat_mean_1_true_Pds)
+x, y = m_thickness2(RF_lon,RF_lat)
 sc_thickness2 = m_thickness2.scatter(x,y,40,true_thickness_MTZ_Ppds,cmap=colormap_MTZ,marker='o',norm=norm_thickness2)
 
 for lon, lat in zip(sta_long,sta_lat):
@@ -1456,36 +1227,32 @@ print('\n')
 
 os.makedirs(PP_SELEC_DIR,exist_ok=True)
 
-SELECTED_BINNED_DATA_dic = {'lat':[],'lon':[],'len':[],'true_mean_1_Pds':[],'true_std_1_Pds':[],'true_mean_2_Pds':[],'true_std_2_Pds':[],
-'true_mean_1_Ppds':[],'true_std_1_Ppds':[],'true_mean_2_Ppds':[],'true_std_2_Ppds':[],'mean_1_Pds':[],'std_1_Pds':[],'mean_2_Pds':[],'std_2_Pds':[],
-'mean_1_Ppds':[],'std_1_Ppds':[],'mean_2_Ppds':[],'std_2_Ppds':[],'data_Pds':[],'data_Ppds':[],'mtz_thickness_Pds':[],'true_thickness_MTZ_Pds':[],
-'mtz_thickness_Ppds':[],'true_thickness_MTZ_Ppds':[]}
+SELECTED_BINNED_DATA_dic = {'lat':[],'lon':[],'len_Pds':[],'len_Ppds':[],'true_mean_1_Pds':[],'true_mean_2_Pds':[],'true_mean_1_Ppds':[],
+'true_mean_2_Ppds':[],'mean_1_Pds':[],'std_1_Pds':[],'mean_2_Pds':[],'std_2_Pds':[],'mean_1_Ppds':[],'std_1_Ppds':[],'mean_2_Ppds':[],
+'std_2_Ppds':[],'data_Pds':[],'data_Ppds':[],'mtz_thickness_Pds':[],'true_thickness_MTZ_Pds':[],'mtz_thickness_Ppds':[],'true_thickness_MTZ_Ppds':[]}
 for i,j in enumerate(RF_stacking_Pds):
 
-	SELECTED_BINNED_DATA_dic['lat'].append(RF_lst_lat_mean_1_true_Pds[i])
-	SELECTED_BINNED_DATA_dic['lon'].append(RF_lst_lon_mean_1_true_Pds[i])
+	SELECTED_BINNED_DATA_dic['lat'].append(RF_lat[i])
+	SELECTED_BINNED_DATA_dic['lon'].append(RF_lon[i])
 
-	SELECTED_BINNED_DATA_dic['len'].append(len_RF_stacking_Pds[i])
+	SELECTED_BINNED_DATA_dic['len_Pds'].append(len_RF_stacking_Pds[i])
+	SELECTED_BINNED_DATA_dic['len_Ppds'].append(len_RF_stacking_Ppds[i])
 
-	SELECTED_BINNED_DATA_dic['true_mean_1_Pds'].append(RF_lst_DEPTH_mean_1_true_Pds[i])
-	SELECTED_BINNED_DATA_dic['true_std_1_Pds'].append(RF_lst_DEPTH_std_1_true_Pds[i])
-	SELECTED_BINNED_DATA_dic['true_mean_2_Pds'].append(RF_lst_DEPTH_mean_2_true_Pds[i])
-	SELECTED_BINNED_DATA_dic['true_std_2_Pds'].append(RF_lst_DEPTH_std_2_true_Pds[i])
+	SELECTED_BINNED_DATA_dic['true_mean_1_Pds'].append(RF_DEPTH_mean_1_true_Pds[i])
+	SELECTED_BINNED_DATA_dic['true_mean_2_Pds'].append(RF_DEPTH_mean_2_true_Pds[i])
 
-	SELECTED_BINNED_DATA_dic['mean_1_Pds'].append(RF_lst_DEPTH_mean_1_Pds[i])
-	SELECTED_BINNED_DATA_dic['std_1_Pds'].append(RF_lst_DEPTH_std_1_Pds[i])
-	SELECTED_BINNED_DATA_dic['mean_2_Pds'].append(RF_lst_DEPTH_mean_2_Pds[i])
-	SELECTED_BINNED_DATA_dic['std_2_Pds'].append(RF_lst_DEPTH_std_2_Pds[i])
+	SELECTED_BINNED_DATA_dic['mean_1_Pds'].append(RF_DEPTH_mean_1_Pds[i])
+	SELECTED_BINNED_DATA_dic['std_1_Pds'].append(RF_DEPTH_std_1_Pds[i])
+	SELECTED_BINNED_DATA_dic['mean_2_Pds'].append(RF_DEPTH_mean_2_Pds[i])
+	SELECTED_BINNED_DATA_dic['std_2_Pds'].append(RF_DEPTH_std_2_Pds[i])
 
-	SELECTED_BINNED_DATA_dic['true_mean_1_Ppds'].append(RF_lst_DEPTH_mean_1_true_Ppds[i])
-	SELECTED_BINNED_DATA_dic['true_std_1_Ppds'].append(RF_lst_DEPTH_std_1_true_Ppds[i])
-	SELECTED_BINNED_DATA_dic['true_mean_2_Ppds'].append(RF_lst_DEPTH_mean_2_true_Ppds[i])
-	SELECTED_BINNED_DATA_dic['true_std_2_Ppds'].append(RF_lst_DEPTH_std_2_true_Ppds[i])
+	SELECTED_BINNED_DATA_dic['true_mean_1_Ppds'].append(RF_DEPTH_mean_1_true_Ppds[i])
+	SELECTED_BINNED_DATA_dic['true_mean_2_Ppds'].append(RF_DEPTH_mean_2_true_Ppds[i])
 
-	SELECTED_BINNED_DATA_dic['mean_1_Ppds'].append(RF_lst_DEPTH_mean_1_Ppds[i])
-	SELECTED_BINNED_DATA_dic['std_1_Ppds'].append(RF_lst_DEPTH_std_1_Ppds[i])
-	SELECTED_BINNED_DATA_dic['mean_2_Ppds'].append(RF_lst_DEPTH_mean_2_Ppds[i])
-	SELECTED_BINNED_DATA_dic['std_2_Ppds'].append(RF_lst_DEPTH_std_2_Ppds[i])
+	SELECTED_BINNED_DATA_dic['mean_1_Ppds'].append(RF_DEPTH_mean_1_Ppds[i])
+	SELECTED_BINNED_DATA_dic['std_1_Ppds'].append(RF_DEPTH_std_1_Ppds[i])
+	SELECTED_BINNED_DATA_dic['mean_2_Ppds'].append(RF_DEPTH_mean_2_Ppds[i])
+	SELECTED_BINNED_DATA_dic['std_2_Ppds'].append(RF_DEPTH_std_2_Ppds[i])
 
 	SELECTED_BINNED_DATA_dic['data_Pds'].append(j)
 	SELECTED_BINNED_DATA_dic['data_Ppds'].append(RF_stacking_Ppds[i])

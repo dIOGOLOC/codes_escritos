@@ -40,7 +40,7 @@
 #/home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/transition_zone/rede_BB/event_data_PP_selected/a_05/
 
 # dir of receiver functions
-RF_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/transition_zone/syngine_filtered/a_1
+RF_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/transition_zone/rede_BB/event_data_PP_selected/a_05
 # extension of receiver functions
 RF_EXT = .eqr
 
@@ -129,7 +129,7 @@ MIN_DEPTH = 300
 #maximum depth of the migration
 MAX_DEPTH = 800
 #depth interval of the migration
-INTER_DEPTH = 5
+INTER_DEPTH = 10
 
 #==================
 [piercings]

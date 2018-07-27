@@ -66,7 +66,7 @@ SELECTED_BINNED_DATA_dic = json.load(open(filename))
 
 lats = SELECTED_BINNED_DATA_dic['lat']
 lons = SELECTED_BINNED_DATA_dic['lon']
-RF_number = SELECTED_BINNED_DATA_dic['len']
+RF_number = SELECTED_BINNED_DATA_dic['len_Pds']
 
 RF_stacking_Pds = SELECTED_BINNED_DATA_dic['data_Pds']
 RF_stacking_Ppds = SELECTED_BINNED_DATA_dic['data_Ppds']
