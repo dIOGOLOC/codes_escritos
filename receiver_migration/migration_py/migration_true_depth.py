@@ -98,12 +98,18 @@ filename_1 = PP_DIR+'PP_'+PHASES[0]+'_dic.json'
 
 PP_1_dic = json.load(open(filename_1))
 
-PP_dist_1 = PP_1_dic['dist']
-PP_time_1 = PP_1_dic['time']
-PP_lat_1 = PP_1_dic['lat']
-PP_lon_1 = PP_1_dic['lon']
-PP_depth_1 = PP_1_dic['depth']
+PP_dist_1 = []
+PP_time_1 = []
+PP_lat_1 = []
+PP_lon_1 = []
+PP_depth_1 = [] 
 
+for i,j in enumerate(PP_1_dic):
+	PP_dist_1.append(j['dist'][0])
+	PP_time_1.append(j['time'][0])
+	PP_lat_1.append(j['lat'][0])
+	PP_lon_1.append(j['lon'][0])
+	PP_depth_1.append(j['depth'][0])
 
 print('Importing Pds Piercing Points for '+PHASES[1])
 print('\n')
@@ -112,11 +118,18 @@ filename_med = PP_DIR+'PP_'+PHASES[1]+'_dic.json'
 
 PP_med_dic = json.load(open(filename_med))
 
-PP_dist_med = PP_med_dic['dist']
-PP_time_med = PP_med_dic['time']
-PP_lat_med = PP_med_dic['lat']
-PP_lon_med = PP_med_dic['lon']
-PP_depth_med = PP_med_dic['depth']
+PP_dist_med = []
+PP_time_med = []
+PP_lat_med = []
+PP_lon_med = []
+PP_depth_med = [] 
+
+for i,j in enumerate(PP_med_dic):
+	PP_dist_med.append(j['dist'][0])
+	PP_time_med.append(j['time'][0])
+	PP_lat_med.append(j['lat'][0])
+	PP_lon_med.append(j['lon'][0])
+	PP_depth_med.append(j['depth'][0])
 
 print('Importing Pds Piercing Points for '+PHASES[2])
 print('\n')
@@ -125,11 +138,18 @@ filename_2 = PP_DIR+'PP_'+PHASES[2]+'_dic.json'
 
 PP_2_dic = json.load(open(filename_2))
 
-PP_depth_2 = PP_2_dic['dist']
-PP_time_2 = PP_2_dic['time']
-PP_lat_2 = PP_2_dic['lat']
-PP_lon_2 = PP_2_dic['lon']
-PP_depth_2 = PP_2_dic['depth']
+PP_dist_2 = []
+PP_time_2 = []
+PP_lat_2 = []
+PP_lon_2 = []
+PP_depth_2 = [] 
+
+for i,j in enumerate(PP_2_dic):
+	PP_dist_2.append(j['dist'][0])
+	PP_time_2.append(j['time'][0])
+	PP_lat_2.append(j['lat'][0])
+	PP_lon_2.append(j['lon'][0])
+	PP_depth_2.append(j['depth'][0])
 
 print('Pds Piercing Points - '+"{0:.0f}".format(DEPTH_1))
 print('\n')
@@ -143,7 +163,6 @@ for i,j in enumerate(PP_lon_1):
         if LLCRNRLON_LARGE<= l <= URCRNRLON_LARGE and PP_depth_1[i][k] == DEPTH_1:
                 pp_1_lat[i] = PP_lat_1[i][k] 
                 pp_1_long[i] = l
-
 
 
 print('Pds Piercing Points - '+"{0:.0f}".format(DEPTH_MED))
@@ -168,10 +187,10 @@ pp_2_long  = [[]]*len(PP_lon_2)
 
 
 for i,j in enumerate(PP_lon_2):
-    for k,l in enumerate(j):
-        if LLCRNRLON_LARGE <= l <= URCRNRLON_LARGE and PP_depth_2[i][k] == DEPTH_2:
-                pp_2_lat[i] = PP_lat_2[i][k] 
-                pp_2_long[i] = l
+	for k,l in enumerate(j):
+		if LLCRNRLON_LARGE <= l <= URCRNRLON_LARGE and PP_depth_2[i][k] == DEPTH_2:
+			pp_2_lat[i] = PP_lat_2[i][k]
+			pp_2_long[i] = l
 
 
 print('Importing Ppds piercing points to each PHASE')
@@ -186,11 +205,19 @@ filename_1_Ppds = PP_DIR+'PP_'+PHASES_Ppds[0]+'_dic.json'
 
 PP_1_dic_Ppds = json.load(open(filename_1_Ppds))
 
-PP_dist_1_Ppds = PP_1_dic_Ppds['dist']
-PP_time_1_Ppds = PP_1_dic_Ppds['time']
-PP_lat_1_Ppds = PP_1_dic_Ppds['lat']
-PP_lon_1_Ppds = PP_1_dic_Ppds['lon']
-PP_depth_1_Ppds = PP_1_dic_Ppds['depth']
+PP_dist_1_Ppds = []
+PP_time_1_Ppds = []
+PP_lat_1_Ppds = []
+PP_lon_1_Ppds = []
+PP_depth_1_Ppds = [] 
+PP_1_number = [] 
+for i,j in enumerate(PP_1_dic_Ppds):
+	PP_dist_1_Ppds.append(j['dist'][0])
+	PP_time_1_Ppds.append(j['time'][0])
+	PP_lat_1_Ppds.append(j['lat'][0])
+	PP_lon_1_Ppds.append(j['lon'][0])
+	PP_depth_1_Ppds.append(j['depth'][0])
+	PP_1_number.append(j['number'][0])
 
 
 print('Importing Ppds Piercing Points '+PHASES_Ppds[1])
@@ -200,13 +227,20 @@ filename_med_Ppds = PP_DIR+'PP_'+PHASES_Ppds[1]+'_dic.json'
 
 PP_med_dic_Ppds = json.load(open(filename_med_Ppds))
 
+PP_dist_med_Ppds = []
+PP_time_med_Ppds = []
+PP_lat_med_Ppds = []
+PP_lon_med_Ppds = []
+PP_depth_med_Ppds = [] 
+PP_med_number = [] 
 
-PP_dist_med_Ppds = PP_med_dic_Ppds['dist']
-PP_time_med_Ppds = PP_med_dic_Ppds['time']
-PP_lat_med_Ppds = PP_med_dic_Ppds['lat']
-PP_lon_med_Ppds = PP_med_dic_Ppds['lon']
-PP_depth_med_Ppds = PP_med_dic_Ppds['depth']
-
+for i,j in enumerate(PP_med_dic_Ppds):
+	PP_dist_med_Ppds.append(j['dist'][0])
+	PP_time_med_Ppds.append(j['time'][0])
+	PP_lat_med_Ppds.append(j['lat'][0])
+	PP_lon_med_Ppds.append(j['lon'][0])
+	PP_depth_med_Ppds.append(j['depth'][0])
+	PP_med_number.append(j['number'][0])
 
 
 print('Importing Ppds Piercing Points '+PHASES_Ppds[2])
@@ -216,11 +250,20 @@ filename_2_Ppds = PP_DIR+'PP_'+PHASES_Ppds[2]+'_dic.json'
 
 PP_2_dic_Ppds = json.load(open(filename_2_Ppds))
 
-PP_depth_2_Ppds = PP_2_dic_Ppds['dist']
-PP_time_2_Ppds = PP_2_dic_Ppds['time']
-PP_lat_2_Ppds = PP_2_dic_Ppds['lat']
-PP_lon_2_Ppds = PP_2_dic_Ppds['lon']
-PP_depth_2_Ppds = PP_2_dic_Ppds['depth']
+PP_dist_2_Ppds = []
+PP_time_2_Ppds = []
+PP_lat_2_Ppds = []
+PP_lon_2_Ppds = []
+PP_depth_2_Ppds = [] 
+PP_2_number = [] 
+
+for i,j in enumerate(PP_2_dic_Ppds):
+	PP_dist_2_Ppds.append(j['dist'][0])
+	PP_time_2_Ppds.append(j['time'][0])
+	PP_lat_2_Ppds.append(j['lat'][0])
+	PP_lon_2_Ppds.append(j['lon'][0])
+	PP_depth_2_Ppds.append(j['depth'][0])
+	PP_2_number.append(j['number'][0])
 
 print('Ppds Piercing Points - '+"{0:.0f}".format(DEPTH_1))
 print('\n')
@@ -249,7 +292,6 @@ for i,j in enumerate(PP_lon_med_Ppds):
 		if LLCRNRLON_LARGE<= l <= URCRNRLON_LARGE and PP_depth_med_Ppds[i][k] == DEPTH_MED:
 			pp_med_lat_Ppds[i] = PP_lat_med_Ppds[i][k]
 			pp_med_long_Ppds[i] = l
-print(pp_1_long_Ppds)
 
 
 print('Ppds Piercing Points - '+"{0:.0f}".format(DEPTH_2))
@@ -339,7 +381,7 @@ for i,j in enumerate(grid_selected):
 print('Plotting: Figure Pds and Ppds Piercing Points')
 
 
-fig_PP, (ax, ax1) =  plt.subplots(nrows=1, ncols=2,figsize=(10,10))
+fig_PP, (ax, ax1) =  plt.subplots(nrows=1, ncols=2,figsize=(20,10))
 
 #Figure Ppds
 
@@ -409,7 +451,7 @@ for lon_1_Ppds, lat_1_Ppds in zip(pp_1_long_Ppds,pp_1_lat_Ppds):
 for lon_med_Ppds, lat_med_Ppds in zip(pp_med_long_Ppds,pp_med_lat_Ppds):
     x_med_Ppds,y_med_Ppds = m_PP1(lon_med_Ppds, lat_med_Ppds)
     msize = 5
-    l8, = m_PP1.plot(x_1_Ppds, y_1_Ppds, '.',markersize=msize,markeredgecolor='k',markerfacecolor='g')
+    l8, = m_PP1.plot(x_med_Ppds, y_med_Ppds, '.',markersize=msize,markeredgecolor='k',markerfacecolor='g')
 
 for lon_2_Ppds, lat_2_Ppds in zip(pp_2_long_Ppds,pp_2_lat_Ppds):
     x_2_Ppds,y_2_Ppds = m_PP1(lon_2_Ppds, lat_2_Ppds)
@@ -426,7 +468,7 @@ m_PP1.drawcoastlines(color='k',zorder=1)
 m_PP1.drawmeridians(np.arange(0, 360, 5),color='lightgrey',labels=[True,True,True,True])
 m_PP1.drawparallels(np.arange(-90, 90, 5),color='lightgrey',labels=[True,True,True,True])
 
-ax1.set_title('Pds and Ppds Piercing Points at 410 and 660 km',ha='center',va='top',y=1.08)
+ax1.set_title('Ppds Piercing Points',ha='center',va='top',y=1.08)
 ax1.legend([l6,l7,l8,l9,l10],['Stations','Piercing Points Ppds '+"{0:.0f}".format(DEPTH_1)+' km','Piercing Points Ppds '+"{0:.0f}".format(DEPTH_MED)+' km','Piercing Points Ppds '+"{0:.0f}".format(DEPTH_2)+' km','Grid Selected'],scatterpoints=1, frameon=True,labelspacing=0.5, loc='lower right',facecolor='w',fontsize='smaller')
 
 
@@ -443,9 +485,17 @@ filename_Pds = PdS_DIR+'Pds_dic.json'
 
 PdS_Dic = json.load(open(filename_Pds))
 
-Pds_dist = PdS_Dic['dist']
-Pds_time = PdS_Dic['time']
-Pds_depth = PdS_Dic['depth']
+Pds_dist = []
+Pds_time = []
+Pds_depth = [] 
+Pds_number = []
+
+for i,j in enumerate(PdS_Dic):
+	Pds_dist.append(j['dist'][0])
+	Pds_time.append(j['time'][0])
+	Pds_depth.append(j['depth'][0])
+	Pds_number.append(j['number'][0])
+
 
 
 print('Importing depths and times to the Ppds conversion to each event for all stations')
@@ -455,12 +505,19 @@ filename_Ppds = PdS_DIR+'PPvs_dic.json'
 
 Ppds_Dic = json.load(open(filename_Ppds))
 
-Ppds_dist = Ppds_Dic['dist']
-Ppds_time = Ppds_Dic['time']
-Ppds_depth = Ppds_Dic['depth']
+Ppds_dist = []
+Ppds_time = []
+Ppds_depth = [] 
+Ppds_number = []
+
+for i,j in enumerate(Ppds_Dic):
+	Ppds_dist.append(j['dist'][0])
+	Ppds_time.append(j['time'][0])
+	Ppds_depth.append(j['depth'][0])
+	Ppds_number.append(j['number'][0])
+
 
 ###################################################################################################################
-
 print('Migrating Pds data...')
 print('\n')
 
@@ -479,11 +536,13 @@ for i,j in enumerate(RF_amplitude_time_Pds):
     RF_t_Pds = [round(l,1) for k,l in enumerate(j)]
     RF_amplitude_Pds[i] = [sta_data[i][sta_t_Pds.index(l)] if l != -1 else 0 for k,l in enumerate(RF_t_Pds)]
 
+
 print('Migrating Ppds data...')
 print('\n')
 
 RF_amplitude_time_Ppds = [[]]*len(Ppds_depth)
 RF_amplitude_depth_Ppds = [[]]*len(Ppds_depth)
+
 for i,j in enumerate(Ppds_depth):
     sta_t_Ppds = j
     RF_t_Ppds = camadas_terra_10_km
@@ -496,6 +555,9 @@ for i,j in enumerate(RF_amplitude_time_Ppds):
     sta_t_Ppds = [round(l,1) for k,l in enumerate(sta_time[i])]
     RF_t_Ppds = [round(l,1) for k,l in enumerate(j)]
     RF_amplitude_Ppds[i] = [sta_data[i][sta_t_Ppds.index(l)] if l != -1 else 0 for k,l in enumerate(RF_t_Ppds)]
+
+
+
 
 ###################################################################################################################
 
@@ -633,6 +695,7 @@ if LINEAR_STACKING == True:
 
 				RF_DEPTH_std_2_Pds.append(np.mean(std_2_lst_Pds))
 				RF_DEPTH_std_2_Ppds.append(np.mean(std_2_lst_Ppds))
+
 
 #############################################################################################################################################################################################
 	print('Stacking RF for each point of the filtered grid')

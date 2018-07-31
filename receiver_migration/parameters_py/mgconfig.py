@@ -123,6 +123,9 @@ DPI_FIG= config.getfloat('maps', 'DPI_FIG')
 # time
 # ---------------
 
+# how many concurrent processes at the multiprocessing?
+MP_PROCESSES = config.getint('time', 'MP_PROCESSES')
+
 MIN_DEPTH = config.getint('time', 'MIN_DEPTH')           
 MAX_DEPTH = config.getint('time', 'MAX_DEPTH')
 INTER_DEPTH = config.getint('time', 'INTER_DEPTH')

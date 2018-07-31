@@ -124,10 +124,15 @@ DPI_FIG=300
 #==================
 [time]
 #==================
+# how many concurrent processes at the multiprocessing?
+MP_PROCESSES = 8
+
 #minimum depth of the migration
 MIN_DEPTH = 300
+
 #maximum depth of the migration
 MAX_DEPTH = 800
+
 #depth interval of the migration
 INTER_DEPTH = 10
 

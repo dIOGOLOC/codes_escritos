@@ -27,9 +27,9 @@ from parameters_py.mgconfig import (
 					RF_DIR,RF_EXT,PROG_MIGRATION_DIR,MODEL_FILE_NPZ,MIN_DEPTH,MAX_DEPTH,INTER_DEPTH,PdS_DIR,
 					PP_DIR,PP_SELEC_DIR,NUMBER_PP_PER_BIN,RAY_TRACE_PLOT,RAY_TRACE_410_660_PLOT,STA_DIR,
 					LLCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLON_LARGE,URCRNRLAT_LARGE,LLCRNRLON_SMALL,SECTION_NUM,
-					URCRNRLON_SMALL,LLCRNRLAT_SMALL,URCRNRLAT_SMALL,PROJECT_LAT,PROJECT_LON,PHASES_LST,
+					URCRNRLON_SMALL,LLCRNRLAT_SMALL,URCRNRLAT_SMALL,PROJECT_LAT,PROJECT_LON,
 					BOUNDARY_1_SHP,BOUNDARY_1_SHP_NAME,BOUNDARY_2_SHP,BOUNDARY_2_SHP_NAME,DEPTH_1,DEPTH_2,					
-					RAY_PATH_FIGURE,PP_FIGURE,EXT_FIG,DPI_FIG,DIST_GRID_PP_MED,PHASES_PPvs_LST,DIST_GRID_PP
+					RAY_PATH_FIGURE,PP_FIGURE,EXT_FIG,DPI_FIG,DIST_GRID_PP_MED,DIST_GRID_PP
 				   )
 
 
@@ -273,11 +273,11 @@ for _i, _j in enumerate(RF_data_profile_stacking_Pds):
 	ax1.grid(True,which='minor',linestyle='--')
 	ax1.grid(True,which='major',color='k',linewidth=1)
 
-	ax1.plot(_i/factor_Pds,RF_DEPTH_mean_1_profile_stacking_Pds[_i],'_k',markeredgewidth=3,ms=10)
-	ax1.plot(_i/factor_Pds,RF_DEPTH_mean_2_profile_stacking_Pds[_i],'_k',markeredgewidth=3,ms=10)
+	ax1.plot(_i/factor_Pds,RF_DEPTH_mean_1_profile_stacking_Pds[_i],'_k',markeredgewidth=2,ms=10)
+	ax1.plot(_i/factor_Pds,RF_DEPTH_mean_2_profile_stacking_Pds[_i],'_k',markeredgewidth=2,ms=10)
 
-	ax1.errorbar(_i/factor_Pds,RF_DEPTH_mean_1_profile_stacking_Pds[_i], yerr=RF_DEPTH_std_1_profile_stacking_Pds[_i], ecolor='k',elinewidth=2,capsize=2,capthick=2)
-	ax1.errorbar(_i/factor_Pds,RF_DEPTH_mean_2_profile_stacking_Pds[_i], yerr=RF_DEPTH_std_2_profile_stacking_Pds[_i], ecolor='k',elinewidth=2,capsize=2,capthick=2)
+	ax1.errorbar(_i/factor_Pds,RF_DEPTH_mean_1_profile_stacking_Pds[_i], yerr=RF_DEPTH_std_1_profile_stacking_Pds[_i], ecolor='k',elinewidth=1,capsize=1,capthick=1)
+	ax1.errorbar(_i/factor_Pds,RF_DEPTH_mean_2_profile_stacking_Pds[_i], yerr=RF_DEPTH_std_2_profile_stacking_Pds[_i], ecolor='k',elinewidth=1,capsize=1,capthick=1)
 
 	ax1.yaxis.set_ticks_position('both')
 
@@ -307,11 +307,11 @@ for _i, _j in enumerate(RF_data_profile_stacking_Ppds):
 	ax2.grid(True,which='minor',linestyle='--')
 	ax2.grid(True,which='major',color='k',linewidth=1)
 
-	ax2.plot(_i/factor_Ppds,RF_DEPTH_mean_1_profile_stacking_Ppds[_i],'_k',markeredgewidth=3,ms=10)
-	ax2.plot(_i/factor_Ppds,RF_DEPTH_mean_2_profile_stacking_Ppds[_i],'_k',markeredgewidth=3,ms=10)
+	ax2.plot(_i/factor_Ppds,RF_DEPTH_mean_1_profile_stacking_Ppds[_i],'_k',markeredgewidth=2,ms=10)
+	ax2.plot(_i/factor_Ppds,RF_DEPTH_mean_2_profile_stacking_Ppds[_i],'_k',markeredgewidth=2,ms=10)
 
-	ax2.errorbar(_i/factor_Ppds,RF_DEPTH_mean_1_profile_stacking_Ppds[_i], yerr=RF_DEPTH_std_1_profile_stacking_Ppds[_i], ecolor='k',elinewidth=2,capsize=2,capthick=2)
-	ax2.errorbar(_i/factor_Ppds,RF_DEPTH_mean_2_profile_stacking_Ppds[_i], yerr=RF_DEPTH_std_2_profile_stacking_Ppds[_i], ecolor='k',elinewidth=2,capsize=2,capthick=2)
+	ax2.errorbar(_i/factor_Ppds,RF_DEPTH_mean_1_profile_stacking_Ppds[_i], yerr=RF_DEPTH_std_1_profile_stacking_Ppds[_i], ecolor='k',elinewidth=1,capsize=1,capthick=1)
+	ax2.errorbar(_i/factor_Ppds,RF_DEPTH_mean_2_profile_stacking_Ppds[_i], yerr=RF_DEPTH_std_2_profile_stacking_Ppds[_i], ecolor='k',elinewidth=1,capsize=1,capthick=1)
 
 	ax2.yaxis.set_ticks_position('both')
 
