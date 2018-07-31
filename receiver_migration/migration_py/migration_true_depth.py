@@ -82,10 +82,14 @@ print('\n')
 
 camadas_terra_10_km = np.arange(MIN_DEPTH,MAX_DEPTH+INTER_DEPTH,INTER_DEPTH)
 
+dist_med_camada_terra = [abs(c - ((DEPTH_1+DEPTH_2)/2)) for x,c in enumerate(camadas_terra_10_km)]
+
+DEPTH_MED = camadas_terra_10_km[dist_med_camada_terra.index(min(dist_med_camada_terra))]
+
 print('Importing Pds piercing points to each PHASE')
 print('\n')
 
-PHASES = 'P'+"{0:.0f}".format(DEPTH_1)+'s','P'+"{0:.0f}".format((DEPTH_1+DEPTH_2)/2)+'s','P'+"{0:.0f}".format(DEPTH_2)+'s'
+PHASES = 'P'+"{0:.0f}".format(DEPTH_1)+'s','P'+"{0:.0f}".format(DEPTH_MED)+'s','P'+"{0:.0f}".format(DEPTH_2)+'s'
 
 print('Importing Pds Piercing Points for '+PHASES[0])
 print('\n')
@@ -136,13 +140,13 @@ pp_1_long  = [[]]*len(PP_lon_1)
 
 for i,j in enumerate(PP_lon_1):
     for k,l in enumerate(j):
-        if LLCRNRLON_SMALL<= l <= URCRNRLON_SMALL and PP_depth_1[i][k] == DEPTH_1:
+        if LLCRNRLON_LARGE<= l <= URCRNRLON_LARGE and PP_depth_1[i][k] == DEPTH_1:
                 pp_1_lat[i] = PP_lat_1[i][k] 
                 pp_1_long[i] = l
 
 
 
-print('Pds Piercing Points - '+"{0:.0f}".format((DEPTH_1+DEPTH_2)/2))
+print('Pds Piercing Points - '+"{0:.0f}".format(DEPTH_MED))
 print('\n')
 
 pp_med_lat  = [[]]*len(PP_lon_med)
@@ -151,17 +155,9 @@ pp_med_long  = [[]]*len(PP_lon_med)
 
 for i,j in enumerate(PP_lon_med):
 	for k,l in enumerate(j):
-		if (DEPTH_1+DEPTH_2)/2 in camadas_terra_10_km:
-			if LLCRNRLON_SMALL<= l <= URCRNRLON_SMALL and PP_depth_med[i][k] == (DEPTH_1+DEPTH_2)/2:
-				pp_med_lat[i] = PP_lat_med[i][k] 
-				pp_med_long[i] = l
-		else: 
-			dist_med_camada_terra = [abs(c - ((DEPTH_1+DEPTH_2)/2)) for x,c in enumerate(camadas_terra_10_km)]
-			if LLCRNRLON_SMALL<= l <= URCRNRLON_SMALL and PP_depth_med[i][k] == camadas_terra_10_km[dist_med_camada_terra.index(min(dist_med_camada_terra))]:
-				pp_med_lat[i] = PP_lat_med[i][k] 
-				pp_med_long[i] = l
-					
-				
+		if LLCRNRLON_LARGE <= l <= URCRNRLON_LARGE and PP_depth_med[i][k] == DEPTH_MED:
+			pp_med_lat[i] = PP_lat_med[i][k] 
+			pp_med_long[i] = l
 
 print('Pds Piercing Points - '+"{0:.0f}".format(DEPTH_2))
 print('\n')
@@ -173,7 +169,7 @@ pp_2_long  = [[]]*len(PP_lon_2)
 
 for i,j in enumerate(PP_lon_2):
     for k,l in enumerate(j):
-        if LLCRNRLON_SMALL <= l <= URCRNRLON_SMALL and PP_depth_2[i][k] == DEPTH_2:
+        if LLCRNRLON_LARGE <= l <= URCRNRLON_LARGE and PP_depth_2[i][k] == DEPTH_2:
                 pp_2_lat[i] = PP_lat_2[i][k] 
                 pp_2_long[i] = l
 
@@ -181,7 +177,7 @@ for i,j in enumerate(PP_lon_2):
 print('Importing Ppds piercing points to each PHASE')
 print('\n')
 
-PHASES_Ppds = 'PPv'+"{0:.0f}".format(DEPTH_1)+'s','PPv'+"{0:.0f}".format((DEPTH_1+DEPTH_2)/2)+'s','PPv'+"{0:.0f}".format(DEPTH_2)+'s'
+PHASES_Ppds = 'PPv'+"{0:.0f}".format(DEPTH_1)+'s','PPv'+"{0:.0f}".format(DEPTH_MED)+'s','PPv'+"{0:.0f}".format(DEPTH_2)+'s'
 
 print('Importing Ppds Piercing Points '+PHASES_Ppds[0])
 print('\n')
@@ -189,8 +185,6 @@ print('\n')
 filename_1_Ppds = PP_DIR+'PP_'+PHASES_Ppds[0]+'_dic.json'
 
 PP_1_dic_Ppds = json.load(open(filename_1_Ppds))
-
-
 
 PP_dist_1_Ppds = PP_1_dic_Ppds['dist']
 PP_time_1_Ppds = PP_1_dic_Ppds['time']
@@ -222,8 +216,6 @@ filename_2_Ppds = PP_DIR+'PP_'+PHASES_Ppds[2]+'_dic.json'
 
 PP_2_dic_Ppds = json.load(open(filename_2_Ppds))
 
-
-
 PP_depth_2_Ppds = PP_2_dic_Ppds['dist']
 PP_time_2_Ppds = PP_2_dic_Ppds['time']
 PP_lat_2_Ppds = PP_2_dic_Ppds['lat']
@@ -239,13 +231,13 @@ pp_1_long_Ppds  = [[]]*len(PP_lon_1_Ppds)
 
 for i,j in enumerate(PP_lon_1_Ppds):
     for k,l in enumerate(j):
-        if LLCRNRLON_SMALL<= l <= URCRNRLON_SMALL and PP_depth_1_Ppds[i][k] == DEPTH_1:
+        if LLCRNRLON_LARGE<= l <= URCRNRLON_LARGE and PP_depth_1_Ppds[i][k] == DEPTH_1:
                 pp_1_lat_Ppds[i] = PP_lat_1_Ppds[i][k] 
                 pp_1_long_Ppds[i] = l
 
 
 
-print('Ppds Piercing Points - '+"{0:.0f}".format((DEPTH_1+DEPTH_2)/2))
+print('Ppds Piercing Points - '+"{0:.0f}".format(DEPTH_MED))
 print('\n')
 
 pp_med_lat_Ppds  = [[]]*len(PP_lon_med_Ppds)
@@ -254,16 +246,10 @@ pp_med_long_Ppds  = [[]]*len(PP_lon_med_Ppds)
 
 for i,j in enumerate(PP_lon_med_Ppds):
 	for k,l in enumerate(j):
-		if (DEPTH_1+DEPTH_2)/2 in camadas_terra_10_km:
-			if LLCRNRLON_SMALL<= l <= URCRNRLON_SMALL and PP_depth_med_Ppds[i][k] == (DEPTH_1+DEPTH_2)/2:
-				pp_med_lat_Ppds[i] = PP_lat_med_Ppds[i][k] 
-				pp_med_long_Ppds[i] = l
-		else: 
-			dist_med_camada_terra = [abs(c - ((DEPTH_1+DEPTH_2)/2)) for x,c in enumerate(camadas_terra_10_km)]
-			if LLCRNRLON_SMALL<= l <= URCRNRLON_SMALL and PP_depth_med_Ppds[i][k] == camadas_terra_10_km[dist_med_camada_terra.index(min(dist_med_camada_terra))]:
-				pp_med_lat_Ppds[i] = PP_lat_med_Ppds[i][k] 
-				pp_med_long_Ppds[i] = l
-
+		if LLCRNRLON_LARGE<= l <= URCRNRLON_LARGE and PP_depth_med_Ppds[i][k] == DEPTH_MED:
+			pp_med_lat_Ppds[i] = PP_lat_med_Ppds[i][k]
+			pp_med_long_Ppds[i] = l
+print(pp_1_long_Ppds)
 
 
 print('Ppds Piercing Points - '+"{0:.0f}".format(DEPTH_2))
@@ -276,16 +262,17 @@ pp_2_long_Ppds  = [[]]*len(PP_lon_2_Ppds)
 
 for i,j in enumerate(PP_lon_2_Ppds):
     for k,l in enumerate(j):
-        if LLCRNRLON_SMALL <= l <= URCRNRLON_SMALL and PP_depth_2_Ppds[i][k] == DEPTH_2:
+        if LLCRNRLON_LARGE <= l <= URCRNRLON_LARGE and PP_depth_2_Ppds[i][k] == DEPTH_2:
                 pp_2_lat_Ppds[i] = PP_lat_2_Ppds[i][k] 
                 pp_2_long_Ppds[i] = l
+
 
 print('Creating GRID POINTS')
 print('\n')
 
-area = (LLCRNRLON_SMALL,URCRNRLON_SMALL, LLCRNRLAT_SMALL, URCRNRLAT_SMALL)
+area = (LLCRNRLON_LARGE,URCRNRLON_LARGE, LLCRNRLAT_LARGE, URCRNRLAT_LARGE)
 
-shape = (abs(abs(URCRNRLON_SMALL) - abs(LLCRNRLON_SMALL))*GRID_PP_MULT, abs(abs(URCRNRLAT_SMALL) - abs(LLCRNRLAT_SMALL))*GRID_PP_MULT)
+shape = (abs(abs(URCRNRLON_LARGE) - abs(LLCRNRLON_LARGE))*GRID_PP_MULT, abs(abs(URCRNRLAT_LARGE) - abs(LLCRNRLAT_LARGE))*GRID_PP_MULT)
 
 grdx, grdy = gridder.regular(area, shape)
 
@@ -305,8 +292,6 @@ for i,j in enumerate(grdx):
 dist_pp_grid_max = [[]]*len(grdx)
 for i,j in enumerate(grdx):
     dist_pp_grid_max[i] = [np.sqrt((j - pp_2_long[k])**2 + (grdy[i] - l)**2) for k,l in enumerate(pp_2_lat)]
-
-
 
 grid_sel_min = []
 grid_sel_min_data = []
@@ -349,8 +334,8 @@ for i,j in enumerate(grid_selected):
     grid_sel_x.append(j[0])
     grid_sel_y.append(j[1])
 
-
 ###################################################################################################################
+
 print('Plotting: Figure Pds and Ppds Piercing Points')
 
 
@@ -400,7 +385,7 @@ m_PP.drawmeridians(np.arange(0, 360, 5),color='lightgrey',labels=[True,True,True
 m_PP.drawparallels(np.arange(-90, 90, 5),color='lightgrey',labels=[True,True,True,True])
 
 ax.set_title('Pds Piercing Points',ha='center',va='top',y=1.08)
-ax.legend([l1,l2,l3,l4,l5],['Stations','Piercing Points Pds '+"{0:.0f}".format(DEPTH_1)+' km','Piercing Points Pds '+"{0:.0f}".format((DEPTH_1+DEPTH_2)/2)+' km','Piercing Points Pds '+"{0:.0f}".format(DEPTH_2)+' km','Grid Selected'],scatterpoints=1, frameon=True,labelspacing=1, loc='lower right',facecolor='w',fontsize='smaller')
+ax.legend([l1,l2,l3,l4,l5],['Stations','Piercing Points Pds '+"{0:.0f}".format(DEPTH_1)+' km','Piercing Points Pds '+"{0:.0f}".format(DEPTH_MED)+' km','Piercing Points Pds '+"{0:.0f}".format(DEPTH_2)+' km','Grid Selected'],scatterpoints=1, frameon=True,labelspacing=1, loc='lower right',facecolor='w',fontsize='smaller')
 
 #Figure Ppds
 
@@ -442,7 +427,7 @@ m_PP1.drawmeridians(np.arange(0, 360, 5),color='lightgrey',labels=[True,True,Tru
 m_PP1.drawparallels(np.arange(-90, 90, 5),color='lightgrey',labels=[True,True,True,True])
 
 ax1.set_title('Pds and Ppds Piercing Points at 410 and 660 km',ha='center',va='top',y=1.08)
-ax1.legend([l6,l7,l8,l9,l10],['Stations','Piercing Points Ppds '+"{0:.0f}".format(DEPTH_1)+' km','Piercing Points Ppds '+"{0:.0f}".format((DEPTH_1+DEPTH_2)/2)+' km','Piercing Points Ppds '+"{0:.0f}".format(DEPTH_2)+' km','Grid Selected'],scatterpoints=1, frameon=True,labelspacing=0.5, loc='lower right',facecolor='w',fontsize='smaller')
+ax1.legend([l6,l7,l8,l9,l10],['Stations','Piercing Points Ppds '+"{0:.0f}".format(DEPTH_1)+' km','Piercing Points Ppds '+"{0:.0f}".format(DEPTH_MED)+' km','Piercing Points Ppds '+"{0:.0f}".format(DEPTH_2)+' km','Grid Selected'],scatterpoints=1, frameon=True,labelspacing=0.5, loc='lower right',facecolor='w',fontsize='smaller')
 
 
 plt.show()
@@ -1033,6 +1018,7 @@ plt.show()
 fig.savefig(PP_FIGURE+'TRUE_DEPTH_PER_BIN.'+EXT_FIG,dpi=DPI_FIG)
 
 ###################################################################################################################
+
 print('Plotting Figure: Std (bootstraping) of the Mantle Transition Zone for Pds and Ppds phases for 410 and 660 km ...')
 
 #Figure True std (bootstraping) of the Mantle Transition Zone for Pds and Ppds phases for 410 and 660 km
@@ -1158,6 +1144,7 @@ plt.show()
 fig_std.savefig(PP_FIGURE+'TRUE_STD_PER_BIN.'+EXT_FIG,dpi=DPI_FIG)
 
 ###################################################################################################################
+
 print('Plotting Figure: Delta Vp of each bin...')
 #Figure Delta Vp of each bin
 
@@ -1288,8 +1275,6 @@ ax_thickness2.set_title('Thickness of MTZ (Ppds)',y=1.08)
 
 plt.show()
 fig_thickness.savefig(PP_FIGURE+'THICKNESS_MTZ_PER_BIN.'+EXT_FIG,dpi=DPI_FIG)
-
-###################################################################################################################
 
 ###################################################################################################################
 

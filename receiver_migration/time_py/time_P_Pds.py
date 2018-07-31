@@ -37,59 +37,52 @@ sta_time = sta_dic['sta_time']
 
 print('Importing earth model from obspy.taup.TauPyModel')
 print('Importing earth model from : '+MODEL_FILE_NPZ)
+print('\n')
 model_10_km = TauPyModel(model=MODEL_FILE_NPZ)
 
-print('P-wave time calculation')
-arrivalsP = []
-for i,j in enumerate(event_depth):
-	print('Event '+str(i)+' of '+str(len(event_depth))+' events')
-	arrivalsP.append(model_10_km.get_travel_times_geo(
-                                    source_depth_in_km=j, source_latitude_in_deg=event_lat[i], 
-                                    source_longitude_in_deg=event_long[i], receiver_latitude_in_deg=sta_lat[i], 
-                                    receiver_longitude_in_deg=sta_long[i], phase_list='P'))
 
-
-
-print('Ps conversion time calculation')
+print('Ps conversion PHASES')
 phase_lst = ['P'+str(i)+'s' for i in range(MIN_DEPTH,MAX_DEPTH+INTER_DEPTH,INTER_DEPTH)]
 print(phase_lst)
+print('\n')
 
-
-
-arrivals = []
-for i,j in enumerate(event_depth):
-	print('Event '+str(i)+' of '+str(len(event_depth))+' events')
-	arrivals.append(model_10_km.get_travel_times_geo(
-		                            source_depth_in_km=j, source_latitude_in_deg=event_lat[i], 
-		                            source_longitude_in_deg=event_long[i], receiver_latitude_in_deg=sta_lat[i], 
-		                            receiver_longitude_in_deg=sta_long[i], phase_list=phase_lst))
-
-
-
-
-dist_event = [[]]*len(arrivals)
-depth = [[]]*len(arrivals)
-time = [[]]*len(arrivals)
-
-for i,j in enumerate(arrivals):
-            time[i] = [l.time - arrivalsP[i][0].time for k,l in enumerate(j)]
-            depth[i] = [float(l.name[1:-1]) for k,l in enumerate(j)]
-            dist_event[i] = [l.distance for k,l in enumerate(j)]
-
-
-#Saving times in JSON file
-print('Saving Pds times in JSON file')
-
+#Creating dir for JSON file
 os.makedirs(PdS_DIR,exist_ok=True)
-
+#Creating dic for JSON file
 Pds_dic = {'dist':[],'depth':[],'time':[]}
-for i,j in enumerate(dist_event):
-	Pds_dic['dist'].append(j)
-	Pds_dic['depth'].append(depth[i])
-	Pds_dic['time'].append(time[i])
 
+dist_event = []
+depth = []
+time = []
+for i,j in enumerate(event_depth):
+	print('Event '+str(i+1)+' of '+str(len(event_depth))+' events')
+	arrivalsP = model_10_km.get_travel_times_geo(source_depth_in_km=j, source_latitude_in_deg=event_lat[i], 
+                                    source_longitude_in_deg=event_long[i], receiver_latitude_in_deg=sta_lat[i], 
+                                    receiver_longitude_in_deg=sta_long[i], phase_list='P')
+
+	arrivals = model_10_km.get_travel_times_geo(source_depth_in_km=j, source_latitude_in_deg=event_lat[i], 
+		                            source_longitude_in_deg=event_long[i], receiver_latitude_in_deg=sta_lat[i], 
+		                            receiver_longitude_in_deg=sta_long[i], phase_list=phase_lst)
+
+
+	print('source_depth_in_km = '+str(j))
+	print('source_latitude_in_deg = '+str(event_lat[i]))
+	print('source_longitude_in_deg = '+str(event_long[i]))
+	print('receiver_latitude_in_deg = '+str(sta_lat[i]))
+	print('receiver_longitude_in_deg = '+str(sta_long[i]))
+	
+	print('P time = '+str(arrivalsP[0].time))
+	print('Ps conversion time = '+str(arrivals[0].time))
+	print('\n')
+	#Saving times in JSON file
+	Pds_dic['time'].append(arrivals[0].time - arrivalsP[0].time)
+	Pds_dic['depth'].append(float(arrivals[0].name[1:-1]))
+	Pds_dic['dist'].append(arrivals[0].distance)
+
+
+print('Saving Pds times in JSON file')
+#Saving JSON file
 with open(PdS_DIR+'Pds_dic.json', 'w') as fp:
 	json.dump(Pds_dic, fp)
 
 print("Pds estimated!")
-

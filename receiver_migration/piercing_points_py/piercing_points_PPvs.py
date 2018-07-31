@@ -39,7 +39,21 @@ print('Importing earth model from obspy.taup.TauPyModel')
 print('\n')
 model_THICKNESS_km = TauPyModel(model=MODEL_FILE_NPZ)
 
-PHASES = 'PPv'+"{0:.0f}".format(DEPTH_1)+'s','PPv'+"{0:.0f}".format((DEPTH_1+DEPTH_2)/2)+'s','PPv'+"{0:.0f}".format(DEPTH_2)+'s'
+print('Creating the earth layers')
+print('\n')
+
+camadas_terra_10_km = np.arange(MIN_DEPTH,MAX_DEPTH+INTER_DEPTH,INTER_DEPTH)
+
+dist_med_camada_terra = [abs(c - ((DEPTH_1+DEPTH_2)/2)) for x,c in enumerate(camadas_terra_10_km)]
+
+DEPTH_MED = camadas_terra_10_km[dist_med_camada_terra.index(min(dist_med_camada_terra))]
+
+PHASES = 'PPv'+"{0:.0f}".format(DEPTH_1)+'s','PPv'+"{0:.0f}".format(DEPTH_MED)+'s','PPv'+"{0:.0f}".format(DEPTH_2)+'s'
+
+#Creating Piercing Points in JSON file
+
+os.makedirs(PP_DIR,exist_ok=True)
+PP_dic = {'dist':[],'depth':[],'time':[],'lat':[],'lon':[]}
 
 for fase in PHASES:
 	print('Phase '+fase+' calculation')
@@ -47,38 +61,19 @@ for fase in PHASES:
 	arrivalsP410s = []
 	for i,j in enumerate(event_depth):
 		print('Event '+str(i)+' of '+str(len(event_depth))+' events')
-		arrivalsP410s.append(model_THICKNESS_km.get_pierce_points_geo(
-		                            source_depth_in_km=j, source_latitude_in_deg=event_lat[i], 
+		arrivalsP410s = model_THICKNESS_km.get_pierce_points_geo(source_depth_in_km=j, source_latitude_in_deg=event_lat[i], 
 		                            source_longitude_in_deg=event_long[i], receiver_latitude_in_deg=sta_lat[i], 
-		                            receiver_longitude_in_deg=sta_long[i], phase_list=[fase]))
+		                            receiver_longitude_in_deg=sta_long[i], phase_list=[fase])
+		
+		PP_dic['dist'].append(arrivalsP410s[0].pierce['dist'].tolist())
+		PP_dic['depth'].append(arrivalsP410s[0].pierce['depth'].tolist())
+		PP_dic['time'].append(arrivalsP410s[0].pierce['time'].tolist())
+		PP_dic['lat'].append(arrivalsP410s[0].pierce['lat'].tolist())
+		PP_dic['lon'].append(arrivalsP410s[0].pierce['lon'].tolist())
 
-
-	dist_P410s = [[]]*len(arrivalsP410s)
-	depth_P410s = [[]]*len(arrivalsP410s)
-	time_P410s = [[]]*len(arrivalsP410s)
-	lat_P410s = [[]]*len(arrivalsP410s)
-	lon_P410s = [[]]*len(arrivalsP410s)
-
-	for i,j in enumerate(arrivalsP410s):
-		time_P410s[i] = [l.pierce['time'] for k,l in enumerate(j)][0].tolist()
-		depth_P410s[i] = [l.pierce['depth'] for k,l in enumerate(j)][0].tolist()
-		dist_P410s[i] = [l.pierce['dist'] for k,l in enumerate(j)][0].tolist()
-		lat_P410s[i] = [l.pierce['lat'] for k,l in enumerate(j)][0].tolist()
-		lon_P410s[i] = [l.pierce['lon'] for k,l in enumerate(j)][0].tolist()
 
 	#Saving Piercing Points in JSON file
 	print('Saving Piercing Points in JSON file')
-
-	os.makedirs(PP_DIR,exist_ok=True)
-
-	PP_dic = {'dist':[],'depth':[],'time':[],'lat':[],'lon':[]}
-	for i,j in enumerate(dist_P410s):
-		PP_dic['dist'].append(j)
-		PP_dic['depth'].append(depth_P410s[i])
-		PP_dic['time'].append(time_P410s[i])
-		PP_dic['lat'].append(lat_P410s[i])
-		PP_dic['lon'].append(lon_P410s[i])
-
 	with open(PP_DIR+'PP_'+fase+'_dic.json', 'w') as fp:
 		json.dump(PP_dic, fp)
 
