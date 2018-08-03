@@ -1,4 +1,4 @@
-![tatu_bola_toolbox_logo](tatu_bola_toolbox_logo.png){:height="50%" width="50%"}
+![tatu_bola_toolbox_logo](tatu_bola_toolbox_logo.png)
 
 
 This project is dedicated to provide a Python framework for preprocessing seismological data 
