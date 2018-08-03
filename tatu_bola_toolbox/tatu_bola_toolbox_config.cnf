@@ -1,0 +1,84 @@
+###############################################################################
+#
+# This is an example of configuration file, wherein global paths and parameters
+# related to the relative residuals procedure are defined. At least one file 
+# should reside in the folder in which you intend to run your scripts. 
+# The configuration file(s) can have any name, as long as the extension is 'cnf':
+# e.g., 'migration.cnf', 'migration_config.cnf', 'myconfig.cnf', 'test.cnf'...
+#
+# The parameters are divided in several sections:
+# - [paths]                : default paths to input/output folders
+# - [trim]                 : parameters to trim raw seismograms
+#
+# Before using the scripts, you should at least make sure that the paths in 
+# section [paths] are consistent with your own files and folders organization. 
+#
+###############################################################################
+
+
+#======
+[paths]
+#======
+
+# directory of raw sac files.
+DIR_SAC = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/sac_data/
+
+#Directory to save seismograms
+DIR_EVENT = /home/diogo/dados_doutorado/parnaiba_basin/relative_residuals_P_wave_data/redeBP-BB/event_data/
+
+#NEIC CSV FILE path
+NEIC_CSV_FILE  = /home/diogo/dados_doutorado/parnaiba_basin/relative_residuals_P_wave_data/NEIC_FILE/neic.BB
+
+
+#Stations CSV FILE path
+STA_CSV_FILE  = /home/diogo/dados_doutorado/parnaiba_basin/SIG_dados/dados_estacoes/cood_rede_BB_artigo.txt
+
+#Directory to save JSON Files
+OUTPUT_JSON_FILE_DIR = /home/diogo/dados_doutorado/parnaiba_basin/relative_residuals_P_wave_data/JSON_FILES/
+
+#=====
+[trim]
+#=====
+
+# how many concurrent processes at the multiprocessing?
+MP_PROCESSES = 8
+
+#Taup_time model to calculate travel times
+TAUPY_MODEL = iasp91 
+
+#Minimum event distance 
+EV_GCARC_MIN = 30
+
+#Maximum event distance 
+EV_GCARC_MAX = 95
+
+#Minimum event magnitude 
+EV_MAGNITUDE_MB = 4.6
+
+#Time to trim the seismogram before P-wave arrival
+CUT_BEFORE_P = 5
+
+#Time to trim the seismogram after P-wave arrival
+CUT_AFTER_P = 30
+
+
+#Component name E
+KCMPNM_E = HHX
+
+#Component name N
+KCMPNM_N = HHY
+
+#Component name Z
+KCMPNM_Z = HHZ
+
+#Network name
+knetwk = BP
+
+#Component N sac file name suffix
+NAME_SUFFIX_N = N
+
+#Component E sac file name suffix
+NAME_SUFFIX_E = E
+
+#Component Z sac file name suffix
+NAME_SUFFIX_Z = Z
