@@ -70,6 +70,9 @@ OUTPUT_JSON_FILE_DIR =  config.get('paths', 'OUTPUT_JSON_FILE_DIR')
 # trim
 # -----
 
+# how many concurrent processes at the multiprocessing?
+MP_PROCESSES = config.getint('trim', 'MP_PROCESSES') 
+
 #Taup_time model to calculate travel times
 TAUPY_MODEL = config.get('trim', 'TAUPY_MODEL') 
 
@@ -92,19 +95,19 @@ CUT_AFTER_P = config.getfloat('trim', 'CUT_AFTER_P')
 KCMPNM_N = config.get('trim', 'KCMPNM_N')
 
 #Component name E
-KCMPNM_E = config.get('trim', 'KCMPNM_N')
+KCMPNM_E = config.get('trim', 'KCMPNM_E')
 
 #Component name Z
-KCMPNM_Z = config.get('trim', 'KCMPNM_N')
+KCMPNM_Z = config.get('trim', 'KCMPNM_Z')
 
 #Network name
-knetwk = config.get('trim', 'KCMPNM_N')
+knetwk = config.get('trim', 'knetwk')
 
 #Component N sac file name suffix
 NAME_SUFFIX_N = config.get('trim', 'NAME_SUFFIX_N')
 
 #Component E sac file name suffix
-NAME_SUFFIX_E = config.get('trim', 'NAME_SUFFIX_N')
+NAME_SUFFIX_E = config.get('trim', 'NAME_SUFFIX_E')
 
 #Component Z sac file name suffix
-NAME_SUFFIX_Z = config.get('trim', 'NAME_SUFFIX_N')
+NAME_SUFFIX_Z = config.get('trim', 'NAME_SUFFIX_Z')

@@ -40,6 +40,9 @@ OUTPUT_JSON_FILE_DIR = /home/diogo/dados_doutorado/parnaiba_basin/relative_resid
 [trim]
 #=====
 
+# how many concurrent processes at the multiprocessing?
+MP_PROCESSES = 8
+
 #Taup_time model to calculate travel times
 TAUPY_MODEL = iasp91 
 
@@ -58,11 +61,12 @@ CUT_BEFORE_P = 5
 #Time to trim the seismogram after P-wave arrival
 CUT_AFTER_P = 30
 
-#Component name N
-KCMPNM_N = HHN
 
 #Component name E
-KCMPNM_E = HHE
+KCMPNM_E = HHX
+
+#Component name N
+KCMPNM_N = HHY
 
 #Component name Z
 KCMPNM_Z = HHZ

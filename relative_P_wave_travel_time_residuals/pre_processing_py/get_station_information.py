@@ -17,7 +17,9 @@ from parameters_py.rrconfig import (
 print('Get Station Information')
 print('\n')
 
-sta_info = np.genfromtxt(STA_CSV_FILE,delimiter='\t',skip_header=1)
+sta_info = np.genfromtxt(STA_CSV_FILE,skip_header=1)
+
+sta_name =  np.genfromtxt(STA_CSV_FILE,dtype='str',skip_header=1,usecols=[1])
 
 sta_event = {
 
@@ -27,15 +29,15 @@ sta_event = {
 
 	    }
 
-
-sta_event['kstnm'] = event_info[:,1]
-sta_event['stla'] = event_info[:,2]
-sta_event['stlo'] = event_info[:,3]
+for i,j in enumerate(sta_info):
+	sta_event['kstnm'].append(sta_name[i])
+	sta_event['stla'].append(j[2])
+	sta_event['stlo'].append(j[3])
 
 print('Saving Station Information in JSON file')
 print('\n')
 
 os.makedirs(OUTPUT_JSON_FILE_DIR,exist_ok=True)
-with open(OUTPUT_JSON_FILE_DIR+'EVENT_dic.json', 'w') as fp:
+with open(OUTPUT_JSON_FILE_DIR+'STA_dic.json', 'w') as fp:
 	json.dump(sta_event, fp)
 
