@@ -20,6 +20,7 @@ def select_and_parse_config_file(basedir='.', ext='cnf', verbose=True):
     """
     config_files = glob.glob(os.path.join(basedir, u'*.{}'.format(ext)))
 
+
     if not config_files:
         raise Exception("No configuration file found!")
 
@@ -111,3 +112,43 @@ NAME_SUFFIX_E = config.get('trim', 'NAME_SUFFIX_E')
 
 #Component Z sac file name suffix
 NAME_SUFFIX_Z = config.get('trim', 'NAME_SUFFIX_Z')
+
+#Do want to remove the mean of your data?
+RMEAN = config.get('trim', 'RMEAN')
+
+RMEAN_TYPE = config.get('trim', 'RMEAN_TYPE')
+
+#Do want to remove the trend your data?
+DETREND = config.get('trim', 'DETREND')
+
+DETREND_TYPE = config.get('trim', 'DETREND_TYPE')
+
+#Do want to use taper in your data? 
+TAPER = config.get('trim', 'TAPER')
+
+TAPER_TYPE = config.get('trim', 'TAPER_TYPE')
+
+TAPER_MAX_PERCENTAGE = config.getfloat('trim', 'TAPER_MAX_PERCENTAGE')
+
+#Do want to use filter in your data? 
+FILTER = config.get('trim', 'FILTER')
+
+LOWPASS_FREQ = config.getfloat('trim', 'LOWPASS_FREQ')
+
+LOWPASS_CORNER = config.getfloat('trim', 'LOWPASS_CORNER')
+
+LOWPASS_ZEROPHASE = config.get('trim', 'LOWPASS_ZEROPHASE')
+
+HIGHPASS_FREQ = config.getfloat('trim', 'HIGHPASS_FREQ')
+
+HIGHPASS_CORNER = config.getfloat('trim', 'HIGHPASS_CORNER')
+
+HIGHPASS_ZEROPHASE = config.get('trim', 'HIGHPASS_ZEROPHASE')
+
+#Do want to interpolate your data?
+INTERPOLATE = config.get('trim', 'INTERPOLATE')
+
+SAMPLING_RATE = config.getfloat('trim', 'SAMPLING_RATE')
+
+INTERPOLATE_TYPE = config.get('trim', 'INTERPOLATE_TYPE')
+

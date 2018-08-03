@@ -34,6 +34,11 @@ for i,j in enumerate(sta_info):
 	sta_event['stla'].append(j[2])
 	sta_event['stlo'].append(j[3])
 
+print('Number of Stations: '+str(len(sta_event['kstnm'])))
+for i in sta_event['kstnm']:
+	print('Station: '+i)
+print('\n')
+
 print('Saving Station Information in JSON file')
 print('\n')
 

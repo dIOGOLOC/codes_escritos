@@ -21,14 +21,14 @@
 #======
 
 # directory of raw sac files.
-DIR_SAC = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/sac_data/
+#DIR_SAC = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/sac_data/
+DIR_SAC = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-UK/sac_data/
 
 #Directory to save seismograms
 DIR_EVENT = /home/diogo/dados_doutorado/parnaiba_basin/relative_residuals_P_wave_data/redeBP-BB/event_data/
 
 #NEIC CSV FILE path
 NEIC_CSV_FILE  = /home/diogo/dados_doutorado/parnaiba_basin/relative_residuals_P_wave_data/NEIC_FILE/neic.BB
-
 
 #Stations CSV FILE path
 STA_CSV_FILE  = /home/diogo/dados_doutorado/parnaiba_basin/SIG_dados/dados_estacoes/cood_rede_BB_artigo.txt
@@ -41,7 +41,7 @@ OUTPUT_JSON_FILE_DIR = /home/diogo/dados_doutorado/parnaiba_basin/relative_resid
 #=====
 
 # how many concurrent processes at the multiprocessing?
-MP_PROCESSES = 8
+MP_PROCESSES = 4
 
 #Taup_time model to calculate travel times
 TAUPY_MODEL = iasp91 
@@ -61,12 +61,11 @@ CUT_BEFORE_P = 5
 #Time to trim the seismogram after P-wave arrival
 CUT_AFTER_P = 30
 
-
 #Component name E
-KCMPNM_E = HHX
+KCMPNM_E = HHE
 
 #Component name N
-KCMPNM_N = HHY
+KCMPNM_N = HHN
 
 #Component name Z
 KCMPNM_Z = HHZ
@@ -82,3 +81,42 @@ NAME_SUFFIX_E = E
 
 #Component Z sac file name suffix
 NAME_SUFFIX_Z = Z
+
+#Do want to remove the mean of your data? (information in https://docs.obspy.org/packages/autogen/obspy.core.trace.Trace.detrend.html#obspy.core.trace.Trace.detrend)
+RMEAN = False
+
+RMEAN_TYPE = demean
+
+#Do want to remove the trend of your data? (information in https://docs.obspy.org/packages/autogen/obspy.core.trace.Trace.detrend.html#obspy.core.trace.Trace.detrend)
+DETREND = False
+
+DETREND_TYPE = simple
+
+#Do want to use taper in your data? (information in https://docs.obspy.org/master/packages/autogen/obspy.core.trace.Trace.taper.html)
+TAPER = False
+
+TAPER_TYPE = hamming
+
+TAPER_MAX_PERCENTAGE = 0.02
+
+#Do want to use filter in your data? (help in https://docs.obspy.org/tutorial/code_snippets/filtering_seismograms.html)
+FILTER = False
+
+LOWPASS_FREQ = 4
+LOWPASS_CORNER = 4
+LOWPASS_ZEROPHASE = True
+
+HIGHPASS_FREQ = 0.05
+HIGHPASS_CORNER = 4
+HIGHPASS_ZEROPHASE = True
+
+
+#Do want to interpolate your data?
+#This operation is performed in place on the actual data arrays. The raw data is not accessible anymore afterwards. 
+#Be careful when downsampling data and make sure to apply an appropriate anti-aliasing lowpass filter before interpolating in case it’s necessary.
+
+INTERPOLATE = True
+
+SAMPLING_RATE = 10
+
+INTERPOLATE_TYPE = lanczos
