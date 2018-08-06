@@ -23,14 +23,14 @@
 
 
 #======
-[paths]
+[paths]    
 #======
 
 # directory of receiver functions files.
 # In the current version of the program, you just need to set the directory and
 # the suffix of the files organized inside their directory as:
 # FILENAME.fileextention, e.g., like:
-# .../a_1/BDCO/2015/251/2015.8.13.2/SYN.BDCO.2015.8.13.2.T:a=1.0.eqr
+# .../a_1/BDCO/2015/251/2015.8.13.2/SYN.BDCO.2015.8.13.2.T:a=1.0.eqr																																																																																																																																																																																																																			
 # the directory is a_1 and the extention is '.eqr'
 # file per event and per station.
 
@@ -124,7 +124,7 @@ DPI_FIG=300
 #==================
 [time]
 #==================
-# how many concurrent processes at the multiprocessing?
+																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																						# how many concurrent processes at the multiprocessing?
 MP_PROCESSES = 8
 
 #minimum depth of the migration
