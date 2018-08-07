@@ -1,5 +1,6 @@
-![tatu_bola_toolbox_logo](tatu_bola_toolbox_logo.png)
-
+<p align="center">
+  <img width="400" height="400" src="tatu_bola_toolbox_logo.png">
+</p>
 
 This project is dedicated to provide a Python framework for preprocessing seismological data 
 based on [ObsPy](https://github.com/obspy/obspy/wiki) with the [multiprocessing](https://docs.python.org/3/library/multiprocessing.html)
