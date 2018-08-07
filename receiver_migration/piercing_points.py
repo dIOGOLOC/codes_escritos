@@ -146,7 +146,9 @@ print('\n')
 pool_DEPTH_1 = Pool(MP_PROCESSES)
 PP_dic_DEPTH_1 = pool_DEPTH_1.starmap(parallel_piercing_points, input_list_DEPTH_1)
 pool_DEPTH_1.close()
+
 #Saving Piercing Points in JSON file
+os.makedirs(PP_DIR,exist_ok=True)
 print('Saving Piercing Points in JSON file')
 
 with open(PP_DIR+'PP_'+PHASES[0]+'_dic.json', 'w') as fp:
