@@ -504,6 +504,7 @@ ax1.legend([l6,l7,l8,l9,l10,l11],['Stations','Piercing Points Ppds '+"{0:.0f}".f
 
 plt.show()
 
+os.makedirs(PP_FIGURE,exist_ok=True)
 fig_PP.savefig(PP_FIGURE+'PP_Pds_Ppds.'+EXT_FIG,dpi=DPI_FIG)
 
 
@@ -1655,7 +1656,8 @@ os.makedirs(PP_SELEC_DIR,exist_ok=True)
 
 SELECTED_BINNED_DATA_dic = {'lat':[],'lon':[],'len_Pds':[],'len_Ppds':[],'true_mean_1_Pds':[],'true_mean_2_Pds':[],'true_mean_1_Ppds':[],
 'true_mean_2_Ppds':[],'mean_1_Pds':[],'std_1_Pds':[],'mean_2_Pds':[],'std_2_Pds':[],'mean_1_Ppds':[],'std_1_Ppds':[],'mean_2_Ppds':[],
-'std_2_Ppds':[],'data_Pds':[],'data_Ppds':[],'mtz_thickness_Pds':[],'true_thickness_MTZ_Pds':[],'mtz_thickness_Ppds':[],'true_thickness_MTZ_Ppds':[]}
+'std_2_Ppds':[],'data_Pds':[],'data_Ppds':[],'mtz_thickness_Pds':[],'true_thickness_MTZ_Pds':[],'mtz_thickness_Ppds':[],'true_thickness_MTZ_Ppds':[],
+'difference_thickness_MTZ_Pds':[],'difference_thickness_MTZ_Ppds':[]}
 for i,j in enumerate(RF_stacking_Pds):
 
 	SELECTED_BINNED_DATA_dic['lat'].append(RF_lat[i])
@@ -1688,6 +1690,9 @@ for i,j in enumerate(RF_stacking_Pds):
 
 	SELECTED_BINNED_DATA_dic['true_thickness_MTZ_Pds'].append(true_thickness_MTZ_Pds[i])
 	SELECTED_BINNED_DATA_dic['true_thickness_MTZ_Ppds'].append(true_thickness_MTZ_Ppds[i])
+
+	SELECTED_BINNED_DATA_dic['difference_thickness_MTZ_Pds'].append(diff_thickness_MTZ_Pds[i])
+	SELECTED_BINNED_DATA_dic['difference_thickness_MTZ_Ppds'].append(diff_thickness_MTZ_Ppds[i])
 
 
 with open(PP_SELEC_DIR+'SELECTED_BINNED_Ps.json', 'w') as fp:
