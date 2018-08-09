@@ -3,7 +3,7 @@
 Scritp to get information from Stations and Events
 """
 from parameters_py.config import (
-					DIR_SAC,NEIC_CSV_FILE,STA_CSV_FILE
+					DIR_SAC,STA_CSV_FILE
 				   )
 import os
 
@@ -17,11 +17,6 @@ if os.path.isdir(DIR_SAC) == True:
 else:
 	print(DIR_SAC+' is not a directory! Please, check your configuration file')
 
-if os.path.isfile(NEIC_CSV_FILE) == True:
-	pass
-else:
-	print(NEIC_CSV_FILE+' is not a file! Please, check your configuration file')
-
 if os.path.isfile(STA_CSV_FILE) == True:
 	pass
 else:
@@ -31,4 +26,4 @@ print('\n')
 print('++++ Input file and directories are OK! ++++')
 print('\n')
 
-from pre_processing_py import get_events_information,get_station_information
+from pre_processing_py import get_station_information

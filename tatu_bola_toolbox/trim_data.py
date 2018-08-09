@@ -119,7 +119,7 @@ print('\n')
 
 pool_trim = Pool(MP_PROCESSES)
 error_station_data_dic = {'kstnm':[],'error_dir':[]}
-for i,j in enumerate(input_list[8:9]):
+for i,j in enumerate(input_list):
 	trim_data_result = pool_trim.starmap(parallel_trim_data, j)
 	
 	error_station_data_dic['error_dir'].append(pool_trim.starmap(parallel_trim_data, j))

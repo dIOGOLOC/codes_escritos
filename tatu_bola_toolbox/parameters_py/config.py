@@ -52,7 +52,10 @@ config = select_and_parse_config_file(basedir='.', ext='cnf', verbose=True)
 # paths
 # -----
 
-# directory of raw sac files.
+# directory of raw data
+DIR_RAW_DATA = config.get('paths', 'DIR_RAW_DATA')
+
+# directory of raw sac files
 DIR_SAC = config.get('paths', 'DIR_SAC')
 
 #Directory to save seismograms

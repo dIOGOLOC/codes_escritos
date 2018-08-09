@@ -20,9 +20,13 @@
 [paths]
 #======
 
-# directory of raw sac files.
+# directory of raw data
+DIR_RAW_DATA = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-SP1/
+
+# directory of raw sac files
 #DIR_SAC = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/sac_data/
-DIR_SAC = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-UK/sac_data/
+#DIR_SAC = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-UK/sac_data/
+DIR_SAC = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-SP1/sac_data/
 
 #Directory to save seismograms
 DIR_EVENT = /home/diogo/dados_doutorado/parnaiba_basin/relative_residuals_P_wave_data/redeBP-BB/event_data/
@@ -31,7 +35,8 @@ DIR_EVENT = /home/diogo/dados_doutorado/parnaiba_basin/relative_residuals_P_wave
 NEIC_CSV_FILE  = /home/diogo/dados_doutorado/parnaiba_basin/relative_residuals_P_wave_data/NEIC_FILE/neic.BB
 
 #Stations CSV FILE path
-STA_CSV_FILE  = /home/diogo/dados_doutorado/parnaiba_basin/SIG_dados/dados_estacoes/cood_rede_BB_artigo.txt
+#STA_CSV_FILE  = /home/diogo/dados_doutorado/parnaiba_basin/SIG_dados/dados_estacoes/cood_rede_BB_artigo.txt
+STA_CSV_FILE  = /home/diogo/dados_doutorado/parnaiba_basin/SIG_dados/dados_estacoes/cood_rede_SP_2015.txt
 
 #Directory to save JSON Files
 OUTPUT_JSON_FILE_DIR = /home/diogo/dados_doutorado/parnaiba_basin/relative_residuals_P_wave_data/JSON_FILES/
