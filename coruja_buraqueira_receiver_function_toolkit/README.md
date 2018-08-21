@@ -31,3 +31,7 @@ References
 ----------
 
 - In Construction
+
+Inspiration
+----------
+The code logo is based in Athene cunicularia, a owl from the northeast part of Brazil fauna. [Coruja-Buraqueira](http://natal.rn.gov.br/semurb/revistas/edicoes/artigos/setembro2015/3_FAUNA_CORUJA.pdf)
