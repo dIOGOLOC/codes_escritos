@@ -1,5 +1,5 @@
 <p align="center">
-  <img width="400" height="400" src="coruja_logo.png">
+  <img src="coruja_logo.png">
 </p>
 
 This project is dedicated to provide a Python framework for analysing receiver functions data 
