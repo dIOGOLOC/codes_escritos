@@ -22,8 +22,7 @@ from visual_py.plot_raw_data import plot_station_raw_RF
 # ==================================================
 
 from parameters_py.config import (
-					knetwk,NAME_SUFFIX_N,NAME_SUFFIX_E,NAME_SUFFIX_Z,MP_PROCESSES,DIR_SAC,
-					OUTPUT_JSON_FILE_DIR
+					OUTPUT_JSON_FILE_DIR,GAUSSIAN_FILTER
 				   )
 
 
@@ -35,71 +34,68 @@ print('\n')
 print('Looking for STATIONS data in JSON file in '+OUTPUT_JSON_FILE_DIR)
 print('\n')
 
+JSON_FILE = 'RF_dic_'+str(GAUSSIAN_FILTER)
+
+JSON_FILE_NAME = JSON_FILE.replace(".", "_")
+
+filename_RF = OUTPUT_JSON_FILE_DIR+JSON_FILE_NAME+'.json'
+dic_RF = json.load(open(filename_RF))
+
+dataR = dic_RF['dataR']
+dataT = dic_RF['dataT']
+
+npts = dic_RF['npts']
+kstnm = dic_RF['kstnm']
+nzyear = dic_RF['nzyear']
+nzjday = dic_RF['nzjday']
+nzhour = dic_RF['nzhour']
+nzmin = dic_RF['nzmin']
+nzmsec = dic_RF['nzmsec']
+evla = dic_RF['evla']
+evlo = dic_RF['evlo']
+evdp = dic_RF['evdp']
+mag = dic_RF['mag']
+stla = dic_RF['stla']
+stlo = dic_RF['stlo']
+user0 = dic_RF['user0']
+user5 = dic_RF['user5']
+user8 = dic_RF['user8']
+dist = dic_RF['dist']
+az = dic_RF['az']
+baz = dic_RF['baz']
+gcarc = dic_RF['gcarc']
+b = dic_RF['b']
+e = dic_RF['e']
+
 filename_STA = OUTPUT_JSON_FILE_DIR+'STA_dic.json'
 
-sta_dic = json.load(open(filename_STA))
-
-kstnm = sta_dic['kstnm']
-stla = sta_dic['stla']
-stlo = sta_dic['stlo']
-
-for i in kstnm:
-	print('Station = '+i)
-print('\n')
+dic_STA = json.load(open(filename_STA))
+kstnm_STA = dic_STA['kstnm']
 
 # ==============================
 #  Creating stations Input lists
 # ==============================
-
-
-print('========================= Searching .SAC files: ========================= ')
-
-datalist = []
-datalistS = []
-folderlist = []
-dirname = []
-for root, dirs, files in os.walk(DIR_SAC+'BP02/'):
-    for datafile in files:
-        if datafile.endswith('.sac'):
-            datalist.append(os.path.join(root, datafile))
-
-datalistS = sorted(datalist)
-
-dir_name = [i.split(knetwk+'.')[0] for i in datalistS]
-
-folder_real = sorted(dir_name)
-
-folder_name = sorted(list(set(dir_name)))
-
-STA_name = [i.split('/')[-5] for i in folder_name]
-year_name = [i.split('/')[-4] for i in folder_name]
-month_name = [i.split('/')[-3] for i in folder_name]
-day_name = [i.split('/')[-2] for i in folder_name]
-
-
+input_list = [[]]*len(kstnm_STA)
 print('Creating stations input lists')
 print('\n')
 
-
-print('Creating input list:')
-print('\n')
-input_list = 	[
-		[folder_name[k],knetwk,STA_name[k],year_name[k],month_name[k],day_name[k],NAME_SUFFIX_E,NAME_SUFFIX_N,NAME_SUFFIX_Z,FILTERS,RMEAN_TYPE,DETREND_TYPE,
-			TAPER_TYPE,TAPER_MAX_PERCENTAGE,LOWPASS_FREQ,LOWPASS_CORNER,LOWPASS_ZEROPHASE,HIGHPASS_FREQ,HIGHPASS_CORNER,HIGHPASS_ZEROPHASE,SAMPLING_RATE]
-		 for k,l in enumerate(year_name)
-		]
+for i,j in enumerate(kstnm_STA):
+	print('Creating input list: '+j)
+	print('\n')
+	input_list[i] = [dataR[k] for k,l in enumerate(kstnm)  if l == j]
 print('\n')
 
 # ==============
-#  Merging data
+#  Plotting data
 # ==============
 
-print('Merging data')
+print('Plotting data')
 print('\n')
 
-pool_trim = Pool(MP_PROCESSES)
-pool_trim.starmap(parallel_merge_data, input_list)
-pool_trim.close()
+for i,j in enumerate(input_list):
+	print('Plotting data to: '+kstnm_STA[i])
+	print('\n')
+	plot_station_raw_RF(j,kstnm_STA[i])
 
-print('Merging finished!')
+print('Plotting finished!')
 

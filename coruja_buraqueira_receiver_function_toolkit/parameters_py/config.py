@@ -61,52 +61,49 @@ DIR_SELECTED = config.get('paths', 'DIR_SELECTED')
 #Directory to save JSON Files
 OUTPUT_JSON_FILE_DIR =  config.get('paths', 'OUTPUT_JSON_FILE_DIR')
 
+#Stations CSV FILE path
+STA_CSV_FILE  =  config.get('paths', 'STA_CSV_FILE')
+
 #Gaussian Filter
-GAUSSIAN_FILTER = config.get('paths', 'GAUSSIAN_FILTER')
+GAUSSIAN_FILTER = config.getfloat('paths', 'GAUSSIAN_FILTER')
 
 #RADIAL RF EXTENSION
 RADIAL_EXT = config.get('paths', 'RADIAL_EXT')
 
-
 #TRANSVERSAL RF EXTENSION
 TRANSVERSAL_EXT = config.get('paths', 'TRANSVERSAL_EXT')
+
+# --------
+# quality
+# --------
+
+#Trace check (minimium amplitude of trace)
+REST_TRACE_CHECK_AMP = config.getfloat('quality', 'REST_TRACE_CHECK_AMP')
+
+#Percent recoveries of the observed radial component
+RF_PERCENT = config.getfloat('quality', 'RF_PERCENT')
+
+#Minimum event distance 
+EV_GCARC_MIN = config.getfloat('quality', 'EV_GCARC_MIN')
+
+#Maximum event distance 
+EV_GCARC_MAX = config.getfloat('quality', 'EV_GCARC_MAX')
+
+#Minimum event magnitude 
+EV_MAGNITUDE_MB = config.getfloat('quality', 'EV_MAGNITUDE_MB')
+
+#Time to trim the seismogram before P-wave arrival
+CUT_BEFORE_P = config.getfloat('quality', 'CUT_BEFORE_P')
+
+#Time to trim the seismogram after P-wave arrival
+CUT_AFTER_P = config.getfloat('quality', 'CUT_AFTER_P')
+
+#Sampling Rate of the traces
+SAMPLING_RATE = config.getfloat('quality', 'SAMPLING_RATE')
 
 # -----
 # plot
 # -----
 
-#Minimum event distance 
-EV_GCARC_MIN = config.getfloat('plot', 'EV_GCARC_MIN')
 
-#Maximum event distance 
-EV_GCARC_MAX = config.getfloat('plot', 'EV_GCARC_MAX')
 
-#Minimum event magnitude 
-EV_MAGNITUDE_MB = config.getfloat('plot', 'EV_MAGNITUDE_MB')
-
-#Time to trim the seismogram before P-wave arrival
-CUT_BEFORE_P = config.getfloat('plot', 'CUT_BEFORE_P')
-
-#Time to trim the seismogram after P-wave arrival
-CUT_AFTER_P = config.getfloat('plot', 'CUT_AFTER_P')
-
-#Component name N
-KCMPNM_N = config.get('trim', 'KCMPNM_N')
-
-#Component name E
-KCMPNM_E = config.get('trim', 'KCMPNM_E')
-
-#Component name Z
-KCMPNM_Z = config.get('trim', 'KCMPNM_Z')
-
-#Network name
-knetwk = config.get('trim', 'knetwk')
-
-#Component N sac file name suffix
-NAME_SUFFIX_N = config.get('trim', 'NAME_SUFFIX_N')
-
-#Component E sac file name suffix
-NAME_SUFFIX_E = config.get('trim', 'NAME_SUFFIX_E')
-
-#Component Z sac file name suffix
-NAME_SUFFIX_Z = config.get('trim', 'NAME_SUFFIX_Z')
