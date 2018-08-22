@@ -22,19 +22,16 @@
 #======
 
 # directory of raw RF files
-#DIR_SAC = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-SP1/event_data/
-DIR_SAC = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/transition_zone/rede_BB/event_data/
-
-#Directory to save selected RF
-DIR_SELECTED = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-SP1/RF_selected/
+DIR_SAC = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-SP1/event_data/
+#DIR_SAC = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/transition_zone/rede_BB/event_data/
 
 #Directory to save JSON Files
-OUTPUT_JSON_FILE_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/JSON_FILES/
-#OUTPUT_JSON_FILE_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-SP1/JSON_FILES/
+#OUTPUT_JSON_FILE_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/JSON_FILES/
+OUTPUT_JSON_FILE_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-SP1/JSON_FILES/
 
 #STA CSV FILE path
-STA_CSV_FILE  = /home/diogo/dados_doutorado/parnaiba_basin/SIG_dados/dados_estacoes/cood_rede_BB_artigo.txt
-#STA_CSV_FILE  = /home/diogo/dados_doutorado/parnaiba_basin/SIG_dados/dados_estacoes/cood_rede_SP_2015.txt
+#STA_CSV_FILE  = /home/diogo/dados_doutorado/parnaiba_basin/SIG_dados/dados_estacoes/cood_rede_BB_artigo.txt
+STA_CSV_FILE  = /home/diogo/dados_doutorado/parnaiba_basin/SIG_dados/dados_estacoes/cood_rede_SP_2015.txt
 
 #Gaussian Filter
 GAUSSIAN_FILTER = 2.5
@@ -51,10 +48,16 @@ TRANSVERSAL_EXT = .eqt
 #=========
 
 #Trace check (minimium amplitude of trace)
-REST_TRACE_CHECK_AMP = -0.7
+CODA_TRACE_CHECK_AMP = -0.1
+
+#Trace check (coda amplitude starts in (seconds))
+CODA_TRACE_CHECK = 40
+
+#Trace check (coda stardart deviation/anomalous amplitude ratio)
+CODA_RATIO_AMP = 8
 
 #min percent recoveries of the observed radial component
-RF_PERCENT = 70
+RF_PERCENT = 50
 
 #Minimum event distance 
 EV_GCARC_MIN = 30
@@ -77,5 +80,12 @@ SAMPLING_RATE = 10
 #=====
 [plot]
 #=====
+
+#Plot X limits
+
+X_LIM_MIN = -4
+
+X_LIM_MAX = 100
+
 
 

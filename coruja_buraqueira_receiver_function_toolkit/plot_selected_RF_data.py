@@ -43,7 +43,7 @@ dic_RF = json.load(open(filename_RF))
 
 dataR = dic_RF['dataR']
 dataT = dic_RF['dataT']
-
+dataR_time = dic_RF['dataR_time']
 npts = dic_RF['npts']
 kstnm = dic_RF['kstnm']
 nzyear = dic_RF['nzyear']
@@ -95,7 +95,7 @@ print('\n')
 for i,j in enumerate(input_list):
 	print('Plotting data to: '+kstnm_STA[i])
 	print('\n')
-	plot_station_raw_RF(j,kstnm_STA[i])
+	plot_station_raw_RF(j,dataR_time[0],kstnm_STA[i])
 
 print('Plotting finished!')
 

@@ -55,9 +55,6 @@ config = select_and_parse_config_file(basedir='.', ext='cnf', verbose=True)
 # directory of raw sac files
 DIR_SAC = config.get('paths', 'DIR_SAC')
 
-#Directory to save seismograms
-DIR_SELECTED = config.get('paths', 'DIR_SELECTED')
-
 #Directory to save JSON Files
 OUTPUT_JSON_FILE_DIR =  config.get('paths', 'OUTPUT_JSON_FILE_DIR')
 
@@ -78,7 +75,13 @@ TRANSVERSAL_EXT = config.get('paths', 'TRANSVERSAL_EXT')
 # --------
 
 #Trace check (minimium amplitude of trace)
-REST_TRACE_CHECK_AMP = config.getfloat('quality', 'REST_TRACE_CHECK_AMP')
+CODA_TRACE_CHECK_AMP = config.getfloat('quality', 'CODA_TRACE_CHECK_AMP')
+
+#Trace check (coda amplitude starts in (seconds))
+CODA_TRACE_CHECK = config.getfloat('quality', 'CODA_TRACE_CHECK')
+
+#Trace check (coda stardart deviation/anomalous amplitude ratio)
+CODA_RATIO_AMP = config.getfloat('quality', 'CODA_RATIO_AMP')
 
 #Percent recoveries of the observed radial component
 RF_PERCENT = config.getfloat('quality', 'RF_PERCENT')
@@ -105,5 +108,8 @@ SAMPLING_RATE = config.getfloat('quality', 'SAMPLING_RATE')
 # plot
 # -----
 
+#Plot X limits
+X_LIM_MIN = config.getfloat('plot', 'X_LIM_MIN')
 
+X_LIM_MAX = config.getfloat('plot', 'X_LIM_MAX')
 
