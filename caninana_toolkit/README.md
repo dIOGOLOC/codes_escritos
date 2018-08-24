@@ -2,8 +2,8 @@
   <img src="caninana_toolkit_logo.png">
 </p>
 
-This project is dedicated to provide a Python framework for analysing receiver functions data 
-based on [ObsPy](https://github.com/obspy/obspy/wiki)
+This project is dedicated to provide a Python framework for analysing the quality of
+seismological data based on [ObsPy](https://github.com/obspy/obspy/wiki)
 
 Requirements
 ------------
@@ -34,4 +34,4 @@ References
 
 Inspiration
 ----------
-The code logo is based in Athene cunicularia, a owl from the northeast part of Brazil fauna. [Coruja-Buraqueira](http://natal.rn.gov.br/semurb/revistas/edicoes/artigos/setembro2015/3_FAUNA_CORUJA.pdf)
+The code logo is based in Spilotes pullatus, a snake from the northeast part of Brazil fauna. [Caninana](https://en.wikipedia.org/wiki/Spilotes_pullatus)
