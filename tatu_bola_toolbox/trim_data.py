@@ -24,10 +24,7 @@ from pre_processing_py.trim_seismogram import cut_data_by_event
 from parameters_py.config import (
 					DIR_SAC,DIR_EVENT,NEIC_CSV_FILE,STA_CSV_FILE,OUTPUT_JSON_FILE_DIR,TAUPY_MODEL,
 					EV_GCARC_MIN,EV_GCARC_MAX,EV_MAGNITUDE_MB,CUT_BEFORE_P,CUT_AFTER_P,KCMPNM_N,
-					KCMPNM_E,KCMPNM_Z,knetwk,NAME_SUFFIX_N,NAME_SUFFIX_E,NAME_SUFFIX_Z,MP_PROCESSES,
-					DETREND,DETREND_TYPE,TAPER,TAPER_TYPE,TAPER_MAX_PERCENTAGE,LOWPASS_FREQ,LOWPASS_CORNER,
-					LOWPASS_ZEROPHASE,HIGHPASS_FREQ,HIGHPASS_CORNER,HIGHPASS_ZEROPHASE,RMEAN,RMEAN_TYPE,
-					INTERPOLATE,SAMPLING_RATE
+					KCMPNM_E,KCMPNM_Z,knetwk,NAME_SUFFIX_N,NAME_SUFFIX_E,NAME_SUFFIX_Z,MP_PROCESSES
 				   )
 
 
@@ -120,6 +117,7 @@ print('\n')
 pool_trim = Pool(MP_PROCESSES)
 error_station_data_dic = {'kstnm':[],'error_dir':[]}
 for i,j in enumerate(input_list):
+	print('Station: '+kstnm[i])
 	trim_data_result = pool_trim.starmap(parallel_trim_data, j)
 	
 	error_station_data_dic['error_dir'].append(pool_trim.starmap(parallel_trim_data, j))

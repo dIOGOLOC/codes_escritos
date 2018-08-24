@@ -21,22 +21,26 @@ sta_info = np.genfromtxt(STA_CSV_FILE,skip_header=1)
 
 sta_name =  np.genfromtxt(STA_CSV_FILE,dtype='str',skip_header=1,usecols=[1])
 
+sensor_type =  np.genfromtxt(STA_CSV_FILE,dtype='str',skip_header=1,usecols=[0])
+
 sta_event = {
 
 		'kstnm':[],
 		'stla':[],
 		'stlo':[],
+		'sensor_type':[]
 
 	    }
 
 for i,j in enumerate(sta_info):
+	sta_event['sensor_type'].append(sensor_type[i])
 	sta_event['kstnm'].append(sta_name[i])
 	sta_event['stla'].append(j[2])
 	sta_event['stlo'].append(j[3])
 
 print('Number of Stations: '+str(len(sta_event['kstnm'])))
-for i in sta_event['kstnm']:
-	print('Station: '+i)
+for i,j in enumerate(sta_event['kstnm']):
+	print('Station: '+j+' Sensor: '+sta_event['sensor_type'][i])
 print('\n')
 
 print('Saving Station Information in JSON file')

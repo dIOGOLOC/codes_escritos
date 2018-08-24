@@ -70,6 +70,41 @@ STA_CSV_FILE  =  config.get('paths', 'STA_CSV_FILE')
 #Directory to save JSON Files
 OUTPUT_JSON_FILE_DIR =  config.get('paths', 'OUTPUT_JSON_FILE_DIR')
 
+
+# -----
+# copy
+# -----
+
+#Do want to remove the mean of your data? (information in https://docs.obspy.org/packages/autogen/obspy.core.trace.Trace.detrend.html#obspy.core.trace.Trace.detrend)
+FILTERS_RMEAN = config.getboolean('copy', 'FILTERS_RMEAN')
+RMEAN_TYPE = config.get('copy', 'RMEAN_TYPE') 
+
+#Do want to remove the trend of your data? (information in https://docs.obspy.org/packages/autogen/obspy.core.trace.Trace.detrend.html#obspy.core.trace.Trace.detrend)
+FILTERS_DETREND = config.getboolean('copy', 'FILTERS_DETREND')
+DETREND_TYPE = config.get('copy', 'DETREND_TYPE') 
+
+#Do want to use taper in your data? (information in https://docs.obspy.org/master/packages/autogen/obspy.core.trace.Trace.taper.html)
+FILTERS_TAPER = config.getboolean('copy', 'FILTERS_TAPER')
+TAPER_TYPE = config.get('copy', 'TAPER_TYPE') 
+TAPER_MAX_PERCENTAGE = config.getfloat('copy', 'TAPER_MAX_PERCENTAGE')
+
+#Do want to use filter in your data? (help in https://docs.obspy.org/tutorial/code_snippets/filtering_seismograms.html)
+FILTER = config.getboolean('copy', 'FILTER')
+LOWPASS_FREQ = config.getfloat('copy', 'LOWPASS_FREQ')
+LOWPASS_CORNER = config.getfloat('copy', 'LOWPASS_CORNER')
+LOWPASS_ZEROPHASE = config.getboolean('copy', 'LOWPASS_ZEROPHASE')
+
+HIGHPASS_FREQ = config.getfloat('copy', 'HIGHPASS_FREQ')
+HIGHPASS_CORNER = config.getfloat('copy', 'HIGHPASS_CORNER')
+HIGHPASS_ZEROPHASE = config.getboolean('copy', 'HIGHPASS_ZEROPHASE')
+
+
+#Do want to interpolate your data?
+#This operation is performed in place on the actual data arrays. The raw data is not accessible anymore afterwards. 
+#Be careful when downsampling data and make sure to apply an appropriate anti-aliasing lowpass filter before interpolating in case it’s necessary.
+INTERPOLATE = config.getboolean('copy', 'INTERPOLATE')
+SAMPLING_RATE = config.getfloat('copy', 'SAMPLING_RATE')
+
 # -----
 # trim
 # -----
@@ -115,43 +150,3 @@ NAME_SUFFIX_E = config.get('trim', 'NAME_SUFFIX_E')
 
 #Component Z sac file name suffix
 NAME_SUFFIX_Z = config.get('trim', 'NAME_SUFFIX_Z')
-
-#Do want to remove the mean of your data?
-RMEAN = config.get('trim', 'RMEAN')
-
-RMEAN_TYPE = config.get('trim', 'RMEAN_TYPE')
-
-#Do want to remove the trend your data?
-DETREND = config.get('trim', 'DETREND')
-
-DETREND_TYPE = config.get('trim', 'DETREND_TYPE')
-
-#Do want to use taper in your data? 
-TAPER = config.get('trim', 'TAPER')
-
-TAPER_TYPE = config.get('trim', 'TAPER_TYPE')
-
-TAPER_MAX_PERCENTAGE = config.getfloat('trim', 'TAPER_MAX_PERCENTAGE')
-
-#Do want to use filter in your data? 
-FILTER = config.get('trim', 'FILTER')
-
-LOWPASS_FREQ = config.getfloat('trim', 'LOWPASS_FREQ')
-
-LOWPASS_CORNER = config.getfloat('trim', 'LOWPASS_CORNER')
-
-LOWPASS_ZEROPHASE = config.get('trim', 'LOWPASS_ZEROPHASE')
-
-HIGHPASS_FREQ = config.getfloat('trim', 'HIGHPASS_FREQ')
-
-HIGHPASS_CORNER = config.getfloat('trim', 'HIGHPASS_CORNER')
-
-HIGHPASS_ZEROPHASE = config.get('trim', 'HIGHPASS_ZEROPHASE')
-
-#Do want to interpolate your data?
-INTERPOLATE = config.get('trim', 'INTERPOLATE')
-
-SAMPLING_RATE = config.getfloat('trim', 'SAMPLING_RATE')
-
-INTERPOLATE_TYPE = config.get('trim', 'INTERPOLATE_TYPE')
-
