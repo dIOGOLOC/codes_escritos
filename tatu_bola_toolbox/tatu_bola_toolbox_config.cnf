@@ -100,6 +100,12 @@ EV_GCARC_MAX = 95
 #Minimum event magnitude 
 EV_MAGNITUDE_MB = 5
 
+#Date event initial  (exemple: 2008-01-01T00:00:00)
+INITIAL_DATE_EVENT = 2015-01-01T00:00:00
+
+#Date event final  (exemple: 2008-01-01T00:00:00)
+FINAL_DATE_EVENT = 2018-06-01T00:00:00
+
 #Time to trim the seismogram before P-wave arrival
 CUT_BEFORE_P = 10
 

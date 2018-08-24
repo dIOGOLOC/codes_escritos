@@ -1,16 +1,17 @@
 '''
-Script to collect information from NEIC (National Earthquake Information Center) 
-csv file downloaded in https://earthquake.usgs.gov/earthquakes/search/
+Script to get events information from CATALOG obspy
+(https://docs.obspy.org/packages/autogen/obspy.clients.fdsn.client.Client.get_events.html)
 '''
-#Importando módulos
 
 import numpy as np
 from obspy import UTCDateTime
 import os
 import json
+from obspy import read_events
+from obspy.clients.fdsn import Client
 
 from parameters_py.config import (
-					OUTPUT_JSON_FILE_DIR,NEIC_CSV_FILE
+					OUTPUT_JSON_FILE_DIR,NEIC_CSV_FILE,INITIAL_DATE_EVENT,FINAL_DATE_EVENT,EV_MAGNITUDE_MB
 				   )
 
 
@@ -18,11 +19,12 @@ from parameters_py.config import (
 print('Get Event Parameters')
 print('\n')
 
-event_info = np.genfromtxt(NEIC_CSV_FILE,delimiter=',',skip_header=1,usecols=[1,2,3,4])
+irisclient=Client("IRIS")
 
-#Guardando as variáves cada evento:
+starttime = UTCDateTime(INITIAL_DATE_EVENT)
+endtime = UTCDateTime(FINAL_DATE_EVENT)
 
-ev_time =  np.genfromtxt(NEIC_CSV_FILE,delimiter=',',dtype='str',skip_header=1,usecols=[0])
+events = irisclient.get_events(starttime=starttime, endtime=endtime,minmagnitude=EV_MAGNITUDE_MB)
 
 dic_event = {
 		'ev_timeUTC':[],
@@ -39,8 +41,8 @@ dic_event = {
 		'evdp':[],
 		'mag':[]}
 
-for i,j in enumerate(ev_time):
-	temp = UTCDateTime(j)
+for i,j in enumerate(events):
+	temp = j['origins'][0]['time']
 	dic_event['ev_year'].append('{:04}'.format(temp.year))
 	dic_event['ev_month'].append('{:02}'.format(temp.month))
 	dic_event['ev_julday'].append('{:03}'.format(temp.julday))
@@ -49,11 +51,11 @@ for i,j in enumerate(ev_time):
 	dic_event['ev_minute'].append('{:02}'.format(temp.minute))
 	dic_event['ev_second'].append('{:02}'.format(temp.second))
 	dic_event['ev_microsecond'].append('{:04}'.format(temp.microsecond))
-	dic_event['ev_timeUTC'].append(j)
-	dic_event['evla'].append(event_info[i][0])
-	dic_event['evlo'].append(event_info[i][1])
-	dic_event['evdp'].append(event_info[i][2])
-	dic_event['mag'].append(event_info[i][3])
+	dic_event['ev_timeUTC'].append(str(temp))
+	dic_event['evla'].append(j['origins'][0]['latitude'])
+	dic_event['evlo'].append(j['origins'][0]['longitude'])
+	dic_event['evdp'].append(j['origins'][0]['depth']/1000)
+	dic_event['mag'].append(j['magnitudes'][0]['mag'])
 
 print('Number of Events: '+str(len(dic_event['mag'])))
 print('\n')
@@ -65,4 +67,3 @@ os.makedirs(OUTPUT_JSON_FILE_DIR,exist_ok=True)
 
 with open(OUTPUT_JSON_FILE_DIR+'EVENT_dic.json', 'w') as fp:
 	json.dump(dic_event, fp)
-

@@ -115,6 +115,12 @@ MP_PROCESSES = config.getint('trim', 'MP_PROCESSES')
 #Taup_time model to calculate travel times
 TAUPY_MODEL = config.get('trim', 'TAUPY_MODEL') 
 
+#Date event initial  (exemple: "2008-01-01")
+INITIAL_DATE_EVENT = config.get('trim', 'INITIAL_DATE_EVENT') 
+
+#Date event final  (exemple: "2008-01-01")
+FINAL_DATE_EVENT = config.get('trim', 'FINAL_DATE_EVENT') 
+
 #Minimum event distance 
 EV_GCARC_MIN = config.getfloat('trim', 'EV_GCARC_MIN')
 

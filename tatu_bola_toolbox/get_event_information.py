@@ -17,11 +17,6 @@ if os.path.isdir(DIR_SAC) == True:
 else:
 	print(DIR_SAC+' is not a directory! Please, check your configuration file')
 
-if os.path.isfile(NEIC_CSV_FILE) == True:
-	pass
-else:
-	print(NEIC_CSV_FILE+' is not a file! Please, check your configuration file')
-
 print('\n')
 print('++++ Input file and directories are OK! ++++')
 print('\n')
