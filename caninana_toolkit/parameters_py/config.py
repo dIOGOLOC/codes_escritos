@@ -53,22 +53,45 @@ config = select_and_parse_config_file(basedir='.', ext='cnf', verbose=True)
 # -----
 
 # directory of raw sac files
-DIR_SAC = config.get('paths', 'DIR_SAC')
+DIR_DATA = config.get('paths', 'DIR_DATA')
 
 #Directory to save JSON Files
 OUTPUT_JSON_FILE_DIR =  config.get('paths', 'OUTPUT_JSON_FILE_DIR')
 
+#Directory to save Figures
+OUTPUT_FIGURE_DIR = config.get('paths', 'OUTPUT_FIGURE_DIR')
+
+#Directory to save XML File
+OUTPUT_XML_FILE_DIR = config.get('paths', 'OUTPUT_XML_FILE_DIR')
+
 #Stations CSV FILE path
 STA_CSV_FILE  =  config.get('paths', 'STA_CSV_FILE')
 
-#Gaussian Filter
-GAUSSIAN_FILTER = config.getfloat('paths', 'GAUSSIAN_FILTER')
 
-#RADIAL RF EXTENSION
-RADIAL_EXT = config.get('paths', 'RADIAL_EXT')
+# ---
+# xml
+# ---
 
-#TRANSVERSAL RF EXTENSION
-TRANSVERSAL_EXT = config.get('paths', 'TRANSVERSAL_EXT')
+#Name of the Network
+NETWORK_CODE = config.get('xml', 'NETWORK_CODE')
+
+#Name of the deployer
+SOURCE = config.get('xml', 'SOURCE')
+
+#Lotation code
+LOCATION = config.get('xml', 'LOCATION')
+
+#Description of the Network
+NETWORK_DESCRIPTION = config.get('xml', 'NETWORK_DESCRIPTION')
+
+#Start date of the Network
+START_DATE = config.get('xml', 'START_DATE')
+
+#Sampling Rate of the seismogram
+SAMPLING_RATE = config.getfloat('xml', 'SAMPLING_RATE')
+
+# how many concurrent processes at the multiprocessing?
+MP_PROCESSES = config.getint('xml', 'MP_PROCESSES')
 
 # --------
 # quality

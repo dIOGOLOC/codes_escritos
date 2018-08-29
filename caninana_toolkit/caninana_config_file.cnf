@@ -1,15 +1,16 @@
 ###############################################################################
 #
 # This is an example of configuration file, wherein global paths and parameters
-# related to the analysis of receiver functions are defined. At least one file 
-# should reside in the folder in which you intend to run your scripts. 
+# related to the analysis of quality of seismological data are defined. At least 
+# one file should reside in the folder in which you intend to run your scripts. 
 # The configuration file(s) can have any name, as long as the extension is 'cnf':
-# e.g., 'RF_analysis.cnf', 'RF_config.cnf', 'myconfig.cnf', 'test.cnf'...
+# e.g., 'analysis.cnf', 'caninana_config.cnf', 'myconfig.cnf', 'test.cnf'...
 #
 # The parameters are divided in several sections:
 # - [paths]                : default paths to input/output folders
-# - [quality]              : parameters to control receiver functions quality
-# - [plot]                 : parameters to plot receiver functions
+# - [xml]                  : parameters to create xml file
+# - [quality]              : parameters to control data quality
+# - [plot]                 : parameters to plot our data
 #
 # Before using the scripts, you should at least make sure that the paths in 
 # section [paths] are consistent with your own files and folders organization. 
@@ -21,27 +22,45 @@
 [paths]
 #======
 
-# directory of raw RF files
-DIR_SAC = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-SP1/event_data/
-#DIR_SAC = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/transition_zone/rede_BB/event_data/
+# directory of raw files
+DIR_DATA = /home/diogo/dados_doutorado/rift_basin/raw_data/
 
 #Directory to save JSON Files
-#OUTPUT_JSON_FILE_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/JSON_FILES/
-OUTPUT_JSON_FILE_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-SP1/JSON_FILES/
+OUTPUT_JSON_FILE_DIR = /home/diogo/dados_doutorado/rift_basin/JSON_FILES/
+
+#Directory to save Figures
+OUTPUT_FIGURE_DIR = /home/diogo/dados_doutorado/rift_basin/FIGURES/
+
+#Directory to save XML File
+OUTPUT_XML_FILE_DIR = /home/diogo/dados_doutorado/rift_basin/XML_FILES/
 
 #STA CSV FILE path
-#STA_CSV_FILE  = /home/diogo/dados_doutorado/parnaiba_basin/SIG_dados/dados_estacoes/cood_rede_BB_artigo.txt
-STA_CSV_FILE  = /home/diogo/dados_doutorado/parnaiba_basin/SIG_dados/dados_estacoes/cood_rede_SP_2015.txt
+STA_CSV_FILE  = /home/diogo/dados_doutorado/rift_basin/station_coordinates/cood_rede_rift.txt
 
-#Gaussian Filter
-GAUSSIAN_FILTER = 2.5
+#=========
+[xml]
+#=========
 
-#RADIAL RF EXTENSION
-RADIAL_EXT = .eqr
+#Name of the Network
+NETWORK_CODE = LS
 
-#TRANSVERSAL RF EXTENSION
-TRANSVERSAL_EXT = .eqt
+#Name of the deployer
+SOURCE = LabSis UFRN
 
+#Lotation code
+LOCATION = 00
+
+#Description of the Network
+NETWORK_DESCRIPTION = 
+
+#Start date of the Network
+START_DATE = 2018,1,1
+
+#Sampling Rate of the seismogram
+SAMPLING_RATE = 100
+
+# how many concurrent processes at the multiprocessing?
+MP_PROCESSES = 8
 
 #=========
 [quality]

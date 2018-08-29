@@ -1,9 +1,9 @@
 #!/usr/bin/python -u
 """
-Scritp to get information from Stations and Events
+Scritp to get information from Stations
 """
 from parameters_py.config import (
-					DIR_SAC,STA_CSV_FILE
+					DIR_DATA,STA_CSV_FILE
 				   )
 import os
 
@@ -12,10 +12,10 @@ import os
 # Check some informations in the configuration file  
 # ====================================================
 
-if os.path.isdir(DIR_SAC) == True:
+if os.path.isdir(DIR_DATA) == True:
 	pass
 else:
-	print(DIR_SAC+' is not a directory! Please, check your configuration file')
+	print(DIR_DATA+' is not a directory! Please, check your configuration file')
 
 if os.path.isfile(STA_CSV_FILE) == True:
 	pass

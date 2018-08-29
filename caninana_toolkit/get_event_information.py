@@ -3,7 +3,7 @@
 Scritp to get information from Stations and Events
 """
 from parameters_py.config import (
-					DIR_SAC
+					DIR_SAC,NEIC_CSV_FILE
 				   )
 import os
 
@@ -21,4 +21,4 @@ print('\n')
 print('++++ Input file and directories are OK! ++++')
 print('\n')
 
-from get_information_py import get_RF_information
+from pre_processing_py import get_events_information
