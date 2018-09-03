@@ -1,11 +1,7 @@
 import obspy 
-import numpy as np
-import matplotlib.pyplot as plt
 from obspy import read, Stream,read_inventory
 import os
-import glob
 import json
-from obspy.io.xseed import Parser
 from obspy import read_inventory
 from obspy.clients.nrl import NRL
 from obspy.core.inventory import Inventory, Network, Station, Channel, Site

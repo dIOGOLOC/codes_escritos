@@ -61,6 +61,9 @@ OUTPUT_JSON_FILE_DIR =  config.get('paths', 'OUTPUT_JSON_FILE_DIR')
 #Directory to save Figures
 OUTPUT_FIGURE_DIR = config.get('paths', 'OUTPUT_FIGURE_DIR')
 
+#Directory to save PSD
+OUTPUT_PSD_DIR = config.get('paths', 'OUTPUT_PSD_DIR')
+
 #Directory to save XML File
 OUTPUT_XML_FILE_DIR = config.get('paths', 'OUTPUT_XML_FILE_DIR')
 
@@ -94,45 +97,18 @@ SAMPLING_RATE = config.getfloat('xml', 'SAMPLING_RATE')
 MP_PROCESSES = config.getint('xml', 'MP_PROCESSES')
 
 # --------
-# quality
+# PPSD
 # --------
 
-#Trace check (minimium amplitude of trace)
-CODA_TRACE_CHECK_AMP = config.getfloat('quality', 'CODA_TRACE_CHECK_AMP')
+#Example of the raw data directory
+EXAMPLE_OF_FILE = config.get('PPSD', 'EXAMPLE_OF_FILE')
 
-#Trace check (coda amplitude starts in (seconds))
-CODA_TRACE_CHECK = config.getfloat('quality', 'CODA_TRACE_CHECK')
-
-#Trace check (coda stardart deviation/anomalous amplitude ratio)
-CODA_RATIO_AMP = config.getfloat('quality', 'CODA_RATIO_AMP')
-
-#Percent recoveries of the observed radial component
-RF_PERCENT = config.getfloat('quality', 'RF_PERCENT')
-
-#Minimum event distance 
-EV_GCARC_MIN = config.getfloat('quality', 'EV_GCARC_MIN')
-
-#Maximum event distance 
-EV_GCARC_MAX = config.getfloat('quality', 'EV_GCARC_MAX')
-
-#Minimum event magnitude 
-EV_MAGNITUDE_MB = config.getfloat('quality', 'EV_MAGNITUDE_MB')
-
-#Time to trim the seismogram before P-wave arrival
-CUT_BEFORE_P = config.getfloat('quality', 'CUT_BEFORE_P')
-
-#Time to trim the seismogram after P-wave arrival
-CUT_AFTER_P = config.getfloat('quality', 'CUT_AFTER_P')
-
-#Sampling Rate of the traces
-SAMPLING_RATE = config.getfloat('quality', 'SAMPLING_RATE')
+# Percentage fo the days to process and plot the PPSD?
+DAY_PERCENTAGE = config.getfloat('PPSD', 'DAY_PERCENTAGE')
 
 # -----
 # plot
 # -----
 
-#Plot X limits
-X_LIM_MIN = config.getfloat('plot', 'X_LIM_MIN')
 
-X_LIM_MAX = config.getfloat('plot', 'X_LIM_MAX')
 

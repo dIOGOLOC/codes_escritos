@@ -74,6 +74,11 @@ OUTPUT_JSON_FILE_DIR =  config.get('paths', 'OUTPUT_JSON_FILE_DIR')
 # -----
 # copy
 # -----
+#File format
+FILE_TYPE = config.get('copy', 'FILE_TYPE')
+
+#File suffix
+FILE_SUFFIX = config.get('copy', 'FILE_SUFFIX')
 
 #Do want to remove the mean of your data? (information in https://docs.obspy.org/packages/autogen/obspy.core.trace.Trace.detrend.html#obspy.core.trace.Trace.detrend)
 FILTERS_RMEAN = config.getboolean('copy', 'FILTERS_RMEAN')

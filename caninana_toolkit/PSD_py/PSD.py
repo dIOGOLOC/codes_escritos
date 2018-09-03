@@ -22,10 +22,10 @@ print(inv)
 
 
 def calc_PSD(data,sta_name):
-    st = Stream()
-    for i,j in enumerate(data):
-        st += read(j)
+    os.chdir(data)
+    st = read('*')
     st.merge()
+
     for k,l in enumerate(st):
         l.stats.station = sta_name
         l.stats.network = NETWORK_CODE
@@ -40,7 +40,19 @@ def calc_PSD(data,sta_name):
                 ppsd = PPSD(l.stats, metadata=inv)
                 ppsd.add(st) 
                 print(ppsd.id)
-                ppsd.plot(show_coverage=False,show=True,cmap=pqlx,filename=OUTPUT_FIGURE_DIR+'/'+sta_name+'_PPSD_pqlx'+sta_channel+'.pdf')
+                ppsd.plot(cmap=pqlx,filename=OUTPUT_FIGURE_DIR+'/'+sta_name+'_PPSD_pqlx_'+sta_channel+'_'+str(k)+'.pdf')
+            except:
+                pass
+        
+        if sta_channel == 'HHY':
+            l.stats.channel = 'HHN'
+            print('Calculating PPSD: '+sta_name+' station / channel: '+sta_channel)
+
+            try:
+                ppsd = PPSD(l.stats, metadata=inv)
+                ppsd.add(st) 
+                print(ppsd.id)
+                ppsd.plot(cmap=pqlx,filename=OUTPUT_FIGURE_DIR+'/'+sta_name+'_PPSD_pqlx_'+sta_channel+'_'+str(k)+'.pdf')
             except:
                 pass
 
@@ -51,7 +63,7 @@ def calc_PSD(data,sta_name):
                 ppsd = PPSD(l.stats, metadata=inv)
                 ppsd.add(st) 
                 print(ppsd.id)
-                ppsd.plot(show_coverage=False,show=True,cmap=pqlx,filename=OUTPUT_FIGURE_DIR+'/'+sta_name+'_PPSD_pqlx'+sta_channel+'.pdf')
+                ppsd.plot(cmap=pqlx,filename=OUTPUT_FIGURE_DIR+'/'+sta_name+'_PPSD_pqlx_'+sta_channel+'_'+str(k)+'.pdf')
             except:
                 pass
         
@@ -62,15 +74,38 @@ def calc_PSD(data,sta_name):
                 ppsd = PPSD(l.stats, metadata=inv)
                 ppsd.add(st) 
                 print(ppsd.id)
-                ppsd.plot(show_coverage=False,show=True,cmap=pqlx,filename=OUTPUT_FIGURE_DIR+'/'+sta_name+'_PPSD_pqlx'+sta_channel+'.pdf')
+                ppsd.plot(cmap=pqlx,filename=OUTPUT_FIGURE_DIR+'/'+sta_name+'_PPSD_pqlx_'+sta_channel+'_'+str(k)+'.pdf')
             except:
                 pass
+
+        elif sta_channel == 'HH2j':
+            l.stats.channel = 'HHE'
+            print('Calculating PPSD: '+sta_name+' station / channel: '+sta_channel)
+            try:
+                ppsd = PPSD(l.stats, metadata=inv)
+                ppsd.add(st) 
+                print(ppsd.id)
+                ppsd.plot(cmap=pqlx,filename=OUTPUT_FIGURE_DIR+'/'+sta_name+'_PPSD_pqlx_'+sta_channel+'_'+str(k)+'.pdf')
+            except:
+                pass
+
+        elif sta_channel == 'HHX':
+            l.stats.channel = 'HHE'
+            print('Calculating PPSD: '+sta_name+' station / channel: '+sta_channel)
+            try:
+                ppsd = PPSD(l.stats, metadata=inv)
+                ppsd.add(st) 
+                print(ppsd.id)
+                ppsd.plot(cmap=pqlx,filename=OUTPUT_FIGURE_DIR+'/'+sta_name+'_PPSD_pqlx_'+sta_channel+'_'+str(k)+'.pdf')
+            except:
+                pass
+
         else:
             print('Calculating PPSD: '+sta_name+' station / channel: '+sta_channel)
             try:
                 ppsd = PPSD(l.stats, metadata=inv)
                 ppsd.add(st) 
                 print(ppsd.id)
-                ppsd.plot(show_coverage=False,show=True,cmap=pqlx,filename=OUTPUT_FIGURE_DIR+'/'+sta_name+'_PPSD_pqlx'+sta_channel+'.pdf')
+                ppsd.plot(cmap=pqlx,filename=OUTPUT_FIGURE_DIR+'/'+sta_name+'_PPSD_pqlx_'+sta_channel+'_'+str(k)+'.pdf')
             except:
                 pass

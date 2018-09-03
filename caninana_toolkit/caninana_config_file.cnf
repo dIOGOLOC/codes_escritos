@@ -9,7 +9,7 @@
 # The parameters are divided in several sections:
 # - [paths]                : default paths to input/output folders
 # - [xml]                  : parameters to create xml file
-# - [quality]              : parameters to control data quality
+# - [PSD]              : parameters to control data quality
 # - [plot]                 : parameters to plot our data
 #
 # Before using the scripts, you should at least make sure that the paths in 
@@ -23,13 +23,16 @@
 #======
 
 # directory of raw files
-DIR_DATA = /home/diogo/dados_doutorado/rift_basin/raw_data/
+DIR_DATA = /home/diogo/dados_doutorado/rift_basin/MSEED_DATA/
 
 #Directory to save JSON Files
 OUTPUT_JSON_FILE_DIR = /home/diogo/dados_doutorado/rift_basin/JSON_FILES/
 
 #Directory to save Figures
 OUTPUT_FIGURE_DIR = /home/diogo/dados_doutorado/rift_basin/FIGURES/
+
+#Directory to save PSD
+OUTPUT_PSD_DIR = /home/diogo/dados_doutorado/rift_basin/PPSD/
 
 #Directory to save XML File
 OUTPUT_XML_FILE_DIR = /home/diogo/dados_doutorado/rift_basin/XML_FILES/
@@ -63,48 +66,19 @@ SAMPLING_RATE = 100
 MP_PROCESSES = 8
 
 #=========
-[quality]
+[PPSD]
 #=========
+#Example of the raw data directory
+EXAMPLE_OF_FILE = /home/diogo/dados_doutorado/rift_basin/MSEED_DATA/9FF5/2018/236
 
-#Trace check (minimium amplitude of trace)
-CODA_TRACE_CHECK_AMP = -0.1
+#Percentage fo the days to process and plot the PPSD?
+DAY_PERCENTAGE = 2
 
-#Trace check (coda amplitude starts in (seconds))
-CODA_TRACE_CHECK = 40
-
-#Trace check (coda stardart deviation/anomalous amplitude ratio)
-CODA_RATIO_AMP = 8
-
-#min percent recoveries of the observed radial component
-RF_PERCENT = 50
-
-#Minimum event distance 
-EV_GCARC_MIN = 30
-
-#Maximum event distance 
-EV_GCARC_MAX = 95
-
-#Minimum event magnitude 
-EV_MAGNITUDE_MB = 5.5
-
-#Time to trim the seismogram before P-wave arrival
-CUT_BEFORE_P = 10
-
-#Time to trim the seismogram after P-wave arrival
-CUT_AFTER_P = 260
-
-#Sampling Rate of the traces
-SAMPLING_RATE = 10
 
 #=====
 [plot]
 #=====
 
-#Plot X limits
-
-X_LIM_MIN = -4
-
-X_LIM_MAX = 100
 
 
 

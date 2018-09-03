@@ -126,8 +126,8 @@ pool_Pds = Pool(MP_PROCESSES)
 TT_dic_Pds = pool_Pds.starmap(parallel_travel_times_Pds, input_list)
 pool_Pds.close()
 #Saving Piercing Points in JSON file
-os.makedirs(PdS_DIR,exist_ok=True)
 print('Saving in JSON file')
+os.makedirs(PdS_DIR,exist_ok=True)
 with open(PdS_DIR+'Pds_dic.json', 'w') as fp:
 	json.dump(TT_dic_Pds, fp)
 
@@ -145,8 +145,10 @@ print('\n')
 pool_Ppds = Pool(MP_PROCESSES)
 TT_dic_Ppds = pool_Ppds.starmap(parallel_travel_times_Ppds, input_list)
 pool_Ppds.close()
+
 #Saving Piercing Points in JSON file
 print('Saving in JSON file')
+os.makedirs(PdS_DIR,exist_ok=True)
 with open(PdS_DIR+'PPvs_dic.json', 'w') as fp:
 	json.dump(TT_dic_Ppds, fp)
 

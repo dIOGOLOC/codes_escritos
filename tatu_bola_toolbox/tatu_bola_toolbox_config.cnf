@@ -22,9 +22,13 @@
 
 # directory of raw data
 #DIR_RAW_DATA = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-SP1/
-DIR_RAW_DATA = /media/diogo/BP-PABIP/DADOS/
+#DIR_RAW_DATA = /media/diogo/BP-PABIP/DADOS/
+DIR_RAW_DATA = /home/diogo/dados_doutorado/rift_basin/raw_data/
+
 # directory of raw sac files
-DIR_SAC = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/sac_data/
+#DIR_SAC = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/sac_data/
+DIR_SAC = /home/diogo/dados_doutorado/rift_basin/MSEED_DATA/
+
 #DIR_SAC = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-UK/sac_data/
 #DIR_SAC = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-SP1/sac_data/
 
@@ -41,31 +45,39 @@ NEIC_CSV_FILE  = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-
 #Stations CSV FILE path
 #STA_CSV_FILE  = /home/diogo/dados_doutorado/parnaiba_basin/SIG_dados/dados_estacoes/cood_rede_BB_artigo.txt
 #STA_CSV_FILE  = /home/diogo/dados_doutorado/parnaiba_basin/SIG_dados/dados_estacoes/cood_rede_SP_2015.txt
-STA_CSV_FILE  = /home/diogo/dados_doutorado/parnaiba_basin/SIG_dados/dados_estacoes/cood_rede_BB_sensor_type.txt
+#STA_CSV_FILE  = /home/diogo/dados_doutorado/parnaiba_basin/SIG_dados/dados_estacoes/cood_rede_BB_sensor_type.txt
+STA_CSV_FILE  = /home/diogo/dados_doutorado/rift_basin/station_coordinates/cood_rede_rift.txt
+
 
 #Directory to save JSON Files
 #OUTPUT_JSON_FILE_DIR = /home/diogo/dados_doutorado/parnaiba_basin/relative_residuals_P_wave_data/JSON_FILES/
-OUTPUT_JSON_FILE_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-SP1/JSON_FILES/
+#OUTPUT_JSON_FILE_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-SP1/JSON_FILES/
+OUTPUT_JSON_FILE_DIR = /home/diogo/dados_doutorado/rift_basin/JSON_FILES/
 
 #=====
 [copy]
 #=====
+#File format
+FILE_TYPE = MSEED
+
+#File suffix
+FILE_SUFFIX = mseed
 
 #Do want to remove the mean of your data? (information in https://docs.obspy.org/packages/autogen/obspy.core.trace.Trace.detrend.html#obspy.core.trace.Trace.detrend)
-FILTERS_RMEAN = True
+FILTERS_RMEAN = False
 RMEAN_TYPE = demean
 
 #Do want to remove the trend of your data? (information in https://docs.obspy.org/packages/autogen/obspy.core.trace.Trace.detrend.html#obspy.core.trace.Trace.detrend)
-FILTERS_DETREND = True
+FILTERS_DETREND = False
 DETREND_TYPE = simple
 
 #Do want to use taper in your data? (information in https://docs.obspy.org/master/packages/autogen/obspy.core.trace.Trace.taper.html)
-FILTERS_TAPER = True
+FILTERS_TAPER = False
 TAPER_TYPE = hamming
 TAPER_MAX_PERCENTAGE = 0.05
 
 #Do want to use filter in your data? (help in https://docs.obspy.org/tutorial/code_snippets/filtering_seismograms.html)
-FILTER = True
+FILTER = False
 LOWPASS_FREQ = 8
 LOWPASS_CORNER = 4
 LOWPASS_ZEROPHASE = True
@@ -78,7 +90,7 @@ HIGHPASS_ZEROPHASE = True
 #Do want to interpolate your data?
 #This operation is performed in place on the actual data arrays. The raw data is not accessible anymore afterwards. 
 #Be careful when downsampling data and make sure to apply an appropriate anti-aliasing lowpass filter before interpolating in case it’s necessary.
-INTERPOLATE = True
+INTERPOLATE = False
 SAMPLING_RATE = 10
 
 #=====

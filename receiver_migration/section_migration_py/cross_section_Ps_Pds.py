@@ -113,7 +113,7 @@ m.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
 
 x, y = m(lons,lats)
-sc = m.scatter(x,y,40,RF_number,cmap='magma',marker='o',edgecolors='k')
+sc = m.scatter(x,y,40,RF_number,cmap='viridis',marker='o',edgecolors='k')
 plt.colorbar(sc,label='Total of Receiver Functions per bin')
 
 
@@ -260,10 +260,9 @@ print('Plotting the Final Figure')
 
 #Cross section figure
 
-
-fig = plt.figure(figsize=(40, 30))
+fig = plt.figure(figsize=(20, 10))
 gs = gridspec.GridSpec(4, 4)
-gs.update(wspace=0.3, hspace=0.5)
+gs.update(wspace=0.5, hspace=0.5)
 
 ax = fig.add_subplot(gs[0:2, 0:2])
 ax1 = fig.add_subplot(gs[:2, 2:])
@@ -287,7 +286,7 @@ l2, = m.drawgreatcircle(AB_lon_line[0],AB_lat_line[0],AB_lon_line[1],AB_lat_line
 divider = make_axes_locatable(ax)
 cax = divider.append_axes("right", size="5%", pad=0.05)
 x, y = m(lons,lats)
-sc = m.scatter(x,y,40,RF_number,cmap='magma',marker='o',edgecolors='k')
+sc = m.scatter(x,y,40,RF_number,cmap='viridis',marker='o',edgecolors='k')
 fig.colorbar(sc,cax=cax,label='Total of Receiver Functions per bin')
 
 for lon, lat in zip(sta_long,sta_lat):
@@ -348,10 +347,6 @@ for _i, _j in enumerate(RF_data_profile_stacking_Pds):
 
 factor_Ppds = 50
 
-majorLocatorY = MultipleLocator(50)
-minorLocatorY = MultipleLocator(10)
-
-
 for _i, _j in enumerate(RF_data_profile_stacking_Ppds):
 	RF_data_factor_Ppds = [_i/factor_Ppds+l for k, l in enumerate(_j)]
 	ax2.plot(RF_data_factor_Ppds,camadas_terra_10_km,'k',linewidth=0.5)
@@ -383,58 +378,66 @@ for _i, _j in enumerate(RF_data_profile_stacking_Ppds):
 		ax2.text(_i/factor_Ppds*0.95,820,"{0:.1f}".format(AB_lat[_i]),rotation=-45,fontsize=10)
 		ax2.set_xlabel('Latitude ($^\circ$)',labelpad=30)
 
-
+#### Plot Depth and Thickness ####
 
 for _i, _j in enumerate(RF_data_profile_stacking_Ppds):
-	ax3.plot(_i/factor_Ppds,RF_DEPTH_mean_1_profile_stacking_Pds[_i],'.r',markeredgewidth=2,ms=5)
-	ax3.plot(_i/factor_Ppds,RF_DEPTH_mean_1_profile_stacking_Ppds[_i],'.k',markeredgewidth=2,ms=5)
-	ax3.plot(_i/factor_Ppds,RF_DEPTH_mean_1_true_profile_stacking_Pds[_i],'.b')
-	ax3.plot(_i/factor_Ppds,RF_DEPTH_mean_1_true_profile_stacking_Ppds[_i],'.g')
-	ax3.set_ylim(DEPTH_1-DEPTH_RANGE,DEPTH_1+DEPTH_RANGE)
-	ax3.errorbar(_i/factor_Ppds,RF_DEPTH_mean_1_profile_stacking_Pds[_i], yerr=RF_DEPTH_std_1_profile_stacking_Pds[_i], ecolor='r',elinewidth=1,capsize=1,capthick=1)
-	ax3.errorbar(_i/factor_Ppds,RF_DEPTH_mean_1_profile_stacking_Ppds[_i], yerr=RF_DEPTH_std_1_profile_stacking_Ppds[_i], ecolor='k',elinewidth=1,capsize=1,capthick=1)
-	ax3.set_xticks([])
+	ax3.plot(_i/factor_Ppds,RF_DEPTH_mean_1_profile_stacking_Pds[_i],'or')
+	ax3.plot(_i/factor_Ppds,RF_DEPTH_mean_1_profile_stacking_Ppds[_i],'ok')
+	ax3.plot(_i/factor_Ppds,RF_DEPTH_mean_1_true_profile_stacking_Pds[_i],'sb')
+	ax3.plot(_i/factor_Ppds,RF_DEPTH_mean_1_true_profile_stacking_Ppds[_i],'sg')
+	ax3.errorbar(_i/factor_Ppds,RF_DEPTH_mean_1_profile_stacking_Pds[_i], yerr=RF_DEPTH_std_1_profile_stacking_Pds[_i], ecolor='r',elinewidth=1,capsize=2,capthick=1)
+	ax3.errorbar(_i/factor_Ppds,RF_DEPTH_mean_1_profile_stacking_Ppds[_i], yerr=RF_DEPTH_std_1_profile_stacking_Ppds[_i], ecolor='k',elinewidth=1,capsize=2,capthick=1)
+	ax3.set_title('d'+"{0:.0f}".format(DEPTH_1))
+	ax3.set_ylim(DEPTH_1+DEPTH_RANGE,DEPTH_1-DEPTH_RANGE)
 	ax3.set_ylabel('Depth (km)')
-
+	ax3.yaxis.set_ticks_position('both')
+	ax3.yaxis.set_major_locator(MultipleLocator(20))
+	ax3.yaxis.set_minor_locator(MultipleLocator(10))
+	ax3.grid(True,which='minor',linestyle='--')
+	ax3.tick_params(labelright=True)
+	ax3.set_xticks([])
 
 for _i, _j in enumerate(RF_data_profile_stacking_Ppds):
-	ax4.plot(_i/factor_Ppds,RF_DEPTH_mean_2_profile_stacking_Pds[_i],'.r',markeredgewidth=2,ms=5)
-	ax4.plot(_i/factor_Ppds,RF_DEPTH_mean_2_profile_stacking_Ppds[_i],'.k',markeredgewidth=2,ms=5)
-	ax4.plot(_i/factor_Ppds,RF_DEPTH_mean_2_true_profile_stacking_Pds[_i],'.b')
-	ax4.plot(_i/factor_Ppds,RF_DEPTH_mean_2_true_profile_stacking_Ppds[_i],'.g')
-	ax4.set_ylim(DEPTH_2-DEPTH_RANGE,DEPTH_2+DEPTH_RANGE)
-	ax4.errorbar(_i/factor_Ppds,RF_DEPTH_mean_2_profile_stacking_Pds[_i], yerr=RF_DEPTH_std_2_profile_stacking_Pds[_i], ecolor='r',elinewidth=1,capsize=1,capthick=1)
-	ax4.errorbar(_i/factor_Ppds,RF_DEPTH_mean_2_profile_stacking_Ppds[_i], yerr=RF_DEPTH_std_2_profile_stacking_Ppds[_i], ecolor='k',elinewidth=1,capsize=1,capthick=1)
+	ax4.plot(_i/factor_Ppds,RF_DEPTH_mean_2_profile_stacking_Pds[_i],'or')
+	ax4.plot(_i/factor_Ppds,RF_DEPTH_mean_2_profile_stacking_Ppds[_i],'ok')
+	ax4.plot(_i/factor_Ppds,RF_DEPTH_mean_2_true_profile_stacking_Pds[_i],'sb')
+	ax4.plot(_i/factor_Ppds,RF_DEPTH_mean_2_true_profile_stacking_Ppds[_i],'sg')
+	ax4.errorbar(_i/factor_Ppds,RF_DEPTH_mean_2_profile_stacking_Pds[_i], yerr=RF_DEPTH_std_2_profile_stacking_Pds[_i], ecolor='r',elinewidth=1,capsize=2,capthick=1)
+	ax4.errorbar(_i/factor_Ppds,RF_DEPTH_mean_2_profile_stacking_Ppds[_i], yerr=RF_DEPTH_std_2_profile_stacking_Ppds[_i], ecolor='k',elinewidth=1,capsize=2,capthick=1)
+	ax4.set_title('d'+"{0:.0f}".format(DEPTH_2))
+	ax4.set_ylim(DEPTH_2+DEPTH_RANGE,DEPTH_2-DEPTH_RANGE)
+	ax4.yaxis.set_ticks_position('both')
+	ax4.yaxis.set_major_locator(MultipleLocator(20))
+	ax4.yaxis.set_minor_locator(MultipleLocator(10))
+	ax4.grid(True,which='minor',linestyle='--')
+	ax4.tick_params(labelright=True)
 	ax4.set_xticks([])
-	ax4.set_ylabel('Depth (km)')
+
 
 for _i, _j in enumerate(RF_data_profile_stacking_Ppds):
 	ax5.plot(_i/factor_Ppds,RF_DEPTH_mtz_thickness_profile_stacking_Pds[_i],'^r',markeredgewidth=1,ms=5)
 	ax5.plot(_i/factor_Ppds,RF_DEPTH_true_thickness_MTZ_profile_stacking_Pds[_i],'ok',markeredgewidth=1,ms=5)
 	ax5.set_ylim(250-DEPTH_RANGE,250+DEPTH_RANGE)
-	ax5.set_xticks([])
 	ax5.set_ylabel('Depth (km)')
-
-	if abs(abs(AB_lon_line[1]) - abs(AB_lon_line[0])) > abs(abs(AB_lat_line[1]) - abs(AB_lat_line[0])):
-		ax5.text(_i/factor_Ppds*0.9,250-DEPTH_RANGE-5,"{0:.1f}".format(AB_lon[_i]),rotation=-45,fontsize=10)
-		ax5.set_xlabel('Longitude ($^\circ$)',labelpad=30)
-	else:
-		ax5.text(_i/factor_Ppds*0.9,250-DEPTH_RANGE-5,"{0:.1f}".format(AB_lat[_i]),rotation=-45,fontsize=10)
-		ax5.set_xlabel('Latitude ($^\circ$)',labelpad=30)
+	ax5.set_title('MTZ Thickness (Pds)')
+	ax5.yaxis.set_ticks_position('both')
+	ax5.yaxis.set_major_locator(MultipleLocator(20))
+	ax5.yaxis.set_minor_locator(MultipleLocator(10))
+	ax5.grid(True,which='minor',linestyle='--')
+	ax5.tick_params(labelright=True)
+	ax5.set_xticks([])
 	
 for _i, _j in enumerate(RF_data_profile_stacking_Ppds):
 	ax6.plot(_i/factor_Ppds,RF_DEPTH_mtz_thickness_profile_stacking_Ppds[_i],'^r',markeredgewidth=1,ms=5)
 	ax6.plot(_i/factor_Ppds,RF_DEPTH_true_thickness_MTZ_profile_stacking_Ppds[_i],'ok',markeredgewidth=1,ms=5)
 	ax6.set_ylim(250-DEPTH_RANGE,250+DEPTH_RANGE)
+	ax6.set_title('MTZ Thickness (Ppds)')
+	ax6.yaxis.set_ticks_position('both')
+	ax6.yaxis.set_major_locator(MultipleLocator(20))
+	ax6.yaxis.set_minor_locator(MultipleLocator(10))
+	ax6.grid(True,which='minor',linestyle='--')
+	ax6.tick_params(labelright=True)
 	ax6.set_xticks([])
-	ax6.set_ylabel('Depth (km)')
-
-	if abs(abs(AB_lon_line[1]) - abs(AB_lon_line[0])) > abs(abs(AB_lat_line[1]) - abs(AB_lat_line[0])):
-		ax6.text(_i/factor_Ppds*0.9,250-DEPTH_RANGE-5,"{0:.1f}".format(AB_lon[_i]),rotation=-45,fontsize=10)
-		ax6.set_xlabel('Longitude ($^\circ$)',labelpad=30)
-	else:
-		ax6.text(_i/factor_Ppds*0.9,250-DEPTH_RANGE-5,"{0:.1f}".format(AB_lat[_i]),rotation=-45,fontsize=10)
-		ax6.set_xlabel('Latitude ($^\circ$)',labelpad=30)
 
 plt.show()
 

@@ -19,7 +19,7 @@ from visual_py.data_availability import get_date_file
 
 
 from parameters_py.config import (
-					OUTPUT_JSON_FILE_DIR,DIR_DATA,MP_PROCESSES,OUTPUT_FIGURE_DIR
+					OUTPUT_JSON_FILE_DIR,DIR_DATA,MP_PROCESSES,OUTPUT_FIGURE_DIR,EXAMPLE_OF_FILE
 				   )
 
 # ===================================
@@ -49,20 +49,24 @@ sensor_keys = sta_dic['SENSOR_KEYS']
 datalogger_keys = sta_dic['DATALOGGER_KEYS']
 
 print('Creating input list with endtime of each raw file')
+print('\n')
 
 input_list = [[]]*len(kstnm)
 
 for i,j in enumerate(datalogger_keys):
+
 	if  j.split(',')[0] == 'Nanometrics':
 		datafile_lst = [] 
 		for root, dirs, files in os.walk(DIR_DATA):
-			for datafile in files:
-				datafile_name = os.path.join(root, datafile)
-				if '/'+kstnm[i]+'/' in datafile_name and 'SOH' not in datafile_name:
-					datafile_lst.append(datafile_name)
+			for directories in dirs:
+				datafile_name = os.path.join(root, directories)
+				
+				if '/'+kstnm[i]+'/' in datafile_name and len(datafile_name.split('/')) == len(EXAMPLE_OF_FILE.split('/')):
+						datafile_lst.append(datafile_name)
 		datafile_lstS = sorted(datafile_lst)
-		print(' Number of files = '+ str(len(datafile_lstS)))
-
+		
+		print(' Number of days = '+ str(len(datafile_lstS)))		
+		
 		# ==============================
 		#  Creating stations Input lists
 		# ==============================
@@ -74,16 +78,18 @@ for i,j in enumerate(datalogger_keys):
 					[l] for l in datafile_lstS
 					]
 		print('==============================')
+
+
 	if  j.split(',')[0] == 'REF TEK':
 		datafile_lst = [] 
 		for root, dirs, files in os.walk(DIR_DATA):
-			for datafile in files:
-				datafile_name = os.path.join(root, datafile)
-				if '/'+kstnm[i]+'/' in datafile_name and '/1/' in datafile_name:
+			for directories in dirs:
+				datafile_name = os.path.join(root, directories)
+				if '/'+kstnm[i]+'/' in datafile_name and len(datafile_name.split('/')) == len(EXAMPLE_OF_FILE.split('/')):
 					datafile_lst.append(datafile_name)
 		datafile_lstS = sorted(datafile_lst)
 
-		print(' Number of files = '+ str(len(datafile_lstS)))
+		print(' Number of days = '+ str(len(datafile_lstS)))
 
 		# ==============================
 		#  Creating stations Input lists
@@ -96,6 +102,8 @@ for i,j in enumerate(datalogger_keys):
 					[l] for l in datafile_lstS
 					]
 		print('==============================')
+		
+
 # ==============
 #  Get time Data 
 # ==============

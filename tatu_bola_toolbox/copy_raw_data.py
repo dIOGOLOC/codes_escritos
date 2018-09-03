@@ -34,9 +34,9 @@ from parameters_py.config import (
 #  Function to call copy data script
 # ==================================
 
-def parallel_copy_data(folder_to_send,name_raw_data,name_station,name_sensor):
+def parallel_copy_data(folder_to_send,name_raw_data,name_station):
 
-	result = copy_convert_raw_data(FOLDER_OUTPUT=folder_to_send,DATA_RAW=name_raw_data,STA_NAME=name_station,SENSOR_TYPE=name_sensor)
+	result = copy_convert_raw_data(FOLDER_OUTPUT=folder_to_send,DATA_RAW=name_raw_data,STA_NAME=name_station)
 
 	return print(result)
 
@@ -45,7 +45,6 @@ def parallel_copy_data(folder_to_send,name_raw_data,name_station,name_sensor):
 #  Importing station dictionary from JSON file 
 # ============================================
 
-print('\n')
 print('Looking for STATIONS data in JSON file in '+OUTPUT_JSON_FILE_DIR)
 print('\n')
 
@@ -53,29 +52,29 @@ filename_STA = OUTPUT_JSON_FILE_DIR+'STA_dic.json'
 
 sta_dic = json.load(open(filename_STA))
 
-kstnm = sta_dic['kstnm']
-stla = sta_dic['stla']
-stlo = sta_dic['stlo']
-sensor_type = sta_dic['sensor_type']
+kstnm = sta_dic['KSTNM']
+stla = sta_dic['STLA']
+stlo = sta_dic['STLO']
+stel = sta_dic['STEL']
+sensor_keys = sta_dic['SENSOR_KEYS']
+datalogger_keys = sta_dic['DATALOGGER_KEYS']
 
-print('\n')
-print('Looking for Data files in '+DIR_RAW_DATA)
-print('\n')
+print('Creating input list with endtime of each raw file')
 
 input_list = [[]]*len(kstnm)
-for i,j in enumerate(kstnm):
-	print('Station = '+j)
-	if sensor_type[i] == 'GCF':
+
+for i,j in enumerate(datalogger_keys):
+	print('Station = '+kstnm[i])
+	if  j.split(',')[0] == 'Nanometrics':
 		datafile_lst = [] 
 		for root, dirs, files in os.walk(DIR_RAW_DATA):
 			for datafile in files:
 				datafile_name = os.path.join(root, datafile)
-				if datafile.endswith('.gcf') and '/'+j+'/' in datafile_name:
-					datafile_lst.append(datafile_name)
-
+				if '/'+kstnm[i]+'/' in datafile_name and 'SOH' not in datafile_name:
+						datafile_lst.append(datafile_name)
 		datafile_lstS = sorted(datafile_lst)
-
-		print(' Number of files = '+ str(len(datafile_lstS)))
+		
+		print(' Number of files = '+ str(len(datafile_lstS)))	
 		# ==============================
 		#  Creating stations Input lists
 		# ==============================
@@ -84,43 +83,20 @@ for i,j in enumerate(kstnm):
 		print('\n')
 
 		input_list[i] = [
-					[DIR_SAC,l,j,sensor_type[i]] for l in datafile_lstS
+					[DIR_SAC,l,kstnm[i]] for l in datafile_lstS
 					]
 
-	if sensor_type[i] == 'MSEED':
+	if  j.split(',')[0] == 'REF TEK':
 		datafile_lst = [] 
 		for root, dirs, files in os.walk(DIR_RAW_DATA):
 			for datafile in files:
 				datafile_name = os.path.join(root, datafile)
-				if datafile.endswith('.miniseed') and '/'+j+'/' in datafile_name and 'SOH' not in datafile_name:
+				if '/'+kstnm[i]+'/' in datafile_name and '/1/' in datafile_name :
 					datafile_lst.append(datafile_name)
-
 		datafile_lstS = sorted(datafile_lst)
 
 		print(' Number of files = '+ str(len(datafile_lstS)))
 
-		# ==============================
-		#  Creating stations Input lists
-		# ==============================
-
-		print('Creating stations input lists')
-		print('\n')
-
-		input_list[i] = [
-					[DIR_SAC,l,j,sensor_type[i]] for l in datafile_lstS
-					]
-
-	if sensor_type[i] == 'REFTEK130':
-		datafile_lst = [] 
-		for root, dirs, files in os.walk(DIR_RAW_DATA):
-			for datafile in files:
-				datafile_name = os.path.join(root, datafile)
-				if '/'+j+'/' in datafile_name and '/1/' in datafile_name:
-					datafile_lst.append(datafile_name)
-
-		datafile_lstS = sorted(datafile_lst)
-
-		print(' Number of files = '+ str(len(datafile_lstS)))
 
 		# ==============================
 		#  Creating stations Input lists
@@ -130,9 +106,8 @@ for i,j in enumerate(kstnm):
 		print('\n')
 
 		input_list[i] = [
-					[DIR_SAC,l,j,sensor_type[i]] for l in datafile_lstS
+					[DIR_SAC,l,kstnm[i]] for l in datafile_lstS
 					]
-		print('==============================')
 
 # ==============
 #  Copying Data 
