@@ -56,17 +56,6 @@ def calc_PSD(data,sta_name):
             print(OUTPUT_PSD_DIR+time_data_year+'/'+sta_name+'/'+l.stats.channel+'.PPSD'+'/'+NETWORK_CODE+'.'+sta_name+'..'+l.stats.channel+'.PPSD'+'.'+time_data_year+'.'+time_data_julday+'.npz')
             ppsd.save_npz(OUTPUT_PSD_DIR+time_data_year+'/'+sta_name+'/'+l.stats.channel+'.PPSD'+'/'+NETWORK_CODE+'.'+sta_name+'..'+l.stats.channel+'.PPSD'+'.'+time_data_year+'.'+time_data_julday+'.npz')
 
-        elif sta_channel == 'HH1j':
-            l.stats.channel = 'HHN'
-            print('Calculating PPSD: station: '+sta_name+' / channel: '+sta_channel)
-        
-            ppsd = PPSD(l.stats, metadata=inv)
-            ppsd.add(st) 
-            os.makedirs(OUTPUT_PSD_DIR+time_data_year+'/'+sta_name+'/'+l.stats.channel+'.PPSD'+'/',exist_ok=True)
-            print(OUTPUT_PSD_DIR+time_data_year+'/'+sta_name+'/'+l.stats.channel+'.PPSD'+'/'+NETWORK_CODE+'.'+sta_name+'..'+l.stats.channel+'.PPSD'+'.'+time_data_year+'.'+time_data_julday+'.npz')
-            ppsd.save_npz(OUTPUT_PSD_DIR+time_data_year+'/'+sta_name+'/'+l.stats.channel+'.PPSD'+'/'+NETWORK_CODE+'.'+sta_name+'..'+l.stats.channel+'.PPSD'+'.'+time_data_year+'.'+time_data_julday+'.npz')
-
-
         elif sta_channel == 'HH2':
             l.stats.channel = 'HHE'
             print('Calculating PPSD: station: '+sta_name+' / channel: '+sta_channel)
@@ -79,17 +68,6 @@ def calc_PSD(data,sta_name):
                 ppsd.save_npz(OUTPUT_PSD_DIR+time_data_year+'/'+sta_name+'/'+l.stats.channel+'.PPSD'+'/'+NETWORK_CODE+'.'+sta_name+'..'+l.stats.channel+'.PPSD'+'.'+time_data_year+'.'+time_data_julday+'.npz')
             except:
                 pass
-
-        elif sta_channel == 'HH2j':
-            l.stats.channel = 'HHE'
-            print('Calculating PPSD: station: '+sta_name+' / channel: '+sta_channel)
-         
-            ppsd = PPSD(l.stats, metadata=inv)
-            ppsd.add(st) 
-            os.makedirs(OUTPUT_PSD_DIR+time_data_year+'/'+sta_name+'/'+l.stats.channel+'.PPSD'+'/',exist_ok=True)
-            print(OUTPUT_PSD_DIR+time_data_year+'/'+sta_name+'/'+l.stats.channel+'.PPSD'+'/'+NETWORK_CODE+'.'+sta_name+'..'+l.stats.channel+'.PPSD'+'.'+time_data_year+'.'+time_data_julday+'.npz')
-            ppsd.save_npz(OUTPUT_PSD_DIR+time_data_year+'/'+sta_name+'/'+l.stats.channel+'.PPSD'+'/'+NETWORK_CODE+'.'+sta_name+'..'+l.stats.channel+'.PPSD'+'.'+time_data_year+'.'+time_data_julday+'.npz')
-
 
         elif sta_channel == 'HHX':
             l.stats.channel = 'HHE'

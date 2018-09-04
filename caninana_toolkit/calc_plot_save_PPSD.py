@@ -51,13 +51,9 @@ sta_dic = json.load(open(filename_STA))
 kstnm = sta_dic['kstnm']
 data = sta_dic['data']
 
-data_time = [[]]*len(data)
-data_time_day = [[]]*len(data)
 input_list_day = [[]]*len(data)
 
 for i,j in enumerate(data):
-	data_time[i] = [[l['date_time'],l['input_list']] for l in j if isinstance(l,dict) == True]
-	data_time_day[i] = [l['date_time'] for l in j if isinstance(l,dict) == True]
 	input_list_day[i] = [l['input_list'] for l in j if isinstance(l,dict) == True]
 
 input_list = [[]]*len(kstnm)
