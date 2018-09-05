@@ -11,7 +11,7 @@ from obspy import read_events
 from obspy.clients.fdsn import Client
 
 from parameters_py.config import (
-					OUTPUT_JSON_FILE_DIR,NEIC_CSV_FILE,INITIAL_DATE_EVENT,FINAL_DATE_EVENT,EV_MAGNITUDE_MB
+					OUTPUT_JSON_FILE_DIR,INITIAL_DATE_EVENT,FINAL_DATE_EVENT,EV_MAGNITUDE_MB
 				   )
 
 

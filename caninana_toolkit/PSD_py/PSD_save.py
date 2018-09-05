@@ -11,7 +11,8 @@ from obspy.imaging.cm import pqlx
 
 from parameters_py.config import (
 					DIR_DATA,SOURCE,NETWORK_CODE,NETWORK_DESCRIPTION,START_DATE,SAMPLING_RATE,LOCATION,
-                    OUTPUT_XML_FILE_DIR,OUTPUT_JSON_FILE_DIR,OUTPUT_PSD_DIR
+                    OUTPUT_XML_FILE_DIR,OUTPUT_JSON_FILE_DIR,OUTPUT_PSD_DIR,OUTPUT_PSD_WIN_DIR,
+                    TIME_OF_WEEKDAY_DAY,TIME_OF_WEEKDAY_START_HOUR,TIME_OF_WEEKDAY_FINAL_HOUR
                     
 				   )
 
@@ -81,6 +82,7 @@ def calc_PSD(data,sta_name):
 
 
         else:
+
             print('Calculating PPSD: station: '+sta_name+' / channel: '+sta_channel)
         
             ppsd = PPSD(l.stats, metadata=inv)

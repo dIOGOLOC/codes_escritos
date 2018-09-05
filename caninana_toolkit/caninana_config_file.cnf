@@ -9,8 +9,8 @@
 # The parameters are divided in several sections:
 # - [paths]                : default paths to input/output folders
 # - [xml]                  : parameters to create xml file
-# - [PSD]              : parameters to control data quality
-# - [plot]                 : parameters to plot our data
+# - [PPSD]                 : parameters to estimate PPSD data
+# - [event]                : parameters to compare event data
 #
 # Before using the scripts, you should at least make sure that the paths in 
 # section [paths] are consistent with your own files and folders organization. 
@@ -34,15 +34,18 @@ OUTPUT_FIGURE_DIR = /home/diogo/dados_doutorado/rift_basin/FIGURES/
 #Directory to save PSD
 OUTPUT_PSD_DIR = /home/diogo/dados_doutorado/rift_basin/PPSD/
 
+#Directory to save EVENT data
+OUTPUT_EV_DIR = /home/diogo/dados_doutorado/rift_basin/EVENTS/
+
 #Directory to save XML File
 OUTPUT_XML_FILE_DIR = /home/diogo/dados_doutorado/rift_basin/XML_FILES/
 
 #STA CSV FILE path
 STA_CSV_FILE  = /home/diogo/dados_doutorado/rift_basin/station_coordinates/cood_rede_rift.txt
 
-#=========
+#=====
 [xml]
-#=========
+#=====
 
 #Name of the Network
 NETWORK_CODE = LS
@@ -65,20 +68,49 @@ SAMPLING_RATE = 100
 # how many concurrent processes at the multiprocessing?
 MP_PROCESSES = 8
 
-#=========
+#======
 [PPSD]
-#=========
+#======
 #Example of the raw data directory
 EXAMPLE_OF_FILE = /home/diogo/dados_doutorado/rift_basin/MSEED_DATA/9FF5/2018/236
 
 #Percentage fo the days to process and plot the PPSD?
 DAY_PERCENTAGE = 2
 
+#Restricts the data that is included in the stack by time of day and weekday. 
+#Monday is 1, Sunday is 7, -1 for any day of week. 
+#For example, using time_of_weekday=[(-1, 22, 24)] 
+#only individual spectra that have a starttime in between 10pm and 12am are used in the stack for all days of week
+#time_of_weekday=[(TIME_OF_WEEKDAY_DAY, TIME_OF_WEEKDAY_START_HOUR, TIME_OF_WEEKDAY_FINAL_HOUR)])
+TIME_OF_WEEKDAY_DAY = -1
+TIME_OF_WEEKDAY_START_HOUR = 0
+TIME_OF_WEEKDAY_FINAL_HOUR = 3
 
-#=====
-[plot]
-#=====
 
+#======
+[event]
+#======
 
+#Taup_time model to calculate travel times
+TAUPY_MODEL = iasp91 
 
+#Minimum event distance 
+EV_GCARC_MIN = 0
 
+#Maximum event distance 
+EV_GCARC_MAX = 100
+
+#Minimum event magnitude 
+EV_MAGNITUDE_MB = 7
+
+#Date event initial  (exemple: 2008-01-01T00:00:00)
+INITIAL_DATE_EVENT = 2018-05-01T00:00:00
+
+#Date event final  (exemple: 2008-01-01T00:00:00)
+FINAL_DATE_EVENT = 2018-09-01T00:00:00
+
+#Time to trim the seismogram before P-wave arrival
+CUT_BEFORE_P = 10
+
+#Time to trim the seismogram after P-wave arrival
+CUT_AFTER_P = 40

@@ -64,6 +64,9 @@ OUTPUT_FIGURE_DIR = config.get('paths', 'OUTPUT_FIGURE_DIR')
 #Directory to save PSD
 OUTPUT_PSD_DIR = config.get('paths', 'OUTPUT_PSD_DIR')
 
+#Directory to save EVENT data
+OUTPUT_EV_DIR = config.get('paths', 'OUTPUT_EV_DIR')
+
 #Directory to save XML File
 OUTPUT_XML_FILE_DIR = config.get('paths', 'OUTPUT_XML_FILE_DIR')
 
@@ -106,9 +109,43 @@ EXAMPLE_OF_FILE = config.get('PPSD', 'EXAMPLE_OF_FILE')
 # Percentage fo the days to process and plot the PPSD?
 DAY_PERCENTAGE = config.getfloat('PPSD', 'DAY_PERCENTAGE')
 
-# -----
-# plot
-# -----
+#Restricts the data that is included in the stack by time of day and weekday. 
+#Monday is 1, Sunday is 7, -1 for any day of week. 
+#For example, using time_of_weekday=[(-1, 22, 24)] 
+#only individual spectra that have a starttime in between 10pm and 12am are used in the stack for all days of week
+#time_of_weekday=[(TIME_OF_WEEKDAY_DAY, TIME_OF_WEEKDAY_START_HOUR, TIME_OF_WEEKDAY_FINAL_HOUR)])
+TIME_OF_WEEKDAY_DAY = config.getint('PPSD', 'TIME_OF_WEEKDAY_DAY')
+TIME_OF_WEEKDAY_START_HOUR = config.getfloat('PPSD', 'TIME_OF_WEEKDAY_START_HOUR')
+TIME_OF_WEEKDAY_FINAL_HOUR = config.getfloat('PPSD', 'TIME_OF_WEEKDAY_FINAL_HOUR')
+
+# ------
+# event
+# ------
+
+#Taup_time model to calculate travel times
+TAUPY_MODEL = config.get('event', 'TAUPY_MODEL') 
+
+#Minimum event distance 
+EV_GCARC_MIN = config.getfloat('event', 'EV_GCARC_MIN')
+
+#Maximum event distance 
+EV_GCARC_MAX = config.getfloat('event', 'EV_GCARC_MAX')
+
+
+#Minimum event magnitude 
+EV_MAGNITUDE_MB = config.getfloat('event', 'EV_MAGNITUDE_MB')
+
+#Date event initial  (exemple: 2008-01-01T00:00:00)
+INITIAL_DATE_EVENT = config.get('event', 'INITIAL_DATE_EVENT')
+
+#Date event final  (exemple: 2008-01-01T00:00:00)
+FINAL_DATE_EVENT = config.get('event', 'FINAL_DATE_EVENT')
+
+#Time to trim the seismogram before P-wave arrival
+CUT_BEFORE_P = config.getfloat('event', 'CUT_BEFORE_P')
+
+#Time to trim the seismogram after P-wave arrival
+CUT_AFTER_P = config.getfloat('event', 'CUT_AFTER_P')
 
 
 
