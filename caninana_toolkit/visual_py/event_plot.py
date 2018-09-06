@@ -89,7 +89,7 @@ def plot_event_data(direc):
 		axes[i,1].set_xlim(5,45)
 		axes[i,1].plot(j.times(),j.data,'k')
 		axes[i,1].text(45.5,0,j.stats.station)
-		#axes[i,1].set_ylim(-0.000001,0.000001)
+		axes[i,1].set_ylim(-0.000001,0.000001)
 	axes[i,1].set_xlabel('Time after P (s)')
 	fig.suptitle('Event - '+event_date)
 	os.makedirs(OUTPUT_FIGURE_DIR+'EVENTS/',exist_ok=True)

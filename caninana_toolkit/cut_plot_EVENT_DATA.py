@@ -76,7 +76,7 @@ mag = event_dic['mag']
 
 print('Number of events = '+str(len(mag)))
 print('\n')
-'''
+
 # ==============================
 #  Creating stations Input lists
 # ==============================
@@ -109,7 +109,7 @@ for i,j in enumerate(input_list):
 						for k,l in enumerate(ev_year)]
 
 print('Cutting finished!')
-'''
+
 
 # ================
 #  plot event data
