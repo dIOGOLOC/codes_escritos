@@ -1,3 +1,9 @@
+'''
+Script to get information about the header of the raw data
+(https://docs.obspy.org/packages/autogen/obspy.core.stream.read.html#obspy.core.stream.read)
+and plot a mosaic the the Data availability.
+'''
+
 import matplotlib.pyplot as plt
 import obspy
 import os
@@ -40,8 +46,6 @@ def plot_data_mosaic(date_lst,kstnm):
 
     fig, ax = plt.subplots(nrows=len(date_lst), ncols=1,figsize=(20,10),sharex=True)
     plt.subplots_adjust(hspace=.1)
-
-    
 
     for i,j in enumerate(date_lst):
         data_y = np.ones_like(j).tolist()

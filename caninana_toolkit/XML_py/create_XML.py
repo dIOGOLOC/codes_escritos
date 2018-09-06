@@ -1,3 +1,13 @@
+'''
+Script to create a custom StationXML file with ObsPy based in
+https://docs.obspy.org/master/tutorial/code_snippets/stationxml_file_from_scratch.html.
+
+Instrument Response can be looked up and attached to the channels from the 
+IRIS DMC Library of Nominal Responses for Seismic Instruments (http://ds.iris.edu/NRL/)
+using ObsPy’s NRL client
+(https://docs.obspy.org/master/packages/obspy.clients.nrl.html#module-obspy.clients.nrl).
+'''
+
 import obspy 
 from obspy import read, Stream,read_inventory
 import os

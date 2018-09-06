@@ -1,7 +1,8 @@
 #!/usr/bin/python -u
 """
-Scritp to generate DATA availability plots
+Scritp to plot PPSD windowed DATA
 """
+
 import os
 
 # ==============================

@@ -1,7 +1,9 @@
 #!/usr/bin/python -u
 """
-Scritp to generate DATA availability plots
+Script to get raw DATA availability
 """
+
+
 import os
 import json
 import obspy
@@ -15,12 +17,13 @@ from multiprocessing import Pool
 # Generating DATA availability
 # ==============================
 
-from visual_py.data_availability import get_date_file
+from visual_py.data_availability import get_date_file,plot_data_mosaic
 
 
 from parameters_py.config import (
 					OUTPUT_JSON_FILE_DIR,DIR_DATA,MP_PROCESSES,OUTPUT_FIGURE_DIR,EXAMPLE_OF_FILE
 				   )
+				   
 
 # ===================================
 #  Function to call get data function
@@ -122,3 +125,25 @@ for x,y in enumerate(input_list):
 
 with open(OUTPUT_JSON_FILE_DIR+'TIME_dic.json', 'w') as fp:
 		json.dump(result_dic, fp)
+
+
+# ======================
+#  Importing time Data 
+# ======================
+
+
+filename_STA = OUTPUT_JSON_FILE_DIR+'TIME_dic.json'
+
+sta_dic = json.load(open(filename_STA))
+
+data = sta_dic['data']
+
+data_time = [[]]*len(data)
+for i,j in enumerate(data):
+	data_time[i] = [datetime.date(UTCDateTime(l['endtime']).year,UTCDateTime(l['endtime']).month,UTCDateTime(l['endtime']).day) for l in j if isinstance(l,dict) == True]
+
+print('\n')
+print('Plotting Data Availability')
+print('\n')
+
+plot_data_mosaic(data_time,kstnm)

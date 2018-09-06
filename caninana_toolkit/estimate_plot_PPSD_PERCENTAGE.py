@@ -1,7 +1,8 @@
 #!/usr/bin/python -u
-"""
-Scritp to generate DATA availability plots
-"""
+'''
+Script to estimate and save PPSD plot of the raw data
+'''
+
 import os
 import json
 import obspy

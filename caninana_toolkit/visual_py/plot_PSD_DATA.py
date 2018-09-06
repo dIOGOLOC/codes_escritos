@@ -1,3 +1,8 @@
+'''
+Script to plot PPSD data based in 
+https://docs.obspy.org/tutorial/code_snippets/probabilistic_power_spectral_density.html
+'''
+
 import os
 import glob
 from obspy.signal import PPSD

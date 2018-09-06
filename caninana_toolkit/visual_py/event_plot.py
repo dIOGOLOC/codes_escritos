@@ -1,5 +1,7 @@
 '''
-Function to trim raw sac files
+Script to trim event data of large earthquakes 
+(https://docs.obspy.org/packages/autogen/obspy.core.stream.Stream.trim.html#obspy.core.stream.Stream.trim)
+and plot a mosaic of event raw and filtered data.
 '''
 
 

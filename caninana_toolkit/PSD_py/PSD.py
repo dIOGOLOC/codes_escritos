@@ -1,3 +1,23 @@
+'''
+ Script to estimate probabilistic power spectral densities for 
+ one combination of network/station/location/channel/sampling_rate.
+ (https://docs.obspy.org/tutorial/code_snippets/probabilistic_power_spectral_density.html)
+
+Calculations are based on the routine used by [McNamara2004]:
+McNamara, D. E. and Buland, R. P. (2004),
+Ambient Noise Levels in the Continental United States,
+Bulletin of the Seismological Society of America, 94 (4), 1517-1527.
+http://www.bssaonline.org/content/94/4/1517.abstract. 
+
+
+For information on New High/Low Noise Model see [Peterson1993]:
+Peterson, J. (1993),
+Observations and Modeling of Seismic Background Noise,
+U.S. Geological Survey open-file report 93-322, Albuquerque, N.M.
+http://ehp3-earthquake.wr.usgs.gov/regional/asl/pubs/files/ofr93-322.pdf
+'''
+
+
 import obspy 
 import numpy as np
 import matplotlib.pyplot as plt

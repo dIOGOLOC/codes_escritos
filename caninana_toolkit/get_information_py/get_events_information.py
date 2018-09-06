@@ -1,6 +1,23 @@
 '''
-Script to get events information from CATALOG obspy
+Script to get events information from obspy
 (https://docs.obspy.org/packages/autogen/obspy.clients.fdsn.client.Client.get_events.html)
+
+Retrieving Data from Data Centers
+(https://docs.obspy.org/tutorial/code_snippets/retrieving_data_from_datacenters.html)
+Keep in mind that data centers and web services are constantly changing so this recommendation 
+might not be valid anymore at the time you read this. 
+
+Script to get stations information from csv file:
+
+An example of STA_CSV_FILE is shown bellow:
+
+NAME;LAT;LON;ELEV;SENSOR_KEYS;DATALOGGER_KEYS
+9FE7;-5.8402;-35.1962;19.46;Sercel/Mark Products,L-4C,5500 Ohms,8905 Ohms;REF TEK,RT 130 & 130-SMA,1,100
+9FF5;-5.8402;-35.1962;19.46;Sercel/Mark Products,L-4C,5500 Ohms,8905 Ohms;REF TEK,RT 130 & 130-SMA,1,100
+9FF9;-5.8402;-35.1962;19.46;Sercel/Mark Products,L-4C,5500 Ohms,8905 Ohms;REF TEK,RT 130 & 130-SMA,1,100
+A031;-5.8402;-35.1962;19.46;Sercel/Mark Products,L-4C,5500 Ohms,8905 Ohms;REF TEK,RT 130 & 130-SMA,1,100
+
+
 '''
 
 import numpy as np

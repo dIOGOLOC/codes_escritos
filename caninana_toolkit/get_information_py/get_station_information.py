@@ -1,8 +1,40 @@
 '''
 Script to collect information from stations and create the XML file
-#Sensor keys names (see http://ds.iris.edu/NRL/)
+
+The IRIS DMC Nominal Response Library
+
+IRIS DMC began to collect an “authoritative” set of manufacturers’ 
+recommended nominal instrument responses in SEED RESP format and
+ publish these on the web at http://ds.iris.edu/NRL. 
+
+The goal behind the Library is to make it easier for the seismological 
+community to both share and create metadata for common instrumentation,
+and to improve response accuracy for users of the data. Because the wide
+range of features available in modern instrumentation can make locating 
+the appropriate response a challenge, the Library organizes responses 
+based on hardware and/or acquisition choices, elucidating these choices 
+as needed. “Nominal” responses may also have limits to their validity, 
+so the Library notes these as well.
+
+Nominal Response Library (NRL) includes:
+	o 146 sensor responses (representing 10 sensor manufacturers); and
+	o 4705 datalogger responses (from 7 datalogger manufacturers).
+
+An example of STA_CSV_FILE is shown bellow:
+
+NAME;LAT;LON;ELEV;SENSOR_KEYS;DATALOGGER_KEYS
+9FE7;-5.8402;-35.1962;19.46;Sercel/Mark Products,L-4C,5500 Ohms,8905 Ohms;REF TEK,RT 130 & 130-SMA,1,100
+9FF5;-5.8402;-35.1962;19.46;Sercel/Mark Products,L-4C,5500 Ohms,8905 Ohms;REF TEK,RT 130 & 130-SMA,1,100
+9FF9;-5.8402;-35.1962;19.46;Sercel/Mark Products,L-4C,5500 Ohms,8905 Ohms;REF TEK,RT 130 & 130-SMA,1,100
+A031;-5.8402;-35.1962;19.46;Sercel/Mark Products,L-4C,5500 Ohms,8905 Ohms;REF TEK,RT 130 & 130-SMA,1,100
+
+SENSOR_KEYS and DATALOGGER_KEYS are located in http://ds.iris.edu/NRL, and are used to create the XML file:
+response = nrl.get_response( # doctest: +SKIP
+    sensor_keys=['Streckeisen', 'STS-1', '360 seconds'],
+    datalogger_keys=['REF TEK', 'RT 130 & 130-SMA', '1', '200'])
+
 '''
-#Importando módulos
+#Importing modules
 
 import numpy as np
 import os
