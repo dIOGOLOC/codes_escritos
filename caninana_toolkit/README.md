@@ -27,8 +27,9 @@ to install the following packages:
 *I suggest to use the [Anaconda Cloud](https://anaconda.org/) to install your packages.
 
 
-Brief about the scripts
-------------------------
+Brief explanation about the main code:
+---------------------------------------
+
 **First of all, you must to get information of your the stations:**
 
 1) *python get_EVENT_STATION_INFORMATION.py*
