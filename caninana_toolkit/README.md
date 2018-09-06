@@ -11,7 +11,7 @@ Requirements
 The code is developped on Ubuntu with Python Python 3.6.
 
 In addition to [Python 3.6](https://www.python.org/downloads/release/python-365/), you need
-to use (sometimes install) the following packages:
+to install the following packages: 
 
 - [numpy](http://www.numpy.org/)
 - [matplotlib](http://matplotlib.org/)
@@ -20,6 +20,47 @@ to use (sometimes install) the following packages:
 - [os](https://docs.python.org/3/library/os.html)
 - [multiprocessing](https://docs.python.org/3/library/multiprocessing.html)
 
+*I suggest to use the [Anaconda Cloud](https://anaconda.org/) to install your packages.
+
+
+
+Brief about the scripts
+------------------------
+First of all, you must to retrive information of your the stations:
+
+1) python get_EVENT_STATION_INFORMATION.py
+
+To check data AVAILABILITY you need to use:
+
+2) python get_plot_DATA_AVAILABILITY.py
+
+After that, you need to create your XML file:
+
+3) python create_XML_FILE.py
+
+Then, you can plot events data to compare the response of your stations:
+
+4) python cut_plot_EVENT_DATA.py
+
+Finally, you estimating and plotting the probabilistic power spectral densities
+of your data in the following scenarios:
+
+If you want to estimate and plot a small percentage of your dataset to check a statistical 
+noise level (suggestion: 20%), use:
+
+5) python estimate_plot_PPSD_PERCENTAGE.py
+
+If you want to estimate, save and plot the whole dataset to check the noise level,
+use:
+
+6) python estimate_plot_PPSD_TOTAL.py
+
+If you want to estimate, save and plot a specific time window of your dataset to check the
+noise level, use:
+
+7) python estimate_plot_PPSD_WINDOWED.py
+
+
 How to update
 -------------
 The code is still experimental so you should regularly check for (and pull) 
@@ -27,7 +68,7 @@ updates.
 
 ToDo list
 -------------
-- In Construction
+- Improving events plot.
 
 References
 ----------
