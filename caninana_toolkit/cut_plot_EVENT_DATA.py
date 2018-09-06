@@ -18,6 +18,7 @@ from multiprocessing import Pool
 
 from visual_py.event_plot import cut_data_by_event,plot_event_data
 
+
 # ==================================================
 #  Importing some parameters from configuration file 
 # ==================================================
@@ -75,7 +76,7 @@ mag = event_dic['mag']
 
 print('Number of events = '+str(len(mag)))
 print('\n')
-
+'''
 # ==============================
 #  Creating stations Input lists
 # ==============================
@@ -93,7 +94,6 @@ for i,j in enumerate(kstnm):
 			]
 print('\n')
 
-
 # ================
 # trim event data
 # ================
@@ -109,7 +109,7 @@ for i,j in enumerate(input_list):
 						for k,l in enumerate(ev_year)]
 
 print('Cutting finished!')
-
+'''
 
 # ================
 #  plot event data

@@ -9,12 +9,19 @@ import os
 import glob
 import obspy as op
 from obspy.taup import TauPyModel
+import matplotlib.gridspec as gridspec
+import matplotlib.pyplot as plt
+
 
 from parameters_py.config import (
 					DIR_DATA,TAUPY_MODEL,EV_GCARC_MIN,EV_GCARC_MAX,CUT_BEFORE_P,CUT_AFTER_P,OUTPUT_XML_FILE_DIR,
-					NETWORK_CODE,LOCATION,OUTPUT_EV_DIR
+					NETWORK_CODE,LOCATION,OUTPUT_EV_DIR,OUTPUT_FIGURE_DIR
 							   )
 
+print('Importing XML file')
+
+inv = op.read_inventory(OUTPUT_XML_FILE_DIR+NETWORK_CODE+".xml")
+print(inv)
 
 #Function to cut and plot event:
 			
@@ -63,14 +70,44 @@ def cut_data_by_event(kstnm,stla,stlo,ev_timeUTC,ev_julday,ev_year,ev_month,ev_d
 
 def plot_event_data(direc):
 	os.chdir(direc)
+	event_date = direc.split('/')[-1]
 	stZ = op.read('*HHZ*')
+	fig, axes = plt.subplots(len(stZ),2, sharex=True,figsize=(20, 15))
+
+	cols = ['Raw Data', 'Filterd Data (1 Hz to 20 Hz)']
+	
+	for ax, col in zip(axes[0], cols):
+		ax.set_title(col)
+
+	for i,j in enumerate(stZ):
+		axes[i,0].plot(j.times(),j.data,'k')
+		axes[i,0].set_xlim(5,45)
+	axes[i,0].set_xlabel('Time after P (s)')
+
+	for i,j in enumerate(stZ):
+		j.filter('bandpass',freqmin=1.0, freqmax=20.0)
+		axes[i,1].set_xlim(5,45)
+		axes[i,1].plot(j.times(),j.data,'k')
+		axes[i,1].text(45.5,0,j.stats.station)
+		#axes[i,1].set_ylim(-0.000001,0.000001)
+	axes[i,1].set_xlabel('Time after P (s)')
+	fig.suptitle('Event - '+event_date)
+	os.makedirs(OUTPUT_FIGURE_DIR+'EVENTS/',exist_ok=True)
+	fig.savefig(OUTPUT_FIGURE_DIR+'EVENTS/Event - '+event_date+'.pdf')
+	plt.tight_layout()
+	plt.show()
+
+	'''
 	stZ.filter('bandpass',freqmin=1.0, freqmax=20.0)
 	stZ.plot()
 
+	fig = plt.figure()
 	stN = op.read('*HHN*')
 	stN.filter('bandpass',freqmin=1.0, freqmax=20.0)
 	stN.plot()
 
+	fig = plt.figure()
 	stE = op.read('*HHE*')
 	stE.filter('bandpass',freqmin=1.0, freqmax=20.0)
 	stE.plot()
+	'''

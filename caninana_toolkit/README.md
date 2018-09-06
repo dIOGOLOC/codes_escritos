@@ -93,4 +93,4 @@ Observations and Modeling of Seismic Background Noise.
 
 Inspiration
 ----------
-The code logo is based in Spilotes pullatus, a snake from the northeast part of Brazil fauna. [Caninana](https://en.wikipedia.org/wiki/Spilotes_pullatus)
+The code logo is based in Spilotes pullatus([Caninana](https://en.wikipedia.org/wiki/Spilotes_pullatus)), a snake from the northeast part of Brazil fauna. 
