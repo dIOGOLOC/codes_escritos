@@ -29,11 +29,11 @@ to install the following packages:
 
 Brief about the scripts
 ------------------------
-**First of all, you must to retrieve information of your the stations:**
+**First of all, you must to get information of your the stations:**
 
 1) *python get_EVENT_STATION_INFORMATION.py*
 
-**To check data AVAILABILITY you need to use:**
+**To check your dataset:**
 
 2) *python get_plot_DATA_AVAILABILITY.py*
 
@@ -45,17 +45,17 @@ Brief about the scripts
 
 4) *python cut_plot_EVENT_DATA.py*
 
-**Finally, you estimating and plotting the probabilistic power spectral densities of your data in the following scenarios:**
+**Finally, you estimating and plotting the probabilistic power spectral densities of your data in the following scenarios.**
 
-**If you want to estimate and plot a small percentage of your dataset to check a statistical noise level (suggestion: 20%), use:**
+If you want to estimate and plot a small percentage of your dataset to check a statistical noise level (suggestion: 20%):
 
 5) *python estimate_plot_PPSD_PERCENTAGE.py*
 
-**If you want to estimate, save and plot the whole dataset to check the noise level, use:**
+If you want to estimate, save and plot the whole dataset to check the noise level:
 
 6) *python estimate_plot_PPSD_TOTAL.py*
 
-**If you want to estimate, save and plot a specific time window of your dataset to check the noise level, use:**
+If you want to estimate, save and plot a specific time window of your dataset to check the noise level:
 
 7) *python estimate_plot_PPSD_WINDOWED.py*
 
