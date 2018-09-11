@@ -38,7 +38,7 @@ from parameters_py.mgconfig import (
 					GAMMA
 				   )
 
-print('Starting Receiver Functions migration code to estimate true depths of the discontinuities')
+print('Starting Receiver Functions migration code to estimate the true depths of the Earth discontinuities')
 print('\n')
 
 
@@ -59,7 +59,7 @@ for i,j in enumerate(model_10_km.model.s_mod.v_mod.layers):
 
 
 
-print('Looking for receiver functions data in JSON file in '+STA_DIR)
+print('Looking for Receiver Functions data in JSON file in '+STA_DIR)
 print('\n')
 filename_STA = STA_DIR+'sta_dic.json'
 
@@ -77,7 +77,7 @@ sta_long = sta_dic['sta_long']
 sta_data = sta_dic['sta_data']
 sta_time = sta_dic['sta_time']
 
-print('Creating the earth layers')
+print('Creating the Earth layered model')
 print('\n')
 
 camadas_terra_10_km = np.arange(MIN_DEPTH,MAX_DEPTH+INTER_DEPTH,INTER_DEPTH)
@@ -319,7 +319,7 @@ shape = (abs(abs(URCRNRLON_LARGE) - abs(LLCRNRLON_LARGE))*GRID_PP_MULT, abs(abs(
 grdx, grdy = gridder.regular(area, shape)
 
 
-print('Filtering grid points')
+print('Filtering GRID POINTS')
 print('\n')
 
 
@@ -510,7 +510,7 @@ fig_PP.savefig(PP_FIGURE+'PP_Pds_Ppds.'+EXT_FIG,dpi=DPI_FIG)
 
 ##########################################################################################################################################
 
-print('Importing depths and times to the Ps conversion to each event for all stations')
+print('Importing depths and times of Pds conversion  dataset')
 print('\n')
 
 filename_Pds = PdS_DIR+'Pds_dic.json'
@@ -530,7 +530,7 @@ for i,j in enumerate(PdS_Dic):
 
 
 
-print('Importing depths and times to the Ppds conversion to each event for all stations')
+print('Importing depths and times of Ppds conversion  dataset')
 print('\n')
 
 filename_Ppds = PdS_DIR+'PPvs_dic.json'
@@ -550,7 +550,7 @@ for i,j in enumerate(Ppds_Dic):
 
 
 ###################################################################################################################
-print('Migrating Pds data...')
+print('Migrating Pds dataset')
 print('\n')
 
 RF_amplitude_time_Pds = [[]]*len(Pds_depth)
@@ -569,7 +569,7 @@ for i,j in enumerate(RF_amplitude_time_Pds):
     RF_amplitude_Pds[i] = [sta_data[i][sta_t_Pds.index(l)] if l != -1 else 0 for k,l in enumerate(RF_t_Pds)]
 
 
-print('Migrating Ppds data...')
+print('Migrating Ppds dataset')
 print('\n')
 
 RF_amplitude_time_Ppds = [[]]*len(Ppds_depth)
@@ -593,7 +593,7 @@ for i,j in enumerate(RF_amplitude_time_Ppds):
 
 ###################################################################################################################
 
-print('Data stacking in each point of the filtered grid')
+print('Stacking the migrated data')
 print('\n')
 
 dados_grid_lat = pp_med_lat
@@ -614,7 +614,7 @@ if LINEAR_STACKING == True:
 		RF_amplitude_depth_raw_Ppds[i] = [RF_amplitude_depth_Ppds[k] for k,l in enumerate(dados_grid_lat) if np.sqrt((j - dados_grid_lon[k])**2 + (grid_sel_y[i] - l)**2) < DIST_GRID_PP_MED]
 
 
-	print('Depth mean and std estimation for each point of the filtered grid to the '+str(DEPTH_1)+'km')
+	print('Estimating Mean and Standard Deviation - '+str(DEPTH_1)+'km')
 	print('\n')
 
 	RF_DEPTH_raw_1_Pds = [[]]*len(RF_data_raw_Pds)
@@ -648,7 +648,6 @@ if LINEAR_STACKING == True:
 
 
 	for i,j in enumerate(RF_DEPTH_raw_1_Pds):
-		print('Bootstrap estimation of the true depths')
 		print('\n')
 		if len(j) > NUMBER_PP_PER_BIN:
 			std_1_lst_Pds = []
@@ -675,7 +674,7 @@ if LINEAR_STACKING == True:
 			RF_DEPTH_std_1_Pds.append(np.mean(std_1_lst_Pds))
 			RF_DEPTH_std_1_Ppds.append(np.mean(std_1_lst_Ppds))
 
-	print('Depth mean and std estimation for each point of the filtered grid to the '+str(DEPTH_2)+'km')
+	print('Estimating Mean and Standard Deviation - '+str(DEPTH_2)+'km')
 	print('\n')
 
 	RF_DEPTH_raw_2_Pds = [[]]*len(RF_data_raw_Pds)
@@ -704,7 +703,6 @@ if LINEAR_STACKING == True:
 
 	for i,j in enumerate(RF_DEPTH_raw_2_Pds):
 			if len(j) > NUMBER_PP_PER_BIN:
-				print('Bootstrap estimation of the true depths')
 				print('\n')				
 				std_2_lst_Pds = []
 				std_2_lst_Ppds = []
@@ -730,7 +728,7 @@ if LINEAR_STACKING == True:
 
 
 #############################################################################################################################################################################################
-	print('Stacking RF for each point of the filtered grid')
+	print('Stacking Pds and Ppds data')
 
 	RF_stacking_Pds = []
 	len_RF_stacking_Pds = []
@@ -748,6 +746,9 @@ if LINEAR_STACKING == True:
 			RF_stacking_Ppds.append([sum(x)/len(j)  for x in zip(*j)])
 			len_RF_stacking_Ppds.append(len(j))
 
+#############################################################################################################################################################################################
+	print('Estimating TRUE depth and uncertainties of the discontinuities')
+
 	Vp_Vs_ratio_depth_1 = Vs_depth_1/Vp_depth_1
 	alfa = Vp_depth_1 - Vs_depth_1
 	beta = Vp_depth_1 + Vs_depth_1
@@ -756,17 +757,30 @@ if LINEAR_STACKING == True:
 	delta_1_Vp = [(alfa*beta*(RF_DEPTH_mean_1_Ppds[_t] - _y))/(alfa*(1+gamma_vp_vs_1)*_y - 
 		   (beta*(1-gamma_vp_vs_1)*RF_DEPTH_mean_1_Ppds[_t])) for _t,_y in enumerate(RF_DEPTH_mean_1_Pds)]
 
+    percent_uncertainty_delta_1_Vp = [np.sqrt((RF_DEPTH_std_1_Pds[_t]/RF_DEPTH_mean_1_Pds[_t])**2+(RF_DEPTH_std_1_Pds[_t]/RF_DEPTH_mean_1_Ppds[_t])**2) for _t,_y in enumerate(RF_DEPTH_mean_1_Pds)]
+
+    uncertainty_delta_1_Vp = [j*delta_1_Vp[i] for i,j in enumerate(percent_uncertainty_delta_1_Vp)]
+
 	delta_1_Vs = [_delta_vp * GAMMA * Vp_Vs_ratio_depth_1 for _delta_vp in delta_1_Vp]
+
+    percent_uncertainty_delta_1_Vs = [np.sqrt((uncertainty_delta_1_Vp[_t]/delta_1_Vp[_t])**2) for _t,_y in enumerate(delta_1_Vp)]
+
+    uncertainty_delta_1_Vs = [j*delta_1_Vs[i] for i,j in enumerate(percent_uncertainty_delta_1_Vs)]
 
 	RF_DEPTH_mean_1_true_Pds = [_y * ((Vp_depth_1-Vs_depth_1)/(Vp_depth_1*Vs_depth_1)) *
 			 (((Vs_depth_1+delta_1_Vs[_t])*(Vp_depth_1+delta_1_Vp[_t]))/(Vp_depth_1+delta_1_Vp[_t]-Vs_depth_1-delta_1_Vs[_t]))
 			 for _t,_y in enumerate(RF_DEPTH_mean_1_Pds)] 
 
+    uncertainty_RF_DEPTH_mean_1_true_Pds = 
+
 	RF_DEPTH_mean_1_true_Ppds = [_y * ((Vp_depth_1-Vs_depth_1)/(Vp_depth_1*Vs_depth_1)) *
 			 (((Vs_depth_1+delta_1_Vs[_t])*(Vp_depth_1+delta_1_Vp[_t]))/(Vp_depth_1+delta_1_Vp[_t]-Vs_depth_1-delta_1_Vs[_t]))
 			 for _t,_y in enumerate(RF_DEPTH_mean_1_Ppds)] 	
 
-	Vp_Vs_ratio_depth_2 = Vs_depth_2/Vp_depth_2
+
+########################################################################################################################################################
+	
+    Vp_Vs_ratio_depth_2 = Vs_depth_2/Vp_depth_2
 	alfa = Vp_depth_2 - Vs_depth_2
 	beta = Vp_depth_2 + Vs_depth_2
 	gamma_vp_vs_2 = GAMMA*Vp_Vs_ratio_depth_2
@@ -787,6 +801,9 @@ if LINEAR_STACKING == True:
 
 else: 
 	pass
+
+#############################################################################################################################################################################################
+
 
 ## Function to get midpoint scale in plots
 
@@ -876,7 +893,7 @@ m1.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
 norm1 = MidPointNorm(midpoint=DEPTH_1)
 x, y = m1(RF_lon,RF_lat)
-sc1 = m1.scatter(x,y,40,RF_DEPTH_mean_1_Pds,cmap=colormap,marker='o',norm=norm1,edgecolors='k')
+sc1 = m1.scatter(x,y,40,RF_DEPTH_mean_1_Pds,cmap=colormap,marker=True'o',norm=norm1,edgecolors='k')
 
 for lon, lat in zip(sta_long,sta_lat):
     x,y = m1(lon, lat)
