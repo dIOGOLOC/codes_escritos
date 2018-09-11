@@ -68,7 +68,7 @@ updates.
 
 ToDo list
 -------------
-- Improving events plot.
+- Create a code to check the orientation of the sensor.
 
 References
 ----------
