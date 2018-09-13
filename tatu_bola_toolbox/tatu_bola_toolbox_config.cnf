@@ -26,7 +26,7 @@
 #DIR_RAW_DATA = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-SP1/
 #DIR_RAW_DATA = /media/diogo/BP-PABIP/DADOS/
 #DIR_RAW_DATA = /home/diogo/dados_doutorado/rift_basin/raw_data/
-DIR_RAW_DATA = /home/diogo/dados_doutorado/parnaiba_basin/noise_correlation/rede_AR/RefTek/AR07/
+DIR_RAW_DATA = /home/diogo/dados_doutorado/parnaiba_basin/noise_correlation/rede_AR/RefTek/
 
 # directory of raw sac files
 DIR_SAC = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/rede_AR/sac_data/

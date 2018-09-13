@@ -16,13 +16,13 @@ def merge_data_ZNE(folder_name,knetwk,kstnm,NAME_SUFFIX_E,NAME_SUFFIX_N,NAME_SUF
 		for i,j in enumerate(HH):
 			year =  '{:04}'.format(j.stats.starttime.year)
 			julday =  '{:03}'.format(j.stats.starttime.julday)
-			if j.stats.channel in ['HHZ']:
+			if j.stats.channel in ['HHZ','101']:
 				file_nameZ = knetwk+'.'+kstnm+'.'+year+'.'+julday+'.'+NAME_SUFFIX_Z
 				j.write(folder_name+'/'+file_nameZ,FILE_FORMAT)
-			if j.stats.channel in ['HHE','HH2','HHX']:
+			if j.stats.channel in ['HHE','HH2','HHX','103']:
 				file_nameX = knetwk+'.'+kstnm+'.'+year+'.'+julday+'.'+NAME_SUFFIX_E
 				j.write(folder_name+'/'+file_nameX,FILE_FORMAT)
-			if j.stats.channel in ['HHN','HH1','HHY']:
+			if j.stats.channel in ['HHN','HH1','HHY','102']:
 				file_nameY = knetwk+'.'+kstnm+'.'+year+'.'+julday+'.'+NAME_SUFFIX_N
 				j.write(folder_name+'/'+file_nameY,FILE_FORMAT)
 		

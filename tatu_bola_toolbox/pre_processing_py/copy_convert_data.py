@@ -20,8 +20,6 @@ def copy_convert_raw_data(FOLDER_OUTPUT,DATA_RAW,STA_NAME):
 	try:
 		tr = read(DATA_RAW)
 		for i,j in enumerate(tr):
-			print(j)
-			print(j.stats.channel)
 				
 			FILE_NETWORK = knetwk
 			FILE_CHANNEL = j.stats.channel
