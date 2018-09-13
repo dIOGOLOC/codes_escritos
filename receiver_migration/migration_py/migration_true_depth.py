@@ -726,10 +726,76 @@ if LINEAR_STACKING == True:
 				RF_DEPTH_std_2_Pds.append(np.mean(std_2_lst_Pds))
 				RF_DEPTH_std_2_Ppds.append(np.mean(std_2_lst_Ppds))
 
+	print('Estimating TRUE depth and uncertainties of the discontinuities')
+	Vp_Vs_ratio_depth_1 = Vs_depth_1/Vp_depth_1
+	alfa = Vp_depth_1 - Vs_depth_1
+	beta = Vp_depth_1 + Vs_depth_1
+	gamma_vp_vs_1 = GAMMA*Vp_Vs_ratio_depth_1
 
-#############################################################################################################################################################################################
+	delta_1_Vp = [(alfa*beta*(RF_DEPTH_mean_1_Ppds[_t] - _y))/(alfa*(1+gamma_vp_vs_1)*_y - (beta*(1-gamma_vp_vs_1)*RF_DEPTH_mean_1_Ppds[_t])) for _t,_y in enumerate(RF_DEPTH_mean_1_Pds)]
+
+	percent_uncertainty_delta_1_Vp = [np.sqrt((RF_DEPTH_std_1_Pds[_t]/RF_DEPTH_mean_1_Pds[_t])**2+(RF_DEPTH_std_1_Ppds[_t]/RF_DEPTH_mean_1_Ppds[_t])**2) for _t,_y in enumerate(RF_DEPTH_mean_1_Pds)]
+
+	uncertainty_delta_1_Vp = [j*delta_1_Vp[i] for i,j in enumerate(percent_uncertainty_delta_1_Vp)]
+
+	delta_1_Vs = [_delta_vp * GAMMA * Vp_Vs_ratio_depth_1 for _delta_vp in delta_1_Vp]
+
+	percent_uncertainty_delta_1_Vs = [np.sqrt((uncertainty_delta_1_Vp[_t]/delta_1_Vp[_t])**2) for _t,_y in enumerate(delta_1_Vp)]   
+
+	uncertainty_delta_1_Vs = [j*delta_1_Vs[i] for i,j in enumerate(percent_uncertainty_delta_1_Vs)]
+
+	RF_DEPTH_mean_1_true_Pds = [_y * ((Vp_depth_1-Vs_depth_1)/(Vp_depth_1*Vs_depth_1)) *
+			 (((Vs_depth_1+delta_1_Vs[_t])*(Vp_depth_1+delta_1_Vp[_t]))/(Vp_depth_1+delta_1_Vp[_t]-Vs_depth_1-delta_1_Vs[_t]))
+			 for _t,_y in enumerate(RF_DEPTH_mean_1_Pds)] 
+
+	uncertainty_RF_DEPTH_mean_1_true_Pds = [np.sqrt((RF_DEPTH_std_1_Pds[_t]/RF_DEPTH_mean_1_Pds[_t])**2) for _t,_y in enumerate(RF_DEPTH_mean_1_Pds)]
+
+	print(uncertainty_RF_DEPTH_mean_1_true_Pds)
+	RF_DEPTH_mean_1_true_Ppds = [_y * ((Vp_depth_1-Vs_depth_1)/(Vp_depth_1*Vs_depth_1)) *
+			 (((Vs_depth_1+delta_1_Vs[_t])*(Vp_depth_1+delta_1_Vp[_t]))/(Vp_depth_1+delta_1_Vp[_t]-Vs_depth_1-delta_1_Vs[_t]))
+			 for _t,_y in enumerate(RF_DEPTH_mean_1_Ppds)] 	
+
+	uncertainty_RF_DEPTH_mean_1_true_Ppds = [np.sqrt((RF_DEPTH_std_1_Ppds[_t]/RF_DEPTH_mean_1_Ppds[_t])**2) for _t,_y in enumerate(RF_DEPTH_mean_1_Ppds)]
+
+    #############################################################################################################################################################################################
+
+	Vp_Vs_ratio_depth_2 = Vs_depth_2/Vp_depth_2
+	alfa = Vp_depth_2 - Vs_depth_2
+	beta = Vp_depth_2 + Vs_depth_2
+	gamma_vp_vs_2 = GAMMA*Vp_Vs_ratio_depth_2
+
+
+	delta_2_Vp = [(alfa*beta*(RF_DEPTH_mean_2_Ppds[_t] - _y))/(alfa*(1+gamma_vp_vs_2)*_y - 
+		   (beta*(1-gamma_vp_vs_2)*RF_DEPTH_mean_2_Ppds[_t])) for _t,_y in enumerate(RF_DEPTH_mean_2_Pds)]
+
+
+	percent_uncertainty_delta_2_Vp = [np.sqrt((RF_DEPTH_std_2_Pds[_t]/RF_DEPTH_mean_2_Pds[_t])**2+(RF_DEPTH_std_2_Pds[_t]/RF_DEPTH_mean_2_Ppds[_t])**2) for _t,_y in enumerate(RF_DEPTH_mean_2_Pds)]
+
+	uncertainty_delta_2_Vp = [j*delta_2_Vp[i] for i,j in enumerate(percent_uncertainty_delta_2_Vp)]
+
+
+	delta_2_Vs = [_delta_vp * GAMMA * Vp_Vs_ratio_depth_1 for _delta_vp in delta_2_Vp]
+
+	percent_uncertainty_delta_2_Vs = [np.sqrt((uncertainty_delta_2_Vp[_t]/delta_2_Vp[_t])**2) for _t,_y in enumerate(delta_2_Vp)]
+
+	uncertainty_delta_2_Vs = [j*delta_2_Vs[i] for i,j in enumerate(percent_uncertainty_delta_2_Vs)]
+
+	RF_DEPTH_mean_2_true_Pds = [_y * ((Vp_depth_2-Vs_depth_2)/(Vp_depth_2*Vs_depth_2)) *
+			 (((Vs_depth_2+delta_2_Vs[_t])*(Vp_depth_2+delta_2_Vp[_t]))/(Vp_depth_2+delta_2_Vp[_t]-Vs_depth_2-delta_2_Vs[_t]))
+			 for _t,_y in enumerate(RF_DEPTH_mean_2_Pds)] 
+
+	uncertainty_RF_DEPTH_mean_2_true_Pds = [np.sqrt((RF_DEPTH_std_2_Pds[_t]/RF_DEPTH_mean_2_Pds[_t])**2) for _t,_y in enumerate(RF_DEPTH_mean_2_Pds)]
+
+
+	RF_DEPTH_mean_2_true_Ppds = [_y * ((Vp_depth_2-Vs_depth_2)/(Vp_depth_2*Vs_depth_2)) *
+			 (((Vs_depth_2+delta_2_Vs[_t])*(Vp_depth_2+delta_2_Vp[_t]))/(Vp_depth_2+delta_2_Vp[_t]-Vs_depth_2-delta_2_Vs[_t]))
+			 for _t,_y in enumerate(RF_DEPTH_mean_2_Ppds)] 	
+
+	uncertainty_RF_DEPTH_mean_2_true_Ppds = [np.sqrt((RF_DEPTH_std_2_Ppds[_t]/RF_DEPTH_mean_2_Ppds[_t])**2) for _t,_y in enumerate(RF_DEPTH_mean_2_Ppds)]
+
+	#############################################################################################################################################################################################
+
 	print('Stacking Pds and Ppds data')
-
 	RF_stacking_Pds = []
 	len_RF_stacking_Pds = []
 
@@ -746,66 +812,10 @@ if LINEAR_STACKING == True:
 			RF_stacking_Ppds.append([sum(x)/len(j)  for x in zip(*j)])
 			len_RF_stacking_Ppds.append(len(j))
 
-#############################################################################################################################################################################################
-	print('Estimating TRUE depth and uncertainties of the discontinuities')
 
-	Vp_Vs_ratio_depth_1 = Vs_depth_1/Vp_depth_1
-	alfa = Vp_depth_1 - Vs_depth_1
-	beta = Vp_depth_1 + Vs_depth_1
-	gamma_vp_vs_1 = GAMMA*Vp_Vs_ratio_depth_1
+ #############################################################################################################################################################################################
 
-	delta_1_Vp = [(alfa*beta*(RF_DEPTH_mean_1_Ppds[_t] - _y))/(alfa*(1+gamma_vp_vs_1)*_y - 
-		   (beta*(1-gamma_vp_vs_1)*RF_DEPTH_mean_1_Ppds[_t])) for _t,_y in enumerate(RF_DEPTH_mean_1_Pds)]
-
-    percent_uncertainty_delta_1_Vp = [np.sqrt((RF_DEPTH_std_1_Pds[_t]/RF_DEPTH_mean_1_Pds[_t])**2+(RF_DEPTH_std_1_Pds[_t]/RF_DEPTH_mean_1_Ppds[_t])**2) for _t,_y in enumerate(RF_DEPTH_mean_1_Pds)]
-
-    uncertainty_delta_1_Vp = [j*delta_1_Vp[i] for i,j in enumerate(percent_uncertainty_delta_1_Vp)]
-
-	delta_1_Vs = [_delta_vp * GAMMA * Vp_Vs_ratio_depth_1 for _delta_vp in delta_1_Vp]
-
-    percent_uncertainty_delta_1_Vs = [np.sqrt((uncertainty_delta_1_Vp[_t]/delta_1_Vp[_t])**2) for _t,_y in enumerate(delta_1_Vp)]
-
-    uncertainty_delta_1_Vs = [j*delta_1_Vs[i] for i,j in enumerate(percent_uncertainty_delta_1_Vs)]
-
-	RF_DEPTH_mean_1_true_Pds = [_y * ((Vp_depth_1-Vs_depth_1)/(Vp_depth_1*Vs_depth_1)) *
-			 (((Vs_depth_1+delta_1_Vs[_t])*(Vp_depth_1+delta_1_Vp[_t]))/(Vp_depth_1+delta_1_Vp[_t]-Vs_depth_1-delta_1_Vs[_t]))
-			 for _t,_y in enumerate(RF_DEPTH_mean_1_Pds)] 
-
-    uncertainty_RF_DEPTH_mean_1_true_Pds = 
-
-	RF_DEPTH_mean_1_true_Ppds = [_y * ((Vp_depth_1-Vs_depth_1)/(Vp_depth_1*Vs_depth_1)) *
-			 (((Vs_depth_1+delta_1_Vs[_t])*(Vp_depth_1+delta_1_Vp[_t]))/(Vp_depth_1+delta_1_Vp[_t]-Vs_depth_1-delta_1_Vs[_t]))
-			 for _t,_y in enumerate(RF_DEPTH_mean_1_Ppds)] 	
-
-
-########################################################################################################################################################
-	
-    Vp_Vs_ratio_depth_2 = Vs_depth_2/Vp_depth_2
-	alfa = Vp_depth_2 - Vs_depth_2
-	beta = Vp_depth_2 + Vs_depth_2
-	gamma_vp_vs_2 = GAMMA*Vp_Vs_ratio_depth_2
-
-
-	delta_2_Vp = [(alfa*beta*(RF_DEPTH_mean_2_Ppds[_t] - _y))/(alfa*(1+gamma_vp_vs_2)*_y - 
-		   (beta*(1-gamma_vp_vs_2)*RF_DEPTH_mean_2_Ppds[_t])) for _t,_y in enumerate(RF_DEPTH_mean_2_Pds)]
-
-	delta_2_Vs = [_delta_vp * GAMMA * Vp_Vs_ratio_depth_1 for _delta_vp in delta_2_Vp]
-
-	RF_DEPTH_mean_2_true_Pds = [_y * ((Vp_depth_2-Vs_depth_2)/(Vp_depth_2*Vs_depth_2)) *
-			 (((Vs_depth_2+delta_2_Vs[_t])*(Vp_depth_2+delta_2_Vp[_t]))/(Vp_depth_2+delta_2_Vp[_t]-Vs_depth_2-delta_2_Vs[_t]))
-			 for _t,_y in enumerate(RF_DEPTH_mean_2_Pds)] 
-
-	RF_DEPTH_mean_2_true_Ppds = [_y * ((Vp_depth_2-Vs_depth_2)/(Vp_depth_2*Vs_depth_2)) *
-			 (((Vs_depth_2+delta_2_Vs[_t])*(Vp_depth_2+delta_2_Vp[_t]))/(Vp_depth_2+delta_2_Vp[_t]-Vs_depth_2-delta_2_Vs[_t]))
-			 for _t,_y in enumerate(RF_DEPTH_mean_2_Ppds)] 	
-
-else: 
-	pass
-
-#############################################################################################################################################################################################
-
-
-## Function to get midpoint scale in plots
+# Function to get midpoint scale in plots
 
 class MidPointNorm(Normalize):    
     def __init__(self, midpoint=0, vmin=None, vmax=None, clip=False):
@@ -871,6 +881,7 @@ class MidPointNorm(Normalize):
                 return  val*abs(vmax-midpoint) + midpoint
 
 ##################################################################################################
+
 print('Plotting Figure: Depth of the Mantle Transition Zone for Pds and Ppds phases for 410 and 660 km ...')
 #Figure Depth of the Mantle Transition Zone for Pds and Ppds phases for 410 and 660 km
 
@@ -893,7 +904,7 @@ m1.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
 norm1 = MidPointNorm(midpoint=DEPTH_1)
 x, y = m1(RF_lon,RF_lat)
-sc1 = m1.scatter(x,y,40,RF_DEPTH_mean_1_Pds,cmap=colormap,marker=True'o',norm=norm1,edgecolors='k')
+sc1 = m1.scatter(x,y,40,RF_DEPTH_mean_1_Pds,cmap=colormap,marker='o',norm=norm1,edgecolors='k')
 
 for lon, lat in zip(sta_long,sta_lat):
     x,y = m1(lon, lat)

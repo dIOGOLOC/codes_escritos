@@ -3,7 +3,7 @@
 Scritp to get information from Stations and Events
 """
 from parameters_py.config import (
-					DIR_SAC,NEIC_CSV_FILE
+					DIR_SAC
 				   )
 import os
 

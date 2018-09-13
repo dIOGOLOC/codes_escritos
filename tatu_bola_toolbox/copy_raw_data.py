@@ -59,12 +59,13 @@ stel = sta_dic['STEL']
 sensor_keys = sta_dic['SENSOR_KEYS']
 datalogger_keys = sta_dic['DATALOGGER_KEYS']
 
-print('Creating input list with endtime of each raw file')
+print('Looking for raw files in '+DIR_RAW_DATA)
 
 input_list = [[]]*len(kstnm)
 
 for i,j in enumerate(datalogger_keys):
-	print('Station = '+kstnm[i])
+	print('Station = '+kstnm[i]+' - Datalogger = '+j.split(',')[0])
+
 	if  j.split(',')[0] == 'Nanometrics':
 		datafile_lst = [] 
 		for root, dirs, files in os.walk(DIR_RAW_DATA):
@@ -83,15 +84,15 @@ for i,j in enumerate(datalogger_keys):
 		print('\n')
 
 		input_list[i] = [
-					[DIR_SAC,l,kstnm[i]] for l in datafile_lstS
-					]
-
-	if  j.split(',')[0] == 'REF TEK':
+				[DIR_SAC,l,kstnm[i]] for l in datafile_lstS
+				]
+	
+	if j.split(',')[0] == 'REF TEK':
 		datafile_lst = [] 
 		for root, dirs, files in os.walk(DIR_RAW_DATA):
 			for datafile in files:
 				datafile_name = os.path.join(root, datafile)
-				if '/'+kstnm[i]+'/' in datafile_name and '/1/' in datafile_name :
+				if '/'+kstnm[i]+'/' in datafile_name and '/1/' in datafile_name or  '/'+kstnm[i]+'/' in datafile_name and datafile_name.endswith('.m'):
 					datafile_lst.append(datafile_name)
 		datafile_lstS = sorted(datafile_lst)
 
@@ -106,9 +107,9 @@ for i,j in enumerate(datalogger_keys):
 		print('\n')
 
 		input_list[i] = [
-					[DIR_SAC,l,kstnm[i]] for l in datafile_lstS
-					]
-
+				[DIR_SAC,l,kstnm[i]] for l in datafile_lstS
+				]
+	
 # ==============
 #  Copying Data 
 # ==============

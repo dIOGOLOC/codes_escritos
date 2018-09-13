@@ -8,7 +8,9 @@
 #
 # The parameters are divided in several sections:
 # - [paths]                : default paths to input/output folders
+# - [copy]                 : parameters to copy raw seismograms
 # - [trim]                 : parameters to trim raw seismograms
+# - [merge]                : parameters to merge raw seismograms
 #
 # Before using the scripts, you should at least make sure that the paths in 
 # section [paths] are consistent with your own files and folders organization. 
@@ -23,45 +25,42 @@
 # directory of raw data
 #DIR_RAW_DATA = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-SP1/
 #DIR_RAW_DATA = /media/diogo/BP-PABIP/DADOS/
-DIR_RAW_DATA = /home/diogo/dados_doutorado/rift_basin/raw_data/
+#DIR_RAW_DATA = /home/diogo/dados_doutorado/rift_basin/raw_data/
+DIR_RAW_DATA = /home/diogo/dados_doutorado/parnaiba_basin/noise_correlation/rede_AR/RefTek/AR07/
 
 # directory of raw sac files
+DIR_SAC = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/rede_AR/sac_data/
 #DIR_SAC = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/sac_data/
-DIR_SAC = /home/diogo/dados_doutorado/rift_basin/MSEED_DATA/
-
+#DIR_SAC = /home/diogo/dados_doutorado/rift_basin/MSEED_DATA/
 #DIR_SAC = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-UK/sac_data/
 #DIR_SAC = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-SP1/sac_data/
 
 #Directory to save seismograms
-#DIR_EVENT = /home/diogo/dados_doutorado/parnaiba_basin/relative_residuals_P_wave_data/redeBP-BB/event_data/
 #DIR_EVENT = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-SP1/event_data/
-DIR_EVENT = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/event_data/
-
-#NEIC CSV FILE path
-#NEIC_CSV_FILE  = /home/diogo/dados_doutorado/parnaiba_basin/relative_residuals_P_wave_data/NEIC_FILE/neic.BB
-NEIC_CSV_FILE  = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/NEIC_FILE/neic.BB
-#NEIC_CSV_FILE  = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-SP1/NEIC_FILE/neic.SP1
+#DIR_EVENT = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/event_data/
+DIR_EVENT = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/rede_AR/event_data/
 
 #Stations CSV FILE path
 #STA_CSV_FILE  = /home/diogo/dados_doutorado/parnaiba_basin/SIG_dados/dados_estacoes/cood_rede_BB_artigo.txt
 #STA_CSV_FILE  = /home/diogo/dados_doutorado/parnaiba_basin/SIG_dados/dados_estacoes/cood_rede_SP_2015.txt
 #STA_CSV_FILE  = /home/diogo/dados_doutorado/parnaiba_basin/SIG_dados/dados_estacoes/cood_rede_BB_sensor_type.txt
-STA_CSV_FILE  = /home/diogo/dados_doutorado/rift_basin/station_coordinates/cood_rede_rift.txt
-
+#STA_CSV_FILE  = /home/diogo/dados_doutorado/rift_basin/station_coordinates/cood_rede_rift.txt
+STA_CSV_FILE  = /home/diogo/dados_doutorado/parnaiba_basin/SIG_dados/dados_estacoes/cood_rede_AR_sensor_type.txt
 
 #Directory to save JSON Files
-#OUTPUT_JSON_FILE_DIR = /home/diogo/dados_doutorado/parnaiba_basin/relative_residuals_P_wave_data/JSON_FILES/
+OUTPUT_JSON_FILE_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/rede_AR/JSON_FILES/
+#OUTPUT_JSON_FILE_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/JSON_FILES/
 #OUTPUT_JSON_FILE_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-SP1/JSON_FILES/
-OUTPUT_JSON_FILE_DIR = /home/diogo/dados_doutorado/rift_basin/JSON_FILES/
+#OUTPUT_JSON_FILE_DIR = /home/diogo/dados_doutorado/rift_basin/JSON_FILES/
 
 #=====
 [copy]
 #=====
 #File format
-FILE_TYPE = MSEED
+FILE_TYPE = SAC
 
 #File suffix
-FILE_SUFFIX = mseed
+FILE_SUFFIX = sac
 
 #Do want to remove the mean of your data? (information in https://docs.obspy.org/packages/autogen/obspy.core.trace.Trace.detrend.html#obspy.core.trace.Trace.detrend)
 FILTERS_RMEAN = False
@@ -90,7 +89,7 @@ HIGHPASS_ZEROPHASE = True
 #Do want to interpolate your data?
 #This operation is performed in place on the actual data arrays. The raw data is not accessible anymore afterwards. 
 #Be careful when downsampling data and make sure to apply an appropriate anti-aliasing lowpass filter before interpolating in case it’s necessary.
-INTERPOLATE = False
+INTERPOLATE = True
 SAMPLING_RATE = 10
 
 #=====
@@ -113,10 +112,10 @@ EV_GCARC_MAX = 95
 EV_MAGNITUDE_MB = 5
 
 #Date event initial  (exemple: 2008-01-01T00:00:00)
-INITIAL_DATE_EVENT = 2015-01-01T00:00:00
+INITIAL_DATE_EVENT = 2014-01-01T00:00:00
 
 #Date event final  (exemple: 2008-01-01T00:00:00)
-FINAL_DATE_EVENT = 2018-06-01T00:00:00
+FINAL_DATE_EVENT = 2017-12-01T00:00:00
 
 #Time to trim the seismogram before P-wave arrival
 CUT_BEFORE_P = 10
@@ -134,7 +133,7 @@ KCMPNM_N = HHN
 KCMPNM_Z = HHZ
 
 #Network name
-knetwk = BP
+knetwk = BD
 
 #Component N sac file name suffix
 NAME_SUFFIX_N = N
@@ -144,3 +143,9 @@ NAME_SUFFIX_E = E
 
 #Component Z sac file name suffix
 NAME_SUFFIX_Z = Z
+
+#======
+[merge]
+#======
+
+FILTERS = False

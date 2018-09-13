@@ -11,7 +11,7 @@ from obspy import read_events
 from obspy.clients.fdsn import Client
 
 from parameters_py.config import (
-					OUTPUT_JSON_FILE_DIR,NEIC_CSV_FILE,INITIAL_DATE_EVENT,FINAL_DATE_EVENT,EV_MAGNITUDE_MB
+					OUTPUT_JSON_FILE_DIR,INITIAL_DATE_EVENT,FINAL_DATE_EVENT,EV_MAGNITUDE_MB
 				   )
 
 
@@ -42,6 +42,7 @@ dic_event = {
 		'mag':[]}
 
 for i,j in enumerate(events):
+	print('event - '+str(j['origins'][0]['time']))
 	temp = j['origins'][0]['time']
 	dic_event['ev_year'].append('{:04}'.format(temp.year))
 	dic_event['ev_month'].append('{:02}'.format(temp.month))
@@ -54,7 +55,10 @@ for i,j in enumerate(events):
 	dic_event['ev_timeUTC'].append(str(temp))
 	dic_event['evla'].append(j['origins'][0]['latitude'])
 	dic_event['evlo'].append(j['origins'][0]['longitude'])
-	dic_event['evdp'].append(j['origins'][0]['depth']/1000)
+	if j['origins'][0]['depth'] > 1000:
+		dic_event['evdp'].append(float(j['origins'][0]['depth'])/1000)
+	else:
+		dic_event['evdp'].append(j['origins'][0]['depth'])
 	dic_event['mag'].append(j['magnitudes'][0]['mag'])
 
 print('Number of Events: '+str(len(dic_event['mag'])))

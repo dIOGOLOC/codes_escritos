@@ -22,16 +22,16 @@
 #======
 
 # directory of raw RF files
-DIR_SAC = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-SP1/event_data/
-#DIR_SAC = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/transition_zone/rede_BB/event_data/
+#DIR_SAC = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-SP1/event_data/
+DIR_SAC = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/transition_zone/rede_BB/event_data/
 
 #Directory to save JSON Files
-#OUTPUT_JSON_FILE_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/JSON_FILES/
-OUTPUT_JSON_FILE_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-SP1/JSON_FILES/
+OUTPUT_JSON_FILE_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/JSON_FILES/
+#OUTPUT_JSON_FILE_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-SP1/JSON_FILES/
 
 #STA CSV FILE path
-#STA_CSV_FILE  = /home/diogo/dados_doutorado/parnaiba_basin/SIG_dados/dados_estacoes/cood_rede_BB_artigo.txt
-STA_CSV_FILE  = /home/diogo/dados_doutorado/parnaiba_basin/SIG_dados/dados_estacoes/cood_rede_SP_2015.txt
+STA_CSV_FILE  = /home/diogo/dados_doutorado/parnaiba_basin/SIG_dados/dados_estacoes/cood_rede_BB_artigo.txt
+#STA_CSV_FILE  = /home/diogo/dados_doutorado/parnaiba_basin/SIG_dados/dados_estacoes/cood_rede_SP_2015.txt
 
 #Gaussian Filter
 GAUSSIAN_FILTER = 2.5

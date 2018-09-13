@@ -22,7 +22,7 @@ from pre_processing_py.trim_seismogram import cut_data_by_event
 # ==================================================
 
 from parameters_py.config import (
-					DIR_SAC,DIR_EVENT,NEIC_CSV_FILE,STA_CSV_FILE,OUTPUT_JSON_FILE_DIR,TAUPY_MODEL,
+					DIR_SAC,DIR_EVENT,STA_CSV_FILE,OUTPUT_JSON_FILE_DIR,TAUPY_MODEL,
 					EV_GCARC_MIN,EV_GCARC_MAX,EV_MAGNITUDE_MB,CUT_BEFORE_P,CUT_AFTER_P,KCMPNM_N,
 					KCMPNM_E,KCMPNM_Z,knetwk,NAME_SUFFIX_N,NAME_SUFFIX_E,NAME_SUFFIX_Z,MP_PROCESSES
 				   )
@@ -46,7 +46,6 @@ def parallel_trim_data(kstnm,stla,stlo,ev_timeUTC,ev_julday,ev_year,ev_month,ev_
 #  Importing station dictionary from JSON file 
 # ============================================
 
-print('\n')
 print('Looking for STATIONS data in JSON file in '+OUTPUT_JSON_FILE_DIR)
 print('\n')
 
@@ -54,9 +53,12 @@ filename_STA = OUTPUT_JSON_FILE_DIR+'STA_dic.json'
 
 sta_dic = json.load(open(filename_STA))
 
-kstnm = sta_dic['kstnm']
-stla = sta_dic['stla']
-stlo = sta_dic['stlo']
+kstnm = sta_dic['KSTNM']
+stla = sta_dic['STLA']
+stlo = sta_dic['STLO']
+stel = sta_dic['STEL']
+sensor_keys = sta_dic['SENSOR_KEYS']
+datalogger_keys = sta_dic['DATALOGGER_KEYS']
 
 for i in kstnm:
 	print('Station = '+i)

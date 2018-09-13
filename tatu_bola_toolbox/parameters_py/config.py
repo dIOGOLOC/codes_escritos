@@ -61,9 +61,6 @@ DIR_SAC = config.get('paths', 'DIR_SAC')
 #Directory to save seismograms
 DIR_EVENT = config.get('paths', 'DIR_EVENT')
 
-#NEIC CSV FILE path
-NEIC_CSV_FILE  = config.get('paths', 'NEIC_CSV_FILE')
-
 #Stations CSV FILE path
 STA_CSV_FILE  =  config.get('paths', 'STA_CSV_FILE')
 
@@ -161,3 +158,11 @@ NAME_SUFFIX_E = config.get('trim', 'NAME_SUFFIX_E')
 
 #Component Z sac file name suffix
 NAME_SUFFIX_Z = config.get('trim', 'NAME_SUFFIX_Z')
+
+
+# -----
+# merge
+# -----
+
+#Do want to use filter in your data? (help in https://docs.obspy.org/tutorial/code_snippets/filtering_seismograms.html)
+FILTERS = config.getboolean('merge', 'FILTERS')

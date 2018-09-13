@@ -6,56 +6,27 @@ import obspy as op
 import os
 import shutil
 
-def merge_data_ZNE(folder_name,knetwk,kstnm,year,month,day,NAME_SUFFIX_E,NAME_SUFFIX_N,NAME_SUFFIX_Z,FILTERS,RMEAN_TYPE,DETREND_TYPE,
-			TAPER_TYPE,TAPER_MAX_PERCENTAGE,LOWPASS_FREQ,LOWPASS_CORNER,LOWPASS_ZEROPHASE,HIGHPASS_FREQ,HIGHPASS_CORNER,
-			HIGHPASS_ZEROPHASE,SAMPLING_RATE):
+def merge_data_ZNE(folder_name,knetwk,kstnm,NAME_SUFFIX_E,NAME_SUFFIX_N,NAME_SUFFIX_Z,FILE_FORMAT):
 	try:
 		print('========================= Merging .SAC file ========================= ')
-		file_nameX = knetwk+'.'+kstnm+'.'+year+'.'+month+'.'+day+'.'+NAME_SUFFIX_E
 		os.chdir(folder_name)
-		HHX = op.read('*HHE*')
-		HHX.merge(method=1, fill_value='interpolate')
-		if FILTERS == True:
-			HHX.detrend(type=RMEAN_TYPE)  
-			HHX.detrend(type=DETREND_TYPE) 
-			HHX.taper(type=TAPER_TYPE,max_percentage=TAPER_MAX_PERCENTAGE) 
-			HHX.filter('lowpass',freq=LOWPASS_FREQ,corners=LOWPASS_CORNER,zerophase=LOWPASS_ZEROPHASE) 
-			HHX.filter('highpass',freq=HIGHPASS_FREQ,corners=HIGHPASS_CORNER,zerophase=HIGHPASS_ZEROPHASE)
-			HHX.interpolate(sampling_rate=SAMPLING_RATE)
-			HHX.write(folder_name+file_nameX,'SAC')
-		else:
-			HHX.write(folder_name+file_nameX,'SAC')
-		os.system('rm *HHE*.sac')
+		HH = op.read('*')
+		HH.merge(method=1, fill_value='interpolate')
 		
-		file_nameY = knetwk+'.'+kstnm+'.'+year+'.'+month+'.'+day+'.'+NAME_SUFFIX_N
-		HHY = op.read('*HHN*')
-		HHY.merge(method=1, fill_value='interpolate')
-		if FILTERS == True:
-			HHY.detrend(type=RMEAN_TYPE)  
-			HHY.detrend(type=DETREND_TYPE) 
-			HHY.taper(type=TAPER_TYPE,max_percentage=TAPER_MAX_PERCENTAGE) 
-			HHY.filter('lowpass',freq=LOWPASS_FREQ,corners=LOWPASS_CORNER,zerophase=LOWPASS_ZEROPHASE) 
-			HHY.filter('highpass',freq=HIGHPASS_FREQ,corners=HIGHPASS_CORNER,zerophase=HIGHPASS_ZEROPHASE)
-			HHY.interpolate(sampling_rate=SAMPLING_RATE)
-			HHY.write(folder_name+file_nameY,'SAC')
-		else:
-			HHY.write(folder_name+file_nameY,'SAC')
-		os.system('rm *HHN*.sac')
-
-		file_nameZ = knetwk+'.'+kstnm+'.'+year+'.'+month+'.'+day+'.'+NAME_SUFFIX_Z
-		HHZ = op.read('*HHZ*')
-		HHZ.merge(method=1, fill_value='interpolate')
-		if FILTERS == True:
-			HHZ.detrend(type=RMEAN_TYPE)  
-			HHZ.detrend(type=DETREND_TYPE) 
-			HHZ.taper(type=TAPER_TYPE,max_percentage=TAPER_MAX_PERCENTAGE) 
-			HHZ.filter('lowpass',freq=LOWPASS_FREQ,corners=LOWPASS_CORNER,zerophase=LOWPASS_ZEROPHASE) 
-			HHZ.filter('highpass',freq=HIGHPASS_FREQ,corners=HIGHPASS_CORNER,zerophase=HIGHPASS_ZEROPHASE)
-			HHZ.interpolate(sampling_rate=SAMPLING_RATE)
-			HHZ.write(folder_name+file_nameZ,'SAC')
-		else:
-			HHZ.write(folder_name+file_nameZ,'SAC')
-		os.system('rm *HHZ*.sac')
+		for i,j in enumerate(HH):
+			year =  '{:04}'.format(j.stats.starttime.year)
+			julday =  '{:03}'.format(j.stats.starttime.julday)
+			if j.stats.channel in ['HHZ']:
+				file_nameZ = knetwk+'.'+kstnm+'.'+year+'.'+julday+'.'+NAME_SUFFIX_Z
+				j.write(folder_name+'/'+file_nameZ,FILE_FORMAT)
+			if j.stats.channel in ['HHE','HH2','HHX']:
+				file_nameX = knetwk+'.'+kstnm+'.'+year+'.'+julday+'.'+NAME_SUFFIX_E
+				j.write(folder_name+'/'+file_nameX,FILE_FORMAT)
+			if j.stats.channel in ['HHN','HH1','HHY']:
+				file_nameY = knetwk+'.'+kstnm+'.'+year+'.'+julday+'.'+NAME_SUFFIX_N
+				j.write(folder_name+'/'+file_nameY,FILE_FORMAT)
+		
+		os.system('rm *.sac')
 		
 		return 'Data OK - Folder = '+folder_name
 
