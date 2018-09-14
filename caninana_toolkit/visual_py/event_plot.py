@@ -72,9 +72,10 @@ def plot_event_data(direc):
 	os.chdir(direc)
 	event_date = direc.split('/')[-1]
 	stZ = op.read('*HHZ*')
+	
 	fig, axes = plt.subplots(len(stZ),2, sharex=True,figsize=(20, 15))
 
-	cols = ['Raw Data', 'Filterd Data (1 Hz to 20 Hz)']
+	cols = ['Raw Data', 'Filterd Data (2 Hz to 10 Hz)']
 	
 	for ax, col in zip(axes[0], cols):
 		ax.set_title(col)
@@ -85,11 +86,14 @@ def plot_event_data(direc):
 	axes[i,0].set_xlabel('Time after P (s)')
 
 	for i,j in enumerate(stZ):
-		j.filter('bandpass',freqmin=1.0, freqmax=20.0)
+		j.filter('bandpass',freqmin=2.0, freqmax=10.0)
 		axes[i,1].set_xlim(5,45)
-		axes[i,1].plot(j.times(),j.data,'k')
+		if j.stats.station in ['9FE7','9FF5','9FF9','A031','A062','9F74','9FF3','9FF6','A002','A037','A06A']:
+			axes[i,1].plot(j.times(),[i*(-1) for i in j.data],'k')
+		else:
+			axes[i,1].plot(j.times(),j.data,'k')
 		axes[i,1].text(45.5,0,j.stats.station)
-		axes[i,1].set_ylim(-0.000001,0.000001)
+		#axes[i,1].set_ylim(-0.000001,0.000001)
 	axes[i,1].set_xlabel('Time after P (s)')
 	fig.suptitle('Event - '+event_date)
 	os.makedirs(OUTPUT_FIGURE_DIR+'EVENTS/',exist_ok=True)
@@ -97,17 +101,26 @@ def plot_event_data(direc):
 	plt.tight_layout()
 	plt.show()
 
-	'''
-	stZ.filter('bandpass',freqmin=1.0, freqmax=20.0)
-	stZ.plot()
+def plot_event_dataset(direc):
+	os.chdir(direc)
+	event_date = direc.split('/')[-1]
+	stZ = op.read('*HHZ*')
+	
+	fig, axes = plt.subplots(1,1, sharex=True,figsize=(20, 15))
 
-	fig = plt.figure()
-	stN = op.read('*HHN*')
-	stN.filter('bandpass',freqmin=1.0, freqmax=20.0)
-	stN.plot()
-
-	fig = plt.figure()
-	stE = op.read('*HHE*')
-	stE.filter('bandpass',freqmin=1.0, freqmax=20.0)
-	stE.plot()
-	'''
+	for i,j in enumerate(stZ):
+		j.filter('bandpass',freqmin=2.0, freqmax=10.0)
+		axes.set_xlim(5,45)
+		if j.stats.station in ['9FE7','9FF5','9FF9','A031','A062','9F74','9FF3','9FF6','A002','A037','A06A']:
+			axes.plot(j.times(),[i*(-1) for i in j.data],alpha=0.5,label=j.stats.station)
+		else:
+			axes.plot(j.times(),j.data,alpha=0.1,label=j.stats.station)
+		axes.text(45.5,0,j.stats.station)
+		axes.set_ylim(-0.000001,0.000001)
+	axes.set_xlabel('Time after P (s)')
+	axes.legend(loc=0)
+	fig.suptitle('Event - '+event_date)
+	os.makedirs(OUTPUT_FIGURE_DIR+'EVENTS/',exist_ok=True)
+	fig.savefig(OUTPUT_FIGURE_DIR+'EVENTS/Event - '+event_date+'_DATASET.pdf')
+	plt.tight_layout()
+	plt.show()

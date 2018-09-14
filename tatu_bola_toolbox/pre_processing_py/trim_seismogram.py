@@ -45,7 +45,7 @@ def cut_data_by_event(kstnm,stla,stlo,ev_timeUTC,ev_julday,ev_year,ev_month,ev_d
 						'evla': float(ev_lat), 'evlo': float(ev_long), 'mag': float(ev_mag), 'nzhour': int(starttime.hour),
 						'nzjday': int(starttime.julday), 'nzmin': int(starttime.minute),'nzmsec': int('{:03}'.format(starttime.microsecond)[:3]), 'nzsec': int(starttime.second), 
 						'nzyear': int(starttime.year),'cmpaz': 90.0, 'cmpinc': 90.0,'dist': float(dist/1000), 'gcarc': float(gcarc), 
-						'az': float(az), 'baz': float(baz), 'user8': float(arr.ray_param/6371),'o':float(CUT_BEFORE_P)
+						'az': float(az), 'baz': float(baz), 'user8': float(arr.ray_param/6371),'o':float(CUT_BEFORE_P),'delta':HHX[0].stats.delta
 						}
 
 				sacHHX = op.io.sac.sactrace.SACTrace(data=HHX[0].data, **headerHHX)
@@ -62,7 +62,7 @@ def cut_data_by_event(kstnm,stla,stlo,ev_timeUTC,ev_julday,ev_year,ev_month,ev_d
 						'evla': float(ev_lat), 'evlo': float(ev_long), 'mag': float(ev_mag), 'nzhour': int(starttime.hour),
 						'nzjday': int(starttime.julday), 'nzmin': int(starttime.minute), 'nzmsec': int('{:03}'.format(starttime.microsecond)[:3]),'nzsec': int(starttime.second),
 						'nzyear': int(starttime.year),	'cmpaz': 0.0, 'cmpinc': 90.0, 'dist': float(dist/1000), 'gcarc': float(gcarc), 
-						'az': float(az), 'baz': float(baz), 'user8': float(arr.ray_param/6371),'o':float(CUT_BEFORE_P)
+						'az': float(az), 'baz': float(baz), 'user8': float(arr.ray_param/6371),'o':float(CUT_BEFORE_P),'delta':HHY[0].stats.delta
 						}
 
 				sacHHY = op.io.sac.sactrace.SACTrace(data=HHY[0].data, **headerHHY)
@@ -81,7 +81,7 @@ def cut_data_by_event(kstnm,stla,stlo,ev_timeUTC,ev_julday,ev_year,ev_month,ev_d
 						'evla': float(ev_lat), 'evlo': float(ev_long), 'mag': float(ev_mag), 'nzhour': float(ev_hour),
 						'nzjday': int(starttime.julday), 'nzmin': int(starttime.minute), 'nzmsec': int('{:03}'.format(starttime.microsecond)[:3]),'nzsec': int(starttime.second),
 						'nzyear': int(starttime.year),	'cmpaz': 0.0, 'cmpinc': 0.0, 'dist': float(dist/1000), 'gcarc': float(gcarc), 
-						'az': float(az), 'baz': float(baz), 'user8': float(arr.ray_param/6371),'o':float(CUT_BEFORE_P)
+						'az': float(az), 'baz': float(baz), 'user8': float(arr.ray_param/6371),'o':float(CUT_BEFORE_P),'delta':HHZ[0].stats.delta
 						}
 
 				sacHHZ = op.io.sac.sactrace.SACTrace(data=HHZ[0].data, **headerHHZ)

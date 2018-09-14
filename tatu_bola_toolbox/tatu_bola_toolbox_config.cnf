@@ -41,7 +41,6 @@ DIR_SAC = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/rede_AR/sac_da
 DIR_EVENT = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/rede_AR/event_data/
 
 #Stations CSV FILE path
-#STA_CSV_FILE  = /home/diogo/dados_doutorado/parnaiba_basin/SIG_dados/dados_estacoes/cood_rede_BB_artigo.txt
 #STA_CSV_FILE  = /home/diogo/dados_doutorado/parnaiba_basin/SIG_dados/dados_estacoes/cood_rede_SP_2015.txt
 #STA_CSV_FILE  = /home/diogo/dados_doutorado/parnaiba_basin/SIG_dados/dados_estacoes/cood_rede_BB_sensor_type.txt
 #STA_CSV_FILE  = /home/diogo/dados_doutorado/rift_basin/station_coordinates/cood_rede_rift.txt
@@ -63,20 +62,20 @@ FILE_TYPE = SAC
 FILE_SUFFIX = sac
 
 #Do want to remove the mean of your data? (information in https://docs.obspy.org/packages/autogen/obspy.core.trace.Trace.detrend.html#obspy.core.trace.Trace.detrend)
-FILTERS_RMEAN = False
+FILTERS_RMEAN = True
 RMEAN_TYPE = demean
 
 #Do want to remove the trend of your data? (information in https://docs.obspy.org/packages/autogen/obspy.core.trace.Trace.detrend.html#obspy.core.trace.Trace.detrend)
-FILTERS_DETREND = False
+FILTERS_DETREND = True
 DETREND_TYPE = simple
 
 #Do want to use taper in your data? (information in https://docs.obspy.org/master/packages/autogen/obspy.core.trace.Trace.taper.html)
-FILTERS_TAPER = False
+FILTERS_TAPER = True
 TAPER_TYPE = hamming
 TAPER_MAX_PERCENTAGE = 0.05
 
 #Do want to use filter in your data? (help in https://docs.obspy.org/tutorial/code_snippets/filtering_seismograms.html)
-FILTER = False
+FILTER = True
 LOWPASS_FREQ = 8
 LOWPASS_CORNER = 4
 LOWPASS_ZEROPHASE = True
@@ -89,7 +88,7 @@ HIGHPASS_ZEROPHASE = True
 #Do want to interpolate your data?
 #This operation is performed in place on the actual data arrays. The raw data is not accessible anymore afterwards. 
 #Be careful when downsampling data and make sure to apply an appropriate anti-aliasing lowpass filter before interpolating in case it’s necessary.
-INTERPOLATE = True
+INTERPOLATE = False
 SAMPLING_RATE = 10
 
 #=====
@@ -115,7 +114,7 @@ EV_MAGNITUDE_MB = 5
 INITIAL_DATE_EVENT = 2014-01-01T00:00:00
 
 #Date event final  (exemple: 2008-01-01T00:00:00)
-FINAL_DATE_EVENT = 2017-12-01T00:00:00
+FINAL_DATE_EVENT = 2018-10-01T00:00:00
 
 #Time to trim the seismogram before P-wave arrival
 CUT_BEFORE_P = 10

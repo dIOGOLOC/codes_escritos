@@ -65,7 +65,7 @@ input_list = [[]]*len(kstnm)
 
 for i,j in enumerate(datalogger_keys):
 	print('Station = '+kstnm[i]+' - Datalogger = '+j.split(',')[0])
-
+	
 	if  j.split(',')[0] == 'Nanometrics':
 		datafile_lst = [] 
 		for root, dirs, files in os.walk(DIR_RAW_DATA):
@@ -109,7 +109,29 @@ for i,j in enumerate(datalogger_keys):
 		input_list[i] = [
 				[DIR_SAC,l,kstnm[i]] for l in datafile_lstS
 				]
-	
+
+	if j.split(',')[0] == 'Guralp':
+		datafile_lst = [] 
+		for root, dirs, files in os.walk(DIR_RAW_DATA):
+			for datafile in files:
+				datafile_name = os.path.join(root, datafile)
+				if '/'+kstnm[i]+'/' in datafile_name and datafile_name.endswith('.gcf'):
+					datafile_lst.append(datafile_name)
+		datafile_lstS = sorted(datafile_lst)
+
+		print(' Number of files = '+ str(len(datafile_lstS)))
+
+
+		# ==============================
+		#  Creating stations Input lists
+		# ==============================
+
+		print('Creating stations input lists')
+		print('\n')
+
+		input_list[i] = [
+				[DIR_SAC,l,kstnm[i]] for l in datafile_lstS
+				]
 # ==============
 #  Copying Data 
 # ==============

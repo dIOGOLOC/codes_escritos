@@ -16,7 +16,7 @@ from multiprocessing import Pool
 # Importing trim data script_py 
 # =====================================
 
-from visual_py.event_plot import cut_data_by_event,plot_event_data
+from visual_py.event_plot import cut_data_by_event,plot_event_data,plot_event_dataset
 
 
 # ==================================================
@@ -97,7 +97,7 @@ print('\n')
 # ================
 # trim event data
 # ================
-
+'''
 print('Events for each station')
 print('\n')
 
@@ -124,5 +124,20 @@ datafile_lstS = sorted(datafile_lst)
 
 for i,j in enumerate(datafile_lstS):
 	plot_event_data(j)
+
+'''
+# ====================
+#  plot event dataset
+# ====================
+
+datafile_lst = [] 
+for root, dirs, files in os.walk(OUTPUT_EV_DIR):
+	for directories in dirs:
+		datafile_name = os.path.join(root, directories)
+		datafile_lst.append(datafile_name)
+datafile_lstS = sorted(datafile_lst)
+
+for i,j in enumerate(datafile_lstS):
+	plot_event_dataset(j)
 
 print('Plotting finished!')
