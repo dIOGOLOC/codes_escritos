@@ -24,13 +24,13 @@
 
 # directory of raw data
 #DIR_RAW_DATA = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-SP1/
-#DIR_RAW_DATA = /media/diogo/BP-PABIP/DADOS/
+DIR_RAW_DATA = /media/diogo/BP-PABIP/DADOS/
 #DIR_RAW_DATA = /home/diogo/dados_doutorado/rift_basin/raw_data/
-DIR_RAW_DATA = /home/diogo/dados_doutorado/parnaiba_basin/noise_correlation/rede_AR/RefTek/
+#DIR_RAW_DATA = /home/diogo/dados_doutorado/parnaiba_basin/noise_correlation/rede_AR/RefTek/
 
 # directory of raw sac files
-DIR_SAC = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/rede_AR/sac_data/
-#DIR_SAC = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/sac_data/
+#DIR_SAC = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/rede_AR/sac_data/
+DIR_SAC = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/sac_data/
 #DIR_SAC = /home/diogo/dados_doutorado/rift_basin/MSEED_DATA/
 #DIR_SAC = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-UK/sac_data/
 #DIR_SAC = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-SP1/sac_data/
@@ -38,17 +38,19 @@ DIR_SAC = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/rede_AR/sac_da
 #Directory to save seismograms
 #DIR_EVENT = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-SP1/event_data/
 #DIR_EVENT = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/event_data/
-DIR_EVENT = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/rede_AR/event_data/
+DIR_EVENT = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/event_data_NO_PP/
+#DIR_EVENT = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/rede_AR/event_data/
+#DIR_EVENT = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/rede_AR/event_data_NO_PP/
 
 #Stations CSV FILE path
 #STA_CSV_FILE  = /home/diogo/dados_doutorado/parnaiba_basin/SIG_dados/dados_estacoes/cood_rede_SP_2015.txt
-#STA_CSV_FILE  = /home/diogo/dados_doutorado/parnaiba_basin/SIG_dados/dados_estacoes/cood_rede_BB_sensor_type.txt
+STA_CSV_FILE  = /home/diogo/dados_doutorado/parnaiba_basin/SIG_dados/dados_estacoes/cood_rede_BB_sensor_type.txt
 #STA_CSV_FILE  = /home/diogo/dados_doutorado/rift_basin/station_coordinates/cood_rede_rift.txt
-STA_CSV_FILE  = /home/diogo/dados_doutorado/parnaiba_basin/SIG_dados/dados_estacoes/cood_rede_AR_sensor_type.txt
+#STA_CSV_FILE  = /home/diogo/dados_doutorado/parnaiba_basin/SIG_dados/dados_estacoes/cood_rede_AR_sensor_type.txt
 
 #Directory to save JSON Files
-OUTPUT_JSON_FILE_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/rede_AR/JSON_FILES/
-#OUTPUT_JSON_FILE_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/JSON_FILES/
+#OUTPUT_JSON_FILE_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/rede_AR/JSON_FILES/
+OUTPUT_JSON_FILE_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/JSON_FILES/
 #OUTPUT_JSON_FILE_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-SP1/JSON_FILES/
 #OUTPUT_JSON_FILE_DIR = /home/diogo/dados_doutorado/rift_basin/JSON_FILES/
 
