@@ -53,11 +53,9 @@ config = select_and_parse_config_file(basedir='.', ext='cnf', verbose=True)
 
 #receiver functions dir
 RF_DIR = config.get('paths', 'RF_DIR')
+
+# extension of receiver functions
 RF_EXT = config.get('paths', 'RF_EXT') 
-
-#Directory of the program
-PROG_MIGRATION_DIR = config.get('paths', 'PROG_MIGRATION_DIR')
-
 
 #Directory of the model of IASP91 model of 10 km thick
 MODEL_FILE_NPZ = config.get('paths', 'MODEL_FILE_NPZ')
@@ -118,7 +116,6 @@ URCRNRLAT_SMALL= config.getfloat('maps', 'URCRNRLAT_SMALL')
 EXT_FIG= config.get('maps', 'EXT_FIG')
 DPI_FIG= config.getfloat('maps', 'DPI_FIG')
 
-
 # ---------------
 # time
 # ---------------
@@ -131,16 +128,9 @@ MAX_DEPTH = config.getint('time', 'MAX_DEPTH')
 INTER_DEPTH = config.getint('time', 'INTER_DEPTH')
 
 # ---------------
-# piercings
-# ---------------
-
-#depth list to calculate piercing points
-DEPTH_1 = config.getfloat('piercings', 'DEPTH_1')
-DEPTH_2 = config.getfloat('piercings', 'DEPTH_2')
-
-# ---------------
 # migration
 # ---------------
+
 #GRID POINTS multiplyer
 GRID_PP_MULT = config.getfloat('migration', 'GRID_PP_MULT') 
 

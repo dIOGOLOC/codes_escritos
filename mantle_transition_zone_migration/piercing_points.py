@@ -35,10 +35,10 @@ from piercing_points_py.piercing_points import arrivals_calculation
 # ==================================================
 
 from parameters_py.mgconfig import (
-					RF_DIR,RF_EXT,PROG_MIGRATION_DIR,MODEL_FILE_NPZ,MIN_DEPTH,MAX_DEPTH,INTER_DEPTH,PdS_DIR,
+					RF_DIR,RF_EXT,MODEL_FILE_NPZ,MIN_DEPTH,MAX_DEPTH,INTER_DEPTH,PdS_DIR,
 					PP_DIR,PP_SELEC_DIR,NUMBER_PP_PER_BIN,RAY_TRACE_PLOT,RAY_TRACE_410_660_PLOT,
 					LLCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLON_LARGE,URCRNRLAT_LARGE,LLCRNRLON_SMALL,STA_DIR,
-					URCRNRLON_SMALL,LLCRNRLAT_SMALL,URCRNRLAT_SMALL,PROJECT_LAT,PROJECT_LON,DEPTH_1,DEPTH_2,
+					URCRNRLON_SMALL,LLCRNRLAT_SMALL,URCRNRLAT_SMALL,PROJECT_LAT,PROJECT_LON,
 					BOUNDARY_1_SHP,BOUNDARY_1_SHP_NAME,BOUNDARY_2_SHP,BOUNDARY_2_SHP_NAME,					
 					RAY_PATH_FIGURE,PP_FIGURE,EXT_FIG,DPI_FIG,MP_PROCESSES
 				   )
@@ -109,7 +109,7 @@ camadas_terra_10_km = np.arange(MIN_DEPTH,MAX_DEPTH+INTER_DEPTH,INTER_DEPTH)
 print('Creating the middle DEPTH')
 print('\n')
 
-dist_med_camada_terra = [abs(c - ((DEPTH_1+DEPTH_2)/2)) for x,c in enumerate(camadas_terra_10_km)]
+dist_med_camada_terra = [abs(c - ((410+660)/2)) for x,c in enumerate(camadas_terra_10_km)]
 
 DEPTH_MED = camadas_terra_10_km[dist_med_camada_terra.index(min(dist_med_camada_terra))]
 
@@ -120,7 +120,7 @@ DEPTH_MED = camadas_terra_10_km[dist_med_camada_terra.index(min(dist_med_camada_
 print('Creating Pds list')
 print('\n')
 
-PHASES = 'P'+"{0:.0f}".format(DEPTH_1)+'s','P'+"{0:.0f}".format(DEPTH_MED)+'s','P'+"{0:.0f}".format(DEPTH_2)+'s'
+PHASES = 'P410s','P'+"{0:.0f}".format(DEPTH_MED)+'s','P660s'
 
 # =========================
 # Creating Pds Input lists
@@ -130,11 +130,11 @@ print('Creating Pds Input lists')
 print('\n')
 
 
-input_list_DEPTH_1 = [[i,PHASES[0],event_depth[i],event_lat[i],event_long[i],sta_lat[i],sta_long[i]] for i,j in enumerate(event_depth)]
+input_list_410 = [[i,PHASES[0],event_depth[i],event_lat[i],event_long[i],sta_lat[i],sta_long[i]] for i,j in enumerate(event_depth)]
 
 input_list_DEPTH_MED = [[i,PHASES[1],event_depth[i],event_lat[i],event_long[i],sta_lat[i],sta_long[i]] for i,j in enumerate(event_depth)]
 
-input_list_DEPTH_2 = [[i,PHASES[2],event_depth[i],event_lat[i],event_long[i],sta_lat[i],sta_long[i]] for i,j in enumerate(event_depth)]
+input_list_660 = [[i,PHASES[2],event_depth[i],event_lat[i],event_long[i],sta_lat[i],sta_long[i]] for i,j in enumerate(event_depth)]
 
 # ================================
 # Calculating Pds Piercing Points
@@ -143,14 +143,14 @@ input_list_DEPTH_2 = [[i,PHASES[2],event_depth[i],event_lat[i],event_long[i],sta
 print('Calculating Piercing Points to '+PHASES[0])
 print('\n')
 
-pool_DEPTH_1 = Pool(MP_PROCESSES)
-PP_dic_DEPTH_1 = pool_DEPTH_1.starmap(parallel_piercing_points, input_list_DEPTH_1)
-pool_DEPTH_1.close()
+pool_410 = Pool(MP_PROCESSES)
+PP_dic_410 = pool_410.starmap(parallel_piercing_points, input_list_410)
+pool_410.close()
 #Saving Piercing Points in JSON file
 print('Saving Piercing Points in JSON file')
 os.makedirs(PP_DIR,exist_ok=True)
 with open(PP_DIR+'PP_'+PHASES[0]+'_dic.json', 'w') as fp:
-	json.dump(PP_dic_DEPTH_1, fp)
+	json.dump(PP_dic_410, fp)
 
 print('Piercing Points to '+PHASES[0]+' estimated!')
 print('\n')
@@ -178,14 +178,14 @@ print('\n')
 print('Calculating Piercing Points to '+PHASES[2])
 print('\n')
 
-pool_DEPTH_2 = Pool(MP_PROCESSES)
-PP_dic_DEPTH_2 = pool_DEPTH_2.starmap(parallel_piercing_points, input_list_DEPTH_2)
-pool_DEPTH_2.close()
+pool_660 = Pool(MP_PROCESSES)
+PP_dic_660 = pool_660.starmap(parallel_piercing_points, input_list_660)
+pool_660.close()
 #Saving Piercing Points in JSON file
 print('Saving Piercing Points in JSON file')
 
 with open(PP_DIR+'PP_'+PHASES[2]+'_dic.json', 'w') as fp:
-	json.dump(PP_dic_DEPTH_2, fp)
+	json.dump(PP_dic_660, fp)
 
 print('Piercing Points to '+PHASES[2]+' estimated!')
 print('\n')
@@ -200,7 +200,7 @@ print('\n')
 print('Creating Ppds list')
 print('\n')
 
-PHASES_Ppds = 'PPv'+"{0:.0f}".format(DEPTH_1)+'s','PPv'+"{0:.0f}".format(DEPTH_MED)+'s','PPv'+"{0:.0f}".format(DEPTH_2)+'s'
+PHASES_Ppds = 'PPv410s','PPv'+"{0:.0f}".format(DEPTH_MED)+'s','PPv660s'
 
 # =========================
 # Creating Pds Input lists
@@ -210,11 +210,11 @@ print('Creating Pds Input lists')
 print('\n')
 
 
-input_list_DEPTH_1_Ppds = [[i,PHASES_Ppds[0],event_depth[i],event_lat[i],event_long[i],sta_lat[i],sta_long[i]] for i,j in enumerate(event_depth)]
+input_list_410_Ppds = [[i,PHASES_Ppds[0],event_depth[i],event_lat[i],event_long[i],sta_lat[i],sta_long[i]] for i,j in enumerate(event_depth)]
 
 input_list_DEPTH_MED_Ppds = [[i,PHASES_Ppds[1],event_depth[i],event_lat[i],event_long[i],sta_lat[i],sta_long[i]] for i,j in enumerate(event_depth)]
 
-input_list_DEPTH_2_Ppds = [[i,PHASES_Ppds[2],event_depth[i],event_lat[i],event_long[i],sta_lat[i],sta_long[i]] for i,j in enumerate(event_depth)]
+input_list_660_Ppds = [[i,PHASES_Ppds[2],event_depth[i],event_lat[i],event_long[i],sta_lat[i],sta_long[i]] for i,j in enumerate(event_depth)]
 
 # ================================
 # Calculating Pds Piercing Points
@@ -223,14 +223,14 @@ input_list_DEPTH_2_Ppds = [[i,PHASES_Ppds[2],event_depth[i],event_lat[i],event_l
 print('Calculating Piercing Points to '+PHASES_Ppds[0])
 print('\n')
 
-pool_DEPTH_1_Ppds = Pool(MP_PROCESSES)
-PP_dic_DEPTH_1_Ppds = pool_DEPTH_1_Ppds.starmap(parallel_piercing_points, input_list_DEPTH_1_Ppds)
-pool_DEPTH_1_Ppds.close()
+pool_410_Ppds = Pool(MP_PROCESSES)
+PP_dic_410_Ppds = pool_410_Ppds.starmap(parallel_piercing_points, input_list_410_Ppds)
+pool_410_Ppds.close()
 #Saving Piercing Points in JSON file
 print('Saving Piercing Points in JSON file')
 
 with open(PP_DIR+'PP_'+PHASES_Ppds[0]+'_dic.json', 'w') as fp:
-	json.dump(PP_dic_DEPTH_1_Ppds, fp)
+	json.dump(PP_dic_410_Ppds, fp)
 
 print('Piercing Points to '+PHASES_Ppds[0]+' estimated!')
 print('\n')
@@ -258,18 +258,16 @@ print('\n')
 print('Calculating Piercing Points to '+PHASES[2])
 print('\n')
 
-pool_DEPTH_2_Ppds = Pool(MP_PROCESSES)
-PP_dic_DEPTH_2_Ppds = pool_DEPTH_2_Ppds.starmap(parallel_piercing_points, input_list_DEPTH_2_Ppds)
-pool_DEPTH_2_Ppds.close()
+pool_660_Ppds = Pool(MP_PROCESSES)
+PP_dic_660_Ppds = pool_660_Ppds.starmap(parallel_piercing_points, input_list_660_Ppds)
+pool_660_Ppds.close()
 #Saving Piercing Points in JSON file
 print('Saving Piercing Points in JSON file')
 
 with open(PP_DIR+'PP_'+PHASES_Ppds[2]+'_dic.json', 'w') as fp:
-	json.dump(PP_dic_DEPTH_2_Ppds, fp)
+	json.dump(PP_dic_660_Ppds, fp)
 
 print('Piercing Points to '+PHASES_Ppds[2]+' estimated!')
 print('\n')
 
 # ============================================================================================================================
-
-

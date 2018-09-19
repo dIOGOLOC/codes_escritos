@@ -10,7 +10,6 @@
 # - [paths]             : default paths to input/output folders
 # - [maps]              : parameters to plot maps
 # - [time]              : parameters to calculate the time
-# - [piercing]          : parameters to calculate the piercing points
 # - [migration]         : parameters of the migration
 #
 # Before using the scripts, you should at least make sure
@@ -40,32 +39,26 @@ RF_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/trans
 # extension of receiver functions
 RF_EXT = .eqr
 
-#Directory of the program
-PROG_MIGRATION_DIR = /home/diogo/diogo_git/codes_escritos/receiver_migration/
-
-
 #Directory of the model of IASP91 models
-MODEL_FILE_NPZ = /home/diogo/diogo_git/codes_escritos/receiver_migration/velocity_model/iasp91_5.npz
+MODEL_FILE_NPZ = /home/diogo/diogo_git/codes_escritos/mantle_transition_zone_migration/velocity_model/iasp91_5.npz
 
 # dir of the stations data
-STA_DIR = /home/diogo/diogo_git/codes_escritos/receiver_migration/OUTPUT/Stations/
-
+STA_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/MTZ_migration/real_data/a_5/OUTPUT/Stations/
 
 # dir of the Pds results
-PdS_DIR = /home/diogo/diogo_git/codes_escritos/receiver_migration/OUTPUT/Phases/
+PdS_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/MTZ_migration/real_data/a_5/OUTPUT/Phases/
 
 # dir of the piercing points results
-PP_DIR = /home/diogo/diogo_git/codes_escritos/receiver_migration/OUTPUT/Piercing_points/
-
+PP_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/MTZ_migration/real_data/a_5/OUTPUT/Piercing_points/
 
 # dir of ray path figures
-RAY_PATH_FIGURE = /home/diogo/diogo_git/codes_escritos/receiver_migration/OUTPUT/Figures/ray_path/
+RAY_PATH_FIGURE = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/MTZ_migration/real_data/a_5/OUTPUT/Figures/ray_path/
 
 # dir of piercing points figures
-PP_FIGURE = /home/diogo/diogo_git/codes_escritos/receiver_migration/OUTPUT/Figures/piercing_points/
+PP_FIGURE = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/MTZ_migration/real_data/a_5/OUTPUT/Figures/piercing_points/
 
 # dir of selected piercing points
-PP_SELEC_DIR = /home/diogo/diogo_git/codes_escritos/receiver_migration/OUTPUT/Piercing_points/selected/
+PP_SELEC_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/MTZ_migration/real_data/a_5/OUTPUT/Piercing_points/selected/
 
 
 #=====
@@ -111,16 +104,15 @@ LLCRNRLAT_SMALL=-9
 URCRNRLON_SMALL=-40
 URCRNRLAT_SMALL=-3
 
-
 #figures extention and dpi
 EXT_FIG=pdf
 DPI_FIG=300
 
-
 #==================
 [time]
 #==================
-																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																						# how many concurrent processes at the multiprocessing?
+
+# how many concurrent processes at the multiprocessing?
 MP_PROCESSES = 8
 
 #minimum depth of the migration
@@ -132,17 +124,10 @@ MAX_DEPTH = 800
 #depth interval of the migration
 INTER_DEPTH = 10
 
-#==================
-[piercings]
-#==================
-
-#depth list to calculate piercing points
-DEPTH_1 = 410
-DEPTH_2 = 660
-
 # ==========
 [migration]
 # ==========
+
 #GRID POINTS multiplyer
 GRID_PP_MULT = 3
 
