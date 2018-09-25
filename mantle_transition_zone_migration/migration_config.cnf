@@ -43,22 +43,22 @@ RF_EXT = .eqr
 MODEL_FILE_NPZ = /home/diogo/diogo_git/codes_escritos/mantle_transition_zone_migration/velocity_model/iasp91_5.npz
 
 # dir of the stations data
-STA_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/MTZ_migration/real_data/a_5/OUTPUT/Stations/
+STA_DIR = /home/diogo/diogo_git/codes_escritos/mantle_transition_zone_migration/OUTPUT/Stations/
 
 # dir of the Pds results
-PdS_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/MTZ_migration/real_data/a_5/OUTPUT/Phases/
+PdS_DIR = /home/diogo/diogo_git/codes_escritos/mantle_transition_zone_migration/OUTPUT/Phases/
 
 # dir of the piercing points results
-PP_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/MTZ_migration/real_data/a_5/OUTPUT/Piercing_points/
+PP_DIR = /home/diogo/diogo_git/codes_escritos/mantle_transition_zone_migration/OUTPUT/Piercing_points/
 
 # dir of ray path figures
-RAY_PATH_FIGURE = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/MTZ_migration/real_data/a_5/OUTPUT/Figures/ray_path/
+RAY_PATH_FIGURE = /home/diogo/diogo_git/codes_escritos/mantle_transition_zone_migration/OUTPUT/Figures/ray_path/
 
 # dir of piercing points figures
-PP_FIGURE = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/MTZ_migration/real_data/a_5/OUTPUT/Figures/piercing_points/
+PP_FIGURE = /home/diogo/diogo_git/codes_escritos/mantle_transition_zone_migration/Figures/piercing_points/
 
 # dir of selected piercing points
-PP_SELEC_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/MTZ_migration/real_data/a_5/OUTPUT/Piercing_points/selected/
+PP_SELEC_DIR = /home/diogo/diogo_git/codes_escritos/mantle_transition_zone_migration/OUTPUT/Piercing_points/selected/
 
 
 #=====
@@ -147,7 +147,7 @@ DEPTH_ESTIMATION = True
 BOOTSTRAP_DEPTH_ESTIMATION = True 
 
 #Number of interations to compute bootstrapping
-BOOTSTRAP_INTERATOR = 200
+BOOTSTRAP_INTERATOR = 4
 
 #False or True for Linear stacking
 LINEAR_STACKING = True 
