@@ -10,7 +10,6 @@ import matplotlib
 from matplotlib.cm import get_cmap
 from mpl_toolkits.mplot3d import Axes3D
 from mpl_toolkits.basemap import Basemap
-from matplotlib.collections import PolyCollection
 import shapefile
 from fatiando import gridder, utils
 import scipy.io
@@ -407,6 +406,42 @@ for i,j in enumerate(camadas_terra_10_km):
 		grid_camadas_y.append(grid_sel_y[k])
 		grid_camadas_z.append(-j)
 
+PP_410_lat_POINTS = []
+PP_410_lon_POINTS = []
+PP_410_depth_POINTS = []
+for i,j in enumerate(PP_depth_1):
+	for k,l in enumerate(j):
+		if LLCRNRLAT_SMALL <= PP_lat_1[i][k] <= URCRNRLAT_SMALL and LLCRNRLON_SMALL <= PP_lon_1[i][k] <= URCRNRLON_SMALL:
+			if l == 410:
+				PP_410_lat_POINTS.append(PP_lat_1[i][k])
+				PP_410_lon_POINTS.append(PP_lon_1[i][k])
+				PP_410_depth_POINTS.append(-PP_depth_1[i][k])
+
+PP_660_lat_POINTS = []
+PP_660_lon_POINTS = []
+PP_660_depth_POINTS = []
+for i,j in enumerate(PP_depth_2):
+	for k,l in enumerate(j):
+		if LLCRNRLAT_SMALL <= PP_lat_2[i][k] <= URCRNRLAT_SMALL and LLCRNRLON_SMALL <= PP_lon_2[i][k] <= URCRNRLON_SMALL:
+			if l == 660:
+				PP_660_lat_POINTS.append(PP_lat_2[i][k])
+				PP_660_lon_POINTS.append(PP_lon_2[i][k])
+				PP_660_depth_POINTS.append(-PP_depth_2[i][k])
+
+#Pds Middle Layer
+
+MED_PP_lat_POINTS = []
+MED_PP_lon_POINTS = []
+MED_PP_depth_POINTS = []
+for i,j in enumerate(PP_depth_2):
+	for k,l in enumerate(j):
+		if LLCRNRLAT_SMALL <= PP_lat_med[i][k] <= URCRNRLAT_SMALL and LLCRNRLON_SMALL <= PP_lon_med[i][k] <= URCRNRLON_SMALL:
+			if l == DEPTH_MED:
+				MED_PP_lat_POINTS.append(PP_lat_med[i][k])
+				MED_PP_lon_POINTS.append(PP_lon_med[i][k])
+				MED_PP_depth_POINTS.append(-PP_depth_med[i][k])
+
+
 ###################################################################################################################
 print('Plotting: Figure earth model layers')
 print('\n')
@@ -436,23 +471,41 @@ plt.show()
 print('Plotting: Figure 410 and 660 Pds Piercing Points')
 print('\n')
 
+#Pds 410
+
 PP_410_lat = []
 PP_410_lon = []
 PP_410_depth = []
 for i,j in enumerate(PP_depth_1):
 	for k,l in enumerate(j):
+		if LLCRNRLAT_SMALL <= PP_lat_1[i][k] <= URCRNRLAT_SMALL and LLCRNRLON_SMALL <= PP_lon_1[i][k] <= URCRNRLON_SMALL:
 			PP_410_lat.append(PP_lat_1[i][k])
 			PP_410_lon.append(PP_lon_1[i][k])
 			PP_410_depth.append(-PP_depth_1[i][k])
+
+#Pds 660
 
 PP_660_lat = []
 PP_660_lon = []
 PP_660_depth = []
 for i,j in enumerate(PP_depth_2):
 	for k,l in enumerate(j):
+		if LLCRNRLAT_SMALL <= PP_lat_2[i][k] <= URCRNRLAT_SMALL and LLCRNRLON_SMALL <= PP_lon_2[i][k] <= URCRNRLON_SMALL:
 			PP_660_lat.append(PP_lat_2[i][k])
 			PP_660_lon.append(PP_lon_2[i][k])
 			PP_660_depth.append(-PP_depth_2[i][k])
+
+#Pds Middle Layer
+
+MED_PP_lat = []
+MED_PP_lon = []
+MED_PP_depth = []
+for i,j in enumerate(PP_depth_2):
+	for k,l in enumerate(j):
+		if LLCRNRLAT_SMALL <= PP_lat_med[i][k] <= URCRNRLAT_SMALL and LLCRNRLON_SMALL <= PP_lon_med[i][k] <= URCRNRLON_SMALL:
+			MED_PP_lat.append(PP_lat_med[i][k])
+			MED_PP_lon.append(PP_lon_med[i][k])
+			MED_PP_depth.append(-PP_depth_med[i][k])
 
 
 fig = plt.figure()
@@ -479,8 +532,13 @@ z410 = np.array([element*-410 for element in z1410])
 ax.plot_surface(x, y, z660,color='None',edgecolor='g')
 ax.plot_surface(x, y, z410,color='None',edgecolor='b')
 
-ax.scatter3D(PP_410_lon,PP_410_lat, PP_410_depth, c='k',marker='.',alpha=0.1)
-ax.scatter3D(PP_660_lon,PP_660_lat, PP_660_depth, c='k',marker='.',alpha=0.1)
+intp = cbook.simple_linear_interpolation
+
+ax.plot3D(intp(np.array(PP_410_lon),50),intp(np.array(PP_410_lat), 50), intp(np.array(PP_410_depth), 50), c='k',alpha=0.3)
+ax.plot3D(intp(np.array(PP_660_lon),50),intp(np.array(PP_660_lat), 50), intp(np.array(PP_660_depth), 50), c='k',alpha=0.3)
+
+ax.scatter3D(PP_410_lon_POINTS,PP_410_lat_POINTS, PP_410_depth_POINTS,  c='k',marker='X',s=50)
+ax.scatter3D(PP_660_lon_POINTS,PP_660_lat_POINTS, PP_660_depth_POINTS,  c='k',marker='X',s=50)
 
 ax.set_zlim(-800,0)
 ax.set_xlim(LLCRNRLON_SMALL,URCRNRLON_SMALL)
@@ -493,28 +551,9 @@ plt.show()
 
 ###################################################################################################################
 
-print('Plotting: Figure 410 Pds Piercing Points and Model earth')
+print('Plotting: Figure Middle Pds Piercing Points and Model earth')
 print('\n')
 
-PP_410_lat_POINTS = []
-PP_410_lon_POINTS = []
-PP_410_depth_POINTS = []
-for i,j in enumerate(PP_depth_1):
-	for k,l in enumerate(j):
-		if l == 410:
-			PP_410_lat_POINTS.append(PP_lat_1[i][k])
-			PP_410_lon_POINTS.append(PP_lon_1[i][k])
-			PP_410_depth_POINTS.append(-PP_depth_1[i][k])
-
-PP_660_lat_POINTS = []
-PP_660_lon_POINTS = []
-PP_660_depth_POINTS = []
-for i,j in enumerate(PP_depth_2):
-	for k,l in enumerate(j):
-		if l == 660:
-			PP_660_lat_POINTS.append(PP_lat_2[i][k])
-			PP_660_lon_POINTS.append(PP_lon_2[i][k])
-			PP_660_depth_POINTS.append(-PP_depth_2[i][k])
 
 
 fig = plt.figure(figsize=(30,15))
@@ -532,7 +571,46 @@ z = np.zeros_like(x)
 ax.plot_surface(x, y, z,color='None',edgecolor='k')
 
 ax.scatter3D(PP_410_lon_POINTS,PP_410_lat_POINTS, PP_410_depth_POINTS,  c='b',marker='+')
+ax.scatter3D(MED_PP_lon_POINTS,MED_PP_lat_POINTS, MED_PP_depth_POINTS,  c='r',marker='+',s=50)
 ax.scatter3D(PP_660_lon_POINTS,PP_660_lat_POINTS, PP_660_depth_POINTS,  c='g',marker='+')
+
+m1 = ax.scatter3D(grid_camadas_x, grid_camadas_y, grid_camadas_z,c=grid_camadas_z,edgecolor='k',cmap='bone')
+
+
+ax.set_zlim(-800,0)
+ax.set_xlim(LLCRNRLON_SMALL,URCRNRLON_SMALL)
+ax.set_ylim(LLCRNRLAT_SMALL,URCRNRLAT_SMALL)
+ax.set_xlabel('Longitude')
+ax.set_ylabel('Latitude')
+ax.set_zlabel('Depth (km)')
+
+fig.colorbar(m1,aspect=40,shrink=0.7)
+
+plt.show()
+
+###################################################################################################################
+
+print('Plotting: Figure 410 Pds Piercing Points and Model earth')
+print('\n')
+
+
+fig = plt.figure(figsize=(30,15))
+ax = Axes3D(fig)
+
+ax.azim = 95
+ax.elev = 10
+ax.dist = 8
+
+ax.plot(grid_sel_x,grid_sel_y,'.',markersize=2,markeredgecolor='k',markerfacecolor='k')
+ax.plot(sta_long,sta_lat,'^',markersize=10,markeredgecolor='k',markerfacecolor='grey')
+
+
+z = np.zeros_like(x)
+#ax.plot_surface(x, y, z,color='None',edgecolor='k')
+
+ax.scatter3D(MED_PP_lon_POINTS,MED_PP_lat_POINTS, MED_PP_depth_POINTS,  c='r',marker='X',s=50)
+ax.plot3D(intp(np.array(MED_PP_lon),100),intp(np.array(MED_PP_lat), 100), intp(np.array(MED_PP_depth), 100), c='k',alpha=0.3)
+
 
 m1 = ax.scatter3D(grid_camadas_x, grid_camadas_y, grid_camadas_z,c=grid_camadas_z,edgecolor='k',cmap='bone')
 
