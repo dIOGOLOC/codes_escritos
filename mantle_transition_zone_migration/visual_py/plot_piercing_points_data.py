@@ -56,9 +56,6 @@ for i,j in enumerate(model_10_km.model.s_mod.v_mod.layers):
 		Vp_depth_2 = j[2]
 		Vs_depth_2 = j[4]
 		
-
-
-
 print('Looking for Receiver Functions data in JSON file in '+STA_DIR)
 print('\n')
 filename_STA = STA_DIR+'sta_dic.json'
@@ -111,6 +108,7 @@ for i,j in enumerate(PP_1_dic):
 	PP_lon_1.append(j['lon'][0])
 	PP_depth_1.append(j['depth'][0])
 
+
 print('Importing Pds Piercing Points for '+PHASES[1])
 print('\n')
 
@@ -157,12 +155,11 @@ print('\n')
 pp_1_lat  = [[]]*len(PP_lon_1)
 pp_1_long  = [[]]*len(PP_lon_1)
 
-
 for i,j in enumerate(PP_lon_1):
-    for k,l in enumerate(j):
-        if LLCRNRLON_LARGE<= l <= URCRNRLON_LARGE and PP_depth_1[i][k] == 410:
-                pp_1_lat[i] = PP_lat_1[i][k] 
-                pp_1_long[i] = l
+	for k,l in enumerate(j):
+		if LLCRNRLON_LARGE <= l <= URCRNRLON_LARGE and LLCRNRLAT_LARGE <= PP_lat_1[i][k] <= URCRNRLAT_LARGE and PP_depth_1[i][k] == 410:
+			pp_1_lat[i] = PP_lat_1[i][k]
+			pp_1_long[i] = PP_lon_1[i][k]
 
 
 print('Pds Piercing Points - '+"{0:.0f}".format(DEPTH_MED))
@@ -171,27 +168,23 @@ print('\n')
 pp_med_lat  = [[]]*len(PP_lon_med)
 pp_med_long  = [[]]*len(PP_lon_med)
 
-
 for i,j in enumerate(PP_lon_med):
 	for k,l in enumerate(j):
-		if LLCRNRLON_LARGE <= l <= URCRNRLON_LARGE and PP_depth_med[i][k] == DEPTH_MED:
+		if LLCRNRLON_LARGE <= l <= URCRNRLON_LARGE and LLCRNRLAT_LARGE <= PP_lat_med[i][k] <= URCRNRLAT_LARGE and PP_depth_med[i][k] == DEPTH_MED:
 			pp_med_lat[i] = PP_lat_med[i][k] 
-			pp_med_long[i] = l
+			pp_med_long[i] = PP_lon_med[i][k]
 
 print('P660s Piercing Points')
 print('\n')
 
-
 pp_2_lat  = [[]]*len(PP_lon_2)
 pp_2_long  = [[]]*len(PP_lon_2)
 
-
 for i,j in enumerate(PP_lon_2):
 	for k,l in enumerate(j):
-		if LLCRNRLON_LARGE <= l <= URCRNRLON_LARGE and PP_depth_2[i][k] == 660:
+		if LLCRNRLON_LARGE <= l <= URCRNRLON_LARGE and LLCRNRLAT_LARGE <= PP_lat_2[i][k] <= URCRNRLAT_LARGE  and PP_depth_2[i][k] == 660:
 			pp_2_lat[i] = PP_lat_2[i][k]
-			pp_2_long[i] = l
-
+			pp_2_long[i] = PP_lon_2[i][k]
 
 print('Importing Ppds piercing points to each PHASE')
 print('\n')
@@ -242,7 +235,6 @@ for i,j in enumerate(PP_med_dic_Ppds):
 	PP_depth_med_Ppds.append(j['depth'][0])
 	PP_med_number.append(j['number'][0])
 
-
 print('Importing Ppds Piercing Points '+PHASES_Ppds[2])
 print('\n')
 
@@ -273,12 +265,11 @@ pp_1_long_Ppds  = [[]]*len(PP_lon_1_Ppds)
 
 
 for i,j in enumerate(PP_lon_1_Ppds):
-    for k,l in enumerate(j):
-        if LLCRNRLON_LARGE<= l <= URCRNRLON_LARGE and PP_depth_1_Ppds[i][k] == 410:
-                pp_1_lat_Ppds[i] = PP_lat_1_Ppds[i][k] 
-                pp_1_long_Ppds[i] = l
-
-
+	for k,l in enumerate(j):
+		if PP_depth_1_Ppds[i][k] == 410:
+			if LLCRNRLON_LARGE <= l <= URCRNRLON_LARGE and LLCRNRLAT_LARGE <= PP_lat_1_Ppds[i][k] <= URCRNRLAT_LARGE:
+					pp_1_lat_Ppds[i] = PP_lat_1_Ppds[i][k]
+					pp_1_long_Ppds[i] = PP_lon_1_Ppds[i][k]
 
 print('Ppds Piercing Points - '+"{0:.0f}".format(DEPTH_MED))
 print('\n')
@@ -289,25 +280,22 @@ pp_med_long_Ppds  = [[]]*len(PP_lon_med_Ppds)
 
 for i,j in enumerate(PP_lon_med_Ppds):
 	for k,l in enumerate(j):
-		if LLCRNRLON_LARGE<= l <= URCRNRLON_LARGE and PP_depth_med_Ppds[i][k] == DEPTH_MED:
+		if LLCRNRLON_LARGE<= l <= URCRNRLON_LARGE and LLCRNRLAT_LARGE<= PP_lat_med_Ppds[i][k] <= URCRNRLAT_LARGE and PP_depth_med_Ppds[i][k] == DEPTH_MED:
 			pp_med_lat_Ppds[i] = PP_lat_med_Ppds[i][k]
-			pp_med_long_Ppds[i] = l
-
+			pp_med_long_Ppds[i] = PP_lon_med_Ppds[i][k]
 
 print('PPv660s Piercing Points')
 print('\n')
-
 
 pp_2_lat_Ppds  = [[]]*len(PP_lon_2_Ppds)
 pp_2_long_Ppds  = [[]]*len(PP_lon_2_Ppds)
 
 
 for i,j in enumerate(PP_lon_2_Ppds):
-    for k,l in enumerate(j):
-        if LLCRNRLON_LARGE <= l <= URCRNRLON_LARGE and PP_depth_2_Ppds[i][k] == 660:
-                pp_2_lat_Ppds[i] = PP_lat_2_Ppds[i][k] 
-                pp_2_long_Ppds[i] = l
-
+	for k,l in enumerate(j):
+		if LLCRNRLON_LARGE <= l <= URCRNRLON_LARGE and LLCRNRLAT_LARGE<= PP_lat_2_Ppds[i][k] <= URCRNRLAT_LARGE and PP_depth_2_Ppds[i][k] == 660:
+			pp_2_lat_Ppds[i] = PP_lat_2_Ppds[i][k]
+			pp_2_long_Ppds[i] = PP_lon_2_Ppds[i][k]
 
 print('Creating GRID POINTS')
 print('\n')
@@ -334,6 +322,7 @@ for i,j in enumerate(grdx):
 dist_pp_grid_max = [[]]*len(grdx)
 for i,j in enumerate(grdx):
     dist_pp_grid_max[i] = [np.sqrt((j - pp_2_long[k])**2 + (grdy[i] - l)**2) for k,l in enumerate(pp_2_lat)]
+
 
 grid_sel_min = []
 grid_sel_min_data = []

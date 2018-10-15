@@ -17,26 +17,36 @@ from parameters_py.config import (
 print('Get Station Information')
 print('\n')
 
-sta_info = np.genfromtxt(STA_CSV_FILE,skip_header=1)
+sta_lat_lon = np.genfromtxt(STA_CSV_FILE,skip_header=1,usecols=[1,2,3],delimiter=';')
 
-sta_name =  np.genfromtxt(STA_CSV_FILE,dtype='str',skip_header=1,usecols=[1])
+sta_name =  np.genfromtxt(STA_CSV_FILE,dtype='str',skip_header=1,usecols=[0,4,5],delimiter=';')
 
 sta_event = {
 
-		'kstnm':[],
-		'stla':[],
-		'stlo':[],
-
+		'KSTNM':[],
+		'STLA':[],
+		'STLO':[],
+		'STEL':[],
+		'SENSOR_KEYS':[],
+		'DATALOGGER_KEYS':[]
 	    }
 
-for i,j in enumerate(sta_info):
-	sta_event['kstnm'].append(sta_name[i])
-	sta_event['stla'].append(j[2])
-	sta_event['stlo'].append(j[3])
+for i,j in enumerate(sta_name):
+	sta_event['STLA'].append(sta_lat_lon[i][0])
+	sta_event['STLO'].append(sta_lat_lon[i][1])
+	sta_event['STEL'].append(sta_lat_lon[i][2])
+	sta_event['KSTNM'].append(j[0])
+	sta_event['SENSOR_KEYS'].append(j[1])
+	sta_event['DATALOGGER_KEYS'].append(j[2])
 
-print('Number of Stations: '+str(len(sta_event['kstnm'])))
-for i in sta_event['kstnm']:
-	print('Station: '+i)
+print('Number of Stations: '+str(len(sta_event['KSTNM'])))
+for i,j in enumerate(sta_event['KSTNM']):
+	print('Station: '+j)
+	print('SENSOR_KEYS: '+sta_event['SENSOR_KEYS'][i])
+	print('DATALOGGER_KEYS: '+sta_event['DATALOGGER_KEYS'][i])
+	print('\n')
+
+
 print('\n')
 
 print('Saving Station Information in JSON file')
@@ -45,4 +55,3 @@ print('\n')
 os.makedirs(OUTPUT_JSON_FILE_DIR,exist_ok=True)
 with open(OUTPUT_JSON_FILE_DIR+'STA_dic.json', 'w') as fp:
 	json.dump(sta_event, fp)
-

@@ -61,6 +61,9 @@ DIR_SAC = config.get('paths', 'DIR_SAC')
 #Directory to save seismograms
 DIR_EVENT = config.get('paths', 'DIR_EVENT')
 
+#Directory to save seismograms
+DIR_EVENT_NO_PP = config.get('paths', 'DIR_EVENT_NO_PP')
+
 #Stations CSV FILE path
 STA_CSV_FILE  =  config.get('paths', 'STA_CSV_FILE')
 

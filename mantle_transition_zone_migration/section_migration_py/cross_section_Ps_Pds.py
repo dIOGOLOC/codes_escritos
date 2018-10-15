@@ -24,11 +24,11 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 
 from parameters_py.mgconfig import (
-					RF_DIR,RF_EXT,PROG_MIGRATION_DIR,MODEL_FILE_NPZ,MIN_DEPTH,MAX_DEPTH,INTER_DEPTH,PdS_DIR,
+					RF_DIR,RF_EXT,MODEL_FILE_NPZ,MIN_DEPTH,MAX_DEPTH,INTER_DEPTH,PdS_DIR,
 					PP_DIR,PP_SELEC_DIR,NUMBER_PP_PER_BIN,RAY_TRACE_PLOT,RAY_TRACE_410_660_PLOT,STA_DIR,
 					LLCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLON_LARGE,URCRNRLAT_LARGE,LLCRNRLON_SMALL,SECTION_NUM,
 					URCRNRLON_SMALL,LLCRNRLAT_SMALL,URCRNRLAT_SMALL,PROJECT_LAT,PROJECT_LON,
-					BOUNDARY_1_SHP,BOUNDARY_1_SHP_NAME,BOUNDARY_2_SHP,BOUNDARY_2_SHP_NAME,DEPTH_1,DEPTH_2,					
+					BOUNDARY_1_SHP,BOUNDARY_1_SHP_NAME,BOUNDARY_2_SHP,BOUNDARY_2_SHP_NAME,					
 					RAY_PATH_FIGURE,PP_FIGURE,EXT_FIG,DPI_FIG,DIST_GRID_PP_MED,DIST_GRID_PP,DEPTH_RANGE
 				   )
 
@@ -193,25 +193,48 @@ profile_lon = []
 
 for i,j in enumerate(AB_lon):
 	dist = [np.sqrt((j - lons[k])**2 + (AB_lat[i] - l)**2)  for k,l in enumerate(lats)]
-	RF_data_profile_Pds.append(RF_stacking_Pds[dist.index(min(dist))])
-	RF_DEPTH_mean_1_profile_Pds.append(RF_DEPTH_mean_1_Pds[dist.index(min(dist))])
-	RF_DEPTH_std_1_profile_Pds.append(RF_DEPTH_std_1_Pds[dist.index(min(dist))])
-	RF_DEPTH_mean_2_profile_Pds.append(RF_DEPTH_mean_2_Pds[dist.index(min(dist))])
-	RF_DEPTH_std_2_profile_Pds.append(RF_DEPTH_std_2_Pds[dist.index(min(dist))])
-	RF_DEPTH_mean_1_true_profile_Pds.append(RF_DEPTH_mean_1_true_Pds[dist.index(min(dist))])
-	RF_DEPTH_mean_2_true_profile_Pds.append(RF_DEPTH_mean_2_true_Pds[dist.index(min(dist))])
-	RF_DEPTH_mtz_thickness_profile_Pds.append(RF_DEPTH_mtz_thickness_Pds[dist.index(min(dist))])
-	RF_DEPTH_true_thickness_MTZ_profile_Pds.append(RF_DEPTH_true_thickness_MTZ_Pds[dist.index(min(dist))]) 
+	if min(dist) < DIST_GRID_PP/SECTION_NUM:
+		RF_data_profile_Pds.append(RF_stacking_Pds[dist.index(min(dist))])
+		RF_DEPTH_mean_1_profile_Pds.append(RF_DEPTH_mean_1_Pds[dist.index(min(dist))])
+		RF_DEPTH_std_1_profile_Pds.append(RF_DEPTH_std_1_Pds[dist.index(min(dist))])
+		RF_DEPTH_mean_2_profile_Pds.append(RF_DEPTH_mean_2_Pds[dist.index(min(dist))])
+		RF_DEPTH_std_2_profile_Pds.append(RF_DEPTH_std_2_Pds[dist.index(min(dist))])
+		RF_DEPTH_mean_1_true_profile_Pds.append(RF_DEPTH_mean_1_true_Pds[dist.index(min(dist))])
+		RF_DEPTH_mean_2_true_profile_Pds.append(RF_DEPTH_mean_2_true_Pds[dist.index(min(dist))])
+		RF_DEPTH_mtz_thickness_profile_Pds.append(RF_DEPTH_mtz_thickness_Pds[dist.index(min(dist))])
+		RF_DEPTH_true_thickness_MTZ_profile_Pds.append(RF_DEPTH_true_thickness_MTZ_Pds[dist.index(min(dist))]) 
 
-	RF_data_profile_Ppds.append(RF_stacking_Ppds[dist.index(min(dist))])
-	RF_DEPTH_mean_1_profile_Ppds.append(RF_DEPTH_mean_1_Ppds[dist.index(min(dist))])
-	RF_DEPTH_std_1_profile_Ppds.append(RF_DEPTH_std_1_Ppds[dist.index(min(dist))])
-	RF_DEPTH_mean_2_profile_Ppds.append(RF_DEPTH_mean_2_Ppds[dist.index(min(dist))])
-	RF_DEPTH_std_2_profile_Ppds.append(RF_DEPTH_std_2_Ppds[dist.index(min(dist))])
-	RF_DEPTH_mean_1_true_profile_Ppds.append(RF_DEPTH_mean_1_true_Ppds[dist.index(min(dist))])
-	RF_DEPTH_mean_2_true_profile_Ppds.append(RF_DEPTH_mean_2_true_Ppds[dist.index(min(dist))])
-	RF_DEPTH_mtz_thickness_profile_Ppds.append(RF_DEPTH_mtz_thickness_Ppds[dist.index(min(dist))])
-	RF_DEPTH_true_thickness_MTZ_profile_Ppds.append(RF_DEPTH_true_thickness_MTZ_Ppds[dist.index(min(dist))]) 
+		RF_data_profile_Ppds.append(RF_stacking_Ppds[dist.index(min(dist))])
+		RF_DEPTH_mean_1_profile_Ppds.append(RF_DEPTH_mean_1_Ppds[dist.index(min(dist))])
+		RF_DEPTH_std_1_profile_Ppds.append(RF_DEPTH_std_1_Ppds[dist.index(min(dist))])
+		RF_DEPTH_mean_2_profile_Ppds.append(RF_DEPTH_mean_2_Ppds[dist.index(min(dist))])
+		RF_DEPTH_std_2_profile_Ppds.append(RF_DEPTH_std_2_Ppds[dist.index(min(dist))])
+		RF_DEPTH_mean_1_true_profile_Ppds.append(RF_DEPTH_mean_1_true_Ppds[dist.index(min(dist))])
+		RF_DEPTH_mean_2_true_profile_Ppds.append(RF_DEPTH_mean_2_true_Ppds[dist.index(min(dist))])
+		RF_DEPTH_mtz_thickness_profile_Ppds.append(RF_DEPTH_mtz_thickness_Ppds[dist.index(min(dist))])
+		RF_DEPTH_true_thickness_MTZ_profile_Ppds.append(RF_DEPTH_true_thickness_MTZ_Ppds[dist.index(min(dist))]) 
+
+	else:
+		RF_data_profile_Pds.append(np.zeros_like(RF_stacking_Pds[dist.index(min(dist))]))
+		RF_DEPTH_mean_1_profile_Pds.append(np.zeros_like(RF_DEPTH_mean_1_Pds[dist.index(min(dist))]))
+		RF_DEPTH_std_1_profile_Pds.append(np.zeros_like(RF_DEPTH_std_1_Pds[dist.index(min(dist))]))
+		RF_DEPTH_mean_2_profile_Pds.append(np.zeros_like(RF_DEPTH_mean_2_Pds[dist.index(min(dist))]))
+		RF_DEPTH_std_2_profile_Pds.append(np.zeros_like(RF_DEPTH_std_2_Pds[dist.index(min(dist))]))
+		RF_DEPTH_mean_1_true_profile_Pds.append(np.zeros_like(RF_DEPTH_mean_1_true_Pds[dist.index(min(dist))]))
+		RF_DEPTH_mean_2_true_profile_Pds.append(np.zeros_like(RF_DEPTH_mean_2_true_Pds[dist.index(min(dist))]))
+		RF_DEPTH_mtz_thickness_profile_Pds.append(np.zeros_like(RF_DEPTH_mtz_thickness_Pds[dist.index(min(dist))]))
+		RF_DEPTH_true_thickness_MTZ_profile_Pds.append(np.zeros_like(RF_DEPTH_true_thickness_MTZ_Pds[dist.index(min(dist))]))
+
+		RF_data_profile_Ppds.append(np.zeros_like(RF_stacking_Ppds[dist.index(min(dist))]))
+		RF_DEPTH_mean_1_profile_Ppds.append(np.zeros_like(RF_DEPTH_mean_1_Ppds[dist.index(min(dist))]))
+		RF_DEPTH_std_1_profile_Ppds.append(np.zeros_like(RF_DEPTH_std_1_Ppds[dist.index(min(dist))]))
+		RF_DEPTH_mean_2_profile_Ppds.append(np.zeros_like(RF_DEPTH_mean_2_Ppds[dist.index(min(dist))]))
+		RF_DEPTH_std_2_profile_Ppds.append(np.zeros_like(RF_DEPTH_std_2_Ppds[dist.index(min(dist))]))
+		RF_DEPTH_mean_1_true_profile_Ppds.append(np.zeros_like(RF_DEPTH_mean_1_true_Ppds[dist.index(min(dist))]))
+		RF_DEPTH_mean_2_true_profile_Ppds.append(np.zeros_like(RF_DEPTH_mean_2_true_Ppds[dist.index(min(dist))]))
+		RF_DEPTH_mtz_thickness_profile_Ppds.append(np.zeros_like(RF_DEPTH_mtz_thickness_Ppds[dist.index(min(dist))]))
+		RF_DEPTH_true_thickness_MTZ_profile_Ppds.append(np.zeros_like(RF_DEPTH_true_thickness_MTZ_Ppds[dist.index(min(dist))]))
+
 
 RF_data_profile_stacking_Pds = []
 RF_DEPTH_mean_1_profile_stacking_Pds = []
@@ -268,7 +291,6 @@ ax = fig.add_subplot(gs[0:2, 0:2])
 ax1 = fig.add_subplot(gs[:2, 2:])
 ax2 = fig.add_subplot(gs[2:, 2:])
 
-
 ax3 = fig.add_subplot(gs[2, 0])
 ax4 = fig.add_subplot(gs[2, 1])
 
@@ -306,7 +328,7 @@ fig.suptitle('BINNED DATA and Cross section for Pds and Ppds')
 #Migration figure
 
 
-factor_Pds = 50
+factor_Pds = 100
 
 majorLocatorY = MultipleLocator(50)
 minorLocatorY = MultipleLocator(10)
@@ -329,7 +351,7 @@ for _i, _j in enumerate(RF_data_profile_stacking_Pds):
 	ax1.yaxis.set_ticks_position('both')
 
 	ax1.fill_betweenx(camadas_terra_10_km,RF_data_factor_Pds,_i/factor_Pds,where=np.array(RF_data_factor_Pds)>=_i/factor_Pds, facecolor='black',alpha=0.5, interpolate=True)
-	ax1.fill_betweenx(camadas_terra_10_km,RF_data_factor_Pds,_i/factor_Pds,where=np.array(RF_data_factor_Pds)<=_i/factor_Pds, facecolor='gray',alpha=0.5, interpolate=True)
+	#ax1.fill_betweenx(camadas_terra_10_km,RF_data_factor_Pds,_i/factor_Pds,where=np.array(RF_data_factor_Pds)<=_i/factor_Pds, facecolor='gray',alpha=0.5, interpolate=True)
 	ax1.set_title('Depth - Pds')
 	ax1.set_xticks([])
 	ax1.set_ylabel('Depth (km)')
@@ -345,7 +367,7 @@ for _i, _j in enumerate(RF_data_profile_stacking_Pds):
 #Migration figure
 
 
-factor_Ppds = 50
+factor_Ppds = 200
 
 for _i, _j in enumerate(RF_data_profile_stacking_Ppds):
 	RF_data_factor_Ppds = [_i/factor_Ppds+l for k, l in enumerate(_j)]
@@ -364,7 +386,7 @@ for _i, _j in enumerate(RF_data_profile_stacking_Ppds):
 	ax2.yaxis.set_ticks_position('both')
 
 	ax2.fill_betweenx(camadas_terra_10_km,RF_data_factor_Ppds,_i/factor_Ppds,where=np.array(RF_data_factor_Ppds)>=_i/factor_Ppds, facecolor='black',alpha=0.5, interpolate=True)
-	ax2.fill_betweenx(camadas_terra_10_km,RF_data_factor_Ppds,_i/factor_Ppds,where=np.array(RF_data_factor_Ppds)<=_i/factor_Ppds, facecolor='gray',alpha=0.5, interpolate=True)
+	#ax2.fill_betweenx(camadas_terra_10_km,RF_data_factor_Ppds,_i/factor_Ppds,where=np.array(RF_data_factor_Ppds)<=_i/factor_Ppds, facecolor='gray',alpha=0.5, interpolate=True)
 	ax2.set_xticks([])
 	ax2.set_title('Depth - Ppds')
 	ax2.set_ylabel('Depth (km)')
@@ -383,12 +405,12 @@ for _i, _j in enumerate(RF_data_profile_stacking_Ppds):
 for _i, _j in enumerate(RF_data_profile_stacking_Ppds):
 	ax3.plot(_i/factor_Ppds,RF_DEPTH_mean_1_profile_stacking_Pds[_i],'or')
 	ax3.plot(_i/factor_Ppds,RF_DEPTH_mean_1_profile_stacking_Ppds[_i],'ok')
-	ax3.plot(_i/factor_Ppds,RF_DEPTH_mean_1_true_profile_stacking_Pds[_i],'sb')
-	ax3.plot(_i/factor_Ppds,RF_DEPTH_mean_1_true_profile_stacking_Ppds[_i],'sg')
+	#ax3.plot(_i/factor_Ppds,RF_DEPTH_mean_1_true_profile_stacking_Pds[_i],'sb')
+	#ax3.plot(_i/factor_Ppds,RF_DEPTH_mean_1_true_profile_stacking_Ppds[_i],'sg')
 	ax3.errorbar(_i/factor_Ppds,RF_DEPTH_mean_1_profile_stacking_Pds[_i], yerr=RF_DEPTH_std_1_profile_stacking_Pds[_i], ecolor='r',elinewidth=1,capsize=2,capthick=1)
 	ax3.errorbar(_i/factor_Ppds,RF_DEPTH_mean_1_profile_stacking_Ppds[_i], yerr=RF_DEPTH_std_1_profile_stacking_Ppds[_i], ecolor='k',elinewidth=1,capsize=2,capthick=1)
-	ax3.set_title('d'+"{0:.0f}".format(DEPTH_1))
-	ax3.set_ylim(DEPTH_1+DEPTH_RANGE,DEPTH_1-DEPTH_RANGE)
+	ax3.set_title('d410')
+	ax3.set_ylim(410+DEPTH_RANGE,410-DEPTH_RANGE)
 	ax3.set_ylabel('Depth (km)')
 	ax3.yaxis.set_ticks_position('both')
 	ax3.yaxis.set_major_locator(MultipleLocator(20))
@@ -400,12 +422,12 @@ for _i, _j in enumerate(RF_data_profile_stacking_Ppds):
 for _i, _j in enumerate(RF_data_profile_stacking_Ppds):
 	ax4.plot(_i/factor_Ppds,RF_DEPTH_mean_2_profile_stacking_Pds[_i],'or')
 	ax4.plot(_i/factor_Ppds,RF_DEPTH_mean_2_profile_stacking_Ppds[_i],'ok')
-	ax4.plot(_i/factor_Ppds,RF_DEPTH_mean_2_true_profile_stacking_Pds[_i],'sb')
-	ax4.plot(_i/factor_Ppds,RF_DEPTH_mean_2_true_profile_stacking_Ppds[_i],'sg')
+	#ax4.plot(_i/factor_Ppds,RF_DEPTH_mean_2_true_profile_stacking_Pds[_i],'sb')
+	#ax4.plot(_i/factor_Ppds,RF_DEPTH_mean_2_true_profile_stacking_Ppds[_i],'sg')
 	ax4.errorbar(_i/factor_Ppds,RF_DEPTH_mean_2_profile_stacking_Pds[_i], yerr=RF_DEPTH_std_2_profile_stacking_Pds[_i], ecolor='r',elinewidth=1,capsize=2,capthick=1)
 	ax4.errorbar(_i/factor_Ppds,RF_DEPTH_mean_2_profile_stacking_Ppds[_i], yerr=RF_DEPTH_std_2_profile_stacking_Ppds[_i], ecolor='k',elinewidth=1,capsize=2,capthick=1)
-	ax4.set_title('d'+"{0:.0f}".format(DEPTH_2))
-	ax4.set_ylim(DEPTH_2+DEPTH_RANGE,DEPTH_2-DEPTH_RANGE)
+	ax4.set_title('d660')
+	ax4.set_ylim(660+DEPTH_RANGE,660-DEPTH_RANGE)
 	ax4.yaxis.set_ticks_position('both')
 	ax4.yaxis.set_major_locator(MultipleLocator(20))
 	ax4.yaxis.set_minor_locator(MultipleLocator(10))

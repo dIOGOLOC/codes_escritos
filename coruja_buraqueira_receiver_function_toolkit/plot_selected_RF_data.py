@@ -70,7 +70,7 @@ e = dic_RF['e']
 filename_STA = OUTPUT_JSON_FILE_DIR+'STA_dic.json'
 
 dic_STA = json.load(open(filename_STA))
-kstnm_STA = dic_STA['kstnm']
+kstnm_STA = dic_STA['KSTNM']
 
 # ==============================
 #  Creating stations Input lists
@@ -95,7 +95,11 @@ print('\n')
 for i,j in enumerate(input_list):
 	print('Plotting data to: '+kstnm_STA[i])
 	print('\n')
-	plot_station_raw_RF(j,dataR_time[0],kstnm_STA[i])
+	try:
+		plot_station_raw_RF(j,dataR_time[i],kstnm_STA[i])
+	except:
+		print("NO DATA IN STATION = "+kstnm_STA[i])
+		print('\n')
 
 print('Plotting finished!')
 

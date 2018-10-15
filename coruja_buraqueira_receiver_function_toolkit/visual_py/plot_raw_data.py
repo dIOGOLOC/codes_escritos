@@ -27,3 +27,16 @@ def plot_station_raw_RF(RF_data,RF_data_time,STA):
 		plt.xlim(X_LIM_MIN,X_LIM_MAX)
 
 	plt.show()
+
+def plot_station_raw_RF_TRACE(RF_data,RF_data_time,STA):
+	RF_stack_data = [sum(i)/len(RF_data) for i in zip(*RF_data)]
+	plt.figure(figsize = (30,10))
+	for i, j in enumerate(RF_data): 
+		plt.plot(RF_data_time,j,'gray',linewidth=0.5,label='RF data')
+		plt.plot(RF_data_time,RF_stack_data,'k',linewidth=2,label='RF stack')
+		plt.text(X_LIM_MIN,1,'N = '+str(len(RF_data)))
+		plt.title('Receiver Functions - '+STA)
+		plt.xlim(X_LIM_MIN,X_LIM_MAX)
+
+	plt.show()
+

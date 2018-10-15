@@ -92,7 +92,7 @@ for i,j in enumerate(datalogger_keys):
 		for root, dirs, files in os.walk(DIR_RAW_DATA):
 			for datafile in files:
 				datafile_name = os.path.join(root, datafile)
-				if '/'+kstnm[i]+'/' in datafile_name and '/1/' in datafile_name or  '/'+kstnm[i]+'/' in datafile_name and datafile_name.endswith('.m'):
+				if '/'+kstnm[i]+'/' in datafile_name and '/1/' in datafile_name or  '/'+kstnm[i]+'/' in datafile_name and datafile_name.endswith('.m') or  '/'+kstnm[i]+'/' in datafile_name and '.D.' in datafile_name:
 					datafile_lst.append(datafile_name)
 		datafile_lstS = sorted(datafile_lst)
 

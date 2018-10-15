@@ -55,6 +55,9 @@ config = select_and_parse_config_file(basedir='.', ext='cnf', verbose=True)
 # directory of raw sac files
 DIR_SAC = config.get('paths', 'DIR_SAC')
 
+# directory of selected RF files
+DIR_SEL_SAC = config.get('paths', 'DIR_SEL_SAC')
+
 #Directory to save JSON Files
 OUTPUT_JSON_FILE_DIR =  config.get('paths', 'OUTPUT_JSON_FILE_DIR')
 
@@ -75,7 +78,13 @@ TRANSVERSAL_EXT = config.get('paths', 'TRANSVERSAL_EXT')
 # --------
 
 #Trace check (minimium amplitude of trace)
-CODA_TRACE_CHECK_AMP = config.getfloat('quality', 'CODA_TRACE_CHECK_AMP')
+CODA_TRACE_CHECK_AMP_MIN = config.getfloat('quality', 'CODA_TRACE_CHECK_AMP_MIN')
+
+#Trace check (maximum amplitude of trace)
+CODA_TRACE_CHECK_AMP_MAX = config.getfloat('quality', 'CODA_TRACE_CHECK_AMP_MAX')
+
+#Trace check (minimium amplitude of trace)
+ZERO_AMP_MIN = config.getfloat('quality', 'ZERO_AMP_MIN')
 
 #Trace check (coda amplitude starts in (seconds))
 CODA_TRACE_CHECK = config.getfloat('quality', 'CODA_TRACE_CHECK')

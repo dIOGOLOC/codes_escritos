@@ -1,4 +1,4 @@
-
+	
 # coding: utf-8
 
 import matplotlib.pyplot as plt
@@ -868,7 +868,7 @@ for i,j in enumerate(RF_data_raw_Pds):
 		RF_DEPTH_mean_1_Pds_lst[i].append([RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['410_mean'] for _k in range(BOOTSTRAP_INTERATOR)])
 		RF_DEPTH_std_1_Pds_lst[i].append([RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['410_std'] for _k in range(BOOTSTRAP_INTERATOR)])
 		RF_DEPTH_mean_1_Pds.append(np.mean(RF_DEPTH_mean_1_Pds_lst[i]))
-		RF_DEPTH_std_1_Pds.append(np.mean(RF_DEPTH_mean_1_Pds_lst[i]))
+		RF_DEPTH_std_1_Pds.append(np.mean(RF_DEPTH_std_1_Pds_lst[i]))
 
 
 		RF_DEPTH_mean_1_Ppds_lst[i].append([RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['410_mean'] for _k in range(BOOTSTRAP_INTERATOR)])
@@ -1382,7 +1382,7 @@ fig_std.colorbar(sc3_std, ax=ax3_std,orientation='horizontal')
 
 fig_std.subplots_adjust(wspace=0.25, hspace=0.25)
 
-fig_std.suptitle('Standart Deviation (bootstraping) per bin')
+fig_std.suptitle('Standard Deviation (bootstraping) per bin')
 
 plt.show()
 

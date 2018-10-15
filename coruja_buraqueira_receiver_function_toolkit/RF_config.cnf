@@ -22,19 +22,27 @@
 #======
 
 # directory of raw RF files
-#DIR_SAC = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-SP1/event_data/
-DIR_SAC = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/transition_zone/rede_BB/event_data/
+DIR_SAC = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/rede_AR/event_data_YES_PP/
+#DIR_SAC = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/event_data_NO_PP/
+#DIR_SAC = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/rede_RSISNE/event_data/
+#DIR_SAC = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/Mantle_Transition_Migration/MTZ_data/05/
+
+# directory of selected RF files
+DIR_SEL_SAC = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/rede_AR/event_data_YES_PP_SELECTED/
+#DIR_SEL_SAC = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/rede_RSISNE/selected_event_data_NO_PP/
+#DIR_SEL_SAC = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/Mantle_Transition_Migration/MTZ_data/05/
+
 
 #Directory to save JSON Files
-OUTPUT_JSON_FILE_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/JSON_FILES/
-#OUTPUT_JSON_FILE_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-SP1/JSON_FILES/
+OUTPUT_JSON_FILE_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/rede_AR/JSON_FILES/
+#OUTPUT_JSON_FILE_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/Mantle_Transition_Migration/JSON_FILES/
 
 #STA CSV FILE path
-STA_CSV_FILE  = /home/diogo/dados_doutorado/parnaiba_basin/SIG_dados/dados_estacoes/cood_rede_BB_artigo.txt
-#STA_CSV_FILE  = /home/diogo/dados_doutorado/parnaiba_basin/SIG_dados/dados_estacoes/cood_rede_SP_2015.txt
+STA_CSV_FILE  = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/rede_AR/cood_rede_AR_sensor_type.txt
+#STA_CSV_FILE  = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/Mantle_Transition_Migration/STA_COORD/cood_rede_BB_sensor_type_all.txt
 
 #Gaussian Filter
-GAUSSIAN_FILTER = 2.5
+GAUSSIAN_FILTER = 0.5
 
 #RADIAL RF EXTENSION
 RADIAL_EXT = .eqr
@@ -48,7 +56,13 @@ TRANSVERSAL_EXT = .eqt
 #=========
 
 #Trace check (minimium amplitude of trace)
-CODA_TRACE_CHECK_AMP = -0.1
+CODA_TRACE_CHECK_AMP_MIN = -0.05
+
+#Trace check (maximum amplitude of trace)
+CODA_TRACE_CHECK_AMP_MAX = 0.3
+
+#Trace check (min of the maximum amplitude of trace)
+ZERO_AMP_MIN = 0.1
 
 #Trace check (coda amplitude starts in (seconds))
 CODA_TRACE_CHECK = 40
@@ -57,7 +71,7 @@ CODA_TRACE_CHECK = 40
 CODA_RATIO_AMP = 8
 
 #min percent recoveries of the observed radial component
-RF_PERCENT = 50
+RF_PERCENT = 80
 
 #Minimum event distance 
 EV_GCARC_MIN = 30
@@ -66,7 +80,7 @@ EV_GCARC_MIN = 30
 EV_GCARC_MAX = 95
 
 #Minimum event magnitude 
-EV_MAGNITUDE_MB = 5.5
+EV_MAGNITUDE_MB = 5
 
 #Time to trim the seismogram before P-wave arrival
 CUT_BEFORE_P = 10
@@ -86,6 +100,3 @@ SAMPLING_RATE = 10
 X_LIM_MIN = -4
 
 X_LIM_MAX = 100
-
-
-
