@@ -23,43 +23,22 @@
 #======
 
 # directory of raw data
-#DIR_RAW_DATA = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-SP1/
 DIR_RAW_DATA = /media/diogo/BP-PABIP/DADOS/
-#DIR_RAW_DATA = /media/diogo/overlord_2TB/data_rsisne/SBBR/
-#DIR_RAW_DATA = /home/diogo/dados_doutorado/rift_basin/raw_data/
-#DIR_RAW_DATA = /home/diogo/dados_doutorado/parnaiba_basin/noise_correlation/rede_AR/RefTek/
 
 # directory of raw sac files
 DIR_SAC = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/rede_AR/sac_data/
-#DIR_SAC = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/sac_data/
-#DIR_SAC = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/rede_RSBR/sac_data/
-#DIR_SAC = /home/diogo/dados_doutorado/rift_basin/MSEED_DATA/
-#DIR_SAC = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-UK/sac_data/
-#DIR_SAC = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-SP1/sac_data/
 
 #Directory to save seismograms
-#DIR_EVENT = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-SP1/event_data/
-#DIR_EVENT = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/event_data/
-#DIR_EVENT = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/event_data_YES_PP/
-#DIR_EVENT = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/rede_RSBR/event_data/
-DIR_EVENT = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/rede_AR/event_data_YES_PP/
-#DIR_EVENT = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/rede_AR/event_data_NO_PP/
+DIR_EVENT = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/rede_RSISNE/event_data/
 
 #Directory to save filterd seismograms
-#DIR_EVENT_NO_PP = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/event_data_NO_PP/
-DIR_EVENT_NO_PP = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/rede_AR/event_data_NO_PP/
+DIR_EVENT_NO_PP = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/rede_RSISNE/event_data_NO_PP/
 
 #Stations CSV FILE path
-#STA_CSV_FILE  = /home/diogo/dados_doutorado/parnaiba_basin/SIG_dados/dados_estacoes/cood_rede_SP_2015.txt
-#STA_CSV_FILE  = /home/diogo/dados_doutorado/parnaiba_basin/SIG_dados/dados_estacoes/cood_rede_BB_sensor_type.txt
-#STA_CSV_FILE  = /home/diogo/dados_doutorado/rift_basin/station_coordinates/cood_rede_rift.txt
-STA_CSV_FILE  = /home/diogo/dados_doutorado/parnaiba_basin/SIG_dados/dados_estacoes/cood_rede_AR_sensor_type.txt
+STA_CSV_FILE  = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/rede_RSISNE/sta_coord/cood_rede_RSISNE.txt
 
 #Directory to save JSON Files
-OUTPUT_JSON_FILE_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/rede_AR/JSON_FILES/
-#OUTPUT_JSON_FILE_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/JSON_FILES/
-#OUTPUT_JSON_FILE_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-SP1/JSON_FILES/
-#OUTPUT_JSON_FILE_DIR = /home/diogo/dados_doutorado/rift_basin/JSON_FILES/
+OUTPUT_JSON_FILE_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/rede_RSISNE/JSON_FILES/
 
 #=====
 [copy]
@@ -105,7 +84,7 @@ SAMPLING_RATE = 10
 #=====
 
 # how many concurrent processes at the multiprocessing?
-MP_PROCESSES = 8
+MP_PROCESSES = 1
 
 #Taup_time model to calculate travel times
 TAUPY_MODEL = iasp91 
@@ -141,7 +120,7 @@ KCMPNM_N = HHN
 KCMPNM_Z = HHZ
 
 #Network name
-knetwk = BP
+knetwk = NB
 
 #Component N sac file name suffix
 NAME_SUFFIX_N = N
