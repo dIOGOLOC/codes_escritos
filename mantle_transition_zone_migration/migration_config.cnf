@@ -35,7 +35,7 @@
 
 
 # dir of receiver functions
-RF_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/Mantle_Transition_Migration/MTZ_data/05/
+RF_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/Mantle_Transition_Migration/MTZ_data/event_data_NO_PP/0.5/
 
 # extension of receiver functions
 RF_EXT = .eqr
@@ -114,7 +114,7 @@ DPI_FIG=300
 #==================
 
 # how many concurrent processes at the multiprocessing?
-MP_PROCESSES = 4
+MP_PROCESSES = 8
 
 #minimum depth of the migration
 MIN_DEPTH = 300

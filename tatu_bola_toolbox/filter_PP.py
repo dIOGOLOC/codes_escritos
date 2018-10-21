@@ -33,9 +33,9 @@ from parameters_py.config import (
 #  Function to call cut data script
 # ==================================
 
-def parallel_trim_data(data_folder,kstnm):
+def parallel_trim_data(data_folder):
 			
-	station_data_result = cut_PP_data_by_event(data_folder=data_folder,kstnm=kstnm)
+	station_data_result = cut_PP_data_by_event(data_folder=data_folder)
 
 	return station_data_result
 
@@ -62,7 +62,6 @@ datalogger_keys = sta_dic['DATALOGGER_KEYS']
 #  Creating stations Input lists
 # ==============================
 
-
 print('========================= Searching .SAC files: ========================= ')
 print('Looking for EVENT files in '+DIR_EVENT)
 
@@ -73,24 +72,19 @@ for i,j in enumerate(kstnm):
 	for root, dirs, files in os.walk(DIR_EVENT):
 		for datadirs in dirs:
 			datafile_name = os.path.join(root, datadirs)
-			if '/'+kstnm[i]+'/' in datafile_name and len(datafile_name.split('/')) >= 12:
+			if '/'+kstnm[i]+'/' in datafile_name and len(datafile_name.split('/')) > 11:
 				datafile_lst.append(datafile_name)
 	datafile_lstS = sorted(datafile_lst)
 
 	print(' Number of files = '+ str(len(datafile_lstS)))
 
-print('Creating stations input lists')
-print('\n')
-
-input_list = [[]]*len(kstnm)
-for i,j in enumerate(kstnm):
 	print('Creating input list: '+j)
 	print('\n')
 	input_list[i] = [
-			[l,kstnm[i]]
-			 for k,l in enumerate(datafile_lstS)
-			]
-print('\n')
+					[l]
+					for k,l in enumerate(datafile_lstS)
+					]
+
 
 # ==============
 #  Cutting data
