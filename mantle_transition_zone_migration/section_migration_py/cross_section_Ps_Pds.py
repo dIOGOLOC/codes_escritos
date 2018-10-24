@@ -367,7 +367,7 @@ for _i, _j in enumerate(RF_data_profile_stacking_Pds):
 #Migration figure
 
 
-factor_Ppds = 200
+factor_Ppds = 100
 
 for _i, _j in enumerate(RF_data_profile_stacking_Ppds):
 	RF_data_factor_Ppds = [_i/factor_Ppds+l for k, l in enumerate(_j)]
