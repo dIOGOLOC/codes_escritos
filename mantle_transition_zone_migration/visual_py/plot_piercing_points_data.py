@@ -29,7 +29,7 @@ import collections
 
 from parameters_py.mgconfig import (
 					RF_DIR,RF_EXT,MODEL_FILE_NPZ,MIN_DEPTH,MAX_DEPTH,INTER_DEPTH,PdS_DIR,
-					PP_DIR,PP_SELEC_DIR,NUMBER_PP_PER_BIN,RAY_TRACE_PLOT,RAY_TRACE_410_660_PLOT,STA_DIR,
+					PP_DIR,PP_SELEC_DIR,NUMBER_PP_PER_BIN,STA_DIR,
 					LLCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLON_LARGE,URCRNRLAT_LARGE,LLCRNRLON_SMALL,
 					URCRNRLON_SMALL,LLCRNRLAT_SMALL,URCRNRLAT_SMALL,PROJECT_LAT,PROJECT_LON,GRID_PP_MULT,
 					BOUNDARY_1_SHP,BOUNDARY_1_SHP_NAME,BOUNDARY_2_SHP,BOUNDARY_2_SHP_NAME,					
@@ -186,117 +186,6 @@ for i,j in enumerate(PP_lon_2):
 			pp_2_lat[i] = PP_lat_2[i][k]
 			pp_2_long[i] = PP_lon_2[i][k]
 
-print('Importing Ppds piercing points to each PHASE')
-print('\n')
-
-PHASES_Ppds = 'PPv410s','PPv'+"{0:.0f}".format(DEPTH_MED)+'s','PPv660s'
-
-print('Importing Ppds Piercing Points '+PHASES_Ppds[0])
-print('\n')
-
-filename_1_Ppds = PP_DIR+'PP_'+PHASES_Ppds[0]+'_dic.json'
-
-PP_1_dic_Ppds = json.load(open(filename_1_Ppds))
-
-PP_dist_1_Ppds = []
-PP_time_1_Ppds = []
-PP_lat_1_Ppds = []
-PP_lon_1_Ppds = []
-PP_depth_1_Ppds = [] 
-PP_1_number = [] 
-for i,j in enumerate(PP_1_dic_Ppds):
-	PP_dist_1_Ppds.append(j['dist'][0])
-	PP_time_1_Ppds.append(j['time'][0])
-	PP_lat_1_Ppds.append(j['lat'][0])
-	PP_lon_1_Ppds.append(j['lon'][0])
-	PP_depth_1_Ppds.append(j['depth'][0])
-	PP_1_number.append(j['number'][0])
-
-
-print('Importing Ppds Piercing Points '+PHASES_Ppds[1])
-print('\n')
-
-filename_med_Ppds = PP_DIR+'PP_'+PHASES_Ppds[1]+'_dic.json'
-
-PP_med_dic_Ppds = json.load(open(filename_med_Ppds))
-
-PP_dist_med_Ppds = []
-PP_time_med_Ppds = []
-PP_lat_med_Ppds = []
-PP_lon_med_Ppds = []
-PP_depth_med_Ppds = [] 
-PP_med_number = [] 
-
-for i,j in enumerate(PP_med_dic_Ppds):
-	PP_dist_med_Ppds.append(j['dist'][0])
-	PP_time_med_Ppds.append(j['time'][0])
-	PP_lat_med_Ppds.append(j['lat'][0])
-	PP_lon_med_Ppds.append(j['lon'][0])
-	PP_depth_med_Ppds.append(j['depth'][0])
-	PP_med_number.append(j['number'][0])
-
-print('Importing Ppds Piercing Points '+PHASES_Ppds[2])
-print('\n')
-
-filename_2_Ppds = PP_DIR+'PP_'+PHASES_Ppds[2]+'_dic.json'
-
-PP_2_dic_Ppds = json.load(open(filename_2_Ppds))
-
-PP_dist_2_Ppds = []
-PP_time_2_Ppds = []
-PP_lat_2_Ppds = []
-PP_lon_2_Ppds = []
-PP_depth_2_Ppds = [] 
-PP_2_number = [] 
-
-for i,j in enumerate(PP_2_dic_Ppds):
-	PP_dist_2_Ppds.append(j['dist'][0])
-	PP_time_2_Ppds.append(j['time'][0])
-	PP_lat_2_Ppds.append(j['lat'][0])
-	PP_lon_2_Ppds.append(j['lon'][0])
-	PP_depth_2_Ppds.append(j['depth'][0])
-	PP_2_number.append(j['number'][0])
-
-print('PPv410s Piercing Points')
-print('\n')
-
-pp_1_lat_Ppds  = [[]]*len(PP_lon_1_Ppds)
-pp_1_long_Ppds  = [[]]*len(PP_lon_1_Ppds)
-
-
-for i,j in enumerate(PP_lon_1_Ppds):
-	for k,l in enumerate(j):
-		if PP_depth_1_Ppds[i][k] == 410:
-			if LLCRNRLON_LARGE <= l <= URCRNRLON_LARGE and LLCRNRLAT_LARGE <= PP_lat_1_Ppds[i][k] <= URCRNRLAT_LARGE:
-					pp_1_lat_Ppds[i] = PP_lat_1_Ppds[i][k]
-					pp_1_long_Ppds[i] = PP_lon_1_Ppds[i][k]
-
-print('Ppds Piercing Points - '+"{0:.0f}".format(DEPTH_MED))
-print('\n')
-
-pp_med_lat_Ppds  = [[]]*len(PP_lon_med_Ppds)
-pp_med_long_Ppds  = [[]]*len(PP_lon_med_Ppds)
-
-
-for i,j in enumerate(PP_lon_med_Ppds):
-	for k,l in enumerate(j):
-		if LLCRNRLON_LARGE<= l <= URCRNRLON_LARGE and LLCRNRLAT_LARGE<= PP_lat_med_Ppds[i][k] <= URCRNRLAT_LARGE and PP_depth_med_Ppds[i][k] == DEPTH_MED:
-			pp_med_lat_Ppds[i] = PP_lat_med_Ppds[i][k]
-			pp_med_long_Ppds[i] = PP_lon_med_Ppds[i][k]
-
-print('PPv660s Piercing Points')
-print('\n')
-
-pp_2_lat_Ppds  = [[]]*len(PP_lon_2_Ppds)
-pp_2_long_Ppds  = [[]]*len(PP_lon_2_Ppds)
-
-
-for i,j in enumerate(PP_lon_2_Ppds):
-	for k,l in enumerate(j):
-		if LLCRNRLON_LARGE <= l <= URCRNRLON_LARGE and LLCRNRLAT_LARGE<= PP_lat_2_Ppds[i][k] <= URCRNRLAT_LARGE and PP_depth_2_Ppds[i][k] == 660:
-			pp_2_lat_Ppds[i] = PP_lat_2_Ppds[i][k]
-			pp_2_long_Ppds[i] = PP_lon_2_Ppds[i][k]
-
 print('Creating GRID POINTS')
 print('\n')
 
@@ -432,6 +321,147 @@ for i,j in enumerate(PP_depth_2):
 
 
 ###################################################################################################################
+
+print('Plotting: Figure Radial receiver functions stacked in ray parameter')
+print('\n')
+
+time_PP_wave = []
+time_P410s_wave = []
+time_Pp410s_wave = []
+time_P660s_wave = []
+time_Pp660s_wave = []
+for i,j in enumerate(event_depth):
+	model_RF = TauPyModel(model="iasp91")
+	arrivalsP = model_RF.get_travel_times(source_depth_in_km=event_depth[i], distance_in_degree=event_gcarc[i], phase_list=["P"])
+	arrP = arrivalsP[0]
+
+	arrivalsP410s = model_RF.get_travel_times(source_depth_in_km=event_depth[i], distance_in_degree=event_gcarc[i], phase_list=["P410s"])
+	arrP410s = arrivalsP410s[0]
+    
+	arrivalsPp410s = model_RF.get_travel_times(source_depth_in_km=event_depth[i], distance_in_degree=event_gcarc[i], phase_list=["PPv410s"])
+	arrPp410s = arrivalsPp410s[0]
+    
+	arrivalsP660s = model_RF.get_travel_times(source_depth_in_km=event_depth[i], distance_in_degree=event_gcarc[i], phase_list=["P660s"])
+	arrP660s = arrivalsP660s[0]
+    
+	arrivalsPp660s = model_RF.get_travel_times(source_depth_in_km=event_depth[i], distance_in_degree=event_gcarc[i], phase_list=["PPv660s"])
+	arrPp660s = arrivalsPp660s[0]
+
+	arrivalsPP = model_RF.get_travel_times(source_depth_in_km=event_depth[i], distance_in_degree=event_gcarc[i], phase_list=["PP"])
+	arrPP = arrivalsPP[0]
+	
+	time_PP_wave.append(arrPP.time - arrP.time)
+
+	time_P410s_wave.append(arrP410s.time - arrP.time)
+    
+	time_Pp410s_wave.append(arrPp410s.time - arrP.time)
+    
+	time_P660s_wave.append(arrP660s.time - arrP.time)
+    
+	time_Pp660s_wave.append(arrPp660s.time - arrP.time)
+
+RF_orglisl = np.argsort(event_ray)[::-1] 
+
+time = sta_time[0]
+
+FR = []
+GCARC = []
+RP = [] 
+time_PP_wave_corrected = []
+time_P410s_wave_corrected = []
+time_Pp410s_wave_corrected = []
+time_P660s_wave_corrected = []
+time_Pp660s_wave_corrected = []
+for i,j in enumerate(RF_orglisl):
+	FR.append(sta_data[j])
+	RP.append(event_ray[j])
+	time_PP_wave_corrected.append(time_PP_wave[j])
+	time_P410s_wave_corrected.append(time_P410s_wave[j])
+	time_Pp410s_wave_corrected.append(time_Pp410s_wave[j])
+	time_P660s_wave_corrected.append(time_P660s_wave[j])
+	time_Pp660s_wave_corrected.append(time_Pp660s_wave[j])
+
+Z = np.array(FR)
+
+########################################
+
+fig, ax = plt.subplots(1, 1, figsize=(5, 20))
+
+majorLocatorX = MultipleLocator(300)
+majorLocatorY = MultipleLocator(100)
+minorLocatorY = MultipleLocator(20)
+minorLocatorX = MultipleLocator(10)
+
+
+#Sismograma sem filtro PP
+v=0.008
+im = ax.imshow(Z.T, interpolation='bicubic', cmap=cm.viridis,
+                origin='upper', aspect='auto',
+                vmax=v, vmin=-v)
+for i,j in enumerate(time_PP_wave_corrected):
+    ax.plot(i,(j-30)*10,'.k',markersize=2)
+    ax.plot(i,j*10,'^r',markersize=2)
+    ax.plot(i,(j+30)*10,'.k',markersize=2)
+    
+ax.set_ylim(2500,0)
+ax.xaxis.set_major_locator(majorLocatorX)
+ax.yaxis.set_major_locator(majorLocatorY)
+ax.xaxis.set_minor_locator(minorLocatorX)
+ax.yaxis.set_minor_locator(minorLocatorY)
+ax.set_ylabel('Time after P (s)')
+ax.set_xlabel('Slowness')
+ax.set_title('RF Data')
+
+ax.grid(True)
+ax.set_yticklabels(["{0:.0f}".format(time[i]) for i in np.arange(-100,len(time),100)])
+ax.set_xticklabels(["{0:.1f}".format(RP[i]*100) for i in np.arange(0,len(RP),100)])
+plt.show()
+
+########################################
+
+fig, ax = plt.subplots(1, 1, figsize=(5, 20))
+
+majorLocatorX = MultipleLocator(300)
+majorLocatorY = MultipleLocator(100)
+minorLocatorY = MultipleLocator(20)
+minorLocatorX = MultipleLocator(10)
+
+
+#Sismograma sem filtro PP
+v=0.008
+im = ax.imshow(Z.T, interpolation='bicubic', cmap=cm.viridis,
+                origin='upper', aspect='auto',
+                vmax=v, vmin=-v)
+
+for i,j in enumerate(time_P410s_wave_corrected):
+    ax.plot(i,j*10,'.k',markersize=0.5,alpha=0.75)
+
+for i,j in enumerate(time_Pp410s_wave_corrected):
+    ax.plot(i,j*10,'.k',markersize=0.5,alpha=0.75)
+    
+for i,j in enumerate(time_P660s_wave_corrected):
+    ax.plot(i,j*10,'.k',markersize=0.5,alpha=0.75)
+    
+for i,j in enumerate(time_Pp660s_wave_corrected):
+    ax.plot(i,j*10,'.k',markersize=0.5,alpha=0.75)
+    
+    
+ax.set_ylim(2500,0)
+ax.xaxis.set_major_locator(majorLocatorX)
+ax.yaxis.set_major_locator(majorLocatorY)
+ax.xaxis.set_minor_locator(minorLocatorX)
+ax.yaxis.set_minor_locator(minorLocatorY)
+ax.set_ylabel('Time after P (s)')
+ax.set_xlabel('Slowness')
+ax.set_title('RF Data')
+
+ax.grid(True)
+ax.set_yticklabels(["{0:.0f}".format(time[i]) for i in np.arange(-100,len(time),100)])
+ax.set_xticklabels(["{0:.1f}".format(RP[i]*100) for i in np.arange(0,len(RP),100)])
+plt.show()
+
+
+###################################################################################################################
 print('Plotting: Figure earth model layers')
 print('\n')
 
@@ -523,8 +553,8 @@ ax.plot_surface(x, y, z410,color='None',edgecolor='b')
 
 intp = cbook.simple_linear_interpolation
 
-ax.plot3D(intp(np.array(PP_410_lon),50),intp(np.array(PP_410_lat), 50), intp(np.array(PP_410_depth), 50), c='k',alpha=0.3)
-ax.plot3D(intp(np.array(PP_660_lon),50),intp(np.array(PP_660_lat), 50), intp(np.array(PP_660_depth), 50), c='k',alpha=0.3)
+ax.plot3D(intp(np.array(PP_410_lon),50),intp(np.array(PP_410_lat), 50), intp(np.array(PP_410_depth), 50), c='r',alpha=0.3)
+ax.plot3D(intp(np.array(PP_660_lon),50),intp(np.array(PP_660_lat), 50), intp(np.array(PP_660_depth), 50), c='g',alpha=0.3)
 
 ax.scatter3D(PP_410_lon_POINTS,PP_410_lat_POINTS, PP_410_depth_POINTS,  c='k',marker='X',s=50)
 ax.scatter3D(PP_660_lon_POINTS,PP_660_lat_POINTS, PP_660_depth_POINTS,  c='k',marker='X',s=50)

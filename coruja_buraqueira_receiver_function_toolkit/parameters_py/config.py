@@ -89,8 +89,12 @@ ZERO_AMP_MIN = config.getfloat('quality', 'ZERO_AMP_MIN')
 #Trace check (coda amplitude starts in (seconds))
 CODA_TRACE_CHECK = config.getfloat('quality', 'CODA_TRACE_CHECK')
 
-#Trace check (coda stardart deviation/anomalous amplitude ratio)
-CODA_RATIO_AMP = config.getfloat('quality', 'CODA_RATIO_AMP')
+#Trace check (coda MAXIMUM AMPLITUDE)
+CODA_TRACE_MAX_AMP = config.getfloat('quality', 'CODA_TRACE_MAX_AMP')
+
+#Trace check (coda MINIMUM AMPLITUDE)
+CODA_TRACE_MIN_AMP = config.getfloat('quality', 'CODA_TRACE_MIN_AMP')
+
 
 #Percent recoveries of the observed radial component
 RF_PERCENT = config.getfloat('quality', 'RF_PERCENT')

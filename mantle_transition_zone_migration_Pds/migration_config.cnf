@@ -1,0 +1,168 @@
+###############################################################################
+#
+# This is an example of configuration file, wherein global paths and parameters
+# related to the migration procedure are defined. At least one configuration file 
+# should reside in the folder in which you intend to run your scripts. 
+# The configuration file(s) can have any name, as long as the extension is 'cnf':
+# e.g., 'migration.cnf', 'migration_config.cnf', 'myconfig.cnf', 'test.cnf'...
+#
+# The parameters are divided in several sections:
+# - [paths]             : default paths to input/output folders
+# - [maps]              : parameters to plot maps
+# - [time]              : parameters to calculate the time
+# - [migration]         : parameters of the migration
+#
+# Before using the scripts, you should at least make sure
+# that the paths in section [paths] and shapefiles in section [maps] are
+# consistent with your own files and folders organization. And, of course, you
+# should make sure to set the phases to calculate the time and piercing points.
+# The other parameters can be fine-tuned later as you analyze your data.
+#
+###############################################################################
+
+
+#======
+[paths]    
+#======
+
+# directory of receiver functions files.
+# In the current version of the program, you just need to set the directory and
+# the suffix of the files organized inside their directory as:
+# FILENAME.fileextention, e.g., like:
+# .../a_1/BDCO/2015/251/2015.8.13.2/SYN.BDCO.2015.8.13.2.T:a=1.0.eqr																																																																																																																																																																																																																			
+# the directory is a_1 and the extention is '.eqr'
+# file per event and per station.
+
+
+# dir of receiver functions
+RF_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/Mantle_Transition_Migration_NO_PP_Pds/MTZ_data/0.5/
+
+# extension of receiver functions
+RF_EXT = .eqr
+
+#Directory of the model of IASP91 models
+MODEL_FILE_NPZ = /home/diogo/diogo_git/codes_escritos/mantle_transition_zone_migration/velocity_model/iasp91_10.npz
+
+# dir of the stations data
+STA_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/Mantle_Transition_Migration_NO_PP_Pds/OUTPUT/Stations/
+
+# dir of the Pds results
+PdS_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/Mantle_Transition_Migration_NO_PP_Pds/OUTPUT/Phases/
+
+# dir of the piercing points results
+PP_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/Mantle_Transition_Migration_NO_PP_Pds/OUTPUT/Piercing_points/
+
+# dir of ray path figures
+RAY_PATH_FIGURE = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/Mantle_Transition_Migration_NO_PP_Pds/OUTPUT/Figures/ray_path/
+
+# dir of piercing points figures
+PP_FIGURE = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/Mantle_Transition_Migration_NO_PP_Pds/Figures/piercing_points/
+
+# dir of selected piercing points
+PP_SELEC_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/Mantle_Transition_Migration_NO_PP_Pds/OUTPUT/Piercing_points/selected/
+
+
+#=====
+[maps]
+#=====
+
+# paths to shapefiles (boundaries, tectonic provinces), used
+# to plot maps:
+#
+# - ``BOUNDARY_SHP`` should be a shapefile containing lines or polygons
+#   representing any boundary (you can also include borders).
+#
+# - ``TECTO_SHP`` should be a shapefile containing polygons representing
+#   tectonic provinces
+
+
+BOUNDARY_1_SHP = /home/diogo/dados_doutorado/parnaiba_basin/SIG_dados/shapes/bacia_parnaiba/bacia_parnaiba
+BOUNDARY_1_SHP_NAME = bacia
+
+BOUNDARY_2_SHP = /home/diogo/dados_doutorado/parnaiba_basin/SIG_dados/shapes/Estados/Brasil
+BOUNDARY_2_SHP_NAME = estados
+
+TECTO_SHP = /home/diogo/dados_doutorado/parnaiba_basin/SIG_dados/shapes/Geologico_Simplificado/Litologia/geologicosimplificado_lito
+TECTO_SHP_name = geologia
+
+# Lat and Lon of large maps and small maps
+# center (lat/lon) of the map
+
+PROJECT_LAT = -5
+PROJECT_LON = -45
+
+#lower and upper corner (lat/lon) of the large map
+
+LLCRNRLON_LARGE=-55
+LLCRNRLAT_LARGE=-15
+URCRNRLON_LARGE=-35
+URCRNRLAT_LARGE=0
+
+#lower and upper corner (lat/lon) of the small map
+
+LLCRNRLON_SMALL=-50
+LLCRNRLAT_SMALL=-10
+URCRNRLON_SMALL=-38
+URCRNRLAT_SMALL=-1
+
+#figures extention and dpi
+EXT_FIG=pdf
+DPI_FIG=300
+
+#==================
+[time]
+#==================
+
+# how many concurrent processes at the multiprocessing?
+MP_PROCESSES = 8
+
+#minimum depth of the migration
+MIN_DEPTH = 300
+
+#maximum depth of the migration
+MAX_DEPTH = 800
+
+#depth interval of the migration
+INTER_DEPTH = 10
+
+# ==========
+[migration]
+# ==========
+
+#GRID POINTS multiplyer
+GRID_PP_MULT = 5
+
+# distance between grid points and piercing points for each depth (degree)
+DIST_GRID_PP = 1
+
+# mean distance between grid points and piercing points (degree)
+DIST_GRID_PP_MED = 1
+
+#number of piercing points per bin
+NUMBER_PP_PER_BIN = 50
+
+#False or True for depth estimation
+DEPTH_ESTIMATION = True 
+
+#False or True for depth estimation with bootstrap
+BOOTSTRAP_DEPTH_ESTIMATION = True 
+
+#Number of interations to compute bootstrapping
+BOOTSTRAP_INTERATOR = 20
+
+#False or True for Linear stacking
+LINEAR_STACKING = True 
+
+#The gamma value is a function of temperature, rock composition, 
+#and degree of partial melting. This value is found to be in the 
+#range of 1.5–2.5 for most continental areas. A γ value of 2.0
+#is used to obtain the velocity anomalies and MTZ discontinuity
+#depths.
+
+GAMMA = 2
+
+#Number that multiply the difference between the cross-section points
+SECTION_NUM = 5
+
+#Depth range (+/-) that we will use to find the maximum amplitude
+DEPTH_RANGE = 30

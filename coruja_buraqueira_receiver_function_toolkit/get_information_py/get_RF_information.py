@@ -12,7 +12,8 @@ import shutil
 
 from parameters_py.config import (
 					DIR_SAC,OUTPUT_JSON_FILE_DIR,GAUSSIAN_FILTER,RADIAL_EXT,TRANSVERSAL_EXT,RF_PERCENT,CODA_TRACE_CHECK_AMP_MIN,CODA_TRACE_CHECK_AMP_MAX,
-					EV_GCARC_MIN,EV_GCARC_MAX,EV_MAGNITUDE_MB,CUT_BEFORE_P,CUT_AFTER_P,SAMPLING_RATE,CODA_TRACE_CHECK,CODA_RATIO_AMP,DIR_SEL_SAC,ZERO_AMP_MIN
+					EV_GCARC_MIN,EV_GCARC_MAX,EV_MAGNITUDE_MB,CUT_BEFORE_P,CUT_AFTER_P,SAMPLING_RATE,CODA_TRACE_CHECK,DIR_SEL_SAC,ZERO_AMP_MIN,
+					CODA_TRACE_MAX_AMP,CODA_TRACE_MIN_AMP
 				   )
 
 
@@ -94,9 +95,8 @@ for i,j in enumerate(datalistS):
 		amp_mid = data_RF[0].data[P_arrival_mid]
 		#RF Coda amplitudes check
 		amp_Coda = data_RF[0].data[int((CODA_TRACE_CHECK+CUT_BEFORE_P)*SAMPLING_RATE):int(CUT_AFTER_P*SAMPLING_RATE)]
-		std_Coda = CODA_RATIO_AMP*np.std(amp_Coda)
 
-		if data_RF[0].stats.sac.user0 == GAUSSIAN_FILTER and data_RF[0].stats.sac.user5 > RF_PERCENT and data_RF[0].stats.sac.user5 < 99 and min(data_RF[0].data) > CODA_TRACE_CHECK_AMP_MIN and max(data_RF[0].data) < CODA_TRACE_CHECK_AMP_MAX and std_Coda > amp_Coda.max() and -std_Coda < amp_Coda.min() and amp_mid > ZERO_AMP_MIN and all(elem > 0 for elem in data_RF[0].data[P_arrival_start:P_arrival_end]):
+		if data_RF[0].stats.sac.user0 == GAUSSIAN_FILTER and data_RF[0].stats.sac.user5 > RF_PERCENT and min(data_RF[0].data) > CODA_TRACE_CHECK_AMP_MIN and max(data_RF[0].data) < CODA_TRACE_CHECK_AMP_MAX and amp_Coda.max() < CODA_TRACE_MAX_AMP and amp_Coda.min() > CODA_TRACE_MIN_AMP and amp_mid > ZERO_AMP_MIN and all(elem > 0 for elem in data_RF[0].data[P_arrival_start:P_arrival_end]):
 			
 				RF_directory = DIR_SEL_SAC+str(GAUSSIAN_FILTER)+'/'+data_RF[0].stats.sac.kstnm+'/'
 				os.makedirs(RF_directory,exist_ok=True)
