@@ -342,8 +342,8 @@ for _i, _j in enumerate(RF_data_profile_stacking_Pds):
 	ax1.grid(True,which='minor',linestyle='--')
 	ax1.grid(True,which='major',color='k',linewidth=1)
 
-	ax1.plot(_i/factor_Pds,RF_DEPTH_mean_1_profile_stacking_Pds[_i],'_k',markeredgewidth=2,ms=10)
-	ax1.plot(_i/factor_Pds,RF_DEPTH_mean_2_profile_stacking_Pds[_i],'_k',markeredgewidth=2,ms=10)
+	ax1.plot(_i/factor_Pds,RF_DEPTH_mean_1_profile_stacking_Pds[_i],'ok',ms=3,markerfacecolor='none')
+	ax1.plot(_i/factor_Pds,RF_DEPTH_mean_2_profile_stacking_Pds[_i],'ok',ms=3,markerfacecolor='none')
 
 	ax1.errorbar(_i/factor_Pds,RF_DEPTH_mean_1_profile_stacking_Pds[_i], yerr=RF_DEPTH_std_1_profile_stacking_Pds[_i], ecolor='k',elinewidth=1,capsize=1,capthick=1)
 	ax1.errorbar(_i/factor_Pds,RF_DEPTH_mean_2_profile_stacking_Pds[_i], yerr=RF_DEPTH_std_2_profile_stacking_Pds[_i], ecolor='k',elinewidth=1,capsize=1,capthick=1)
@@ -377,8 +377,8 @@ for _i, _j in enumerate(RF_data_profile_stacking_Ppds):
 	ax2.grid(True,which='minor',linestyle='--')
 	ax2.grid(True,which='major',color='k',linewidth=1)
 
-	ax2.plot(_i/factor_Ppds,RF_DEPTH_mean_1_profile_stacking_Ppds[_i],'_k',markeredgewidth=2,ms=10)
-	ax2.plot(_i/factor_Ppds,RF_DEPTH_mean_2_profile_stacking_Ppds[_i],'_k',markeredgewidth=2,ms=10)
+	ax2.plot(_i/factor_Ppds,RF_DEPTH_mean_1_profile_stacking_Ppds[_i],'ok',ms=3,markerfacecolor='none')
+	ax2.plot(_i/factor_Ppds,RF_DEPTH_mean_2_profile_stacking_Ppds[_i],'ok',ms=3,markerfacecolor='none')
 
 	ax2.errorbar(_i/factor_Ppds,RF_DEPTH_mean_1_profile_stacking_Ppds[_i], yerr=RF_DEPTH_std_1_profile_stacking_Ppds[_i], ecolor='k',elinewidth=1,capsize=1,capthick=1)
 	ax2.errorbar(_i/factor_Ppds,RF_DEPTH_mean_2_profile_stacking_Ppds[_i], yerr=RF_DEPTH_std_2_profile_stacking_Ppds[_i], ecolor='k',elinewidth=1,capsize=1,capthick=1)

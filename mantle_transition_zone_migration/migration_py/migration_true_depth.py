@@ -648,16 +648,20 @@ if BOOTSTRAP_DEPTH_ESTIMATION == True:
 				#410 km
 
 				lst_410_depth_Pds = []
+				lst_410_amp_Pds = []
 				for k,l in enumerate(new_RANDOM_RF_DATA_raw_Pds):
 					lst_depth_amp = [l[x] for x,c in enumerate(RF_amplitude_depth_raw_Pds[i][k]) if 410-DEPTH_RANGE <= c <= 410+DEPTH_RANGE]
 					lst_depth_pp = [c for x,c in enumerate(RF_amplitude_depth_raw_Pds[i][k]) if 410-DEPTH_RANGE <= c <= 410+DEPTH_RANGE]
 					lst_410_depth_Pds.append(lst_depth_pp[lst_depth_amp.index(max(lst_depth_amp))])	
+					lst_410_amp_Pds.append(lst_depth_amp.index(max(lst_depth_amp)))
 
 				lst_410_depth_Ppds = []
+				lst_410_amp_Ppds = []
 				for k,l in enumerate(new_RANDOM_RF_DATA_raw_Ppds):
 					lst_depth_amp = [l[x] for x,c in enumerate(RF_amplitude_depth_raw_Ppds[i][k]) if 410-DEPTH_RANGE <= c <= 410+DEPTH_RANGE]
 					lst_depth_pp = [c for x,c in enumerate(RF_amplitude_depth_raw_Ppds[i][k]) if 410-DEPTH_RANGE <= c <= 410+DEPTH_RANGE]
 					lst_410_depth_Ppds.append(lst_depth_pp[lst_depth_amp.index(max(lst_depth_amp))])
+					lst_410_amp_Ppds.append(lst_depth_amp.index(max(lst_depth_amp)))
 
 				######## Estimating mean and std depth ########
 
@@ -694,7 +698,7 @@ if BOOTSTRAP_DEPTH_ESTIMATION == True:
 
 				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['true_410_mean'] = RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['410_mean'] * ((Vp_depth_1-Vs_depth_1)/(Vp_depth_1*Vs_depth_1)) * (((Vs_depth_1+RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['delta_Vs_410'])*(Vp_depth_1+RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['delta_Vp_410']))/(Vp_depth_1+RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['delta_Vp_410']-Vs_depth_1-RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['delta_Vs_410']))
 
-				RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['true_410_mean'] = RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['410_mean'] * ((Vp_depth_1-Vs_depth_1)/(Vp_depth_1*Vs_depth_1)) * (((Vs_depth_1+RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['delta_Vs_410'])*(Vp_depth_1+RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['delta_Vp_410']))/(Vp_depth_1+RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['delta_Vp_410']-Vs_depth_1-RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['delta_Vs_410']))
+				RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['true_410_mean'] = RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['410_mean'] * ((Vp_depth_1+Vs_depth_1)/(Vp_depth_1*Vs_depth_1)) * (((Vs_depth_1+RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['delta_Vs_410'])*(Vp_depth_1+RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['delta_Vp_410']))/(Vp_depth_1+RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['delta_Vp_410']+Vs_depth_1+RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['delta_Vs_410']))
 				
 				print('410 Pds True Depth = '+str(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['true_410_mean']))
 				print('410 Ppds True Depth = '+str(RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['true_410_mean']))
@@ -703,17 +707,23 @@ if BOOTSTRAP_DEPTH_ESTIMATION == True:
 				#660 km
 
 				lst_660_depth_Pds = []
+				lst_660_amp_Pds = []
+
 				for k,l in enumerate(new_RANDOM_RF_DATA_raw_Pds):
 					lst_depth_amp = [l[x] for x,c in enumerate(RF_amplitude_depth_raw_Pds[i][k]) if 660-DEPTH_RANGE <= c <= 660+DEPTH_RANGE]
 					lst_depth_pp = [c for x,c in enumerate(RF_amplitude_depth_raw_Pds[i][k]) if 660-DEPTH_RANGE <= c <= 660+DEPTH_RANGE]
 					lst_660_depth_Pds.append(lst_depth_pp[lst_depth_amp.index(max(lst_depth_amp))])
+					lst_660_amp_Pds.append(lst_depth_amp.index(max(lst_depth_amp)))
 
 
 				lst_660_depth_Ppds = []
+				lst_660_amp_Ppds = []
+
 				for k,l in enumerate(new_RANDOM_RF_DATA_raw_Ppds):
 					lst_depth_amp = [l[x] for x,c in enumerate(RF_amplitude_depth_raw_Ppds[i][k]) if 660-DEPTH_RANGE <= c <= 660+DEPTH_RANGE]
 					lst_depth_pp = [c for x,c in enumerate(RF_amplitude_depth_raw_Ppds[i][k]) if 660-DEPTH_RANGE <= c <= 660+DEPTH_RANGE]
 					lst_660_depth_Ppds.append(lst_depth_pp[lst_depth_amp.index(max(lst_depth_amp))])
+					lst_660_amp_Ppds.append(lst_depth_amp.index(max(lst_depth_amp)))
 
 				######## Estimating mean and std depth ########
 
@@ -744,7 +754,7 @@ if BOOTSTRAP_DEPTH_ESTIMATION == True:
 
 				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['true_660_mean'] = RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['660_mean'] * ((Vp_depth_2-Vs_depth_2)/(Vp_depth_2*Vs_depth_2)) * (((Vs_depth_2+RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['delta_Vs_660'])*(Vp_depth_2+RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['delta_Vp_660']))/(Vp_depth_2+RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['delta_Vp_660']-Vs_depth_2-RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['delta_Vs_660']))
 
-				RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['true_660_mean'] = RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['660_mean'] * ((Vp_depth_2-Vs_depth_2)/(Vp_depth_2*Vs_depth_2)) * (((Vs_depth_2+RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['delta_Vs_660'])*(Vp_depth_2+RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['delta_Vp_660']))/(Vp_depth_2+RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['delta_Vp_660']-Vs_depth_2-RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['delta_Vs_660']))
+				RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['true_660_mean'] = RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['660_mean'] * ((Vp_depth_2+Vs_depth_2)/(Vp_depth_2*Vs_depth_2)) * (((Vs_depth_2+RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['delta_Vs_660'])*(Vp_depth_2+RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['delta_Vp_660']))/(Vp_depth_2+RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['delta_Vp_660']+Vs_depth_2+RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['delta_Vs_660']))
 
 				print('660 Pds True Depth = '+str(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['true_660_mean']))
 				print('660 Ppds True Depth = '+str(RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['true_660_mean']))
@@ -867,51 +877,51 @@ for i,j in enumerate(RF_data_raw_Pds):
 
 		RF_DEPTH_mean_1_Pds_lst[i].append([RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['410_mean'] for _k in range(BOOTSTRAP_INTERATOR)])
 		RF_DEPTH_std_1_Pds_lst[i].append([RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['410_std'] for _k in range(BOOTSTRAP_INTERATOR)])
-		RF_DEPTH_mean_1_Pds.append(np.mean(RF_DEPTH_mean_1_Pds_lst[i]))
+		#RF_DEPTH_mean_1_Pds.append(np.mean(RF_DEPTH_mean_1_Pds_lst[i]))
 		RF_DEPTH_std_1_Pds.append(np.mean(RF_DEPTH_std_1_Pds_lst[i]))
 
 
 		RF_DEPTH_mean_1_Ppds_lst[i].append([RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['410_mean'] for _k in range(BOOTSTRAP_INTERATOR)])
 		RF_DEPTH_std_1_Ppds_lst[i].append([RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['410_std'] for _k in range(BOOTSTRAP_INTERATOR)])
-		RF_DEPTH_mean_1_Ppds.append(np.mean(RF_DEPTH_mean_1_Ppds_lst[i]))
+		#RF_DEPTH_mean_1_Ppds.append(np.mean(RF_DEPTH_mean_1_Ppds_lst[i]))
 		RF_DEPTH_std_1_Ppds.append(np.mean(RF_DEPTH_std_1_Ppds_lst[i]))
 
 		delta_1_Vp_lst[i].append([RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['delta_Vp_410'] for _k in range(BOOTSTRAP_INTERATOR)])
 		delta_1_Vs_lst[i].append([RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['delta_Vs_410'] for _k in range(BOOTSTRAP_INTERATOR)])
-		delta_1_Vp_mean.append(np.mean(delta_1_Vp_lst[i]))
+		#delta_1_Vp_mean.append(np.mean(delta_1_Vp_lst[i]))
 		delta_1_Vp_std.append(np.std(delta_1_Vp_lst[i]))
-		delta_1_Vs_mean.append(np.mean(delta_1_Vs_lst[i]))
+		#delta_1_Vs_mean.append(np.mean(delta_1_Vs_lst[i]))
 		delta_1_Vs_std.append(np.std(delta_1_Vs_lst[i]))
 
 		RF_DEPTH_mean_1_true_Pds_lst[i].append([RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['true_410_mean'] for _k in range(BOOTSTRAP_INTERATOR)])
 		RF_DEPTH_mean_1_true_Ppds_lst[i].append([RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['true_410_mean'] for _k in range(BOOTSTRAP_INTERATOR)])
-		RF_DEPTH_mean_1_true_Pds.append(np.mean(RF_DEPTH_mean_1_true_Pds_lst[i]))
+		#RF_DEPTH_mean_1_true_Pds.append(np.mean(RF_DEPTH_mean_1_true_Pds_lst[i]))
 		RF_DEPTH_std_1_true_Pds.append(np.std(RF_DEPTH_mean_1_true_Pds_lst[i]))
-		RF_DEPTH_mean_1_true_Ppds.append(np.mean(RF_DEPTH_mean_1_true_Ppds_lst[i]))
+		#RF_DEPTH_mean_1_true_Ppds.append(np.mean(RF_DEPTH_mean_1_true_Ppds_lst[i]))
 		RF_DEPTH_std_1_true_Ppds.append(np.std(RF_DEPTH_mean_1_true_Ppds_lst[i]))
 
 		RF_DEPTH_mean_2_Pds_lst[i].append([RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['660_mean'] for _k in range(BOOTSTRAP_INTERATOR)])
 		RF_DEPTH_std_2_Pds_lst[i].append([RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['660_std'] for _k in range(BOOTSTRAP_INTERATOR)])
-		RF_DEPTH_mean_2_Pds.append(np.mean(RF_DEPTH_mean_2_Pds_lst[i]))
+		#RF_DEPTH_mean_2_Pds.append(np.mean(RF_DEPTH_mean_2_Pds_lst[i]))
 		RF_DEPTH_std_2_Pds.append(np.mean(RF_DEPTH_std_2_Pds_lst[i]))
 
 		RF_DEPTH_mean_2_Ppds_lst[i].append([RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['660_mean'] for _k in range(BOOTSTRAP_INTERATOR)])
 		RF_DEPTH_std_2_Ppds_lst[i].append([RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['660_std'] for _k in range(BOOTSTRAP_INTERATOR)])
-		RF_DEPTH_mean_2_Ppds.append(np.mean(RF_DEPTH_mean_2_Ppds_lst[i]))
+		#RF_DEPTH_mean_2_Ppds.append(np.mean(RF_DEPTH_mean_2_Ppds_lst[i]))
 		RF_DEPTH_std_2_Ppds.append(np.mean(RF_DEPTH_std_2_Ppds_lst[i]))
 
 		delta_2_Vp_lst[i].append([RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['delta_Vp_660'] for _k in range(BOOTSTRAP_INTERATOR)])
 		delta_2_Vs_lst[i].append([RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['delta_Vs_660'] for _k in range(BOOTSTRAP_INTERATOR)])
-		delta_2_Vp_mean.append(np.mean(delta_2_Vp_lst[i]))
+		#delta_2_Vp_mean.append(np.mean(delta_2_Vp_lst[i]))
 		delta_2_Vp_std.append(np.std(delta_2_Vp_lst[i]))
-		delta_2_Vs_mean.append(np.mean(delta_2_Vs_lst[i]))
+		#delta_2_Vs_mean.append(np.mean(delta_2_Vs_lst[i]))
 		delta_2_Vs_std.append(np.std(delta_2_Vs_lst[i]))
 
 		RF_DEPTH_mean_2_true_Pds_lst[i].append([RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['true_660_mean'] for _k in range(BOOTSTRAP_INTERATOR)])
 		RF_DEPTH_mean_2_true_Ppds_lst[i].append([RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['true_660_mean'] for _k in range(BOOTSTRAP_INTERATOR)])
-		RF_DEPTH_mean_2_true_Pds.append(np.mean(RF_DEPTH_mean_2_true_Pds_lst[i]))
+		#RF_DEPTH_mean_2_true_Pds.append(np.mean(RF_DEPTH_mean_2_true_Pds_lst[i]))
 		RF_DEPTH_std_2_true_Pds.append(np.std(RF_DEPTH_mean_2_true_Pds_lst[i]))
-		RF_DEPTH_mean_2_true_Ppds.append(np.mean(RF_DEPTH_mean_2_true_Ppds_lst[i]))
+		#RF_DEPTH_mean_2_true_Ppds.append(np.mean(RF_DEPTH_mean_2_true_Ppds_lst[i]))
 		RF_DEPTH_std_2_true_Ppds.append(np.std(RF_DEPTH_mean_2_true_Ppds_lst[i]))
 #############################################################################################################################################################################################
 
@@ -933,74 +943,65 @@ for i,j in enumerate(RF_data_raw_Ppds):
 		len_RF_stacking_Ppds.append(len(j))
 
 
- #############################################################################################################################################################################################
+#############################################################################################################################################################################################
+print('Calculating the Mean of 410 km and 660 km in Pds stacked data')
 
-# Function to get midpoint scale in plots
 
-class MidPointNorm(Normalize):    
-    def __init__(self, midpoint=0, vmin=None, vmax=None, clip=False):
-        Normalize.__init__(self,vmin, vmax, clip)
-        self.midpoint = midpoint
+for i,j in enumerate(RF_stacking_Pds):
+	lst_depth_410_amp = [j[x] for x,c in enumerate(camadas_terra_10_km) if 410-DEPTH_RANGE <= c <= 410+DEPTH_RANGE]
+	lst_depth_410_pp = [c for x,c in enumerate(camadas_terra_10_km) if 410-DEPTH_RANGE <= c <= 410+DEPTH_RANGE]
+	RF_DEPTH_mean_1_Pds.append(round(lst_depth_410_pp[lst_depth_410_amp.index(max(lst_depth_410_amp))],1))
 
-    def __call__(self, value, clip=None):
-        if clip is None:
-            clip = self.clip
+	lst_depth_660_amp = [j[x] for x,c in enumerate(camadas_terra_10_km) if 660-DEPTH_RANGE <= c <= 660+DEPTH_RANGE]
+	lst_depth_660_pp = [c for x,c in enumerate(camadas_terra_10_km) if 660-DEPTH_RANGE <= c <= 660+DEPTH_RANGE]
+	RF_DEPTH_mean_2_Pds.append(round(lst_depth_660_pp[lst_depth_660_amp.index(max(lst_depth_660_amp))],1))
 
-        result, is_scalar = self.process_value(value)
 
-        self.autoscale_None(result)
-        vmin, vmax, midpoint = self.vmin, self.vmax, self.midpoint
 
-        if not (vmin < midpoint < vmax):
-            raise ValueError("midpoint must be between maxvalue and minvalue.")       
-        elif vmin == vmax:
-            result.fill(0) # Or should it be all masked? Or 0.5?
-        elif vmin > vmax:
-            raise ValueError("maxvalue must be bigger than minvalue")
-        else:
-            vmin = float(vmin)
-            vmax = float(vmax)
-            if clip:
-                mask = ma.getmask(result)
-                result = ma.array(np.clip(result.filled(vmax), vmin, vmax),
-                                  mask=mask)
+print('Calculating the Mean of 410 km and 660 km in Ppds stacked data')
 
-            # ma division is very slow; we can take a shortcut
-            resdat = result.data
 
-            #First scale to -1 to 1 range, than to from 0 to 1.
-            resdat -= midpoint            
-            resdat[resdat>0] /= abs(vmax - midpoint)            
-            resdat[resdat<0] /= abs(vmin - midpoint)
+for i,j in enumerate(RF_stacking_Ppds):
+	lst_depth_410_amp = [j[x] for x,c in enumerate(camadas_terra_10_km) if 410-DEPTH_RANGE <= c <= 410+DEPTH_RANGE]
+	lst_depth_410_pp = [c for x,c in enumerate(camadas_terra_10_km) if 410-DEPTH_RANGE <= c <= 410+DEPTH_RANGE]
+	RF_DEPTH_mean_1_Ppds.append(round(lst_depth_410_pp[lst_depth_410_amp.index(max(lst_depth_410_amp))],1))
 
-            resdat /= 2.
-            resdat += 0.5
-            result = ma.array(resdat, mask=result.mask, copy=False)                
+	lst_depth_660_amp = [j[x] for x,c in enumerate(camadas_terra_10_km) if 660-DEPTH_RANGE <= c <= 660+DEPTH_RANGE]
+	lst_depth_660_pp = [c for x,c in enumerate(camadas_terra_10_km) if 660-DEPTH_RANGE <= c <= 660+DEPTH_RANGE]
+	RF_DEPTH_mean_2_Ppds.append(round(lst_depth_660_pp[lst_depth_660_amp.index(max(lst_depth_660_amp))],1))
 
-        if is_scalar:
-            result = result[0]            
-        return result
+#############################################################################################################################################################################################
+print('Calculating the true Mean of 410 km and 660 km in Pds stacked data')
 
-    def inverse(self, value):
-        if not self.scaled():
-            raise ValueError("Not invertible until scaled")
-        vmin, vmax, midpoint = self.vmin, self.vmax, self.midpoint
+for i,j in enumerate(RF_stacking_Pds):
+	delta_1_Vp_mean_var = (alfa*beta*(RF_DEPTH_mean_1_Ppds[i] - RF_DEPTH_mean_1_Pds[i]))/(alfa*(1+gamma_vp_vs_1)*RF_DEPTH_mean_1_Pds[i] - (beta*(1-gamma_vp_vs_1)*RF_DEPTH_mean_1_Ppds[i]))
 
-        if cbook.iterable(value):
-            val = ma.asarray(value)
-            val = 2 * (val-0.5)  
-            val[val>0]  *= abs(vmax - midpoint)
-            val[val<0] *= abs(vmin - midpoint)
-            val += midpoint
-            return val
-        else:
-            val = 2 * (val - 0.5)
-            if val < 0: 
-                return  val*abs(vmin-midpoint) + midpoint
-            else:
-                return  val*abs(vmax-midpoint) + midpoint
+	delta_1_Vp_mean.append(delta_1_Vp_mean_var)
 
-##################################################################################################
+	delta_1_Vs_mean_var = delta_1_Vp_mean_var * GAMMA * Vp_Vs_ratio_depth_1
+
+	delta_1_Vs_mean.append(delta_1_Vs_mean_var)
+	
+	RF_DEPTH_mean_1_true_Pds.append(RF_DEPTH_mean_1_Pds[i] * ((Vp_depth_1-Vs_depth_1)/(Vp_depth_1*Vs_depth_1)) * (((Vs_depth_1+delta_1_Vs_mean_var)*(Vp_depth_1+delta_1_Vp_mean_var))/(Vp_depth_1+delta_1_Vp_mean_var-Vs_depth_1-delta_1_Vs_mean_var)))
+
+	RF_DEPTH_mean_1_true_Ppds.append(RF_DEPTH_mean_1_Ppds[i] * ((Vp_depth_1+Vs_depth_1)/(Vp_depth_1*Vs_depth_1)) * (((Vs_depth_1+delta_1_Vs_mean_var)*(Vp_depth_1+delta_1_Vp_mean_var))/(Vp_depth_1+delta_1_Vp_mean_var+Vs_depth_1+delta_1_Vs_mean_var)))
+
+
+
+
+	delta_2_Vp_mean_var = (alfa*beta*(RF_DEPTH_mean_2_Ppds[i] - RF_DEPTH_mean_2_Pds[i]))/(alfa*(1+gamma_vp_vs_2)*RF_DEPTH_mean_2_Pds[i] - (beta*(1-gamma_vp_vs_2)*RF_DEPTH_mean_2_Ppds[i]))
+
+	delta_2_Vp_mean.append(delta_2_Vp_mean_var)
+
+	delta_2_Vs_mean_var = delta_2_Vp_mean_var * GAMMA * Vp_Vs_ratio_depth_2
+
+	delta_2_Vs_mean.append(delta_2_Vs_mean_var)
+	
+	RF_DEPTH_mean_2_true_Pds.append(RF_DEPTH_mean_2_Pds[i] * ((Vp_depth_2-Vs_depth_2)/(Vp_depth_2*Vs_depth_2)) * (((Vs_depth_2+delta_2_Vs_mean_var)*(Vp_depth_2+delta_2_Vp_mean_var))/(Vp_depth_2+delta_2_Vp_mean_var-Vs_depth_2-delta_2_Vs_mean_var)))
+
+	RF_DEPTH_mean_2_true_Ppds.append(RF_DEPTH_mean_2_Ppds[i] * ((Vp_depth_2+Vs_depth_2)/(Vp_depth_2*Vs_depth_2)) * (((Vs_depth_2+delta_2_Vs_mean_var)*(Vp_depth_2+delta_2_Vp_mean_var))/(Vp_depth_2+delta_2_Vp_mean_var+Vs_depth_2+delta_2_Vs_mean_var)))
+
+#############################################################################################################################################################################################
 
 print('Plotting Figure: Depth of the Mantle Transition Zone for Pds and Ppds phases for 410 and 660 km ...')
 #Figure Depth of the Mantle Transition Zone for Pds and Ppds phases for 410 and 660 km
@@ -1828,33 +1829,33 @@ for i,j in enumerate(RF_stacking_Pds):
 	SELECTED_BINNED_DATA_dic['len_Pds'].append(len_RF_stacking_Pds[i])
 	SELECTED_BINNED_DATA_dic['len_Ppds'].append(len_RF_stacking_Ppds[i])
 
-	SELECTED_BINNED_DATA_dic['true_mean_1_Pds'].append(RF_DEPTH_mean_1_true_Pds[i])
-	SELECTED_BINNED_DATA_dic['true_mean_2_Pds'].append(RF_DEPTH_mean_2_true_Pds[i])
+	SELECTED_BINNED_DATA_dic['true_mean_1_Pds'].append(float(RF_DEPTH_mean_1_true_Pds[i]))
+	SELECTED_BINNED_DATA_dic['true_mean_2_Pds'].append(float(RF_DEPTH_mean_2_true_Pds[i]))
 
-	SELECTED_BINNED_DATA_dic['mean_1_Pds'].append(RF_DEPTH_mean_1_Pds[i])
-	SELECTED_BINNED_DATA_dic['std_1_Pds'].append(RF_DEPTH_std_1_Pds[i])
-	SELECTED_BINNED_DATA_dic['mean_2_Pds'].append(RF_DEPTH_mean_2_Pds[i])
-	SELECTED_BINNED_DATA_dic['std_2_Pds'].append(RF_DEPTH_std_2_Pds[i])
+	SELECTED_BINNED_DATA_dic['mean_1_Pds'].append(float(RF_DEPTH_mean_1_Pds[i]))
+	SELECTED_BINNED_DATA_dic['std_1_Pds'].append(float(RF_DEPTH_std_1_Pds[i]))
+	SELECTED_BINNED_DATA_dic['mean_2_Pds'].append(float(RF_DEPTH_mean_2_Pds[i]))
+	SELECTED_BINNED_DATA_dic['std_2_Pds'].append(float(RF_DEPTH_std_2_Pds[i]))
 
-	SELECTED_BINNED_DATA_dic['true_mean_1_Ppds'].append(RF_DEPTH_mean_1_true_Ppds[i])
-	SELECTED_BINNED_DATA_dic['true_mean_2_Ppds'].append(RF_DEPTH_mean_2_true_Ppds[i])
+	SELECTED_BINNED_DATA_dic['true_mean_1_Ppds'].append(float(RF_DEPTH_mean_1_true_Ppds[i]))
+	SELECTED_BINNED_DATA_dic['true_mean_2_Ppds'].append(float(RF_DEPTH_mean_2_true_Ppds[i]))
 
-	SELECTED_BINNED_DATA_dic['mean_1_Ppds'].append(RF_DEPTH_mean_1_Ppds[i])
-	SELECTED_BINNED_DATA_dic['std_1_Ppds'].append(RF_DEPTH_std_1_Ppds[i])
-	SELECTED_BINNED_DATA_dic['mean_2_Ppds'].append(RF_DEPTH_mean_2_Ppds[i])
-	SELECTED_BINNED_DATA_dic['std_2_Ppds'].append(RF_DEPTH_std_2_Ppds[i])
+	SELECTED_BINNED_DATA_dic['mean_1_Ppds'].append(float(RF_DEPTH_mean_1_Ppds[i]))
+	SELECTED_BINNED_DATA_dic['std_1_Ppds'].append(float(RF_DEPTH_std_1_Ppds[i]))
+	SELECTED_BINNED_DATA_dic['mean_2_Ppds'].append(float(RF_DEPTH_mean_2_Ppds[i]))
+	SELECTED_BINNED_DATA_dic['std_2_Ppds'].append(float(RF_DEPTH_std_2_Ppds[i]))
 
 	SELECTED_BINNED_DATA_dic['data_Pds'].append(j)
 	SELECTED_BINNED_DATA_dic['data_Ppds'].append(RF_stacking_Ppds[i])
 
-	SELECTED_BINNED_DATA_dic['mtz_thickness_Pds'].append(thickness_MTZ_Pds[i])
-	SELECTED_BINNED_DATA_dic['mtz_thickness_Ppds'].append(thickness_MTZ_Ppds[i])
+	SELECTED_BINNED_DATA_dic['mtz_thickness_Pds'].append(float(thickness_MTZ_Pds[i]))
+	SELECTED_BINNED_DATA_dic['mtz_thickness_Ppds'].append(float(thickness_MTZ_Ppds[i]))
 
-	SELECTED_BINNED_DATA_dic['true_thickness_MTZ_Pds'].append(true_thickness_MTZ_Pds[i])
-	SELECTED_BINNED_DATA_dic['true_thickness_MTZ_Ppds'].append(true_thickness_MTZ_Ppds[i])
+	SELECTED_BINNED_DATA_dic['true_thickness_MTZ_Pds'].append(float(true_thickness_MTZ_Pds[i]))
+	SELECTED_BINNED_DATA_dic['true_thickness_MTZ_Ppds'].append(float(true_thickness_MTZ_Ppds[i]))
 
-	SELECTED_BINNED_DATA_dic['difference_thickness_MTZ_Pds'].append(diff_thickness_MTZ_Pds[i])
-	SELECTED_BINNED_DATA_dic['difference_thickness_MTZ_Ppds'].append(diff_thickness_MTZ_Ppds[i])
+	SELECTED_BINNED_DATA_dic['difference_thickness_MTZ_Pds'].append(float(diff_thickness_MTZ_Pds[i]))
+	SELECTED_BINNED_DATA_dic['difference_thickness_MTZ_Ppds'].append(float(diff_thickness_MTZ_Ppds[i]))
 
 
 with open(PP_SELEC_DIR+'SELECTED_BINNED_Ps.json', 'w') as fp:
