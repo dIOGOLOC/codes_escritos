@@ -294,6 +294,7 @@ for _i, _j in enumerate(RF_data_profile_stacking_Pds):
 	ax4.plot(_i/factor_Pds,RF_DEPTH_mean_2_profile_stacking_Pds[_i],'ok')
 	ax4.errorbar(_i/factor_Pds,RF_DEPTH_mean_2_profile_stacking_Pds[_i], yerr=RF_DEPTH_std_2_profile_stacking_Pds[_i], ecolor='k',elinewidth=1,capsize=2,capthick=1)
 	ax4.set_title('d660')
+	ax4.set_ylabel('Depth (km)')
 	ax4.set_ylim(660+DEPTH_RANGE,660-DEPTH_RANGE)
 	ax4.yaxis.set_ticks_position('both')
 	ax4.yaxis.set_major_locator(MultipleLocator(20))
@@ -305,9 +306,9 @@ for _i, _j in enumerate(RF_data_profile_stacking_Pds):
 
 for _i, _j in enumerate(RF_data_profile_stacking_Pds):
 	ax5.plot(_i/factor_Pds,RF_DEPTH_mtz_thickness_profile_stacking_Pds[_i],'^k',markeredgewidth=1,ms=5)
-	ax5.set_ylim(250-DEPTH_RANGE,250+DEPTH_RANGE)
-	ax5.set_ylabel('Depth (km)')
+	ax5.set_ylim(250+DEPTH_RANGE,250-DEPTH_RANGE)
 	ax5.set_title('MTZ Thickness')
+	ax5.set_ylabel('Thickness (km)')
 	ax5.yaxis.set_ticks_position('both')
 	ax5.yaxis.set_major_locator(MultipleLocator(20))
 	ax5.yaxis.set_minor_locator(MultipleLocator(10))

@@ -35,31 +35,31 @@
 
 
 # dir of receiver functions
-RF_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/Mantle_Transition_Migration_YES_PP_Pds/MTZ_data/0.5/
+RF_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/Mantle_Transition_Migration_NO_PP_Pds/MTZ_data/0.5/
 
 # extension of receiver functions
 RF_EXT = .eqr
 
 #Directory of the model of IASP91 models
-MODEL_FILE_NPZ = /home/diogo/diogo_git/codes_escritos/mantle_transition_zone_migration/velocity_model/iasp91_5.npz
+MODEL_FILE_NPZ = /home/diogo/diogo_git/codes_escritos/mantle_transition_zone_migration/velocity_model/iasp91_10.npz
 
 # dir of the stations data
-STA_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/Mantle_Transition_Migration_YES_PP_Pds/OUTPUT/Stations/
+STA_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/Mantle_Transition_Migration_NO_PP_Pds/OUTPUT/Stations/
 
 # dir of the Pds results
-PdS_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/Mantle_Transition_Migration_YES_PP_Pds/OUTPUT/Phases/
+PdS_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/Mantle_Transition_Migration_NO_PP_Pds/OUTPUT/Phases/
 
 # dir of the piercing points results
-PP_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/Mantle_Transition_Migration_YES_PP_Pds/OUTPUT/Piercing_points/
+PP_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/Mantle_Transition_Migration_NO_PP_Pds/OUTPUT/Piercing_points/
 
 # dir of ray path figures
-RAY_PATH_FIGURE = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/Mantle_Transition_Migration_YES_PP_Pds/OUTPUT/Figures/ray_path/
+RAY_PATH_FIGURE = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/Mantle_Transition_Migration_NO_PP_Pds/OUTPUT/Figures/ray_path/
 
 # dir of piercing points figures
-PP_FIGURE = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/Mantle_Transition_Migration_YES_PP_Pds/Figures/piercing_points/
+PP_FIGURE = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/Mantle_Transition_Migration_NO_PP_Pds/Figures/piercing_points/
 
 # dir of selected piercing points
-PP_SELEC_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/Mantle_Transition_Migration_YES_PP_Pds/OUTPUT/Piercing_points/selected/
+PP_SELEC_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/Mantle_Transition_Migration_NO_PP_Pds/OUTPUT/Piercing_points/selected/
 
 
 #=====
@@ -123,23 +123,23 @@ MIN_DEPTH = 300
 MAX_DEPTH = 800
 
 #depth interval of the migration
-INTER_DEPTH = 5
+INTER_DEPTH = 10
 
 # ==========
 [migration]
 # ==========
 
 #GRID POINTS multiplyer
-GRID_PP_MULT = 2
+GRID_PP_MULT = 3
 
 # distance between grid points and piercing points for each depth (degree)
 DIST_GRID_PP = 1
 
 # mean distance between grid points and piercing points (degree)
-DIST_GRID_PP_MED = 1
+DIST_GRID_PP_MED = 0.75
 
 #number of piercing points per bin
-NUMBER_PP_PER_BIN = 20
+NUMBER_PP_PER_BIN = 10
 
 #False or True for depth estimation
 DEPTH_ESTIMATION = True 
@@ -162,7 +162,7 @@ LINEAR_STACKING = True
 GAMMA = 2
 
 #Number that multiply the difference between the cross-section points
-SECTION_NUM = 2
+SECTION_NUM = 3
 
 #Depth range (+/-) that we will use to find the maximum amplitude
 DEPTH_RANGE = 30

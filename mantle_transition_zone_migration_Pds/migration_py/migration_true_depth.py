@@ -370,7 +370,7 @@ for lon, lat in zip(sta_long,sta_lat):
 for lon_med_Pds, lat_med_Pds in zip(pp_med_long,pp_med_lat):
     x_med_Pds,y_med_Pds = m_PP(lon_med_Pds, lat_med_Pds)
     msize_1 = 5
-    l3, = m_PP.plot(x_med_Pds, y_med_Pds, 'x',markersize=msize_1,markeredgecolor='k',markerfacecolor='k',alpha=0.5)
+    l3, = m_PP.plot(x_med_Pds, y_med_Pds, 'X',markersize=msize_1,markeredgecolor='k',markerfacecolor='k',alpha=0.5)
 
 
 for lon_sel, lat_sel in zip(grid_sel_x,grid_sel_y):
@@ -389,7 +389,7 @@ m_PP.drawmeridians(np.arange(0, 360, 5),color='lightgrey',labels=[True,True,True
 m_PP.drawparallels(np.arange(-90, 90, 5),color='lightgrey',labels=[True,True,True,True])
 
 ax.set_title('Pds Piercing Points',ha='center',va='top',y=1.08)
-ax.legend([l1,l3,l5,l6],['Stations''Piercing Points '+"{0:.0f}".format(DEPTH_MED)+' km','Selected Grid', 'Raw Grid'],scatterpoints=1, frameon=True,labelspacing=1, loc='lower right',facecolor='w',fontsize='smaller')
+ax.legend([l1,l3,l5,l6],['Stations','Piercing Points '+"{0:.0f}".format(DEPTH_MED)+' km','Selected Grid', 'Raw Grid'],scatterpoints=1, frameon=True,labelspacing=1, loc='lower right',facecolor='w',fontsize='smaller')
 
 plt.show()
 
