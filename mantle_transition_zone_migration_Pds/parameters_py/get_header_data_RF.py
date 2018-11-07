@@ -38,6 +38,7 @@ sta_dic = {
 	'event_depth':[],
 	'event_lat':[],
 	'event_long':[],
+	'event_mag':[],
 	'event_dist':[],
 	'event_gcarc':[],
 	'event_sta':[],
@@ -55,6 +56,7 @@ for i,j in enumerate(ev):
 			sta_dic['event_depth'].append(float(j.stats.sac.evdp/1000))
 		else:
 			sta_dic['event_depth'].append(float(j.stats.sac.evdp))
+		sta_dic['event_mag'].append(float(j.stats.sac.mag))
 		sta_dic['event_lat'].append(float(j.stats.sac.evla))
 		sta_dic['event_long'].append(float(j.stats.sac.evlo))
 		sta_dic['event_dist'].append(float(j.stats.sac.dist))

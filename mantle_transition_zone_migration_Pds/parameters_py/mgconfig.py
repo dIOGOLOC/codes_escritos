@@ -116,6 +116,12 @@ URCRNRLAT_SMALL= config.getfloat('maps', 'URCRNRLAT_SMALL')
 EXT_FIG= config.get('maps', 'EXT_FIG')
 DPI_FIG= config.getfloat('maps', 'DPI_FIG')
 
+#Date event initial  (exemple: 2008-01-01T00:00:00)
+INITIAL_DATE_EVENT = config.get('maps', 'INITIAL_DATE_EVENT')
+
+#Date event final  (exemple: 2008-01-01T00:00:00)
+FINAL_DATE_EVENT = config.get('maps', 'FINAL_DATE_EVENT')
+
 # ---------------
 # time
 # ---------------

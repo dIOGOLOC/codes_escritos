@@ -2,7 +2,7 @@
 # coding: utf-8
 
 import matplotlib.pyplot as plt
-import matplotlib as mpl
+from scipy.interpolate import griddata
 import numpy as np
 import obspy
 import os
@@ -24,6 +24,8 @@ from matplotlib.colors import Normalize
 from numpy import ma
 from matplotlib import cbook
 import collections
+import math
+
 
 
 
@@ -198,12 +200,11 @@ for i,j in enumerate(PP_lon_2):
 print('Creating GRID POINTS')
 print('\n')
 
-area = (LLCRNRLON_LARGE,URCRNRLON_LARGE, LLCRNRLAT_LARGE, URCRNRLAT_LARGE)
+area = (LLCRNRLON_SMALL,URCRNRLON_SMALL, LLCRNRLAT_SMALL, URCRNRLAT_SMALL)
 
-shape = (abs(abs(URCRNRLON_LARGE) - abs(LLCRNRLON_LARGE))*GRID_PP_MULT, abs(abs(URCRNRLAT_LARGE) - abs(LLCRNRLAT_LARGE))*GRID_PP_MULT)
+shape = (abs(abs(URCRNRLON_SMALL) - abs(LLCRNRLON_SMALL))*GRID_PP_MULT, abs(abs(URCRNRLAT_SMALL) - abs(LLCRNRLAT_SMALL))*GRID_PP_MULT)
 
 grdx, grdy = gridder.regular(area, shape)
-
 
 print('Filtering GRID POINTS')
 print('\n')
@@ -290,7 +291,7 @@ print('\n')
 
 fig_PP, ax =  plt.subplots(nrows=1, ncols=1,figsize=(20,20))
 
-#Figure Ppds
+#Figure Pds
 
 m_PP = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_LARGE,
             llcrnrlat=LLCRNRLAT_LARGE,urcrnrlon=URCRNRLON_LARGE,urcrnrlat=URCRNRLAT_LARGE,ax=ax)
@@ -320,8 +321,6 @@ for lon_2_Pds, lat_2_Pds in zip(pp_2_long,pp_2_lat):
     x_2_Pds,y_2_Pds = m_PP(lon_2_Pds, lat_2_Pds)
     msize_2 = 5
     l4, = m_PP.plot(x_2_Pds, y_2_Pds, '.',markersize=msize_2,markeredgecolor='k',markerfacecolor='r',alpha=0.5)
-
-
 
 for lon_sel, lat_sel in zip(grid_sel_x,grid_sel_y):
     x_sel,y_sel = m_PP(lon_sel, lat_sel)
@@ -354,7 +353,7 @@ print('\n')
 
 fig_PP, ax =  plt.subplots(nrows=1, ncols=1,figsize=(20,20))
 
-#Figure Ppds
+#Figure Pds
 
 m_PP = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_LARGE,
             llcrnrlat=LLCRNRLAT_LARGE,urcrnrlon=URCRNRLON_LARGE,urcrnrlat=URCRNRLAT_LARGE,ax=ax)
@@ -452,8 +451,8 @@ RF_amplitude_depth_raw_Pds = [[]]*len(grid_sel_x)
 for i,j in enumerate(grid_sel_x):
 	RF_data_raw_Pds[i] = [RF_amplitude_Pds[k] for k,l in enumerate(dados_grid_lat) if np.sqrt((j - dados_grid_lon[k])**2 + (grid_sel_y[i] - l)**2) < DIST_GRID_PP_MED]
 	RF_amplitude_depth_raw_Pds[i] = [RF_amplitude_depth_Pds[k] for k,l in enumerate(dados_grid_lat) if np.sqrt((j - dados_grid_lon[k])**2 + (grid_sel_y[i] - l)**2) < DIST_GRID_PP_MED]
-###################################################################################################################
 
+###################################################################################################################
 
 print('Estimating Mean and Standard Deviation for each discontinuity')
 print('\n')
@@ -522,26 +521,6 @@ if BOOTSTRAP_DEPTH_ESTIMATION == True:
 				print('660 Pds Depth = '+str(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['660_mean'])+' ± '+str(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['660_std']))
 				print('\n')
 
-
-			else:
-
-				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['RF_410_DEPTH'] = 0
-
-				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['lon'] = grid_sel_x[i]
-				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['lat'] = grid_sel_y[i]
-
-				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['410_mean'] = 0
-
-				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['410_std'] = 0
-				
-				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['RF_660_DEPTH'] = 0
-
-				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['660_mean'] = 0
-
-				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['660_std'] = 0
-	
-
-
 #############################################################################################################################################################################################
 #Allocating mean and std results:
 
@@ -586,19 +565,19 @@ for i,j in enumerate(RF_data_raw_Pds):
 		RF_stacking_Pds.append([sum(x)/len(j)  for x in zip(*j)])
 		len_RF_stacking_Pds.append(len(j))
 
-
 #############################################################################################################################################################################################
 print('Calculating the Mean of 410 km and 660 km in Pds stacked data')
 
 
 for i,j in enumerate(RF_stacking_Pds):
-	lst_depth_410_amp = [j[x] for x,c in enumerate(camadas_terra_10_km) if 410-DEPTH_RANGE <= c <= 410+DEPTH_RANGE]
-	lst_depth_410_pp = [c for x,c in enumerate(camadas_terra_10_km) if 410-DEPTH_RANGE <= c <= 410+DEPTH_RANGE]
-	RF_DEPTH_mean_1_Pds.append(round(lst_depth_410_pp[lst_depth_410_amp.index(max(lst_depth_410_amp))],1))
+	if len(j) > NUMBER_PP_PER_BIN:
+		lst_depth_410_amp = [j[x] for x,c in enumerate(camadas_terra_10_km) if 410-DEPTH_RANGE <= c <= 410+DEPTH_RANGE]
+		lst_depth_410_pp = [c for x,c in enumerate(camadas_terra_10_km) if 410-DEPTH_RANGE <= c <= 410+DEPTH_RANGE]
+		RF_DEPTH_mean_1_Pds.append(round(lst_depth_410_pp[lst_depth_410_amp.index(max(lst_depth_410_amp))],1))
 
-	lst_depth_660_amp = [j[x] for x,c in enumerate(camadas_terra_10_km) if 660-DEPTH_RANGE <= c <= 660+DEPTH_RANGE]
-	lst_depth_660_pp = [c for x,c in enumerate(camadas_terra_10_km) if 660-DEPTH_RANGE <= c <= 660+DEPTH_RANGE]
-	RF_DEPTH_mean_2_Pds.append(round(lst_depth_660_pp[lst_depth_660_amp.index(max(lst_depth_660_amp))],1))
+		lst_depth_660_amp = [j[x] for x,c in enumerate(camadas_terra_10_km) if 660-DEPTH_RANGE <= c <= 660+DEPTH_RANGE]
+		lst_depth_660_pp = [c for x,c in enumerate(camadas_terra_10_km) if 660-DEPTH_RANGE <= c <= 660+DEPTH_RANGE]
+		RF_DEPTH_mean_2_Pds.append(round(lst_depth_660_pp[lst_depth_660_amp.index(max(lst_depth_660_amp))],1))
 
 #############################################################################################################################################################################################
 
@@ -621,7 +600,7 @@ m1.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m1.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
 x, y = m1(RF_lon,RF_lat)
-sc1 = m1.scatter(x,y,40,RF_DEPTH_mean_1_Pds,cmap=colormap,marker='o',edgecolors='k',vmin=410-DEPTH_RANGE, vmax=410+DEPTH_RANGE)
+sc1 = m1.scatter(x,y,40,np.array(RF_DEPTH_mean_1_Pds),cmap=colormap,marker='o',edgecolors='k',vmin=410-DEPTH_RANGE, vmax=410+DEPTH_RANGE)
 
 for lon, lat in zip(sta_long,sta_lat):
     x,y = m1(lon, lat)
@@ -645,7 +624,7 @@ m2.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m2.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
 x, y = m2(RF_lon,RF_lat)
-sc2 = m2.scatter(x,y,40,RF_DEPTH_mean_2_Pds,cmap=colormap,marker='o',edgecolors='k',vmin=660-DEPTH_RANGE, vmax=660+DEPTH_RANGE)
+sc2 = m2.scatter(x,y,40,np.array(RF_DEPTH_mean_2_Pds),cmap=colormap,marker='o',edgecolors='k',vmin=660-DEPTH_RANGE, vmax=660+DEPTH_RANGE)
 
 for lon, lat in zip(sta_long,sta_lat):
     x,y = m2(lon, lat)
@@ -669,6 +648,91 @@ fig.suptitle('Depth per bin')
 plt.show()
 
 fig.savefig(PP_FIGURE+'DEPTH_PER_BIN.'+EXT_FIG,dpi=DPI_FIG)
+
+#############################################################################################################################################################################################
+
+print('Plotting Figure: Contour Depth of the Mantle Transition Zone for Pds phases (410 and 660 km)')
+#Figure Depth of the Mantle Transition Zone for Pds and Ppds phases for 410 and 660 km
+
+#__________________________________________
+
+x = np.array(RF_lon)
+y = np.array(RF_lat)
+z1 = np.array(RF_DEPTH_mean_1_Pds)
+RF_DEPTH_mean_1_Pds_grid = griddata((x, y), z1, (grdx[None,:], grdy[:,None]), method='linear')
+
+z2 = np.array(RF_DEPTH_mean_2_Pds)
+RF_DEPTH_mean_2_Pds_grid = griddata((x, y), z2, (grdx[None,:], grdy[:,None]), method='linear')
+
+#__________________________________________
+
+
+fig, axes = plt.subplots(nrows=1, ncols=2,figsize=(10,20),squeeze=False,sharex=False,sharey=False)
+
+ax1 = axes[0,0]
+ax2 = axes[0,1]
+
+colormap = 'seismic'
+
+#Figure Depth of the Mantle Transition Zone for Pds phase for 410 km
+
+m1 = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_SMALL,
+            llcrnrlat=LLCRNRLAT_SMALL,urcrnrlon=URCRNRLON_SMALL,urcrnrlat=URCRNRLAT_SMALL,ax=ax1)
+
+m1.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
+m1.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
+
+x1,y1 = m1(grdx,grdy)
+sc1 = m1.contourf(x1,y1,RF_DEPTH_mean_1_Pds_grid,levels=2*DEPTH_RANGE,cmap=colormap,ax=ax1,vmin=410-DEPTH_RANGE, vmax=410+DEPTH_RANGE)
+
+
+for lon, lat in zip(sta_long,sta_lat):
+    x,y = m1(lon, lat)
+    msize = 10
+    l1, = m1.plot(x, y, '^',markersize=msize,markeredgecolor='k',markerfacecolor='grey')
+
+m1.fillcontinents(color='whitesmoke',lake_color=None,zorder=2,alpha=0.1)
+m1.drawcoastlines(color='k',zorder=1)
+m1.drawmeridians(np.arange(0, 360, 5),color='lightgrey',labels=[True,True,True,True])
+m1.drawparallels(np.arange(-90, 90, 5),color='lightgrey',labels=[True,True,True,True])
+
+
+ax1.set_title('410 km Pds', y=1.08)
+
+#Figure Depth of the Mantle Transition Zone for Pds phase for 660 km
+
+m2 = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_SMALL,
+            llcrnrlat=LLCRNRLAT_SMALL,urcrnrlon=URCRNRLON_SMALL,urcrnrlat=URCRNRLAT_SMALL,ax=ax2)
+
+m2.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
+m2.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
+
+x2,y2 = m2(grdx,grdy)
+sc2 = m2.contourf(x2, y2, RF_DEPTH_mean_2_Pds_grid,levels=2*DEPTH_RANGE,cmap=colormap,ax=ax2,vmin=660-DEPTH_RANGE, vmax=660+DEPTH_RANGE)
+
+
+for lon, lat in zip(sta_long,sta_lat):
+    x,y = m2(lon, lat)
+    msize = 10
+    l1, = m2.plot(x, y, '^',markersize=msize,markeredgecolor='k',markerfacecolor='grey')
+
+m2.fillcontinents(color='whitesmoke',lake_color=None,zorder=2,alpha=0.1)
+m2.drawcoastlines(color='k',zorder=1)
+m2.drawmeridians(np.arange(0, 360, 5),color='lightgrey',labels=[True,True,True,True])
+m2.drawparallels(np.arange(-90, 90, 5),color='lightgrey',labels=[True,True,True,True])
+
+ax2.set_title('660 km Pds', y=1.08)
+
+fig.colorbar(sc1, ax=ax1,orientation='horizontal')
+fig.colorbar(sc2, ax=ax2,orientation='horizontal')
+
+fig.subplots_adjust(wspace=0.25, hspace=0.25)
+
+fig.suptitle('Depth per bin')
+
+plt.show()
+
+fig.savefig(PP_FIGURE+'CONTOUR_DEPTH_PER_BIN.'+EXT_FIG,dpi=DPI_FIG)
 
 ###################################################################################################################
 

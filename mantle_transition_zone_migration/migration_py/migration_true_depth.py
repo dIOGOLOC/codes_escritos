@@ -13,7 +13,6 @@ import matplotlib
 from matplotlib.cm import get_cmap
 from mpl_toolkits.mplot3d import Axes3D
 from mpl_toolkits.basemap import Basemap
-import shapefile
 from fatiando import gridder, utils
 import scipy.io
 import matplotlib.cm as cm
@@ -24,20 +23,21 @@ from matplotlib.colors import Normalize
 from numpy import ma
 from matplotlib import cbook
 import collections
+from shapely.geometry import Polygon, MultiPoint, Point
+import shapefile
 
 
 
 
 
 from parameters_py.mgconfig import (
-					RF_DIR,RF_EXT,MODEL_FILE_NPZ,MIN_DEPTH,MAX_DEPTH,INTER_DEPTH,PdS_DIR,
-					PP_DIR,PP_SELEC_DIR,NUMBER_PP_PER_BIN,RAY_TRACE_PLOT,RAY_TRACE_410_660_PLOT,STA_DIR,
+					RF_DIR,RF_EXT,MODEL_FILE_NPZ,MIN_DEPTH,MAX_DEPTH,INTER_DEPTH,PdS_DIR,SHAPEFILE_GRID,FILTER_BY_SHAPEFILE,
+					PP_DIR,PP_SELEC_DIR,NUMBER_PP_PER_BIN,STA_DIR,
 					LLCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLON_LARGE,URCRNRLAT_LARGE,LLCRNRLON_SMALL,
 					URCRNRLON_SMALL,LLCRNRLAT_SMALL,URCRNRLAT_SMALL,PROJECT_LAT,PROJECT_LON,GRID_PP_MULT,
 					BOUNDARY_1_SHP,BOUNDARY_1_SHP_NAME,BOUNDARY_2_SHP,BOUNDARY_2_SHP_NAME,					
 					RAY_PATH_FIGURE,PP_FIGURE,EXT_FIG,DPI_FIG,DIST_GRID_PP_MED,DIST_GRID_PP,
-					DEPTH_RANGE,BOOTSTRAP_INTERATOR,BOOTSTRAP_DEPTH_ESTIMATION,
-					GAMMA
+					DEPTH_RANGE,BOOTSTRAP_INTERATOR,BOOTSTRAP_DEPTH_ESTIMATION,ROTATE_GRID,ROTATE_ANGLE,GAMMA
 				   )
 
 print('Starting Receiver Functions migration code to estimate the true depths of the Earth discontinuities')
@@ -320,6 +320,48 @@ shape = (abs(abs(URCRNRLON_LARGE) - abs(LLCRNRLON_LARGE))*GRID_PP_MULT, abs(abs(
 
 grdx, grdy = gridder.regular(area, shape)
 
+if ROTATE_GRID == True:
+
+	radians = ROTATE_ANGLE*np.pi/180
+	grdx_rot = []
+	grdy_rot = []
+
+	for i,j in enumerate(grdx):
+
+		x = grdx[i]
+		y = grdy[i]
+
+		ox = URCRNRLON_LARGE
+		oy = URCRNRLAT_LARGE
+
+		qx = ox + np.cos(radians) * (x - ox) + np.sin(radians) * (y - oy)
+		qy = oy + -np.sin(radians) * (x - ox) + np.cos(radians) * (y - oy)
+
+		grdx_rot.append(float(qx))
+		grdy_rot.append(float(qy))
+
+	grdx = grdx_rot
+	grdy = grdy_rot
+
+if FILTER_BY_SHAPEFILE == True:
+	polygon = shapefile.Reader(SHAPEFILE_GRID) 
+	polygon = polygon.shapes()  
+	shpfilePoints = []
+	for shape in polygon:
+		shpfilePoints = shape.points 
+	polygon = shpfilePoints 
+	poly = Polygon(polygon)
+	
+	pontos = [Point(grdx[i],grdy[i]) for i,j in enumerate(grdx)]
+
+	inside_points = np.array(MultiPoint(pontos).intersection(poly))
+
+	grdx = []
+	grdy = []
+	for i,j in enumerate(inside_points):
+		grdx.append(j[0])
+		grdy.append(j[1])
+	
 
 print('Filtering GRID POINTS')
 print('\n')
@@ -327,15 +369,15 @@ print('\n')
 
 dist_pp_grid_min = [[]]*len(grdx)
 for i,j in enumerate(grdx):
-    dist_pp_grid_min[i] = [np.sqrt((j - pp_1_long[k])**2 + (grdy[i] - l)**2) for k,l in enumerate(pp_1_lat)]
+    dist_pp_grid_min[i] = [np.sqrt((j - pp_1_long_Ppds[k])**2 + (grdy[i] - l)**2) for k,l in enumerate(pp_1_lat_Ppds)]
 
 dist_pp_grid_med = [[]]*len(grdx)
 for i,j in enumerate(grdx):
-    dist_pp_grid_med[i] = [np.sqrt((j - pp_med_long[k])**2 + (grdy[i] - l)**2) for k,l in enumerate(pp_med_lat)]
+    dist_pp_grid_med[i] = [np.sqrt((j - pp_med_long_Ppds[k])**2 + (grdy[i] - l)**2) for k,l in enumerate(pp_med_lat_Ppds)]
     
 dist_pp_grid_max = [[]]*len(grdx)
 for i,j in enumerate(grdx):
-    dist_pp_grid_max[i] = [np.sqrt((j - pp_2_long[k])**2 + (grdy[i] - l)**2) for k,l in enumerate(pp_2_lat)]
+    dist_pp_grid_max[i] = [np.sqrt((j - pp_2_long_Ppds[k])**2 + (grdy[i] - l)**2) for k,l in enumerate(pp_2_lat_Ppds)]
 
 grid_sel_min = []
 grid_sel_min_data = []
@@ -398,15 +440,15 @@ for i,j in enumerate(grid_xy_diff):
 	grid_x_diff.append(j[0])
 	grid_y_diff.append(j[1])
 
-###################################################################################################################
 
+###################################################################################################################
 print('Plotting: Figure Pds and Ppds Piercing Points')
 print('\n')
 
 
 fig_PP, (ax, ax1) =  plt.subplots(nrows=1, ncols=2,figsize=(20,20))
 
-#Figure Ppds
+#Figure Pds
 
 m_PP = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_LARGE,
             llcrnrlat=LLCRNRLAT_LARGE,urcrnrlon=URCRNRLON_LARGE,urcrnrlat=URCRNRLAT_LARGE,ax=ax)
@@ -441,8 +483,8 @@ for lon_2_Pds, lat_2_Pds in zip(pp_2_long,pp_2_lat):
 
 for lon_sel, lat_sel in zip(grid_sel_x,grid_sel_y):
     x_sel,y_sel = m_PP(lon_sel, lat_sel)
-    msize_2 = 7
-    l5, = m_PP.plot(x_sel, y_sel, 'o',markersize=msize_2,markeredgecolor='k',markerfacecolor='None')
+    msize_2 = 4
+    l5, = m_PP.plot(x_sel, y_sel, 's',markersize=msize_2,markeredgecolor='k',markerfacecolor='None')
 
 for lon_sel, lat_sel in zip(grid_x_diff,grid_y_diff):
     x_grdx,y_grdy = m_PP(lon_sel, lat_sel)
@@ -488,8 +530,8 @@ for lon_2_Ppds, lat_2_Ppds in zip(pp_2_long_Ppds,pp_2_lat_Ppds):
 
 for lon_sel, lat_sel in zip(grid_sel_x,grid_sel_y):
     x_sel,y_sel = m_PP1(lon_sel, lat_sel)
-    msize_2 = 7
-    l10, = m_PP1.plot(x_sel, y_sel, 'o',markersize=msize_2,markeredgecolor='k',markerfacecolor='None')
+    msize_2 = 4
+    l10, = m_PP1.plot(x_sel, y_sel, 's',markersize=msize_2,markeredgecolor='k',markerfacecolor='None')
 
 for lon_sel, lat_sel in zip(grid_x_diff,grid_y_diff):
     x_grdx,y_grdy = m_PP1(lon_sel, lat_sel)
@@ -510,8 +552,108 @@ plt.show()
 os.makedirs(PP_FIGURE,exist_ok=True)
 fig_PP.savefig(PP_FIGURE+'PP_Pds_Ppds.'+EXT_FIG,dpi=DPI_FIG)
 
+###################################################################################################################
+
+print('Plotting: Figure Pds Average Piercing Points')
+print('\n')
+
+
+fig_PP, ax =  plt.subplots(nrows=1, ncols=1,figsize=(20,20))
+
+#Figure Pds
+
+m_PP = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_LARGE,
+            llcrnrlat=LLCRNRLAT_LARGE,urcrnrlon=URCRNRLON_LARGE,urcrnrlat=URCRNRLAT_LARGE,ax=ax)
+
+m_PP.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
+m_PP.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
+
+for lon, lat in zip(sta_long,sta_lat):
+    x,y = m_PP(lon, lat)
+    msize = 10
+    l1, = m_PP.plot(x, y, '^',markersize=msize,markeredgecolor='k',markerfacecolor='grey')
+
+for lon_med_Pds, lat_med_Pds in zip(pp_med_long_Ppds,pp_med_lat_Ppds):
+    x_med_Pds,y_med_Pds = m_PP(lon_med_Pds, lat_med_Pds)
+    msize_1 = 5
+    l3, = m_PP.plot(x_med_Pds, y_med_Pds, 'X',markersize=msize_1,markeredgecolor='k',markerfacecolor='k',alpha=0.5)
+
+
+for lon_sel, lat_sel in zip(grid_sel_x,grid_sel_y):
+    x_sel,y_sel = m_PP(lon_sel, lat_sel)
+    msize_2 = 4
+    l5, = m_PP.plot(x_sel, y_sel, 's',markersize=msize_2,markeredgecolor='k',markerfacecolor='None')
+
+for lon_sel, lat_sel in zip(grid_x_diff,grid_y_diff):
+    x_grdx,y_grdy = m_PP(lon_sel, lat_sel)
+    msize_2 = 2
+    l6, = m_PP.plot(x_grdx, y_grdy, '.',markersize=msize_2,markeredgecolor='k',markerfacecolor='None')
+
+m_PP.fillcontinents(color='whitesmoke',lake_color=None,zorder=2,alpha=0.1)
+m_PP.drawcoastlines(color='k',zorder=1)
+m_PP.drawmeridians(np.arange(0, 360, 5),color='lightgrey',labels=[True,True,True,True])
+m_PP.drawparallels(np.arange(-90, 90, 5),color='lightgrey',labels=[True,True,True,True])
+
+ax.set_title('Pds Piercing Points',ha='center',va='top',y=1.08)
+ax.legend([l1,l3,l5,l6],['Stations','Piercing Points '+"{0:.0f}".format(DEPTH_MED)+' km','Selected Grid', 'Raw Grid'],scatterpoints=1, frameon=True,labelspacing=1, loc='lower right',facecolor='w',fontsize='smaller')
+
+plt.show()
+
+os.makedirs(PP_FIGURE,exist_ok=True)
+fig_PP.savefig(PP_FIGURE+'PP_MED_Pds.'+EXT_FIG,dpi=DPI_FIG)
+
+###################################################################################################################
+
+print('Plotting: Figure Ppds Average Piercing Points')
+print('\n')
+
+
+fig_PP, ax =  plt.subplots(nrows=1, ncols=1,figsize=(20,20))
+
+#Figure Pds
+
+m_PP = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_LARGE,
+            llcrnrlat=LLCRNRLAT_LARGE,urcrnrlon=URCRNRLON_LARGE,urcrnrlat=URCRNRLAT_LARGE,ax=ax)
+
+m_PP.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
+m_PP.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
+
+for lon, lat in zip(sta_long,sta_lat):
+    x,y = m_PP(lon, lat)
+    msize = 10
+    l1, = m_PP.plot(x, y, '^',markersize=msize,markeredgecolor='k',markerfacecolor='grey')
+
+for lon_med_Pds, lat_med_Pds in zip(pp_med_long,pp_med_lat):
+    x_med_Pds,y_med_Pds = m_PP(lon_med_Pds, lat_med_Pds)
+    msize_1 = 5
+    l3, = m_PP.plot(x_med_Pds, y_med_Pds, 'X',markersize=msize_1,markeredgecolor='k',markerfacecolor='k',alpha=0.5)
+
+
+for lon_sel, lat_sel in zip(grid_sel_x,grid_sel_y):
+    x_sel,y_sel = m_PP(lon_sel, lat_sel)
+    msize_2 = 4
+    l5, = m_PP.plot(x_sel, y_sel, 's',markersize=msize_2,markeredgecolor='k',markerfacecolor='None')
+
+for lon_sel, lat_sel in zip(grid_x_diff,grid_y_diff):
+    x_grdx,y_grdy = m_PP(lon_sel, lat_sel)
+    msize_2 = 2
+    l6, = m_PP.plot(x_grdx, y_grdy, '.',markersize=msize_2,markeredgecolor='k',markerfacecolor='None')
+
+m_PP.fillcontinents(color='whitesmoke',lake_color=None,zorder=2,alpha=0.1)
+m_PP.drawcoastlines(color='k',zorder=1)
+m_PP.drawmeridians(np.arange(0, 360, 5),color='lightgrey',labels=[True,True,True,True])
+m_PP.drawparallels(np.arange(-90, 90, 5),color='lightgrey',labels=[True,True,True,True])
+
+ax.set_title('Ppds Piercing Points',ha='center',va='top',y=1.08)
+ax.legend([l1,l3,l5,l6],['Stations','Piercing Points '+"{0:.0f}".format(DEPTH_MED)+' km','Selected Grid', 'Raw Grid'],scatterpoints=1, frameon=True,labelspacing=1, loc='lower right',facecolor='w',fontsize='smaller')
+
+plt.show()
+
+os.makedirs(PP_FIGURE,exist_ok=True)
+fig_PP.savefig(PP_FIGURE+'PP_MED_Ppds.'+EXT_FIG,dpi=DPI_FIG)
 
 ##########################################################################################################################################
+
 
 print('Importing depths and times of Pds conversion  dataset')
 print('\n')
@@ -553,6 +695,7 @@ for i,j in enumerate(Ppds_Dic):
 
 
 ###################################################################################################################
+
 print('Migrating Pds dataset')
 print('\n')
 
@@ -645,25 +788,58 @@ if BOOTSTRAP_DEPTH_ESTIMATION == True:
 				new_RANDOM_RF_DATA_raw_Pds = [j[_t_] for _t_ in new_RANDOM_RF_DATA_raw_Pds_lst]
 				new_RANDOM_RF_DATA_raw_Ppds = [RF_data_raw_Ppds[i][_t_] for _t_ in new_RANDOM_RF_DATA_raw_Pds_lst]
 
-				#410 km
+				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['RF_DATA'] = new_RANDOM_RF_DATA_raw_Pds
+				RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['RF_DATA'] = new_RANDOM_RF_DATA_raw_Ppds
+				
+
 
 				lst_410_depth_Pds = []
 				lst_410_amp_Pds = []
+
+				lst_660_depth_Pds = []
+				lst_660_amp_Pds = []
 				for k,l in enumerate(new_RANDOM_RF_DATA_raw_Pds):
-					lst_depth_amp = [l[x] for x,c in enumerate(RF_amplitude_depth_raw_Pds[i][k]) if 410-DEPTH_RANGE <= c <= 410+DEPTH_RANGE]
-					lst_depth_pp = [c for x,c in enumerate(RF_amplitude_depth_raw_Pds[i][k]) if 410-DEPTH_RANGE <= c <= 410+DEPTH_RANGE]
-					lst_410_depth_Pds.append(lst_depth_pp[lst_depth_amp.index(max(lst_depth_amp))])	
-					lst_410_amp_Pds.append(lst_depth_amp.index(max(lst_depth_amp)))
+
+					#410 km
+
+					lst_depth_amp_410_Pds = [l[x] for x,c in enumerate(RF_amplitude_depth_raw_Pds[i][k]) if 410-DEPTH_RANGE <= c <= 410+DEPTH_RANGE]
+					lst_depth_pp_410_Pds = [c for x,c in enumerate(RF_amplitude_depth_raw_Pds[i][k]) if 410-DEPTH_RANGE <= c <= 410+DEPTH_RANGE]
+					lst_410_depth_Pds.append(lst_depth_pp_410_Pds[lst_depth_amp_410_Pds.index(max(lst_depth_amp_410_Pds))])	
+					lst_410_amp_Pds.append(lst_depth_amp_410_Pds.index(max(lst_depth_amp_410_Pds)))
+
+					#660 km
+
+					lst_depth_amp_660_Pds = [l[x] for x,c in enumerate(RF_amplitude_depth_raw_Pds[i][k]) if 660-DEPTH_RANGE <= c <= 660+DEPTH_RANGE]
+					lst_depth_pp_660_Pds = [c for x,c in enumerate(RF_amplitude_depth_raw_Pds[i][k]) if 660-DEPTH_RANGE <= c <= 660+DEPTH_RANGE]
+					lst_660_depth_Pds.append(lst_depth_pp_660_Pds[lst_depth_amp_660_Pds.index(max(lst_depth_amp_660_Pds))])
+					lst_660_amp_Pds.append(lst_depth_amp_660_Pds.index(max(lst_depth_amp_660_Pds)))
+
 
 				lst_410_depth_Ppds = []
 				lst_410_amp_Ppds = []
+
+				lst_660_depth_Ppds = []
+				lst_660_amp_Ppds = []
 				for k,l in enumerate(new_RANDOM_RF_DATA_raw_Ppds):
-					lst_depth_amp = [l[x] for x,c in enumerate(RF_amplitude_depth_raw_Ppds[i][k]) if 410-DEPTH_RANGE <= c <= 410+DEPTH_RANGE]
-					lst_depth_pp = [c for x,c in enumerate(RF_amplitude_depth_raw_Ppds[i][k]) if 410-DEPTH_RANGE <= c <= 410+DEPTH_RANGE]
-					lst_410_depth_Ppds.append(lst_depth_pp[lst_depth_amp.index(max(lst_depth_amp))])
-					lst_410_amp_Ppds.append(lst_depth_amp.index(max(lst_depth_amp)))
+
+					#410 km
+
+					lst_depth_amp_410_Ppds = [l[x] for x,c in enumerate(RF_amplitude_depth_raw_Ppds[i][k]) if 410-DEPTH_RANGE <= c <= 410+DEPTH_RANGE]
+					lst_depth_pp_410_Ppds = [c for x,c in enumerate(RF_amplitude_depth_raw_Ppds[i][k]) if 410-DEPTH_RANGE <= c <= 410+DEPTH_RANGE]
+					lst_410_depth_Ppds.append(lst_depth_pp_410_Ppds[lst_depth_amp_410_Ppds.index(max(lst_depth_amp_410_Ppds))])
+					lst_410_amp_Ppds.append(lst_depth_amp_410_Ppds.index(max(lst_depth_amp_410_Ppds)))
+
+					#660 km
+
+					lst_depth_amp_660_Ppds = [l[x] for x,c in enumerate(RF_amplitude_depth_raw_Ppds[i][k]) if 660-DEPTH_RANGE <= c <= 660+DEPTH_RANGE]
+					lst_depth_pp_660_Ppds = [c for x,c in enumerate(RF_amplitude_depth_raw_Ppds[i][k]) if 660-DEPTH_RANGE <= c <= 660+DEPTH_RANGE]
+					lst_660_depth_Ppds.append(lst_depth_pp_660_Ppds[lst_depth_amp_660_Ppds.index(max(lst_depth_amp_660_Ppds))])
+					lst_660_amp_Ppds.append(lst_depth_amp_660_Ppds.index(max(lst_depth_amp_660_Ppds)))
 
 				######## Estimating mean and std depth ########
+
+				#410 km
+
 
 				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['RF_410_DEPTH'] = lst_410_depth_Pds
 				RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['RF_410_DEPTH'] = lst_410_depth_Ppds
@@ -674,10 +850,10 @@ if BOOTSTRAP_DEPTH_ESTIMATION == True:
 				RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['lon'] = grid_sel_x[i]
 				RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['lat'] = grid_sel_y[i]
 
-				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['410_mean'] = np.mean(lst_410_depth_Pds)
-				RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['410_mean'] = np.mean(lst_410_depth_Ppds)
-
+				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['410_mean'] = np.average(lst_410_depth_Pds)
 				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['410_std'] = np.std(lst_410_depth_Pds)
+
+				RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['410_mean'] = np.average(lst_410_depth_Ppds)
 				RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['410_std'] = np.std(lst_410_depth_Ppds)
 
 				print('410 Pds Depth = '+str(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['410_mean'])+' ± '+str(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['410_std']))
@@ -690,54 +866,46 @@ if BOOTSTRAP_DEPTH_ESTIMATION == True:
 				beta = Vp_depth_1 + Vs_depth_1
 				gamma_vp_vs_1 = GAMMA*Vp_Vs_ratio_depth_1
 
-				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['delta_Vp_410'] = (alfa*beta*(RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['410_mean'] - RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['410_mean']))/(alfa*(1+gamma_vp_vs_1)*RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['410_mean'] - (beta*(1-gamma_vp_vs_1)*RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['410_mean']))
-				RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['delta_Vp_410'] = (alfa*beta*(RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['410_mean'] - RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['410_mean']))/(alfa*(1+gamma_vp_vs_1)*RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['410_mean'] - (beta*(1-gamma_vp_vs_1)*RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['410_mean']))
+				lst_delta_Vp_410_Pds = (alfa*beta*(np.mean(lst_410_depth_Ppds) - np.mean(lst_410_depth_Pds)))/(alfa*(1+gamma_vp_vs_1)*np.mean(lst_410_depth_Pds) - (beta*(1-gamma_vp_vs_1)*np.mean(lst_410_depth_Ppds)))
 
-				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['delta_Vs_410'] = RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['delta_Vp_410'] * GAMMA * Vp_Vs_ratio_depth_1
-				RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['delta_Vs_410'] = RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['delta_Vp_410'] * GAMMA * Vp_Vs_ratio_depth_1
+				lst_delta_Vs_410_Pds = lst_delta_Vp_410_Pds * GAMMA * Vp_Vs_ratio_depth_1
 
-				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['true_410_mean'] = RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['410_mean'] * ((Vp_depth_1-Vs_depth_1)/(Vp_depth_1*Vs_depth_1)) * (((Vs_depth_1+RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['delta_Vs_410'])*(Vp_depth_1+RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['delta_Vp_410']))/(Vp_depth_1+RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['delta_Vp_410']-Vs_depth_1-RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['delta_Vs_410']))
+				lst_true_410_mean_Pds = np.mean(lst_410_depth_Pds)* ((Vp_depth_1-Vs_depth_1)/(Vp_depth_1*Vs_depth_1)) * ((Vs_depth_1+lst_delta_Vs_410_Pds)*(Vp_depth_1+lst_delta_Vp_410_Pds))/(Vp_depth_1+lst_delta_Vp_410_Pds-Vs_depth_1-lst_delta_Vs_410_Pds)
 
-				RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['true_410_mean'] = RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['410_mean'] * ((Vp_depth_1+Vs_depth_1)/(Vp_depth_1*Vs_depth_1)) * (((Vs_depth_1+RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['delta_Vs_410'])*(Vp_depth_1+RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['delta_Vp_410']))/(Vp_depth_1+RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['delta_Vp_410']+Vs_depth_1+RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['delta_Vs_410']))
+				lst_true_410_mean_Ppds = np.mean(lst_410_depth_Ppds) * ((Vp_depth_1+Vs_depth_1)/(Vp_depth_1*Vs_depth_1)) * ((Vs_depth_1+lst_delta_Vs_410_Pds)*(Vp_depth_1+lst_delta_Vp_410_Pds))/(Vp_depth_1+lst_delta_Vp_410_Pds+Vs_depth_1+lst_delta_Vs_410_Pds)
+					
+				
+				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['delta_Vp_410_mean'] = lst_delta_Vp_410_Pds
+
+				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['delta_Vs_410_mean'] = lst_delta_Vs_410_Pds
+
+				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['true_410_mean'] = lst_true_410_mean_Pds
+
+				RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['true_410_mean'] = lst_true_410_mean_Ppds
+
+				print('Delta Vp = '+str(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['delta_Vp_410_mean']))
+				print('Delta Vs = '+str(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['delta_Vs_410_mean']))				
 				
 				print('410 Pds True Depth = '+str(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['true_410_mean']))
 				print('410 Ppds True Depth = '+str(RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['true_410_mean']))
 
+				######## Estimating mean and std depth ########
 
 				#660 km
-
-				lst_660_depth_Pds = []
-				lst_660_amp_Pds = []
-
-				for k,l in enumerate(new_RANDOM_RF_DATA_raw_Pds):
-					lst_depth_amp = [l[x] for x,c in enumerate(RF_amplitude_depth_raw_Pds[i][k]) if 660-DEPTH_RANGE <= c <= 660+DEPTH_RANGE]
-					lst_depth_pp = [c for x,c in enumerate(RF_amplitude_depth_raw_Pds[i][k]) if 660-DEPTH_RANGE <= c <= 660+DEPTH_RANGE]
-					lst_660_depth_Pds.append(lst_depth_pp[lst_depth_amp.index(max(lst_depth_amp))])
-					lst_660_amp_Pds.append(lst_depth_amp.index(max(lst_depth_amp)))
-
-
-				lst_660_depth_Ppds = []
-				lst_660_amp_Ppds = []
-
-				for k,l in enumerate(new_RANDOM_RF_DATA_raw_Ppds):
-					lst_depth_amp = [l[x] for x,c in enumerate(RF_amplitude_depth_raw_Ppds[i][k]) if 660-DEPTH_RANGE <= c <= 660+DEPTH_RANGE]
-					lst_depth_pp = [c for x,c in enumerate(RF_amplitude_depth_raw_Ppds[i][k]) if 660-DEPTH_RANGE <= c <= 660+DEPTH_RANGE]
-					lst_660_depth_Ppds.append(lst_depth_pp[lst_depth_amp.index(max(lst_depth_amp))])
-					lst_660_amp_Ppds.append(lst_depth_amp.index(max(lst_depth_amp)))
-
-				######## Estimating mean and std depth ########
 
 				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['RF_660_DEPTH'] = lst_660_depth_Pds
 				RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['RF_660_DEPTH'] = lst_660_depth_Ppds
 
-				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['660_mean'] = np.mean(lst_660_depth_Pds)
-				RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['660_mean'] = np.mean(lst_660_depth_Ppds)
-
+				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['660_mean'] = np.average(lst_660_depth_Pds)
 				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['660_std'] = np.std(lst_660_depth_Pds)
+
+				RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['660_mean'] = np.average(lst_660_depth_Ppds)
 				RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['660_std'] = np.std(lst_660_depth_Ppds)
 
 				print('660 Pds Depth = '+str(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['660_mean'])+' ± '+str(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['660_std']))
 				print('660 Ppds Depth = '+str(RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['660_mean'])+' ± '+str(RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['660_std']))
+
+
 
 				######## Estimating TRUE depth ########
 
@@ -746,66 +914,55 @@ if BOOTSTRAP_DEPTH_ESTIMATION == True:
 				beta = Vp_depth_2 + Vs_depth_2
 				gamma_vp_vs_2 = GAMMA*Vp_Vs_ratio_depth_2
 
-				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['delta_Vp_660'] = (alfa*beta*(RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['660_mean'] - RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['660_mean']))/(alfa*(1+gamma_vp_vs_2)*RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['660_mean'] - (beta*(1-gamma_vp_vs_2)*RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['660_mean']))
-				RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['delta_Vp_660'] = (alfa*beta*(RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['660_mean'] - RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['660_mean']))/(alfa*(1+gamma_vp_vs_2)*RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['660_mean'] - (beta*(1-gamma_vp_vs_2)*RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['660_mean']))
+				lst_delta_Vp_660_Pds = (alfa*beta*(np.mean(lst_660_depth_Ppds) - np.mean(lst_660_depth_Pds)))/(alfa*(1+gamma_vp_vs_2)*np.mean(lst_660_depth_Pds) - (beta*(1-gamma_vp_vs_2)*np.mean(lst_660_depth_Ppds)))
 
-				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['delta_Vs_660'] = RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['delta_Vp_660'] * GAMMA * Vp_Vs_ratio_depth_2
-				RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['delta_Vs_660'] = RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['delta_Vp_660'] * GAMMA * Vp_Vs_ratio_depth_2
+				lst_delta_Vs_660_Pds = lst_delta_Vp_660_Pds * GAMMA * Vp_Vs_ratio_depth_2
 
-				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['true_660_mean'] = RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['660_mean'] * ((Vp_depth_2-Vs_depth_2)/(Vp_depth_2*Vs_depth_2)) * (((Vs_depth_2+RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['delta_Vs_660'])*(Vp_depth_2+RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['delta_Vp_660']))/(Vp_depth_2+RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['delta_Vp_660']-Vs_depth_2-RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['delta_Vs_660']))
+				lst_true_660_mean_Pds = np.mean(lst_660_depth_Pds) * ((Vp_depth_2-Vs_depth_2)/(Vp_depth_2*Vs_depth_2)) * (((Vs_depth_2+lst_delta_Vs_660_Pds)*(Vp_depth_2+lst_delta_Vp_660_Pds))/(Vp_depth_2+lst_delta_Vp_660_Pds-Vs_depth_2-lst_delta_Vs_660_Pds))
 
-				RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['true_660_mean'] = RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['660_mean'] * ((Vp_depth_2+Vs_depth_2)/(Vp_depth_2*Vs_depth_2)) * (((Vs_depth_2+RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['delta_Vs_660'])*(Vp_depth_2+RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['delta_Vp_660']))/(Vp_depth_2+RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['delta_Vp_660']+Vs_depth_2+RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['delta_Vs_660']))
+				lst_true_660_mean_Ppds = np.mean(lst_660_depth_Ppds)  * ((Vp_depth_2+Vs_depth_2)/(Vp_depth_2*Vs_depth_2)) * (((Vs_depth_2+lst_delta_Vs_660_Pds)*(Vp_depth_2+lst_delta_Vp_660_Pds))/(Vp_depth_2+lst_delta_Vp_660_Pds+Vs_depth_2+lst_delta_Vs_660_Pds))
+
+				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['delta_Vp_660_mean'] = lst_delta_Vp_660_Pds
+
+				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['delta_Vs_660_mean'] = lst_delta_Vs_660_Pds
+
+				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['true_660_mean'] = lst_true_660_mean_Pds
+
+				RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['true_660_mean'] = lst_true_660_mean_Ppds
+
+				print('Delta Vp = '+str(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['delta_Vp_660_mean']))
+				print('Delta Vs = '+str(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['delta_Vs_660_mean']))
 
 				print('660 Pds True Depth = '+str(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['true_660_mean']))
 				print('660 Ppds True Depth = '+str(RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['true_660_mean']))
+
+				######## Estimating MTZ thickness ########
+
+				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['thickness_MTZ_mean'] = np.mean(lst_660_depth_Pds) - np.mean(lst_410_depth_Pds)
+
+				RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['thickness_MTZ_mean'] = np.mean(lst_660_depth_Ppds) - np.mean(lst_410_depth_Ppds)
+
+				print('MTZ Pds thickness = '+str(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['thickness_MTZ_mean']))
+				print('MTZ Ppds thickness = '+str(RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['thickness_MTZ_mean']))
+
+
+				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['true_thickness_MTZ_mean'] = np.mean(lst_true_660_mean_Pds) - np.mean(lst_true_410_mean_Pds)
+
+				RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['true_thickness_MTZ_mean'] = np.mean(lst_true_660_mean_Ppds) - np.mean(lst_true_410_mean_Ppds)
+
+				print('MTZ Pds true thickness = '+str(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['true_thickness_MTZ_mean']))
+				print('MTZ Ppds true thickness = '+str(RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['true_thickness_MTZ_mean']))
+
+				######## Estimating MTZ difference thickness ########
+
+				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['difference_thickness_MTZ'] = (np.mean(lst_true_660_mean_Pds) - np.mean(lst_true_410_mean_Pds))  - (np.mean(lst_660_depth_Pds) - np.mean(lst_410_depth_Pds))
+				RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['difference_thickness_MTZ'] = (np.mean(lst_true_660_mean_Ppds) - np.mean(lst_true_410_mean_Ppds)) - (np.mean(lst_660_depth_Ppds) - np.mean(lst_410_depth_Ppds))
+
+				print('MTZ Pds diff thickness = '+str(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['difference_thickness_MTZ']))
+				print('MTZ Ppds diff thickness = '+str(RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['difference_thickness_MTZ']))
 				print('\n')
 
 
-			else:
-
-				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['RF_410_DEPTH'] = 0
-				RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['RF_410_DEPTH'] = 0
-
-				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['lon'] = grid_sel_x[i]
-				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['lat'] = grid_sel_y[i]
-
-				RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['lon'] = grid_sel_x[i]
-				RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['lat'] = grid_sel_y[i]
-
-				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['410_mean'] = 0
-				RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['410_mean'] = 0
-
-				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['410_std'] = 0
-				RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['410_std'] = 0
-				
-				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['delta_Vp_410'] = 0
-				RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['delta_Vp_410'] = 0
-				
-				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['delta_Vs_410'] = 0 
-				RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['delta_Vs_410'] = 0
-
-				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['true_410_mean'] = 0
-				RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['true_410_mean'] = 0
-
-				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['RF_660_DEPTH'] = 0
-				RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['RF_660_DEPTH'] = 0
-
-				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['660_mean'] = 0
-				RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['660_mean'] = 0
-
-				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['660_std'] = 0
-				RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['660_std'] = 0
-	
-				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['delta_Vp_660'] = 0
-				RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['delta_Vp_660'] = 0
-
-				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['delta_Vs_660'] = 0
-				RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['delta_Vs_660'] = 0
-
-				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['true_660_mean'] = 0
-
-				RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['true_660_mean'] = 0
-	
 #############################################################################################################################################################################################
 #Allocating mean and std results:
 
@@ -813,193 +970,169 @@ if BOOTSTRAP_DEPTH_ESTIMATION == True:
 RF_lat = []
 RF_lon = []
 
-RF_DEPTH_mean_1_Pds_lst = [[]]*len(RF_data_raw_Pds)
-RF_DEPTH_std_1_Pds_lst = [[]]*len(RF_data_raw_Pds)
 RF_DEPTH_mean_1_Pds = []
 RF_DEPTH_std_1_Pds = []
-
-RF_DEPTH_mean_1_Ppds_lst = [[]]*len(RF_data_raw_Pds)
-RF_DEPTH_std_1_Ppds_lst = [[]]*len(RF_data_raw_Pds)
 RF_DEPTH_mean_1_Ppds = []
 RF_DEPTH_std_1_Ppds = []
 
-delta_1_Vp_lst = [[]]*len(RF_data_raw_Pds)
-delta_1_Vs_lst = [[]]*len(RF_data_raw_Pds)
 delta_1_Vp_mean = []
 delta_1_Vp_std = []
 delta_1_Vs_mean = []
 delta_1_Vs_std = []
 
-RF_DEPTH_mean_1_true_Pds_lst = [[]]*len(RF_data_raw_Pds)
-RF_DEPTH_mean_1_true_Ppds_lst = [[]]*len(RF_data_raw_Pds)
 RF_DEPTH_mean_1_true_Pds = []
 RF_DEPTH_std_1_true_Pds = []
 RF_DEPTH_mean_1_true_Ppds = []
 RF_DEPTH_std_1_true_Ppds = []
 
-
-RF_DEPTH_mean_1_true_Pds_lst = [[]]*len(RF_data_raw_Pds)
-RF_DEPTH_mean_1_true_Ppds_lst = [[]]*len(RF_data_raw_Pds)
-RF_DEPTH_mean_1_true_Pds = []
-RF_DEPTH_std_1_true_Pds = []
-RF_DEPTH_mean_1_true_Ppds = []
-RF_DEPTH_std_1_true_Ppds = []
-
-RF_DEPTH_mean_2_Pds_lst = [[]]*len(RF_data_raw_Pds)
-RF_DEPTH_std_2_Pds_lst = [[]]*len(RF_data_raw_Pds)
 RF_DEPTH_mean_2_Pds = []
 RF_DEPTH_std_2_Pds = []
-
-RF_DEPTH_mean_2_Ppds_lst = [[]]*len(RF_data_raw_Pds)
-RF_DEPTH_std_2_Ppds_lst = [[]]*len(RF_data_raw_Pds)
 RF_DEPTH_mean_2_Ppds = []
 RF_DEPTH_std_2_Ppds = []
 
-delta_2_Vp_lst = [[]]*len(RF_data_raw_Pds)
-delta_2_Vs_lst = [[]]*len(RF_data_raw_Pds)
 delta_2_Vp_mean = []
 delta_2_Vp_std = []
 delta_2_Vs_mean = []
 delta_2_Vs_std = []
 
-RF_DEPTH_mean_2_true_Pds_lst = [[]]*len(RF_data_raw_Pds)
-RF_DEPTH_mean_2_true_Ppds_lst = [[]]*len(RF_data_raw_Pds)
 RF_DEPTH_mean_2_true_Pds = []
 RF_DEPTH_std_2_true_Pds = []
 RF_DEPTH_mean_2_true_Ppds = []
 RF_DEPTH_std_2_true_Ppds = []
+
+thickness_MTZ_Pds = []
+thickness_MTZ_Ppds = []
+
+thickness_MTZ_Pds_std = []
+thickness_MTZ_Ppds_std = []
+
+true_thickness_MTZ_Pds = []
+true_thickness_MTZ_Ppds = []
+
+true_thickness_MTZ_Pds_std = []
+true_thickness_MTZ_Ppds_std = []
+
+diff_thickness_MTZ_Pds = []
+diff_thickness_MTZ_Ppds = []
+
+diff_thickness_MTZ_Pds_std = []
+diff_thickness_MTZ_Ppds_std  = []
+
+RF_BOOTSTRAP_DATA_Pds = []
+RF_BOOTSTRAP_DATA_Ppds = []
+
 
 for i,j in enumerate(RF_data_raw_Pds):
 	if len(j) > NUMBER_PP_PER_BIN:
 		RF_lat.append(RF_BOOTSTRAP_ESTIMATION_Pds[0][i]['lat'])
 		RF_lon.append(RF_BOOTSTRAP_ESTIMATION_Pds[0][i]['lon'])
 
+		flat_DATA_list_Pds = [val for sublist in [RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['RF_DATA'] for _k in range(BOOTSTRAP_INTERATOR)] for val in sublist]
+		flat_DATA_list_Ppds = [val for sublist in [RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['RF_DATA'] for _k in range(BOOTSTRAP_INTERATOR)] for val in sublist]
+		RF_BOOTSTRAP_DATA_Pds.append(flat_DATA_list_Pds)
+		RF_BOOTSTRAP_DATA_Ppds.append(flat_DATA_list_Ppds)
 
-		RF_DEPTH_mean_1_Pds_lst[i].append([RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['410_mean'] for _k in range(BOOTSTRAP_INTERATOR)])
-		RF_DEPTH_std_1_Pds_lst[i].append([RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['410_std'] for _k in range(BOOTSTRAP_INTERATOR)])
-		#RF_DEPTH_mean_1_Pds.append(np.mean(RF_DEPTH_mean_1_Pds_lst[i]))
-		RF_DEPTH_std_1_Pds.append(np.mean(RF_DEPTH_std_1_Pds_lst[i]))
+		flat_mean_1_Pds = [float(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['410_mean']) for _k in range(BOOTSTRAP_INTERATOR)]
+		flat_std_1_Pds = [float(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['410_std']) for _k in range(BOOTSTRAP_INTERATOR)]
+		RF_DEPTH_mean_1_Pds.append(np.mean(flat_mean_1_Pds))
+		RF_DEPTH_std_1_Pds.append(np.mean(flat_std_1_Pds))
+
+		flat_mean_1_Ppds = [float(RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['410_mean']) for _k in range(BOOTSTRAP_INTERATOR)]
+		flat_std_1_Ppds = [float(RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['410_std']) for _k in range(BOOTSTRAP_INTERATOR)]
+		RF_DEPTH_mean_1_Ppds.append(np.mean(flat_mean_1_Ppds))
+		RF_DEPTH_std_1_Ppds.append(np.mean(flat_std_1_Ppds))
+
+		flat_mean_2_Pds = [float(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['660_mean']) for _k in range(BOOTSTRAP_INTERATOR)]
+		flat_std_2_Pds = [float(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['660_std']) for _k in range(BOOTSTRAP_INTERATOR)]
+		RF_DEPTH_mean_2_Pds.append(np.mean(flat_mean_2_Pds))
+		RF_DEPTH_std_2_Pds.append(np.mean(flat_std_2_Pds))
+
+		flat_mean_2_Ppds = [float(RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['660_mean']) for _k in range(BOOTSTRAP_INTERATOR)]
+		flat_std_2_Ppds = [float(RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['660_std']) for _k in range(BOOTSTRAP_INTERATOR)]
+		RF_DEPTH_mean_2_Ppds.append(np.mean(flat_mean_2_Ppds))
+		RF_DEPTH_std_2_Ppds.append(np.mean(flat_std_2_Ppds))
 
 
-		RF_DEPTH_mean_1_Ppds_lst[i].append([RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['410_mean'] for _k in range(BOOTSTRAP_INTERATOR)])
-		RF_DEPTH_std_1_Ppds_lst[i].append([RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['410_std'] for _k in range(BOOTSTRAP_INTERATOR)])
-		#RF_DEPTH_mean_1_Ppds.append(np.mean(RF_DEPTH_mean_1_Ppds_lst[i]))
-		RF_DEPTH_std_1_Ppds.append(np.mean(RF_DEPTH_std_1_Ppds_lst[i]))
+		flat_delta_1_Vp_mean = [float(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['delta_Vp_410_mean']) for _k in range(BOOTSTRAP_INTERATOR)]
+		delta_1_Vp_mean.append(np.mean(flat_delta_1_Vp_mean))
+		delta_1_Vp_std.append(np.std(flat_delta_1_Vp_mean))
 
-		delta_1_Vp_lst[i].append([RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['delta_Vp_410'] for _k in range(BOOTSTRAP_INTERATOR)])
-		delta_1_Vs_lst[i].append([RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['delta_Vs_410'] for _k in range(BOOTSTRAP_INTERATOR)])
-		#delta_1_Vp_mean.append(np.mean(delta_1_Vp_lst[i]))
-		delta_1_Vp_std.append(np.std(delta_1_Vp_lst[i]))
-		#delta_1_Vs_mean.append(np.mean(delta_1_Vs_lst[i]))
-		delta_1_Vs_std.append(np.std(delta_1_Vs_lst[i]))
+		flat_delta_1_Vs_mean = [float(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['delta_Vs_410_mean']) for _k in range(BOOTSTRAP_INTERATOR)]
+		delta_1_Vs_mean.append(np.mean(flat_delta_1_Vs_mean))
+		delta_1_Vs_std.append(np.std(flat_delta_1_Vs_mean))
 
-		RF_DEPTH_mean_1_true_Pds_lst[i].append([RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['true_410_mean'] for _k in range(BOOTSTRAP_INTERATOR)])
-		RF_DEPTH_mean_1_true_Ppds_lst[i].append([RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['true_410_mean'] for _k in range(BOOTSTRAP_INTERATOR)])
-		#RF_DEPTH_mean_1_true_Pds.append(np.mean(RF_DEPTH_mean_1_true_Pds_lst[i]))
-		RF_DEPTH_std_1_true_Pds.append(np.std(RF_DEPTH_mean_1_true_Pds_lst[i]))
-		#RF_DEPTH_mean_1_true_Ppds.append(np.mean(RF_DEPTH_mean_1_true_Ppds_lst[i]))
-		RF_DEPTH_std_1_true_Ppds.append(np.std(RF_DEPTH_mean_1_true_Ppds_lst[i]))
 
-		RF_DEPTH_mean_2_Pds_lst[i].append([RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['660_mean'] for _k in range(BOOTSTRAP_INTERATOR)])
-		RF_DEPTH_std_2_Pds_lst[i].append([RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['660_std'] for _k in range(BOOTSTRAP_INTERATOR)])
-		#RF_DEPTH_mean_2_Pds.append(np.mean(RF_DEPTH_mean_2_Pds_lst[i]))
-		RF_DEPTH_std_2_Pds.append(np.mean(RF_DEPTH_std_2_Pds_lst[i]))
+		flat_mean_1_true_Pds = [float(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['true_410_mean']) for _k in range(BOOTSTRAP_INTERATOR)] 
+		flat_mean_1_true_Ppds = [float(RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['true_410_mean']) for _k in range(BOOTSTRAP_INTERATOR)]
 
-		RF_DEPTH_mean_2_Ppds_lst[i].append([RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['660_mean'] for _k in range(BOOTSTRAP_INTERATOR)])
-		RF_DEPTH_std_2_Ppds_lst[i].append([RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['660_std'] for _k in range(BOOTSTRAP_INTERATOR)])
-		#RF_DEPTH_mean_2_Ppds.append(np.mean(RF_DEPTH_mean_2_Ppds_lst[i]))
-		RF_DEPTH_std_2_Ppds.append(np.mean(RF_DEPTH_std_2_Ppds_lst[i]))
+		RF_DEPTH_mean_1_true_Pds.append(np.mean(flat_mean_1_true_Pds))
+		RF_DEPTH_std_1_true_Pds.append(np.std(flat_mean_1_true_Pds))
 
-		delta_2_Vp_lst[i].append([RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['delta_Vp_660'] for _k in range(BOOTSTRAP_INTERATOR)])
-		delta_2_Vs_lst[i].append([RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['delta_Vs_660'] for _k in range(BOOTSTRAP_INTERATOR)])
-		#delta_2_Vp_mean.append(np.mean(delta_2_Vp_lst[i]))
-		delta_2_Vp_std.append(np.std(delta_2_Vp_lst[i]))
-		#delta_2_Vs_mean.append(np.mean(delta_2_Vs_lst[i]))
-		delta_2_Vs_std.append(np.std(delta_2_Vs_lst[i]))
+		RF_DEPTH_mean_1_true_Ppds.append(np.mean(flat_mean_1_true_Ppds))
+		RF_DEPTH_std_1_true_Ppds.append(np.std(flat_mean_1_true_Ppds))
 
-		RF_DEPTH_mean_2_true_Pds_lst[i].append([RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['true_660_mean'] for _k in range(BOOTSTRAP_INTERATOR)])
-		RF_DEPTH_mean_2_true_Ppds_lst[i].append([RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['true_660_mean'] for _k in range(BOOTSTRAP_INTERATOR)])
-		#RF_DEPTH_mean_2_true_Pds.append(np.mean(RF_DEPTH_mean_2_true_Pds_lst[i]))
-		RF_DEPTH_std_2_true_Pds.append(np.std(RF_DEPTH_mean_2_true_Pds_lst[i]))
-		#RF_DEPTH_mean_2_true_Ppds.append(np.mean(RF_DEPTH_mean_2_true_Ppds_lst[i]))
-		RF_DEPTH_std_2_true_Ppds.append(np.std(RF_DEPTH_mean_2_true_Ppds_lst[i]))
+		flat_delta_2_Vp = [float(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['delta_Vp_660_mean']) for _k in range(BOOTSTRAP_INTERATOR)]
+		delta_2_Vp_mean.append(np.mean(flat_delta_2_Vp))
+		delta_2_Vp_std.append(np.std(flat_delta_2_Vp))
+
+		flat_delta_2_Vs = [float(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['delta_Vs_660_mean']) for _k in range(BOOTSTRAP_INTERATOR)]
+		delta_2_Vs_mean.append(np.mean(flat_delta_2_Vs))
+		delta_2_Vs_std.append(np.std(flat_delta_2_Vs))
+
+
+		flat_mean_2_true_Pds = [float(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['true_660_mean']) for _k in range(BOOTSTRAP_INTERATOR)]
+		flat_mean_2_true_Ppds = [float(RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['true_660_mean']) for _k in range(BOOTSTRAP_INTERATOR)]
+
+		RF_DEPTH_mean_2_true_Pds.append(np.mean(flat_mean_2_true_Pds))
+		RF_DEPTH_std_2_true_Pds.append(np.std(flat_mean_2_true_Pds))
+		RF_DEPTH_mean_2_true_Ppds.append(np.mean(flat_mean_2_true_Ppds))
+		RF_DEPTH_std_2_true_Ppds.append(np.std(flat_mean_2_true_Ppds))
+
+		flat_thickness_MTZ_Pds = [float(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['thickness_MTZ_mean']) for _k in range(BOOTSTRAP_INTERATOR)]
+		flat_thickness_MTZ_Ppds = [float(RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['thickness_MTZ_mean']) for _k in range(BOOTSTRAP_INTERATOR)]
+
+		thickness_MTZ_Pds.append(np.mean(flat_thickness_MTZ_Pds))
+		thickness_MTZ_Pds_std.append(np.std(flat_thickness_MTZ_Pds))
+		thickness_MTZ_Ppds.append(np.mean(flat_thickness_MTZ_Ppds))
+		thickness_MTZ_Ppds_std.append(np.std(flat_thickness_MTZ_Ppds))
+
+		flat_true_thickness_MTZ_Pds = [float(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['true_thickness_MTZ_mean']) for _k in range(BOOTSTRAP_INTERATOR)]
+		flat_true_thickness_MTZ_Ppds = [float(RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['true_thickness_MTZ_mean']) for _k in range(BOOTSTRAP_INTERATOR)]
+
+		true_thickness_MTZ_Pds.append(np.mean(flat_true_thickness_MTZ_Pds))
+		true_thickness_MTZ_Pds_std.append(np.std(flat_true_thickness_MTZ_Pds))
+		true_thickness_MTZ_Ppds.append(np.mean(flat_true_thickness_MTZ_Ppds))
+		true_thickness_MTZ_Ppds_std.append(np.std(flat_true_thickness_MTZ_Ppds))
+
+
+		flat_diff_thickness_MTZ_Pds = [float(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['difference_thickness_MTZ']) for _k in range(BOOTSTRAP_INTERATOR)]
+		flat_diff_thickness_MTZ_Ppds = [float(RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['difference_thickness_MTZ']) for _k in range(BOOTSTRAP_INTERATOR)]
+
+		diff_thickness_MTZ_Pds.append(np.mean(flat_diff_thickness_MTZ_Pds))
+		diff_thickness_MTZ_Pds_std.append(np.std(flat_diff_thickness_MTZ_Pds))
+		diff_thickness_MTZ_Ppds.append(np.mean(flat_diff_thickness_MTZ_Ppds))
+		diff_thickness_MTZ_Ppds_std.append(np.std(flat_diff_thickness_MTZ_Ppds))
+
+
 #############################################################################################################################################################################################
 
 print('Stacking Pds and Ppds data')
-RF_stacking_Pds = []
 len_RF_stacking_Pds = []
+RF_stacking_Pds = []
 
 for i,j in enumerate(RF_data_raw_Pds):
 	if len(j) > NUMBER_PP_PER_BIN:
 		RF_stacking_Pds.append([sum(x)/len(j)  for x in zip(*j)])
 		len_RF_stacking_Pds.append(len(j))
 
-RF_stacking_Ppds = []
 len_RF_stacking_Ppds = []
+RF_stacking_Ppds = []
 
 for i,j in enumerate(RF_data_raw_Ppds):
 	if len(j) > NUMBER_PP_PER_BIN:
 		RF_stacking_Ppds.append([sum(x)/len(j)  for x in zip(*j)])
 		len_RF_stacking_Ppds.append(len(j))
 
-
-#############################################################################################################################################################################################
-print('Calculating the Mean of 410 km and 660 km in Pds stacked data')
-
-
-for i,j in enumerate(RF_stacking_Pds):
-	lst_depth_410_amp = [j[x] for x,c in enumerate(camadas_terra_10_km) if 410-DEPTH_RANGE <= c <= 410+DEPTH_RANGE]
-	lst_depth_410_pp = [c for x,c in enumerate(camadas_terra_10_km) if 410-DEPTH_RANGE <= c <= 410+DEPTH_RANGE]
-	RF_DEPTH_mean_1_Pds.append(round(lst_depth_410_pp[lst_depth_410_amp.index(max(lst_depth_410_amp))],1))
-
-	lst_depth_660_amp = [j[x] for x,c in enumerate(camadas_terra_10_km) if 660-DEPTH_RANGE <= c <= 660+DEPTH_RANGE]
-	lst_depth_660_pp = [c for x,c in enumerate(camadas_terra_10_km) if 660-DEPTH_RANGE <= c <= 660+DEPTH_RANGE]
-	RF_DEPTH_mean_2_Pds.append(round(lst_depth_660_pp[lst_depth_660_amp.index(max(lst_depth_660_amp))],1))
-
-
-
-print('Calculating the Mean of 410 km and 660 km in Ppds stacked data')
-
-
-for i,j in enumerate(RF_stacking_Ppds):
-	lst_depth_410_amp = [j[x] for x,c in enumerate(camadas_terra_10_km) if 410-DEPTH_RANGE <= c <= 410+DEPTH_RANGE]
-	lst_depth_410_pp = [c for x,c in enumerate(camadas_terra_10_km) if 410-DEPTH_RANGE <= c <= 410+DEPTH_RANGE]
-	RF_DEPTH_mean_1_Ppds.append(round(lst_depth_410_pp[lst_depth_410_amp.index(max(lst_depth_410_amp))],1))
-
-	lst_depth_660_amp = [j[x] for x,c in enumerate(camadas_terra_10_km) if 660-DEPTH_RANGE <= c <= 660+DEPTH_RANGE]
-	lst_depth_660_pp = [c for x,c in enumerate(camadas_terra_10_km) if 660-DEPTH_RANGE <= c <= 660+DEPTH_RANGE]
-	RF_DEPTH_mean_2_Ppds.append(round(lst_depth_660_pp[lst_depth_660_amp.index(max(lst_depth_660_amp))],1))
-
-#############################################################################################################################################################################################
-print('Calculating the true Mean of 410 km and 660 km in Pds stacked data')
-
-for i,j in enumerate(RF_stacking_Pds):
-	delta_1_Vp_mean_var = (alfa*beta*(RF_DEPTH_mean_1_Ppds[i] - RF_DEPTH_mean_1_Pds[i]))/(alfa*(1+gamma_vp_vs_1)*RF_DEPTH_mean_1_Pds[i] - (beta*(1-gamma_vp_vs_1)*RF_DEPTH_mean_1_Ppds[i]))
-
-	delta_1_Vp_mean.append(delta_1_Vp_mean_var)
-
-	delta_1_Vs_mean_var = delta_1_Vp_mean_var * GAMMA * Vp_Vs_ratio_depth_1
-
-	delta_1_Vs_mean.append(delta_1_Vs_mean_var)
-	
-	RF_DEPTH_mean_1_true_Pds.append(RF_DEPTH_mean_1_Pds[i] * ((Vp_depth_1-Vs_depth_1)/(Vp_depth_1*Vs_depth_1)) * (((Vs_depth_1+delta_1_Vs_mean_var)*(Vp_depth_1+delta_1_Vp_mean_var))/(Vp_depth_1+delta_1_Vp_mean_var-Vs_depth_1-delta_1_Vs_mean_var)))
-
-	RF_DEPTH_mean_1_true_Ppds.append(RF_DEPTH_mean_1_Ppds[i] * ((Vp_depth_1+Vs_depth_1)/(Vp_depth_1*Vs_depth_1)) * (((Vs_depth_1+delta_1_Vs_mean_var)*(Vp_depth_1+delta_1_Vp_mean_var))/(Vp_depth_1+delta_1_Vp_mean_var+Vs_depth_1+delta_1_Vs_mean_var)))
-
-
-
-
-	delta_2_Vp_mean_var = (alfa*beta*(RF_DEPTH_mean_2_Ppds[i] - RF_DEPTH_mean_2_Pds[i]))/(alfa*(1+gamma_vp_vs_2)*RF_DEPTH_mean_2_Pds[i] - (beta*(1-gamma_vp_vs_2)*RF_DEPTH_mean_2_Ppds[i]))
-
-	delta_2_Vp_mean.append(delta_2_Vp_mean_var)
-
-	delta_2_Vs_mean_var = delta_2_Vp_mean_var * GAMMA * Vp_Vs_ratio_depth_2
-
-	delta_2_Vs_mean.append(delta_2_Vs_mean_var)
-	
-	RF_DEPTH_mean_2_true_Pds.append(RF_DEPTH_mean_2_Pds[i] * ((Vp_depth_2-Vs_depth_2)/(Vp_depth_2*Vs_depth_2)) * (((Vs_depth_2+delta_2_Vs_mean_var)*(Vp_depth_2+delta_2_Vp_mean_var))/(Vp_depth_2+delta_2_Vp_mean_var-Vs_depth_2-delta_2_Vs_mean_var)))
-
-	RF_DEPTH_mean_2_true_Ppds.append(RF_DEPTH_mean_2_Ppds[i] * ((Vp_depth_2+Vs_depth_2)/(Vp_depth_2*Vs_depth_2)) * (((Vs_depth_2+delta_2_Vs_mean_var)*(Vp_depth_2+delta_2_Vp_mean_var))/(Vp_depth_2+delta_2_Vp_mean_var+Vs_depth_2+delta_2_Vs_mean_var)))
 
 #############################################################################################################################################################################################
 
@@ -1023,10 +1156,8 @@ m1 = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_L
 m1.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m1.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
-#norm1 = MidPointNorm(midpoint=410)
 x, y = m1(RF_lon,RF_lat)
-#sc1 = m1.scatter(x,y,40,RF_DEPTH_mean_1_Pds,cmap=colormap,marker='o',norm=norm1,edgecolors='k')
-sc1 = m1.scatter(x,y,40,RF_DEPTH_mean_1_Pds,cmap=colormap,marker='o',edgecolors='k')
+sc1 = m1.scatter(x,y,40,RF_DEPTH_mean_1_Pds,cmap=colormap,marker='s',edgecolors='none',vmin=410-DEPTH_RANGE,vmax=410+DEPTH_RANGE)
 
 for lon, lat in zip(sta_long,sta_lat):
     x,y = m1(lon, lat)
@@ -1050,10 +1181,8 @@ m = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LO
 m.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
-#norm = MidPointNorm(midpoint=410)
 x, y = m(RF_lon,RF_lat)
-#sc = m.scatter(x,y,40,RF_DEPTH_mean_1_Ppds,cmap=colormap,marker='o',norm=norm,edgecolors='k')
-sc = m.scatter(x,y,40,RF_DEPTH_mean_1_Ppds,cmap=colormap,marker='o',edgecolors='k')
+sc = m.scatter(x,y,40,RF_DEPTH_mean_1_Ppds,cmap=colormap,marker='s',edgecolors='none',vmin=410-DEPTH_RANGE,vmax=410+DEPTH_RANGE)
 
 for lon, lat in zip(sta_long,sta_lat):
     x,y = m(lon, lat)
@@ -1077,10 +1206,8 @@ m2 = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_L
 m2.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m2.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
-#norm2 = MidPointNorm(midpoint=660)
 x, y = m2(RF_lon,RF_lat)
-#sc2 = m2.scatter(x,y,40,RF_DEPTH_mean_2_Pds,cmap=colormap,marker='o',norm=norm2,edgecolors='k')
-sc2 = m2.scatter(x,y,40,RF_DEPTH_mean_2_Pds,cmap=colormap,marker='o',edgecolors='k')
+sc2 = m2.scatter(x,y,40,RF_DEPTH_mean_2_Pds,cmap=colormap,marker='s',edgecolors='none',vmin=660-DEPTH_RANGE,vmax=660+DEPTH_RANGE)
 
 for lon, lat in zip(sta_long,sta_lat):
     x,y = m2(lon, lat)
@@ -1102,10 +1229,8 @@ m3 = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_L
 m3.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m3.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
-#norm3 = MidPointNorm(midpoint=660)
 x, y = m3(RF_lon,RF_lat)
-#sc3 = m3.scatter(x,y,40,RF_DEPTH_mean_2_Ppds,cmap=colormap,marker='o',norm=norm3,edgecolors='k')
-sc3 = m3.scatter(x,y,40,RF_DEPTH_mean_2_Ppds,cmap=colormap,marker='o',edgecolors='k')
+sc3 = m3.scatter(x,y,40,RF_DEPTH_mean_2_Ppds,cmap=colormap,marker='s',edgecolors='none',vmin=660-DEPTH_RANGE,vmax=660+DEPTH_RANGE)
 
 for lon, lat in zip(sta_long,sta_lat):
     x,y = m3(lon, lat)
@@ -1153,10 +1278,8 @@ m1 = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_L
 m1.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m1.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
-#norm1 = MidPointNorm(midpoint=410)
 x, y = m1(RF_lon,RF_lat)
-#sc1 = m1.scatter(x,y,40,RF_DEPTH_mean_1_true_Pds,cmap=colormap,marker='o',norm=norm1,edgecolors='k')
-sc1 = m1.scatter(x,y,40,RF_DEPTH_mean_1_true_Pds,cmap=colormap,marker='o',edgecolors='k')
+sc1 = m1.scatter(x,y,40,RF_DEPTH_mean_1_true_Pds,cmap=colormap,marker='s',edgecolors='none',vmin=410-DEPTH_RANGE,vmax=410+DEPTH_RANGE)
 
 for lon, lat in zip(sta_long,sta_lat):
     x,y = m1(lon, lat)
@@ -1179,10 +1302,8 @@ m = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LO
 m.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
-#norm = MidPointNorm(midpoint=410)
 x, y = m(RF_lon,RF_lat)
-#sc = m.scatter(x,y,40,RF_DEPTH_mean_1_true_Ppds,cmap=colormap,marker='o',norm=norm,edgecolors='k')
-sc = m.scatter(x,y,40,RF_DEPTH_mean_1_true_Ppds,cmap=colormap,marker='o',edgecolors='k')
+sc = m.scatter(x,y,40,RF_DEPTH_mean_1_true_Ppds,cmap=colormap,marker='s',edgecolors='none',vmin=410-DEPTH_RANGE,vmax=410+DEPTH_RANGE)
 
 
 for lon, lat in zip(sta_long,sta_lat):
@@ -1207,10 +1328,8 @@ m2 = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_L
 m2.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m2.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
-#norm2 = MidPointNorm(midpoint=660)
 x, y = m2(RF_lon,RF_lat)
-#sc2 = m2.scatter(x,y,40,RF_DEPTH_mean_2_true_Pds,cmap=colormap,marker='o',norm=norm2,edgecolors='k')
-sc2 = m2.scatter(x,y,40,RF_DEPTH_mean_2_true_Pds,cmap=colormap,marker='o',edgecolors='k')
+sc2 = m2.scatter(x,y,40,RF_DEPTH_mean_2_true_Pds,cmap=colormap,marker='s',edgecolors='none',vmin=660-DEPTH_RANGE,vmax=660+DEPTH_RANGE)
 
 for lon, lat in zip(sta_long,sta_lat):
     x,y = m2(lon, lat)
@@ -1232,10 +1351,8 @@ m3 = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_L
 m3.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m3.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
-#norm3 = MidPointNorm(midpoint=660)
 x, y = m3(RF_lon,RF_lat)
-#sc3 = m3.scatter(x,y,40,RF_DEPTH_mean_2_true_Ppds,cmap=colormap,marker='o',norm=norm3,edgecolors='k')
-sc3 = m3.scatter(x,y,40,RF_DEPTH_mean_2_true_Ppds,cmap=colormap,marker='o',edgecolors='k')
+sc3 = m3.scatter(x,y,40,RF_DEPTH_mean_2_true_Ppds,cmap=colormap,marker='s',edgecolors='none',vmin=660-DEPTH_RANGE,vmax=660+DEPTH_RANGE)
 
 
 for lon, lat in zip(sta_long,sta_lat):
@@ -1290,7 +1407,7 @@ m1_std.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m1_std.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
 x1_std, y1_std = m1(RF_lon,RF_lat)
-sc1_std = m1_std.scatter(x1_std,y1_std,40,RF_DEPTH_std_1_Pds,cmap=colormap_std,marker='o',edgecolors='k')
+sc1_std = m1_std.scatter(x1_std,y1_std,40,RF_DEPTH_std_1_Pds,cmap=colormap_std,marker='s',edgecolors='none')
 
 
 for lon1_std, lat1_std in zip(sta_long,sta_lat):
@@ -1315,7 +1432,7 @@ m_std.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m_std.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
 x_std, y_std = m_std(RF_lon,RF_lat)
-sc_std = m_std.scatter(x_std,y_std,40,RF_DEPTH_std_1_Ppds,cmap=colormap_std,marker='o',edgecolors='k')
+sc_std = m_std.scatter(x_std,y_std,40,RF_DEPTH_std_1_Ppds,cmap=colormap_std,marker='s',edgecolors='none')
 
 for lon_std, lat_std in zip(sta_long,sta_lat):
     x,y = m_std(lon_std, lat_std)
@@ -1340,7 +1457,7 @@ m2_std.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m2_std.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
 x2_std, y2_std = m2_std(RF_lon,RF_lat)
-sc2_std = m2_std.scatter(x2_std,y2_std,40,RF_DEPTH_std_2_Pds,cmap=colormap_std,marker='o',edgecolors='k')
+sc2_std = m2_std.scatter(x2_std,y2_std,40,RF_DEPTH_std_2_Pds,cmap=colormap_std,marker='s',edgecolors='none')
 
 for lon, lat in zip(sta_long,sta_lat):
     x,y = m2_std(lon, lat)
@@ -1364,7 +1481,7 @@ m3_std.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m3_std.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
 x3_std, y3_std = m3(RF_lon,RF_lat)
-sc3_std = m3_std.scatter(x3_std,y3_std,40,RF_DEPTH_std_2_Ppds,cmap=colormap_std,marker='o',edgecolors='k')
+sc3_std = m3_std.scatter(x3_std,y3_std,40,RF_DEPTH_std_2_Ppds,cmap=colormap_std,marker='s',edgecolors='none')
 
 
 for lon3_std, lat3_std in zip(sta_long,sta_lat):
@@ -1394,7 +1511,7 @@ fig_std.savefig(PP_FIGURE+'TRUE_STD_PER_BIN.'+EXT_FIG,dpi=DPI_FIG)
 print('Plotting Figure: Delta Vp of each bin...')
 #Figure Delta Vp of each bin
 
-colormap_delta_vp = 'seismic'
+colormap_delta_vp = 'viridis'
 
 fig_delta_vp, (ax1_delta_vp, ax2_delta_vp) =  plt.subplots(nrows=1, ncols=2,figsize=(10,5))
 
@@ -1404,10 +1521,8 @@ m1_delta_vp = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=
 m1_delta_vp.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m1_delta_vp.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
-#norm_delta_vp = MidPointNorm(midpoint=0)
 x, y = m1_delta_vp(RF_lon,RF_lat)
-#sc1_delta_vp = m1_delta_vp.scatter(x,y,40,delta_1_Vp_mean,cmap=colormap,marker='o',norm=norm_delta_vp,edgecolors='k')
-sc1_delta_vp = m1_delta_vp.scatter(x,y,40,delta_1_Vp_mean,cmap=colormap,marker='o',edgecolors='k')
+sc1_delta_vp = m1_delta_vp.scatter(x,y,40,delta_1_Vp_mean,cmap=colormap_delta_vp,marker='s',edgecolors='none')
 
 for lon, lat in zip(sta_long,sta_lat):
     x,y = m1_delta_vp(lon, lat)
@@ -1427,10 +1542,8 @@ m_delta_vp = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=P
 m_delta_vp.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m_delta_vp.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
-#norm_delta_vp = MidPointNorm(midpoint=0)
 x, y = m_delta_vp(RF_lon,RF_lat)
-#sc_delta_vp = m_delta_vp.scatter(x,y,40,delta_2_Vp_mean,cmap=colormap,marker='o',norm=norm_delta_vp,edgecolors='k')
-sc_delta_vp = m_delta_vp.scatter(x,y,40,delta_2_Vp_mean,cmap=colormap,marker='o',edgecolors='k')
+sc_delta_vp = m_delta_vp.scatter(x,y,40,delta_2_Vp_mean,cmap=colormap_delta_vp,marker='s',edgecolors='none')
 
 for lon, lat in zip(sta_long,sta_lat):
     x,y = m_delta_vp(lon, lat)
@@ -1457,19 +1570,6 @@ fig_delta_vp.savefig(PP_FIGURE+'DELTA_VP_PER_BIN.'+EXT_FIG,dpi=DPI_FIG)
 print('Plotting Figure: Thickness of the Mantle Transition Zone...')
 #Figure Thickness of the Mantle Transition Zone
 
-thickness_MTZ_Pds = []
-thickness_MTZ_Ppds = []
-
-true_thickness_MTZ_Pds = []
-true_thickness_MTZ_Ppds = []
-
-
-for i,j in enumerate(RF_DEPTH_mean_2_Pds):
-	thickness_MTZ_Pds.append(j-RF_DEPTH_mean_1_Pds[i])
-	thickness_MTZ_Ppds.append(RF_DEPTH_mean_2_Ppds[i]-RF_DEPTH_mean_1_Ppds[i])
-	true_thickness_MTZ_Pds.append(RF_DEPTH_mean_2_true_Pds[i]-RF_DEPTH_mean_1_true_Pds[i])
-	true_thickness_MTZ_Ppds.append(RF_DEPTH_mean_2_true_Ppds[i]-RF_DEPTH_mean_1_true_Ppds[i])
-
 colormap_MTZ = 'seismic_r'
 
 fig_thickness, (ax_thickness1, ax_thickness2) = plt.subplots(nrows=1, ncols=2,figsize=(10,5))
@@ -1480,10 +1580,8 @@ m_thickness1 = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0
 m_thickness1.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m_thickness1.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
-#norm_thickness1 = MidPointNorm(midpoint=250)
 x, y = m_thickness1(RF_lon,RF_lat)
-#sc_thickness1 = m_thickness1.scatter(x,y,40,thickness_MTZ_Pds,cmap=colormap_MTZ,marker='o',norm=norm_thickness1,edgecolors='k')
-sc_thickness1 = m_thickness1.scatter(x,y,40,thickness_MTZ_Pds,cmap=colormap_MTZ,marker='o',edgecolors='k')
+sc_thickness1 = m_thickness1.scatter(x,y,40,thickness_MTZ_Pds,cmap=colormap_MTZ,marker='s',edgecolors='none',vmin=250-DEPTH_RANGE,vmax=250+DEPTH_RANGE)
 
 for lon, lat in zip(sta_long,sta_lat):
     x,y = m_thickness1(lon, lat)
@@ -1504,10 +1602,8 @@ m_thickness2 = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0
 m_thickness2.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m_thickness2.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
-#norm_thickness2 = MidPointNorm(midpoint=250)
 x, y = m_thickness2(RF_lon,RF_lat)
-#sc_thickness2 = m_thickness2.scatter(x,y,40,thickness_MTZ_Ppds,cmap=colormap_MTZ,marker='o',norm=norm_thickness2,edgecolors='k')
-sc_thickness2 = m_thickness2.scatter(x,y,40,thickness_MTZ_Ppds,cmap=colormap_MTZ,marker='o',edgecolors='k')
+sc_thickness2 = m_thickness2.scatter(x,y,40,thickness_MTZ_Ppds,cmap=colormap_MTZ,marker='s',edgecolors='none',vmin=250-DEPTH_RANGE,vmax=250+DEPTH_RANGE)
 
 for lon, lat in zip(sta_long,sta_lat):
     x,y = m_thickness2(lon, lat)
@@ -1539,10 +1635,8 @@ m_thickness1 = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0
 m_thickness1.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m_thickness1.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
-#norm_thickness1 = MidPointNorm(midpoint=250)
 x, y = m_thickness1(RF_lon,RF_lat)
-#sc_thickness1 = m_thickness1.scatter(x,y,40,true_thickness_MTZ_Pds,cmap=colormap_MTZ,marker='o',norm=norm_thickness1,edgecolors='k')
-sc_thickness1 = m_thickness1.scatter(x,y,40,true_thickness_MTZ_Pds,cmap=colormap_MTZ,marker='o',edgecolors='k')
+sc_thickness1 = m_thickness1.scatter(x,y,40,true_thickness_MTZ_Pds,cmap=colormap_MTZ,marker='s',edgecolors='none',vmin=250-DEPTH_RANGE,vmax=250+DEPTH_RANGE)
 
 for lon, lat in zip(sta_long,sta_lat):
     x,y = m_thickness1(lon, lat)
@@ -1563,10 +1657,8 @@ m_thickness2 = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0
 m_thickness2.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m_thickness2.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
-#norm_thickness2 = MidPointNorm(midpoint=250)
 x, y = m_thickness2(RF_lon,RF_lat)
-#sc_thickness2 = m_thickness2.scatter(x,y,40,true_thickness_MTZ_Ppds,cmap=colormap_MTZ,marker='o',norm=norm_thickness2,edgecolors='k')
-sc_thickness2 = m_thickness2.scatter(x,y,40,true_thickness_MTZ_Ppds,cmap=colormap_MTZ,marker='o',edgecolors='k')
+sc_thickness2 = m_thickness2.scatter(x,y,40,true_thickness_MTZ_Ppds,cmap=colormap_MTZ,marker='s',edgecolors='none',vmin=250-DEPTH_RANGE,vmax=250+DEPTH_RANGE)
 
 for lon, lat in zip(sta_long,sta_lat):
     x,y = m_thickness2(lon, lat)
@@ -1584,19 +1676,10 @@ plt.show()
 fig_thickness.savefig(PP_FIGURE+'TRUE_THICKNESS_MTZ_PER_BIN.'+EXT_FIG,dpi=DPI_FIG)
 
 ###################################################################################################################
-diff_thickness_MTZ_Pds = []
-diff_thickness_MTZ_Ppds = []
-for i,j in enumerate(thickness_MTZ_Pds):
-	diff_thickness_MTZ_Pds.append(true_thickness_MTZ_Pds[i]-j)
-	diff_thickness_MTZ_Ppds.append(true_thickness_MTZ_Ppds[i]-thickness_MTZ_Ppds[i])
-
 
 print('Plotting Figure: Difference between True Thickness and Apparent Thickness of the Mantle Transition Zone...')
 
-
-
-
-colormap_MTZ = 'seismic_r'
+colormap_MTZ = 'viridis'
 
 fig_thickness, (ax_thickness1, ax_thickness2) = plt.subplots(nrows=1, ncols=2,figsize=(10,5))
 
@@ -1607,7 +1690,7 @@ m_thickness1.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m_thickness1.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
 x, y = m_thickness1(RF_lon,RF_lat)
-sc_thickness1 = m_thickness1.scatter(x,y,40,diff_thickness_MTZ_Pds,cmap=colormap_MTZ,marker='o',edgecolors='k')
+sc_thickness1 = m_thickness1.scatter(x,y,40,diff_thickness_MTZ_Pds,cmap=colormap_MTZ,marker='s',edgecolors='none')
 
 for lon, lat in zip(sta_long,sta_lat):
     x,y = m_thickness1(lon, lat)
@@ -1629,7 +1712,7 @@ m_thickness2.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m_thickness2.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
 x, y = m_thickness2(RF_lon,RF_lat)
-sc_thickness2 = m_thickness2.scatter(x,y,40,diff_thickness_MTZ_Ppds,cmap=colormap_MTZ,marker='o',edgecolors='k')
+sc_thickness2 = m_thickness2.scatter(x,y,40,diff_thickness_MTZ_Ppds,cmap=colormap_MTZ,marker='s',edgecolors='none')
 
 for lon, lat in zip(sta_long,sta_lat):
     x,y = m_thickness2(lon, lat)
@@ -1668,10 +1751,8 @@ m_thickness1 = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0
 m_thickness1.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m_thickness1.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
-#norm_thickness1 = MidPointNorm(midpoint=250)
 x, y = m_thickness1(RF_lon,RF_lat)
-#sc_thickness1 = m_thickness1.scatter(x,y,40,thickness_MTZ_Pds,cmap=colormap_MTZ,marker='o',norm=norm_thickness1,edgecolors='k')
-sc_thickness1 = m_thickness1.scatter(x,y,40,thickness_MTZ_Pds,cmap=colormap_MTZ,marker='o',edgecolors='k')
+sc_thickness1 = m_thickness1.scatter(x,y,40,thickness_MTZ_Pds,cmap=colormap_MTZ,marker='s',edgecolors='none',vmin=250-DEPTH_RANGE,vmax=250+DEPTH_RANGE)
 
 for lon, lat in zip(sta_long,sta_lat):
     x,y = m_thickness1(lon, lat)
@@ -1693,10 +1774,8 @@ m_thickness2 = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0
 m_thickness2.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m_thickness2.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
-#norm_thickness2 = MidPointNorm(midpoint=250)
 x, y = m_thickness2(RF_lon,RF_lat)
-sc_thickness2 = m_thickness2.scatter(x,y,40,thickness_MTZ_Ppds,cmap=colormap_MTZ,marker='o',edgecolors='k')
-#sc_thickness2 = m_thickness2.scatter(x,y,40,thickness_MTZ_Ppds,cmap=colormap_MTZ,marker='o',norm=norm_thickness2,edgecolors='k')
+sc_thickness2 = m_thickness2.scatter(x,y,40,thickness_MTZ_Ppds,cmap=colormap_MTZ,marker='s',edgecolors='none',vmin=250-DEPTH_RANGE,vmax=250+DEPTH_RANGE)
 
 for lon, lat in zip(sta_long,sta_lat):
     x,y = m_thickness2(lon, lat)
@@ -1718,10 +1797,8 @@ m_thickness3 = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0
 m_thickness3.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m_thickness3.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
-#norm_thickness3 = MidPointNorm(midpoint=250)
 x, y = m_thickness3(RF_lon,RF_lat)
-#sc_thickness3 = m_thickness3.scatter(x,y,40,true_thickness_MTZ_Pds,cmap=colormap_MTZ,marker='o',norm=norm_thickness3,edgecolors='k')
-sc_thickness3 = m_thickness3.scatter(x,y,40,true_thickness_MTZ_Pds,cmap=colormap_MTZ,marker='o',edgecolors='k')
+sc_thickness3 = m_thickness3.scatter(x,y,40,true_thickness_MTZ_Pds,cmap=colormap_MTZ,marker='s',edgecolors='none',vmin=250-DEPTH_RANGE,vmax=250+DEPTH_RANGE)
 
 for lon, lat in zip(sta_long,sta_lat):
     x,y = m_thickness3(lon, lat)
@@ -1743,10 +1820,8 @@ m_thickness4 = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0
 m_thickness4.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m_thickness4.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
-#norm_thickness4 = MidPointNorm(midpoint=250)
 x, y = m_thickness4(RF_lon,RF_lat)
-#sc_thickness4 = m_thickness4.scatter(x,y,40,true_thickness_MTZ_Ppds,cmap=colormap_MTZ,marker='o',norm=norm_thickness4,edgecolors='k')
-sc_thickness4 = m_thickness4.scatter(x,y,40,true_thickness_MTZ_Ppds,cmap=colormap_MTZ,marker='o',edgecolors='k')
+sc_thickness4 = m_thickness4.scatter(x,y,40,true_thickness_MTZ_Ppds,cmap=colormap_MTZ,marker='s',edgecolors='none',vmin=250-DEPTH_RANGE,vmax=250+DEPTH_RANGE)
 
 for lon, lat in zip(sta_long,sta_lat):
     x,y = m_thickness4(lon, lat)
@@ -1769,7 +1844,7 @@ m_thickness5.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m_thickness5.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
 x, y = m_thickness5(RF_lon,RF_lat)
-sc_thickness5 = m_thickness5.scatter(x,y,40,diff_thickness_MTZ_Pds,cmap=colormap_MTZ,marker='o',edgecolors='k')
+sc_thickness5 = m_thickness5.scatter(x,y,40,diff_thickness_MTZ_Pds,cmap=colormap_MTZ,marker='s',edgecolors='none')
 
 for lon, lat in zip(sta_long,sta_lat):
     x,y = m_thickness5(lon, lat)
@@ -1792,7 +1867,7 @@ m_thickness6.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m_thickness6.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
 x, y = m_thickness6(RF_lon,RF_lat)
-sc_thickness6 = m_thickness6.scatter(x,y,40,diff_thickness_MTZ_Ppds,cmap=colormap_MTZ,marker='o',edgecolors='k')
+sc_thickness6 = m_thickness6.scatter(x,y,40,diff_thickness_MTZ_Ppds,cmap=colormap_MTZ,marker='s',edgecolors='none')
 
 for lon, lat in zip(sta_long,sta_lat):
     x,y = m_thickness6(lon, lat)
@@ -1817,11 +1892,18 @@ print('\n')
 
 os.makedirs(PP_SELEC_DIR,exist_ok=True)
 
-SELECTED_BINNED_DATA_dic = {'lat':[],'lon':[],'len_Pds':[],'len_Ppds':[],'true_mean_1_Pds':[],'true_mean_2_Pds':[],'true_mean_1_Ppds':[],
-'true_mean_2_Ppds':[],'mean_1_Pds':[],'std_1_Pds':[],'mean_2_Pds':[],'std_2_Pds':[],'mean_1_Ppds':[],'std_1_Ppds':[],'mean_2_Ppds':[],
-'std_2_Ppds':[],'data_Pds':[],'data_Ppds':[],'mtz_thickness_Pds':[],'true_thickness_MTZ_Pds':[],'mtz_thickness_Ppds':[],'true_thickness_MTZ_Ppds':[],
-'difference_thickness_MTZ_Pds':[],'difference_thickness_MTZ_Ppds':[]}
-for i,j in enumerate(RF_stacking_Pds):
+SELECTED_BINNED_DATA_dic = {'lat':[],'lon':[],'len_Pds':[],'len_Ppds':[],'true_mean_1_Pds':[],'true_std_1_Pds':[],'true_mean_2_Pds':[],'true_std_2_Pds':[],
+'true_mean_1_Ppds':[],'true_std_1_Ppds':[],'true_mean_2_Ppds':[],'true_std_2_Ppds':[],'mean_1_Pds':[],'std_1_Pds':[],'mean_2_Pds':[],'std_2_Pds':[],'mean_1_Ppds':[],'std_1_Ppds':[],'mean_2_Ppds':[],
+'std_2_Ppds':[],'delta_1_Vp_mean':[],'delta_1_Vp_std':[],'delta_2_Vp_mean':[],'delta_2_Vp_std':[],'delta_1_Vs_mean':[],'delta_1_Vs_std':[],'delta_2_Vs_mean':[],'delta_2_Vs_std':[],
+'mtz_thickness_Pds':[],'mtz_thickness_Pds_std':[],'true_thickness_MTZ_Pds':[],'true_thickness_MTZ_Pds_std':[],'true_thickness_MTZ_Ppds':[],'true_thickness_MTZ_Ppds_std':[],
+'mtz_thickness_Ppds':[],'mtz_thickness_Ppds_std':[],'difference_thickness_MTZ_Pds':[],'difference_thickness_MTZ_Pds_std':[],'difference_thickness_MTZ_Ppds':[],'difference_thickness_MTZ_Ppds_std':[],
+'data_Pds':[],'data_Ppds':[],'data_BOOTSTRAP_Pds':[],'data_BOOTSTRAP_Ppds':[]}
+for i,j in enumerate(RF_BOOTSTRAP_DATA_Pds):
+	SELECTED_BINNED_DATA_dic['data_BOOTSTRAP_Pds'].append(j)
+	SELECTED_BINNED_DATA_dic['data_BOOTSTRAP_Ppds'].append(RF_BOOTSTRAP_DATA_Ppds[i])
+
+	SELECTED_BINNED_DATA_dic['data_Pds'].append(RF_stacking_Pds[i])
+	SELECTED_BINNED_DATA_dic['data_Ppds'].append(RF_stacking_Ppds[i])
 
 	SELECTED_BINNED_DATA_dic['lat'].append(RF_lat[i])
 	SELECTED_BINNED_DATA_dic['lon'].append(RF_lon[i])
@@ -1830,7 +1912,9 @@ for i,j in enumerate(RF_stacking_Pds):
 	SELECTED_BINNED_DATA_dic['len_Ppds'].append(len_RF_stacking_Ppds[i])
 
 	SELECTED_BINNED_DATA_dic['true_mean_1_Pds'].append(float(RF_DEPTH_mean_1_true_Pds[i]))
+	SELECTED_BINNED_DATA_dic['true_std_1_Pds'].append(float(RF_DEPTH_std_1_true_Pds[i]))
 	SELECTED_BINNED_DATA_dic['true_mean_2_Pds'].append(float(RF_DEPTH_mean_2_true_Pds[i]))
+	SELECTED_BINNED_DATA_dic['true_std_2_Pds'].append(float(RF_DEPTH_std_2_true_Pds[i]))
 
 	SELECTED_BINNED_DATA_dic['mean_1_Pds'].append(float(RF_DEPTH_mean_1_Pds[i]))
 	SELECTED_BINNED_DATA_dic['std_1_Pds'].append(float(RF_DEPTH_std_1_Pds[i]))
@@ -1838,24 +1922,42 @@ for i,j in enumerate(RF_stacking_Pds):
 	SELECTED_BINNED_DATA_dic['std_2_Pds'].append(float(RF_DEPTH_std_2_Pds[i]))
 
 	SELECTED_BINNED_DATA_dic['true_mean_1_Ppds'].append(float(RF_DEPTH_mean_1_true_Ppds[i]))
+	SELECTED_BINNED_DATA_dic['true_std_1_Ppds'].append(float(RF_DEPTH_std_1_true_Ppds[i]))
 	SELECTED_BINNED_DATA_dic['true_mean_2_Ppds'].append(float(RF_DEPTH_mean_2_true_Ppds[i]))
+	SELECTED_BINNED_DATA_dic['true_std_2_Ppds'].append(float(RF_DEPTH_std_2_true_Ppds[i]))
 
 	SELECTED_BINNED_DATA_dic['mean_1_Ppds'].append(float(RF_DEPTH_mean_1_Ppds[i]))
 	SELECTED_BINNED_DATA_dic['std_1_Ppds'].append(float(RF_DEPTH_std_1_Ppds[i]))
 	SELECTED_BINNED_DATA_dic['mean_2_Ppds'].append(float(RF_DEPTH_mean_2_Ppds[i]))
 	SELECTED_BINNED_DATA_dic['std_2_Ppds'].append(float(RF_DEPTH_std_2_Ppds[i]))
 
-	SELECTED_BINNED_DATA_dic['data_Pds'].append(j)
-	SELECTED_BINNED_DATA_dic['data_Ppds'].append(RF_stacking_Ppds[i])
+	SELECTED_BINNED_DATA_dic['delta_1_Vp_mean'].append(float(delta_1_Vp_mean[i]))
+	SELECTED_BINNED_DATA_dic['delta_1_Vp_std'].append(float(delta_1_Vp_std[i]))
+	SELECTED_BINNED_DATA_dic['delta_1_Vs_mean'].append(float(delta_1_Vs_mean[i]))
+	SELECTED_BINNED_DATA_dic['delta_1_Vs_std'].append(float(delta_1_Vs_std[i]))
+
+	SELECTED_BINNED_DATA_dic['delta_2_Vp_mean'].append(float(delta_2_Vp_mean[i]))
+	SELECTED_BINNED_DATA_dic['delta_2_Vp_std'].append(float(delta_2_Vp_std[i]))
+	SELECTED_BINNED_DATA_dic['delta_2_Vs_mean'].append(float(delta_2_Vs_mean[i]))
+	SELECTED_BINNED_DATA_dic['delta_2_Vs_std'].append(float(delta_2_Vs_std[i]))
 
 	SELECTED_BINNED_DATA_dic['mtz_thickness_Pds'].append(float(thickness_MTZ_Pds[i]))
+	SELECTED_BINNED_DATA_dic['mtz_thickness_Pds_std'].append(float(thickness_MTZ_Pds_std[i]))
+	
 	SELECTED_BINNED_DATA_dic['mtz_thickness_Ppds'].append(float(thickness_MTZ_Ppds[i]))
+	SELECTED_BINNED_DATA_dic['mtz_thickness_Ppds_std'].append(float(thickness_MTZ_Ppds_std[i]))
 
 	SELECTED_BINNED_DATA_dic['true_thickness_MTZ_Pds'].append(float(true_thickness_MTZ_Pds[i]))
+	SELECTED_BINNED_DATA_dic['true_thickness_MTZ_Pds_std'].append(float(true_thickness_MTZ_Pds_std[i]))
+
 	SELECTED_BINNED_DATA_dic['true_thickness_MTZ_Ppds'].append(float(true_thickness_MTZ_Ppds[i]))
+	SELECTED_BINNED_DATA_dic['true_thickness_MTZ_Ppds_std'].append(float(true_thickness_MTZ_Ppds_std[i]))
 
 	SELECTED_BINNED_DATA_dic['difference_thickness_MTZ_Pds'].append(float(diff_thickness_MTZ_Pds[i]))
+	SELECTED_BINNED_DATA_dic['difference_thickness_MTZ_Pds_std'].append(float(diff_thickness_MTZ_Pds_std[i]))
+
 	SELECTED_BINNED_DATA_dic['difference_thickness_MTZ_Ppds'].append(float(diff_thickness_MTZ_Ppds[i]))
+	SELECTED_BINNED_DATA_dic['difference_thickness_MTZ_Ppds_std'].append(float(diff_thickness_MTZ_Ppds_std[i]))
 
 
 with open(PP_SELEC_DIR+'SELECTED_BINNED_Ps.json', 'w') as fp:

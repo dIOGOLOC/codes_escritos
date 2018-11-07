@@ -131,6 +131,18 @@ INTER_DEPTH = config.getint('time', 'INTER_DEPTH')
 # migration
 # ---------------
 
+#Rotate grid?
+ROTATE_GRID = config.getboolean('migration', 'ROTATE_GRID') 
+
+#Filter by shapefile the grid?
+FILTER_BY_SHAPEFILE = config.getboolean('migration', 'FILTER_BY_SHAPEFILE') 
+
+#Shapefile containing lines or polygons representing grid boundary
+SHAPEFILE_GRID = config.get('migration', 'SHAPEFILE_GRID') 
+
+#What is the grid rotation angle in degrees? (clockwise rotation)
+ROTATE_ANGLE = config.getfloat('migration', 'ROTATE_ANGLE') 
+
 #GRID POINTS multiplyer
 GRID_PP_MULT = config.getfloat('migration', 'GRID_PP_MULT') 
 
@@ -143,12 +155,6 @@ DIST_GRID_PP_MED = config.getfloat('migration', 'DIST_GRID_PP_MED')
 # number of piercing points per bin 
 NUMBER_PP_PER_BIN = config.getint('migration', 'NUMBER_PP_PER_BIN')  
 
-# True or false to plot RAY TRACE 
-RAY_TRACE_PLOT = config.getboolean('migration', 'RAY_TRACE_PLOT')  
-
-#False or True for Linear stacking
-LINEAR_STACKING = config.getboolean('migration', 'LINEAR_STACKING')  
-
 #False or True for depth estimation
 DEPTH_ESTIMATION = config.getboolean('migration', 'DEPTH_ESTIMATION')  
 
@@ -157,9 +163,6 @@ BOOTSTRAP_DEPTH_ESTIMATION = config.getboolean('migration', 'BOOTSTRAP_DEPTH_EST
 
 #Number of interations to compute bootstrapping
 BOOTSTRAP_INTERATOR = config.getint('migration', 'BOOTSTRAP_INTERATOR')  
-
-#False or True for plotting Ray Trace 410 and 660
-RAY_TRACE_410_660_PLOT = config.getboolean('migration', 'RAY_TRACE_410_660_PLOT')  
 
 #GAMMA Number
 GAMMA = config.getfloat('migration', 'GAMMA') 

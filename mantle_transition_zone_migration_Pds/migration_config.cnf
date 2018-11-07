@@ -109,6 +109,12 @@ URCRNRLAT_SMALL=-1
 EXT_FIG=pdf
 DPI_FIG=300
 
+#Date event initial  (exemple: 2008-01-01T00:00:00)
+INITIAL_DATE_EVENT = 2014-01-01T00:00:00
+
+#Date event final  (exemple: 2008-01-01T00:00:00)
+FINAL_DATE_EVENT = 2018-10-01T00:00:00
+
 #==================
 [time]
 #==================
@@ -136,7 +142,7 @@ GRID_PP_MULT = 3
 DIST_GRID_PP = 1
 
 # mean distance between grid points and piercing points (degree)
-DIST_GRID_PP_MED = 0.75
+DIST_GRID_PP_MED = 1
 
 #number of piercing points per bin
 NUMBER_PP_PER_BIN = 10
@@ -148,7 +154,7 @@ DEPTH_ESTIMATION = True
 BOOTSTRAP_DEPTH_ESTIMATION = True 
 
 #Number of interations to compute bootstrapping
-BOOTSTRAP_INTERATOR = 200
+BOOTSTRAP_INTERATOR = 2
 
 #False or True for Linear stacking
 LINEAR_STACKING = True 

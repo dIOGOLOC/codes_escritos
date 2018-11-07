@@ -25,7 +25,6 @@ from obspy.geodetics import kilometer2degrees
 import json
 from multiprocessing import Pool
 
-
 # =====================================
 # Importing travel times scritp_py 
 # =====================================

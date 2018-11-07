@@ -129,14 +129,26 @@ INTER_DEPTH = 10
 [migration]
 # ==========
 
+#Rotate grid?
+ROTATE_GRID = True
+
+#Filter by shapefile the grid?
+FILTER_BY_SHAPEFILE = True
+
+#Shapefile containing lines or polygons representing grid boundary
+SHAPEFILE_GRID = /home/diogo/dados_doutorado/parnaiba_basin/SIG_dados/shapes/bacia_parnaiba/bacia_parnaiba.shp
+
+#What is the grid rotation angle in degrees? (clockwise rotation)
+ROTATE_ANGLE = 350
+
 #GRID POINTS multiplyer
-GRID_PP_MULT = 3
+GRID_PP_MULT = 4
 
 # distance between grid points and piercing points for each depth (degree)
 DIST_GRID_PP = 1
 
 # mean distance between grid points and piercing points (degree)
-DIST_GRID_PP_MED = 0.75
+DIST_GRID_PP_MED = 1
 
 #number of piercing points per bin
 NUMBER_PP_PER_BIN = 10
@@ -150,15 +162,6 @@ BOOTSTRAP_DEPTH_ESTIMATION = True
 #Number of interations to compute bootstrapping
 BOOTSTRAP_INTERATOR = 50
 
-#False or True for Linear stacking
-LINEAR_STACKING = True 
-
-#False or True for plotting Ray Trace
-RAY_TRACE_PLOT = True 
-
-#False or True for plotting Ray Trace 410 and 660
-RAY_TRACE_410_660_PLOT = True 
-
 #The gamma value is a function of temperature, rock composition, 
 #and degree of partial melting. This value is found to be in the 
 #range of 1.5–2.5 for most continental areas. A γ value of 2.0
@@ -168,7 +171,7 @@ RAY_TRACE_410_660_PLOT = True
 GAMMA = 2
 
 #Number that multiply the difference between the cross-section points
-SECTION_NUM = 3
+SECTION_NUM = 4
 
 #Depth range (+/-) that we will use to find the maximum amplitude
-DEPTH_RANGE = 30
+DEPTH_RANGE = 20
