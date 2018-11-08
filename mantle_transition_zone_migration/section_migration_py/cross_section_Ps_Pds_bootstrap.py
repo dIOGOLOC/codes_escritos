@@ -71,6 +71,14 @@ RF_number = SELECTED_BINNED_DATA_dic['len_Pds']
 RF_stacking_Pds = SELECTED_BINNED_DATA_dic['data_Pds']
 RF_stacking_Ppds = SELECTED_BINNED_DATA_dic['data_Ppds']
 
+RF_stacking_Pds_BOOTSTRAP = SELECTED_BINNED_DATA_dic['data_BOOTSTRAP_Pds']
+RF_stacking_Ppds_BOOTSTRAP = SELECTED_BINNED_DATA_dic['data_BOOTSTRAP_Ppds']
+
+RF_BOOTSTRAP_410_DEPTH_Pds = SELECTED_BINNED_DATA_dic['RF_BOOTSTRAP_410_DEPTH_Pds']
+RF_BOOTSTRAP_410_DEPTH_Ppds = SELECTED_BINNED_DATA_dic['RF_BOOTSTRAP_410_DEPTH_Ppds']
+RF_BOOTSTRAP_660_DEPTH_Pds = SELECTED_BINNED_DATA_dic['RF_BOOTSTRAP_660_DEPTH_Pds']
+RF_BOOTSTRAP_660_DEPTH_Ppds = SELECTED_BINNED_DATA_dic['RF_BOOTSTRAP_660_DEPTH_Ppds']
+
 RF_DEPTH_mean_1_Pds = SELECTED_BINNED_DATA_dic['mean_1_Pds']
 RF_DEPTH_std_1_Pds = SELECTED_BINNED_DATA_dic['std_1_Pds']
 RF_DEPTH_mean_2_Pds = SELECTED_BINNED_DATA_dic['mean_2_Pds']
@@ -218,6 +226,14 @@ RF_DEPTH_mean_2_true_profile_Ppds = []
 RF_DEPTH_mtz_thickness_profile_Ppds = [] 
 RF_DEPTH_true_thickness_MTZ_profile_Ppds = [] 
 
+RF_stacking_Pds_BOOTSTRAP_profile = []
+RF_stacking_Ppds_BOOTSTRAP_profile = []
+
+RF_BOOTSTRAP_410_DEPTH_Pds_profile = []
+RF_BOOTSTRAP_410_DEPTH_Ppds_profile = []
+RF_BOOTSTRAP_660_DEPTH_Pds_profile = []
+RF_BOOTSTRAP_660_DEPTH_Ppds_profile = []
+
 profile_lon = []
 
 for i,j in enumerate(AB_lon):
@@ -257,6 +273,15 @@ for i,j in enumerate(AB_lon):
 		RF_DEPTH_mtz_thickness_profile_Ppds.append(RF_DEPTH_mtz_thickness_Ppds[dist.index(min(dist))])
 		RF_DEPTH_true_thickness_MTZ_profile_Ppds.append(RF_DEPTH_true_thickness_MTZ_Ppds[dist.index(min(dist))]) 
 
+		RF_stacking_Pds_BOOTSTRAP_profile.append(RF_stacking_Pds_BOOTSTRAP[dist.index(min(dist))]) 
+		RF_stacking_Ppds_BOOTSTRAP_profile.append(RF_stacking_Ppds_BOOTSTRAP[dist.index(min(dist))]) 
+
+		RF_BOOTSTRAP_410_DEPTH_Pds_profile.append(RF_BOOTSTRAP_410_DEPTH_Pds[dist.index(min(dist))]) 
+		RF_BOOTSTRAP_410_DEPTH_Ppds_profile.append(RF_BOOTSTRAP_410_DEPTH_Ppds[dist.index(min(dist))]) 
+		RF_BOOTSTRAP_660_DEPTH_Pds_profile.append(RF_BOOTSTRAP_660_DEPTH_Pds[dist.index(min(dist))]) 
+		RF_BOOTSTRAP_660_DEPTH_Ppds_profile.append(RF_BOOTSTRAP_660_DEPTH_Ppds[dist.index(min(dist))]) 
+
+
 	else:
 		RF_data_profile_Pds.append(np.zeros_like(RF_stacking_Pds[dist.index(min(dist))]))
 		RF_DEPTH_mean_1_profile_Pds.append(np.zeros_like(RF_DEPTH_mean_1_Pds[dist.index(min(dist))]))
@@ -289,6 +314,14 @@ for i,j in enumerate(AB_lon):
 		RF_DEPTH_mtz_thickness_profile_Ppds.append(np.zeros_like(RF_DEPTH_mtz_thickness_Ppds[dist.index(min(dist))]))
 		RF_DEPTH_true_thickness_MTZ_profile_Ppds.append(np.zeros_like(RF_DEPTH_true_thickness_MTZ_Ppds[dist.index(min(dist))]))
 
+		RF_stacking_Pds_BOOTSTRAP_profile.append(np.zeros_like(RF_stacking_Pds_BOOTSTRAP[dist.index(min(dist))]))
+		RF_stacking_Ppds_BOOTSTRAP_profile.append(np.zeros_like(RF_stacking_Ppds_BOOTSTRAP[dist.index(min(dist))]))
+
+		RF_BOOTSTRAP_410_DEPTH_Pds_profile.append(np.zeros_like(RF_BOOTSTRAP_410_DEPTH_Pds[dist.index(min(dist))])) 
+		RF_BOOTSTRAP_410_DEPTH_Ppds_profile.append(np.zeros_like(RF_BOOTSTRAP_410_DEPTH_Ppds[dist.index(min(dist))])) 
+		RF_BOOTSTRAP_660_DEPTH_Pds_profile.append(np.zeros_like(RF_BOOTSTRAP_660_DEPTH_Pds[dist.index(min(dist))]))  
+		RF_BOOTSTRAP_660_DEPTH_Ppds_profile.append(np.zeros_like(RF_BOOTSTRAP_660_DEPTH_Ppds[dist.index(min(dist))]))  
+
 print('Plotting the Final Figure')
 
 #Cross section figure
@@ -298,236 +331,233 @@ fig = plt.figure(figsize=(30, 15))
 fig.suptitle('Cross section for Pds and Ppds')
 
 
-gs = gridspec.GridSpec(4, 8)
-gs.update(wspace=1.5, hspace=0.25)
+gs = gridspec.GridSpec(4, 6)
+gs.update(wspace=0.5, hspace=0.25)
 
-ax = fig.add_subplot(gs[0:2, 0:2])
-ax7 = fig.add_subplot(gs[2:4, 0:2])
-ax1 = fig.add_subplot(gs[0:2, 4:])
-ax2 = fig.add_subplot(gs[2:4, 4:],sharex=ax1)
+ax3 = fig.add_subplot(gs[0,0:2])
+ax4= fig.add_subplot(gs[1,0:2],sharex=ax3)
+ax5 = fig.add_subplot(gs[2,0:2],sharex=ax3)
+ax6 = fig.add_subplot(gs[3,0:2],sharex=ax3)
 
+ax01 = fig.add_subplot(gs[0, 2:],sharey=ax3)
+ax02 = fig.add_subplot(gs[1, 2:],sharex=ax01,sharey=ax4)
 
-ax3 = fig.add_subplot(gs[0,2:4])
-ax4= fig.add_subplot(gs[1,2:4],sharex=ax3)
-ax5 = fig.add_subplot(gs[2,2:4],sharex=ax3)
-ax6 = fig.add_subplot(gs[3,2:4],sharex=ax3)
+ax11 = fig.add_subplot(gs[2, 2:],sharex=ax01,sharey=ax5)
+ax12 = fig.add_subplot(gs[3, 2:],sharex=ax01,sharey=ax6)
 
-m = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_SMALL,
-            llcrnrlat=LLCRNRLAT_SMALL,urcrnrlon=URCRNRLON_SMALL,urcrnrlat=URCRNRLAT_SMALL,ax=ax)
-
-m.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
-m.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
-
-
-l2, = m.drawgreatcircle(AB_lon_line[0],AB_lat_line[0],AB_lon_line[1],AB_lat_line[1],linewidth=2,color='k')
-divider = make_axes_locatable(ax)
-cax = divider.append_axes("right", size="5%", pad=0.05)
-x, y = m(lons,lats)
-sc = m.scatter(x,y,40,RF_delta_1_Vp_mean,cmap='RdGy',marker='s',edgecolors='none',vmin=-0.3,vmax=0.3)
-fig.colorbar(sc,cax=cax)
-
-for lon, lat in zip(sta_long,sta_lat):
-	x,y = m(lon, lat)
-	msize = 5
-	l1, = m.plot(x, y, '^',markersize=msize,markeredgecolor='k',markerfacecolor='grey')
-
-m.fillcontinents(color='whitesmoke',lake_color='#46bcec',zorder=0)
-m.drawcoastlines(color='dimgray',zorder=1)
-m.drawmeridians(np.arange(0, 360, 5),color='lightgrey',labels=[True,True,True,True])
-m.drawparallels(np.arange(-90, 90, 5),color='lightgrey',labels=[True,True,True,True])
-
-#ax.legend([l1,sc,l2],['Stations','Grid Points','Cross section'],scatterpoints=1, frameon=True,labelspacing=1, loc='lower right',facecolor='w')
-ax.set_title('P-velocity anomaly (%)', y=1.08)
-
-# figure 2 
-
-m = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_SMALL,
-            llcrnrlat=LLCRNRLAT_SMALL,urcrnrlon=URCRNRLON_SMALL,urcrnrlat=URCRNRLAT_SMALL,ax=ax7)
-
-m.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
-m.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
-
-
-l2, = m.drawgreatcircle(AB_lon_line[0],AB_lat_line[0],AB_lon_line[1],AB_lat_line[1],linewidth=2,color='k')
-
-divider = make_axes_locatable(ax7)
-cax = divider.append_axes("right", size="5%", pad=0.05)
-x, y = m(lons,lats)
-sc = m.scatter(x,y,40,RF_DEPTH_true_thickness_MTZ_Pds,cmap='RdGy',marker='s',edgecolors='none',vmin=250-(DEPTH_RANGE*2)-INTER_DEPTH,vmax=250+(DEPTH_RANGE*2)+INTER_DEPTH)
-fig.colorbar(sc,cax=cax)
-
-for lon, lat in zip(sta_long,sta_lat):
-    x,y = m(lon, lat)
-    msize = 5
-    l1, = m.plot(x, y, '^',markersize=msize,markeredgecolor='k',markerfacecolor='grey')
-
-m.fillcontinents(color='whitesmoke',lake_color='#46bcec',zorder=0)
-m.drawcoastlines(color='dimgray',zorder=1)
-m.drawmeridians(np.arange(0, 360, 5),color='lightgrey',labels=[True,True,True,True])
-m.drawparallels(np.arange(-90, 90, 5),color='lightgrey',labels=[True,True,True,True])
-ax7.set_title('MTZ True Thickness', y=1.08)
 
 
 
 #Migration figure
 
 
-factor_Pds = 300
+factor_Pds = 25
 
-majorLocatorY = MultipleLocator(50)
+majorLocatorY = MultipleLocator(20)
 minorLocatorY = MultipleLocator(10)
 
 
 for _i, _j in enumerate(RF_data_profile_Pds):
+	x_data_410_Pds= []
+	for x,c in enumerate(RF_stacking_Pds_BOOTSTRAP_profile[_i]):
+		RF_data_factor_Pds_bootstrap = [_i/factor_Pds+l for k, l in enumerate(c)]
+		x_data_410_Pds.append(RF_data_factor_Pds_bootstrap)
+		ax01.plot(RF_data_factor_Pds_bootstrap,camadas_terra_10_km,'gainsboro',linewidth=0.1,alpha=0.2, zorder=10)
+
+	min_x = [min(a) for a in zip(*x_data_410_Pds)]
+	max_x = [max(a) for a in zip(*x_data_410_Pds)]
+	ax01.fill_betweenx(y=camadas_terra_10_km,x1=min_x, x2=max_x, facecolor='whitesmoke',alpha=1, interpolate=True, zorder=5)
+
 	RF_data_factor_Pds = [_i/factor_Pds+l for k, l in enumerate(_j)]
-	ax1.plot(RF_data_factor_Pds,camadas_terra_10_km,'k',linewidth=0.5)
-	ax1.yaxis.set_major_locator(majorLocatorY)
-	ax1.yaxis.set_minor_locator(minorLocatorY)
-	ax1.grid(True,which='minor',linestyle='--')
-	ax1.grid(True,which='major',color='k',linewidth=1)
+	ax01.plot(RF_data_factor_Pds,camadas_terra_10_km,'k',linewidth=2, zorder=30)
 
-	ax1.plot(_i/factor_Pds,RF_DEPTH_mean_1_profile_Pds[_i],'ok',ms=3,markerfacecolor='none')
-	ax1.plot(_i/factor_Pds,RF_DEPTH_mean_2_profile_Pds[_i],'ok',ms=3,markerfacecolor='none')
+	ax01.yaxis.set_ticks_position('both')
+	ax01.yaxis.set_major_locator(majorLocatorY)
+	ax01.grid(True,which='major',linestyle='--')
 
-	ax1.errorbar(_i/factor_Pds,RF_DEPTH_mean_1_profile_Pds[_i], yerr=RF_DEPTH_std_1_profile_Pds[_i], ecolor='k',elinewidth=1,capsize=1,capthick=1)
-	ax1.errorbar(_i/factor_Pds,RF_DEPTH_mean_2_profile_Pds[_i], yerr=RF_DEPTH_std_2_profile_Pds[_i], ecolor='k',elinewidth=1,capsize=1,capthick=1)
+	ax01.fill_betweenx(camadas_terra_10_km,RF_data_factor_Pds,_i/factor_Pds,where=np.array(RF_data_factor_Pds)>=_i/factor_Pds, facecolor='dimgrey',interpolate=True, zorder=19)
+	ax01.fill_betweenx(camadas_terra_10_km,RF_data_factor_Pds,_i/factor_Pds,where=np.array(RF_data_factor_Pds)<=_i/factor_Pds, facecolor='lightgrey', interpolate=True, zorder=20)
+	ax01.set_yticks([])
+	ax01.tick_params(labelright=False,labelleft=True)
 
-	ax1.yaxis.set_ticks_position('both')
 
-	ax1.fill_betweenx(camadas_terra_10_km,RF_data_factor_Pds,_i/factor_Pds,where=np.array(RF_data_factor_Pds)>=_i/factor_Pds, facecolor='black',alpha=0.5, interpolate=True)
-	ax1.fill_betweenx(camadas_terra_10_km,RF_data_factor_Pds,_i/factor_Pds,where=np.array(RF_data_factor_Pds)<=_i/factor_Pds, facecolor='gray',alpha=0.5, interpolate=True)
-	ax1.set_title('Depth - Pds')
-	ax1.set_xticks([])
-	ax1.set_ylabel('Depth (km)')
-	ax1.tick_params(labelright=True)
-	ax1.set_ylim(MAX_DEPTH,MIN_DEPTH,MAX_DEPTH)
+	
+	ax01.set_title('410 km - Pds')
+	ax01.set_ylim(410+(DEPTH_RANGE*2)+INTER_DEPTH,410-(DEPTH_RANGE*2)-INTER_DEPTH)
+
+for _i, _j in enumerate(RF_data_profile_Pds):
+	x_data_660_Pds = []
+	for x,c in enumerate(RF_stacking_Pds_BOOTSTRAP_profile[_i]):
+		RF_data_factor_Pds_bootstrap = [_i/factor_Pds+l for k, l in enumerate(c)]
+		x_data_660_Pds.append(RF_data_factor_Pds_bootstrap)
+		ax02.plot(RF_data_factor_Pds_bootstrap,camadas_terra_10_km,'gainsboro',linewidth=0.1,alpha=0.2, zorder=10)
+
+	min_x = [min(a) for a in zip(*x_data_660_Pds)]
+	max_x = [max(a) for a in zip(*x_data_660_Pds)]
+	ax02.fill_betweenx(y=camadas_terra_10_km,x1=min_x, x2=max_x, facecolor='whitesmoke',alpha=1, interpolate=True, zorder=5)
+
+	RF_data_factor_Pds = [_i/factor_Pds+l for k, l in enumerate(_j)]
+	ax02.plot(RF_data_factor_Pds,camadas_terra_10_km,'k',linewidth=2, zorder=30)
+
+	ax02.yaxis.set_major_locator(majorLocatorY)
+	ax02.grid(True,which='major',linestyle='--')
+
+	ax02.yaxis.set_ticks_position('both')
+
+	ax02.fill_betweenx(camadas_terra_10_km,RF_data_factor_Pds,_i/factor_Pds,where=np.array(RF_data_factor_Pds)>=_i/factor_Pds, facecolor='dimgrey',interpolate=True, zorder=19)
+	ax02.fill_betweenx(camadas_terra_10_km,RF_data_factor_Pds,_i/factor_Pds,where=np.array(RF_data_factor_Pds)<=_i/factor_Pds, facecolor='lightgrey',interpolate=True, zorder=20)
+	ax02.set_title('660 km - Pds')
+	ax02.set_ylim(660+(DEPTH_RANGE*2)+INTER_DEPTH,660-(DEPTH_RANGE*2)-INTER_DEPTH)
+	ax02.tick_params(labelright=False,labelleft=True)
 
 
 #Migration figure
 
 
-factor_Ppds = 300
+factor_Ppds = 25
 
 for _i, _j in enumerate(RF_data_profile_Ppds):
+	x_data_410_Ppds = []
+	for x,c in enumerate(RF_stacking_Ppds_BOOTSTRAP_profile[_i]):
+		RF_data_factor_Ppds_bootstrap = [_i/factor_Ppds+l for k, l in enumerate(c)]
+		x_data_410_Ppds.append(RF_data_factor_Ppds_bootstrap)
+		ax11.plot(RF_data_factor_Ppds_bootstrap,camadas_terra_10_km,'gainsboro',linewidth=0.1,alpha=0.2, zorder=10)		
+
+	min_x = [min(a) for a in zip(*x_data_410_Ppds)]
+	max_x = [max(a) for a in zip(*x_data_410_Ppds)]
+	ax11.fill_betweenx(y=camadas_terra_10_km,x1=min_x, x2=max_x,  facecolor='whitesmoke',alpha=1, interpolate=True, zorder=5)
+
 	RF_data_factor_Ppds = [_i/factor_Ppds+l for k, l in enumerate(_j)]
-	ax2.plot(RF_data_factor_Ppds,camadas_terra_10_km,'k',linewidth=0.5)
-	ax2.yaxis.set_major_locator(majorLocatorY)
-	ax2.yaxis.set_minor_locator(minorLocatorY)
-	ax2.grid(True,which='minor',linestyle='--')
-	ax2.grid(True,which='major',color='k',linewidth=1)
+	ax11.plot(RF_data_factor_Ppds,camadas_terra_10_km,'k',linewidth=2, zorder=30)
 
-	ax2.plot(_i/factor_Ppds,RF_DEPTH_mean_1_profile_Ppds[_i],'ok',ms=3,markerfacecolor='none')
-	ax2.plot(_i/factor_Ppds,RF_DEPTH_mean_2_profile_Ppds[_i],'ok',ms=3,markerfacecolor='none')
+	ax11.yaxis.set_major_locator(majorLocatorY)
+	ax11.yaxis.set_minor_locator(minorLocatorY)
+	ax11.grid(True,which='major',linestyle='--')
 
-	ax2.errorbar(_i/factor_Ppds,RF_DEPTH_mean_1_profile_Ppds[_i], yerr=RF_DEPTH_std_1_profile_Ppds[_i], ecolor='k',elinewidth=1,capsize=1,capthick=1)
-	ax2.errorbar(_i/factor_Ppds,RF_DEPTH_mean_2_profile_Ppds[_i], yerr=RF_DEPTH_std_2_profile_Ppds[_i], ecolor='k',elinewidth=1,capsize=1,capthick=1)
+	ax11.yaxis.set_ticks_position('both')
 
-	ax2.yaxis.set_ticks_position('both')
+	ax11.fill_betweenx(camadas_terra_10_km,RF_data_factor_Ppds,_i/factor_Ppds,where=np.array(RF_data_factor_Ppds)>=_i/factor_Ppds, facecolor='dimgrey',interpolate=True, zorder=19)
+	ax11.fill_betweenx(camadas_terra_10_km,RF_data_factor_Ppds,_i/factor_Ppds,where=np.array(RF_data_factor_Ppds)<=_i/factor_Ppds, facecolor='lightgrey',interpolate=True, zorder=20)
+	
+	ax11.set_title('410 km - Ppds')
+	ax11.tick_params(labelright=False,labelleft=True)
 
-	ax2.fill_betweenx(camadas_terra_10_km,RF_data_factor_Ppds,_i/factor_Ppds,where=np.array(RF_data_factor_Ppds)>=_i/factor_Ppds, facecolor='black',alpha=0.5, interpolate=True)
-	ax2.fill_betweenx(camadas_terra_10_km,RF_data_factor_Ppds,_i/factor_Ppds,where=np.array(RF_data_factor_Ppds)<=_i/factor_Ppds, facecolor='gray',alpha=0.5, interpolate=True)
-	ax2.set_xticks([])
-	ax2.set_title('Depth - Ppds')
-	ax2.set_ylabel('Depth (km)')
+	ax11.set_ylim(410+(DEPTH_RANGE*2)+INTER_DEPTH,410-(DEPTH_RANGE*2)-INTER_DEPTH)
 
-	ax2.tick_params(labelright=True)
-	ax2.set_ylim(MAX_DEPTH,MIN_DEPTH,MAX_DEPTH)
+for _i, _j in enumerate(RF_data_profile_Ppds):
+	x_data_660_Ppds = []
+	for x,c in enumerate(RF_stacking_Ppds_BOOTSTRAP_profile[_i]):
+		RF_data_factor_Ppds_bootstrap = [_i/factor_Ppds+l for k, l in enumerate(c)]
+		x_data_660_Ppds.append(RF_data_factor_Ppds_bootstrap)
+		ax12.plot(RF_data_factor_Ppds_bootstrap,camadas_terra_10_km,'gainsboro',linewidth=0.1,alpha=0.2, zorder=10)
+
+
+	min_x = [min(a) for a in zip(*x_data_660_Ppds)]
+	max_x = [max(a) for a in zip(*x_data_660_Ppds)]
+	ax12.fill_betweenx(y=camadas_terra_10_km,x1=min_x, x2=max_x, facecolor='whitesmoke',alpha=1, interpolate=True, zorder=5)
+
+	RF_data_factor_Ppds = [_i/factor_Ppds+l for k, l in enumerate(_j)]
+	ax12.plot(RF_data_factor_Ppds,camadas_terra_10_km,'k',linewidth=2, zorder=30)
+
+	ax12.fill_betweenx(camadas_terra_10_km,RF_data_factor_Ppds,_i/factor_Ppds,where=np.array(RF_data_factor_Ppds)>=_i/factor_Ppds, facecolor='dimgrey',interpolate=True, zorder=19)
+	ax12.fill_betweenx(camadas_terra_10_km,RF_data_factor_Ppds,_i/factor_Ppds,where=np.array(RF_data_factor_Ppds)<=_i/factor_Ppds, facecolor='lightgrey',interpolate=True, zorder=20)
+	
+	ax12.yaxis.set_major_locator(majorLocatorY)
+	ax12.grid(True,which='major',linestyle='--')
+
+	ax12.yaxis.set_ticks_position('both')
+
+	ax12.set_title('660 km - Ppds')
+	ax12.set_xticks([])
+	ax12.tick_params(labelright=False,labelleft=True)
+
+
+	ax12.set_ylim(660+(DEPTH_RANGE*2)+INTER_DEPTH,660-(DEPTH_RANGE*2)-INTER_DEPTH)
 	if abs(abs(AB_lon_line[1]) - abs(AB_lon_line[0])) > abs(abs(AB_lat_line[1]) - abs(AB_lat_line[0])):
-		ax2.text(_i/factor_Ppds*0.95,820,"{0:.1f}".format(AB_lon[_i]),rotation=-45,fontsize=10)
-		ax2.set_xlabel('Longitude ($^\circ$)',labelpad=30)
+		ax12.text(_i/factor_Ppds*0.95,660+(DEPTH_RANGE*2)+2*INTER_DEPTH,"{0:.1f}".format(AB_lon[_i]),rotation=-45,fontsize=10)
+		ax12.set_xlabel('Longitude ($^\circ$)',labelpad=30)
 	else:
-		ax2.text(_i/factor_Ppds*0.95,820,"{0:.1f}".format(AB_lat[_i]),rotation=-45,fontsize=10)
-		ax2.set_xlabel('Latitude ($^\circ$)',labelpad=30)
+		ax12.text(_i/factor_Ppds*0.95,660+(DEPTH_RANGE*2)+2*INTER_DEPTH,"{0:.1f}".format(AB_lat[_i]),rotation=-45,fontsize=10)
+		ax12.set_xlabel('Latitude ($^\circ$)',labelpad=30)
 
 #### Plot Depth ####
 
 for _i, _j in enumerate(RF_data_profile_Ppds):
 	ax3.plot(_i/factor_Ppds,RF_DEPTH_mean_1_profile_Pds[_i],marker='o',markerfacecolor='none',markeredgecolor='k')
-	ax3.plot(_i/factor_Ppds,RF_DEPTH_mean_1_profile_Ppds[_i],marker='o',markerfacecolor='none',markeredgecolor='gray')
-	ax3.plot(_i/factor_Ppds,RF_DEPTH_mean_1_true_profile_Pds[_i],marker='s',markerfacecolor='none',markeredgecolor='red')
+
+	for x,c in enumerate(RF_BOOTSTRAP_410_DEPTH_Pds_profile[_i]):
+		ax3.plot(_i/factor_Pds,c,'o',markeredgecolor='gray',ms=3,markerfacecolor='none',alpha=0.2)
 
 	ax3.errorbar(_i/factor_Ppds,RF_DEPTH_mean_1_profile_Pds[_i], yerr=RF_DEPTH_std_1_profile_Pds[_i], ecolor='k',elinewidth=1,capsize=2,capthick=1)
-	ax3.errorbar(_i/factor_Ppds,RF_DEPTH_mean_1_profile_Ppds[_i], yerr=RF_DEPTH_std_1_profile_Ppds[_i], ecolor='gray',elinewidth=1,capsize=2,capthick=1)
-	ax3.errorbar(_i/factor_Ppds,RF_DEPTH_mean_1_true_profile_Pds[_i], yerr=RF_DEPTH_std_1_true_profile_Pds[_i], ecolor='red',elinewidth=1,capsize=2,capthick=1)
 
-	ax3.set_title('410 km Apparent Depth and True Depth')
+	ax3.set_title('410 km - Pds')
 	ax3.set_ylim(410+(DEPTH_RANGE*2)+INTER_DEPTH,410-(DEPTH_RANGE*2)-INTER_DEPTH)
 	ax3.set_ylabel('Depth (km)')
 	ax3.yaxis.set_ticks_position('both')
 	ax3.yaxis.set_major_locator(MultipleLocator(20))
-	ax3.yaxis.set_minor_locator(MultipleLocator(10))
-	ax3.grid(True,which='minor',linestyle='--')
-	ax3.grid(True,which='major',color='k',linewidth=1)
-	ax3.tick_params(labelright=True)
-	ax3.set_xticks([])
-
-
+	ax3.grid(True,which='major',linestyle='--')
 
 
 for _i, _j in enumerate(RF_data_profile_Ppds):
-	ax4.plot(_i/factor_Ppds,RF_DEPTH_mean_2_profile_Pds[_i],marker='^',markerfacecolor='none',markeredgecolor='k')
-	ax4.plot(_i/factor_Ppds,RF_DEPTH_mean_2_profile_Ppds[_i],marker='^',markerfacecolor='none',markeredgecolor='gray')
-	ax4.plot(_i/factor_Ppds,RF_DEPTH_mean_2_true_profile_Pds[_i],marker='s',markerfacecolor='none',markeredgecolor='red')
+	ax4.plot(_i/factor_Ppds,RF_DEPTH_mean_2_profile_Pds[_i],marker='o',markerfacecolor='none',markeredgecolor='k')
+
+	for x,c in enumerate(RF_BOOTSTRAP_660_DEPTH_Pds_profile[_i]):
+		ax4.plot(_i/factor_Pds,c,'o',markeredgecolor='gray',ms=3,markerfacecolor='none',alpha=0.2)
+
 
 	ax4.errorbar(_i/factor_Ppds,RF_DEPTH_mean_2_profile_Pds[_i], yerr=RF_DEPTH_std_2_profile_Pds[_i], ecolor='k',elinewidth=1,capsize=2,capthick=1)
-	ax4.errorbar(_i/factor_Ppds,RF_DEPTH_mean_2_profile_Ppds[_i], yerr=RF_DEPTH_std_2_profile_Ppds[_i], ecolor='gray',elinewidth=1,capsize=2,capthick=1)
-	ax4.errorbar(_i/factor_Ppds,RF_DEPTH_mean_2_true_profile_Pds[_i], yerr=RF_DEPTH_std_2_true_profile_Pds[_i], ecolor='red',elinewidth=1,capsize=2,capthick=1)
 
-	ax4.set_title('660 km Apparent Depth and True Depth')
+	ax4.set_title('660 km - Pds')
 	ax4.set_ylim(660+(DEPTH_RANGE*2)+INTER_DEPTH,660-(DEPTH_RANGE*2)-INTER_DEPTH)
 	ax4.set_ylabel('Depth (km)')
 	ax4.yaxis.set_ticks_position('both')
 	ax4.yaxis.set_major_locator(MultipleLocator(20))
-	ax4.yaxis.set_minor_locator(MultipleLocator(10))
-	ax4.grid(True,which='minor',linestyle='--')
-	ax4.grid(True,which='major',color='k',linewidth=1)
-	ax4.tick_params(labelright=True)
-	ax4.set_xticks([])
+	ax4.grid(True,which='major',linestyle='--')
 
 for _i, _j in enumerate(RF_data_profile_Ppds):
-	ax5.plot(_i/factor_Ppds,RF_delta_1_Vp_mean_profile[_i],marker='^',markerfacecolor='none',markeredgecolor='k')
-	ax5.plot(_i/factor_Ppds,RF_delta_2_Vp_mean_profile[_i],marker='o',markerfacecolor='none',markeredgecolor='k')
+	ax5.plot(_i/factor_Ppds,RF_DEPTH_mean_1_profile_Ppds[_i],marker='o',markerfacecolor='none',markeredgecolor='k')
 
-	ax5.errorbar(_i/factor_Ppds,RF_delta_1_Vp_mean_profile[_i], yerr=RF_delta_1_Vp_std_profile[_i], ecolor='k',elinewidth=1,capsize=2,capthick=1)
-	ax5.errorbar(_i/factor_Ppds,RF_delta_2_Vp_mean_profile[_i], yerr=RF_delta_2_Vp_std_profile[_i], ecolor='k',elinewidth=1,capsize=2,capthick=1)
-	ax5.set_ylim(-0.3,0.3)
-	ax5.set_title('P-velocity anomaly (%)')
+	for x,c in enumerate(RF_BOOTSTRAP_410_DEPTH_Pds_profile[_i]):
+		ax5.plot(_i/factor_Pds,c,'o',markeredgecolor='gray',ms=3,markerfacecolor='none',alpha=0.2)
+
+	ax5.errorbar(_i/factor_Ppds,RF_DEPTH_mean_1_profile_Ppds[_i], yerr=RF_DEPTH_std_1_profile_Ppds[_i], ecolor='k',elinewidth=1,capsize=2,capthick=1)
+
+	ax5.set_title('410 km - Ppds')
+	ax5.set_ylim(410+(DEPTH_RANGE*2)+INTER_DEPTH,410-(DEPTH_RANGE*2)-INTER_DEPTH)
+	ax5.set_ylabel('Depth (km)')
 	ax5.yaxis.set_ticks_position('both')
-	ax5.yaxis.set_major_locator(MultipleLocator(0.2))
-	ax5.yaxis.set_minor_locator(MultipleLocator(0.1))
-	ax5.grid(True,which='major',color='k',linewidth=1)
-	ax5.grid(True,which='minor',linestyle='--')
-	ax5.tick_params(labelright=True)
-	ax5.set_xticks([])
+	ax5.yaxis.set_major_locator(MultipleLocator(20))
+	ax5.yaxis.set_minor_locator(MultipleLocator(10))
+	ax5.grid(True,which='major',linestyle='--')
 
 for _i, _j in enumerate(RF_data_profile_Ppds):
-	ax6.plot(_i/factor_Ppds,RF_DEPTH_mtz_thickness_profile_Pds[_i],marker='o',markerfacecolor='none',markeredgecolor='k')
-	ax6.plot(_i/factor_Ppds,RF_DEPTH_true_thickness_MTZ_profile_Pds[_i],marker='s',markerfacecolor='none',markeredgecolor='r')
+	ax6.plot(_i/factor_Ppds,RF_DEPTH_mean_2_profile_Ppds[_i],marker='o',markerfacecolor='none',markeredgecolor='k')
 
-	ax6.errorbar(_i/factor_Ppds,RF_DEPTH_mtz_thickness_profile_Pds[_i], yerr=RF_DEPTH_std_2_profile_Pds[_i], ecolor='k',elinewidth=1,capsize=2,capthick=1)
-	ax6.errorbar(_i/factor_Ppds,RF_DEPTH_true_thickness_MTZ_profile_Pds[_i], yerr=RF_DEPTH_std_2_profile_Ppds[_i], ecolor='r',elinewidth=1,capsize=2,capthick=1)
-	ax6.set_ylim(250+(DEPTH_RANGE*2)+INTER_DEPTH,250-(DEPTH_RANGE*2)-INTER_DEPTH)
+
+	for x,c in enumerate(RF_BOOTSTRAP_660_DEPTH_Ppds_profile[_i]):
+		ax6.plot(_i/factor_Ppds,c,'o',markeredgecolor='gray',ms=3,markerfacecolor='none',alpha=0.2)
+
+
+	ax6.errorbar(_i/factor_Ppds,RF_DEPTH_mean_2_profile_Ppds[_i], yerr=RF_DEPTH_std_2_profile_Ppds[_i], ecolor='k',elinewidth=1,capsize=2,capthick=1)
+
+	ax6.set_title('660 km - Ppds')
+	ax6.set_ylim(660+(DEPTH_RANGE*2)+INTER_DEPTH,660-(DEPTH_RANGE*2)-INTER_DEPTH)
 	ax6.set_ylabel('Depth (km)')
-	ax6.set_title('MTZ Apparent and True Thickness')
 	ax6.yaxis.set_ticks_position('both')
 	ax6.yaxis.set_major_locator(MultipleLocator(20))
 	ax6.yaxis.set_minor_locator(MultipleLocator(10))
-	ax6.grid(True,which='major',color='k',linewidth=1)
-	ax6.grid(True,which='minor',linestyle='--')
-	ax6.tick_params(labelright=True)
+	ax6.grid(True,which='major',linestyle='--')
+	ax6.set_xticks([])
 
 	if abs(abs(AB_lon_line[1]) - abs(AB_lon_line[0])) > abs(abs(AB_lat_line[1]) - abs(AB_lat_line[0])):
-		ax6.text(_i/factor_Ppds*0.95,250+(DEPTH_RANGE*2)+(2*INTER_DEPTH),"{0:.1f}".format(AB_lon[_i]),rotation=-45,fontsize=10)
+		ax6.text(_i/factor_Ppds*0.95,660+(DEPTH_RANGE*2)+2*INTER_DEPTH,"{0:.1f}".format(AB_lon[_i]),rotation=-45,fontsize=10)
 		ax6.set_xlabel('Longitude ($^\circ$)',labelpad=30)
 	else:
-		ax6.text(_i/factor_Ppds*0.95,250+(DEPTH_RANGE*2)+(2*INTER_DEPTH),"{0:.1f}".format(AB_lat[_i]),rotation=-45,fontsize=10)
+		ax6.text(_i/factor_Ppds*0.95,660+(DEPTH_RANGE*2)+INTER_DEPTH+10,"{0:.1f}".format(AB_lat[_i]),rotation=-45,fontsize=10)
 		ax6.set_xlabel('Latitude ($^\circ$)',labelpad=30)
-
-
-
 
 plt.show()
 
-fig.savefig(PP_FIGURE+'SELECTED_BINNED_DATA_CROSS_SECTION_Pds_Ppds.'+EXT_FIG,dpi=DPI_FIG)
+fig.savefig(PP_FIGURE+'SELECTED_BINNED_DATA_CROSS_SECTION_Pds_Ppds_bootstrap.'+EXT_FIG,dpi=DPI_FIG)
 
 print('Ending the Cross section CODE')
