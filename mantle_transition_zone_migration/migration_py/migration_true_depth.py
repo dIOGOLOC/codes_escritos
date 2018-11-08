@@ -850,10 +850,10 @@ if BOOTSTRAP_DEPTH_ESTIMATION == True:
 				RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['lon'] = grid_sel_x[i]
 				RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['lat'] = grid_sel_y[i]
 
-				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['410_mean'] = np.average(lst_410_depth_Pds)
+				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['410_mean'] = np.average(lst_410_depth_Pds,weights=[10 if i > 0.01 else 5 for i in lst_410_amp_Pds])
 				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['410_std'] = np.std(lst_410_depth_Pds)
 
-				RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['410_mean'] = np.average(lst_410_depth_Ppds)
+				RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['410_mean'] = np.average(lst_410_depth_Ppds,weights=[10 if i > 0.01 else 5 for i in lst_410_amp_Ppds])
 				RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['410_std'] = np.std(lst_410_depth_Ppds)
 
 				print('410 Pds Depth = '+str(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['410_mean'])+' ± '+str(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['410_std']))
@@ -896,10 +896,10 @@ if BOOTSTRAP_DEPTH_ESTIMATION == True:
 				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['RF_660_DEPTH'] = lst_660_depth_Pds
 				RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['RF_660_DEPTH'] = lst_660_depth_Ppds
 
-				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['660_mean'] = np.average(lst_660_depth_Pds)
+				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['660_mean'] = np.average(lst_660_depth_Pds,weights=[10 if i > 0.01 else 5 for i in lst_660_amp_Pds])
 				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['660_std'] = np.std(lst_660_depth_Pds)
 
-				RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['660_mean'] = np.average(lst_660_depth_Ppds)
+				RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['660_mean'] = np.average(lst_660_depth_Ppds,weights=[10 if i > 0.01 else 5 for i in lst_660_amp_Ppds])
 				RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['660_std'] = np.std(lst_660_depth_Ppds)
 
 				print('660 Pds Depth = '+str(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['660_mean'])+' ± '+str(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['660_std']))
