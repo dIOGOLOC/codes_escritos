@@ -130,7 +130,7 @@ m.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
 
 x, y = m(lons,lats)
-sc = m.scatter(x,y,40,RF_number,cmap='copper',marker='s',edgecolors='none')
+sc = m.scatter(x,y,40,RF_number,cmap='gist_heat',marker='s',edgecolors='none')
 plt.colorbar(sc,label='Total of Receiver Functions per bin')
 
 
@@ -293,13 +293,13 @@ print('Plotting the Final Figure')
 
 #Cross section figure
 
-fig = plt.figure(figsize=(30, 15))
+fig = plt.figure(figsize=(20, 15))
 
 fig.suptitle('Cross section for Pds and Ppds')
 
 
 gs = gridspec.GridSpec(4, 8)
-gs.update(wspace=1.5, hspace=0.25)
+gs.update(wspace=1, hspace=0.5)
 
 ax = fig.add_subplot(gs[0:2, 0:2])
 ax7 = fig.add_subplot(gs[2:4, 0:2])
@@ -323,7 +323,7 @@ l2, = m.drawgreatcircle(AB_lon_line[0],AB_lat_line[0],AB_lon_line[1],AB_lat_line
 divider = make_axes_locatable(ax)
 cax = divider.append_axes("right", size="5%", pad=0.05)
 x, y = m(lons,lats)
-sc = m.scatter(x,y,40,RF_delta_1_Vp_mean,cmap='RdGy',marker='s',edgecolors='none',vmin=-0.3,vmax=0.3)
+sc = m.scatter(x,y,40,RF_delta_1_Vp_mean,cmap='RdGy',marker='s',edgecolors='none',vmin=-1,vmax=1)
 fig.colorbar(sc,cax=cax)
 
 for lon, lat in zip(sta_long,sta_lat):
@@ -372,6 +372,9 @@ ax7.set_title('MTZ True Thickness', y=1.08)
 #Migration figure
 
 
+#### Figure Pds  ####
+
+
 factor_Pds = 300
 
 majorLocatorY = MultipleLocator(50)
@@ -404,6 +407,8 @@ for _i, _j in enumerate(RF_data_profile_Pds):
 
 
 #Migration figure
+
+#### Figure Ppds  ####
 
 
 factor_Ppds = 300
@@ -439,7 +444,9 @@ for _i, _j in enumerate(RF_data_profile_Ppds):
 		ax2.text(_i/factor_Ppds*0.95,820,"{0:.1f}".format(AB_lat[_i]),rotation=-45,fontsize=10)
 		ax2.set_xlabel('Latitude ($^\circ$)',labelpad=30)
 
-#### Plot Depth ####
+
+#### Figure True and Apparent  410 km Pds and Ppds  ####
+
 
 for _i, _j in enumerate(RF_data_profile_Ppds):
 	ax3.plot(_i/factor_Ppds,RF_DEPTH_mean_1_profile_Pds[_i],marker='o',markerfacecolor='none',markeredgecolor='k')
@@ -450,11 +457,11 @@ for _i, _j in enumerate(RF_data_profile_Ppds):
 	ax3.errorbar(_i/factor_Ppds,RF_DEPTH_mean_1_profile_Ppds[_i], yerr=RF_DEPTH_std_1_profile_Ppds[_i], ecolor='gray',elinewidth=1,capsize=2,capthick=1)
 	ax3.errorbar(_i/factor_Ppds,RF_DEPTH_mean_1_true_profile_Pds[_i], yerr=RF_DEPTH_std_1_true_profile_Pds[_i], ecolor='red',elinewidth=1,capsize=2,capthick=1)
 
-	ax3.set_title('410 km Apparent Depth and True Depth')
+	ax3.set_title('410 km Apparent and True Depth')
 	ax3.set_ylim(410+(DEPTH_RANGE*2)+INTER_DEPTH,410-(DEPTH_RANGE*2)-INTER_DEPTH)
 	ax3.set_ylabel('Depth (km)')
 	ax3.yaxis.set_ticks_position('both')
-	ax3.yaxis.set_major_locator(MultipleLocator(20))
+	ax3.yaxis.set_major_locator(MultipleLocator(50))
 	ax3.yaxis.set_minor_locator(MultipleLocator(10))
 	ax3.grid(True,which='minor',linestyle='--')
 	ax3.grid(True,which='major',color='k',linewidth=1)
@@ -462,6 +469,7 @@ for _i, _j in enumerate(RF_data_profile_Ppds):
 	ax3.set_xticks([])
 
 
+#### Figure True and Apparent  660 km Pds and Ppds  ####
 
 
 for _i, _j in enumerate(RF_data_profile_Ppds):
@@ -473,16 +481,19 @@ for _i, _j in enumerate(RF_data_profile_Ppds):
 	ax4.errorbar(_i/factor_Ppds,RF_DEPTH_mean_2_profile_Ppds[_i], yerr=RF_DEPTH_std_2_profile_Ppds[_i], ecolor='gray',elinewidth=1,capsize=2,capthick=1)
 	ax4.errorbar(_i/factor_Ppds,RF_DEPTH_mean_2_true_profile_Pds[_i], yerr=RF_DEPTH_std_2_true_profile_Pds[_i], ecolor='red',elinewidth=1,capsize=2,capthick=1)
 
-	ax4.set_title('660 km Apparent Depth and True Depth')
+	ax4.set_title('660 km Apparent and True Depth')
 	ax4.set_ylim(660+(DEPTH_RANGE*2)+INTER_DEPTH,660-(DEPTH_RANGE*2)-INTER_DEPTH)
 	ax4.set_ylabel('Depth (km)')
 	ax4.yaxis.set_ticks_position('both')
-	ax4.yaxis.set_major_locator(MultipleLocator(20))
+	ax4.yaxis.set_major_locator(MultipleLocator(50))
 	ax4.yaxis.set_minor_locator(MultipleLocator(10))
 	ax4.grid(True,which='minor',linestyle='--')
 	ax4.grid(True,which='major',color='k',linewidth=1)
 	ax4.tick_params(labelright=True)
 	ax4.set_xticks([])
+
+#### Figure 410 km and 660 km P-velocity anomaly  ####
+
 
 for _i, _j in enumerate(RF_data_profile_Ppds):
 	ax5.plot(_i/factor_Ppds,RF_delta_1_Vp_mean_profile[_i],marker='^',markerfacecolor='none',markeredgecolor='k')
@@ -490,15 +501,18 @@ for _i, _j in enumerate(RF_data_profile_Ppds):
 
 	ax5.errorbar(_i/factor_Ppds,RF_delta_1_Vp_mean_profile[_i], yerr=RF_delta_1_Vp_std_profile[_i], ecolor='k',elinewidth=1,capsize=2,capthick=1)
 	ax5.errorbar(_i/factor_Ppds,RF_delta_2_Vp_mean_profile[_i], yerr=RF_delta_2_Vp_std_profile[_i], ecolor='k',elinewidth=1,capsize=2,capthick=1)
-	ax5.set_ylim(-0.3,0.3)
+	ax5.set_ylim(-1,1)
 	ax5.set_title('P-velocity anomaly (%)')
 	ax5.yaxis.set_ticks_position('both')
-	ax5.yaxis.set_major_locator(MultipleLocator(0.2))
-	ax5.yaxis.set_minor_locator(MultipleLocator(0.1))
+	ax5.yaxis.set_major_locator(MultipleLocator(0.4))
+	ax5.yaxis.set_minor_locator(MultipleLocator(0.2))
 	ax5.grid(True,which='major',color='k',linewidth=1)
 	ax5.grid(True,which='minor',linestyle='--')
 	ax5.tick_params(labelright=True)
 	ax5.set_xticks([])
+
+	#### Figure MTZ True and Apparent thickness  ####
+
 
 for _i, _j in enumerate(RF_data_profile_Ppds):
 	ax6.plot(_i/factor_Ppds,RF_DEPTH_mtz_thickness_profile_Pds[_i],marker='o',markerfacecolor='none',markeredgecolor='k')
@@ -510,7 +524,7 @@ for _i, _j in enumerate(RF_data_profile_Ppds):
 	ax6.set_ylabel('Depth (km)')
 	ax6.set_title('MTZ Apparent and True Thickness')
 	ax6.yaxis.set_ticks_position('both')
-	ax6.yaxis.set_major_locator(MultipleLocator(20))
+	ax6.yaxis.set_major_locator(MultipleLocator(50))
 	ax6.yaxis.set_minor_locator(MultipleLocator(10))
 	ax6.grid(True,which='major',color='k',linewidth=1)
 	ax6.grid(True,which='minor',linestyle='--')

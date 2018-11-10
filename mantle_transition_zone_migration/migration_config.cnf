@@ -109,6 +109,12 @@ URCRNRLAT_SMALL=-1
 EXT_FIG=pdf
 DPI_FIG=300
 
+#Date event initial  (exemple: 2008-01-01T00:00:00)
+INITIAL_DATE_EVENT = 2014-01-01T00:00:00
+
+#Date event final  (exemple: 2008-01-01T00:00:00)
+FINAL_DATE_EVENT = 2018-10-01T00:00:00
+
 #==================
 [time]
 #==================
@@ -142,7 +148,7 @@ SHAPEFILE_GRID = /home/diogo/dados_doutorado/parnaiba_basin/SIG_dados/shapes/bac
 ROTATE_ANGLE = 350
 
 #GRID POINTS multiplyer
-GRID_PP_MULT = 3
+GRID_PP_MULT = 2
 
 # distance between grid points and piercing points for each depth (degree)
 DIST_GRID_PP = 1
@@ -160,7 +166,7 @@ DEPTH_ESTIMATION = True
 BOOTSTRAP_DEPTH_ESTIMATION = True 
 
 #Number of interations to compute bootstrapping
-BOOTSTRAP_INTERATOR = 50
+BOOTSTRAP_INTERATOR = 200
 
 #The gamma value is a function of temperature, rock composition, 
 #and degree of partial melting. This value is found to be in the 
@@ -171,7 +177,7 @@ BOOTSTRAP_INTERATOR = 50
 GAMMA = 2
 
 #Number that multiply the difference between the cross-section points
-SECTION_NUM = 3
+SECTION_NUM = 2
 
 #Depth range (+/-) that we will use to find the maximum amplitude
-DEPTH_RANGE = 20
+DEPTH_RANGE = 30

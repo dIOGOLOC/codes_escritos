@@ -21,6 +21,10 @@ from matplotlib.colors import Normalize
 from numpy import ma
 from matplotlib import cbook
 import collections
+from obspy.clients.fdsn import Client
+from obspy import UTCDateTime
+import matplotlib.gridspec as gridspec
+
 
 
 
@@ -29,7 +33,7 @@ import collections
 
 from parameters_py.mgconfig import (
 					RF_DIR,RF_EXT,MODEL_FILE_NPZ,MIN_DEPTH,MAX_DEPTH,INTER_DEPTH,PdS_DIR,
-					PP_DIR,PP_SELEC_DIR,NUMBER_PP_PER_BIN,STA_DIR,
+					PP_DIR,PP_SELEC_DIR,NUMBER_PP_PER_BIN,STA_DIR,INITIAL_DATE_EVENT,FINAL_DATE_EVENT,
 					LLCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLON_LARGE,URCRNRLAT_LARGE,LLCRNRLON_SMALL,
 					URCRNRLON_SMALL,LLCRNRLAT_SMALL,URCRNRLAT_SMALL,PROJECT_LAT,PROJECT_LON,GRID_PP_MULT,
 					BOUNDARY_1_SHP,BOUNDARY_1_SHP_NAME,BOUNDARY_2_SHP,BOUNDARY_2_SHP_NAME,					
@@ -64,8 +68,9 @@ sta_dic = json.load(open(filename_STA))
 
 event_depth = sta_dic['event_depth']
 event_lat = sta_dic['event_lat']
-event_long = sta_dic['event_long']
+event_lon = sta_dic['event_long']
 event_dist = sta_dic['event_dist']
+event_mag = sta_dic['event_mag']
 event_gcarc = sta_dic['event_gcarc']
 event_sta = sta_dic['event_sta']
 event_ray = sta_dic['event_ray']
@@ -73,6 +78,37 @@ sta_lat = sta_dic['sta_lat']
 sta_long = sta_dic['sta_long']
 sta_data = sta_dic['sta_data']
 sta_time = sta_dic['sta_time']
+
+print('Get Event Parameters')
+print('\n')
+'''
+irisclient=Client("IRIS")
+
+starttime = UTCDateTime(INITIAL_DATE_EVENT)
+endtime = UTCDateTime(FINAL_DATE_EVENT)
+
+events = irisclient.get_events(starttime=starttime, endtime=endtime,minmagnitude=5)
+
+evla_0 = []
+evlo_0 = []
+mag_0 = []
+
+for i,j in enumerate(events):
+	evla_0.append(j['origins'][0]['latitude'])
+	evlo_0.append(j['origins'][0]['longitude'])
+	mag_0.append(j['magnitudes'][0]['mag'])
+'''
+filename_EVENT = STA_DIR+'EVENT_dic.json'
+
+event_dic = json.load(open(filename_EVENT))
+
+evla_0 = event_dic['evla']
+evlo_0 = event_dic['evlo']
+mag_0 = event_dic['mag']
+
+
+print('Number of Events: '+str(len(mag_0)))
+print('\n')
 
 print('Creating the Earth layered model')
 print('\n')
@@ -460,7 +496,73 @@ ax.set_yticklabels(["{0:.0f}".format(time[i]) for i in np.arange(-100,len(time),
 ax.set_xticklabels(["{0:.1f}".format(RP[i]*100) for i in np.arange(0,len(RP),100)])
 plt.show()
 
+###################################################################################################################
 
+print('Plotting: Figure Distribution and usual statistics about events used in the study')
+print('\n')
+
+fig = plt.figure(figsize=(5, 10))
+gs = gridspec.GridSpec(5,2)
+gs.update(wspace=0.5,hspace=1)
+
+ax1 = fig.add_subplot(gs[:3,:])
+
+ax2 = fig.add_subplot(gs[3, 0])
+ax3 = fig.add_subplot(gs[3, 1])
+ax4 = fig.add_subplot(gs[4, 0])
+ax5 = fig.add_subplot(gs[4, 1])
+
+
+
+m = Basemap(resolution='l',projection='ortho',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,ax=ax1)
+
+for lon, lat in zip(sta_long,sta_lat):
+    x,y = m(lon, lat)
+    msize = 6
+    l1, = m.plot(x, y, '^',markersize=msize,markeredgecolor='k',markerfacecolor='w')
+
+for lon, lat in zip(evlo_0,evla_0):
+	x,y = m(lon, lat)
+	msize = 4
+	m.plot(x, y, '*',markersize=msize,markeredgecolor='grey',markerfacecolor='whitesmoke')
+
+for lon, lat in zip(event_lon,event_lat):
+    x,y = m(lon, lat)
+    msize = 6
+    m.plot(x, y, '*',markersize=msize,markeredgecolor='k',markerfacecolor='dimgrey')
+    
+#m.tissot(PROJECT_LON, PROJECT_LAT, 30,100,zorder=10,edgecolor='dimgray',linewidth=1,facecolor='none')
+#m.tissot(PROJECT_LON, PROJECT_LAT, 90,100,zorder=10,edgecolor='dimgray',linewidth=1,facecolor='none')
+
+
+m.fillcontinents(color='whitesmoke',lake_color=None)
+m.drawcoastlines(color='dimgray',zorder=10)
+m.drawmeridians(np.arange(0, 360, 20),color='lightgrey')
+m.drawparallels(np.arange(-90, 90, 10),color='lightgrey')
+
+#############
+ax2.hist(event_gcarc,bins=50,orientation='vertical',color='k')
+#ax2.set_yticklabels([])
+ax2.set_title("Distance (Degrees)")
+
+#############
+ax3.hist(event_ray,bins=50,orientation='vertical',color='k')
+#ax3.set_yticklabels([])
+ax3.set_title("Ray Parameter (s/rad)")
+
+#############
+ax4.hist(event_mag,bins=50,orientation='vertical',color='k') 
+#ax4.set_yticklabels([])
+ax4.set_title("Magnitude (mb)")
+
+
+#############
+ax5.hist(event_depth,bins=50,orientation='vertical',color='k')
+#ax5.set_yticklabels([])
+ax5.set_title("Depth (km)")
+
+
+plt.show()
 ###################################################################################################################
 print('Plotting: Figure earth model layers')
 print('\n')

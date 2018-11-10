@@ -10,7 +10,7 @@ from scipy.signal import triang
 
 from parameters_py.mgconfig import (
 					RF_DIR,RF_EXT,MODEL_FILE_NPZ,MIN_DEPTH,MAX_DEPTH,INTER_DEPTH,PdS_DIR,
-					PP_DIR,PP_SELEC_DIR,NUMBER_PP_PER_BIN,RAY_TRACE_PLOT,RAY_TRACE_410_660_PLOT,STA_DIR,
+					PP_DIR,PP_SELEC_DIR,NUMBER_PP_PER_BIN,STA_DIR,
 					LLCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLON_LARGE,URCRNRLAT_LARGE,LLCRNRLON_SMALL,
 					URCRNRLON_SMALL,LLCRNRLAT_SMALL,URCRNRLAT_SMALL,PROJECT_LAT,PROJECT_LON,
 					BOUNDARY_1_SHP,BOUNDARY_1_SHP_NAME,BOUNDARY_2_SHP,BOUNDARY_2_SHP_NAME,					
@@ -40,6 +40,7 @@ sta_dic = {
 	'event_long':[],
 	'event_dist':[],
 	'event_gcarc':[],
+	'event_mag':[],
 	'event_sta':[],
 	'event_ray':[],
 	'sta_lat':[],
@@ -58,6 +59,7 @@ for i,j in enumerate(ev):
 		sta_dic['event_lat'].append(float(j.stats.sac.evla))
 		sta_dic['event_long'].append(float(j.stats.sac.evlo))
 		sta_dic['event_dist'].append(float(j.stats.sac.dist))
+		sta_dic['event_mag'].append(float(j.stats.sac.mag))
 		sta_dic['event_gcarc'].append(float(j.stats.sac.gcarc))
 		sta_dic['event_sta'].append(j.stats.station)
 		sta_dic['event_ray'].append(float(j.stats.sac.user8))

@@ -15,7 +15,7 @@ and converted phase (Ppds) at the discontinuities to simultaneously determine th
 depth of mantle discontinuities and velocity anomalies in the overlying layer. 
 Note that all the parameters are defined in the configuration file.
 """
-from parameters_py import mgconfig
+from parameters_py import mgconfig,get_header_data_RF
 from visual_py import plot_piercing_points_data
 import os
 import sys
