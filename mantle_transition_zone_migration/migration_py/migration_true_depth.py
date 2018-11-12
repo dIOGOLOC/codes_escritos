@@ -998,7 +998,10 @@ diff_thickness_MTZ_Ppds_std  = []
 RF_BOOTSTRAP_DATA_Pds = []
 RF_BOOTSTRAP_DATA_Ppds = []
 
-
+RF_BOOTSTRAP_DEPTH_mean_1_Pds = []
+RF_BOOTSTRAP_DEPTH_mean_1_Ppds = []
+RF_BOOTSTRAP_DEPTH_mean_2_Pds = []
+RF_BOOTSTRAP_DEPTH_mean_2_Ppds = []
 
 
 for i,j in enumerate(RF_data_raw_Pds):
@@ -1013,18 +1016,22 @@ for i,j in enumerate(RF_data_raw_Pds):
 
 
 		flat_mean_1_Pds = [float(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['410_mean']) for _k in range(BOOTSTRAP_INTERATOR)]
+		RF_BOOTSTRAP_DEPTH_mean_1_Pds.append(flat_mean_1_Pds)
 		RF_DEPTH_mean_1_Pds.append(np.mean(flat_mean_1_Pds))
 		RF_DEPTH_std_1_Pds.append(np.std(flat_mean_1_Pds))
 
 		flat_mean_1_Ppds = [float(RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['410_mean']) for _k in range(BOOTSTRAP_INTERATOR)]
+		RF_BOOTSTRAP_DEPTH_mean_1_Ppds.append(flat_mean_1_Ppds)
 		RF_DEPTH_mean_1_Ppds.append(np.mean(flat_mean_1_Ppds))
 		RF_DEPTH_std_1_Ppds.append(np.std(flat_mean_1_Ppds))
 
 		flat_mean_2_Pds = [float(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['660_mean']) for _k in range(BOOTSTRAP_INTERATOR)]
+		RF_BOOTSTRAP_DEPTH_mean_2_Pds.append(flat_mean_2_Pds)
 		RF_DEPTH_mean_2_Pds.append(np.mean(flat_mean_2_Pds))
 		RF_DEPTH_std_2_Pds.append(np.std(flat_mean_2_Pds))
 
 		flat_mean_2_Ppds = [float(RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['660_mean']) for _k in range(BOOTSTRAP_INTERATOR)]
+		RF_BOOTSTRAP_DEPTH_mean_2_Ppds.append(flat_mean_2_Ppds)
 		RF_DEPTH_mean_2_Ppds.append(np.mean(flat_mean_2_Ppds))
 		RF_DEPTH_std_2_Ppds.append(np.std(flat_mean_2_Ppds))
 
@@ -1871,10 +1878,15 @@ SELECTED_BINNED_DATA_dic = {'lat':[],'lon':[],'len_Pds':[],'len_Ppds':[],'true_m
 'std_2_Ppds':[],'delta_1_Vp_mean':[],'delta_1_Vp_std':[],'delta_2_Vp_mean':[],'delta_2_Vp_std':[],'delta_1_Vs_mean':[],'delta_1_Vs_std':[],'delta_2_Vs_mean':[],'delta_2_Vs_std':[],
 'mtz_thickness_Pds':[],'mtz_thickness_Pds_std':[],'true_thickness_MTZ_Pds':[],'true_thickness_MTZ_Pds_std':[],'true_thickness_MTZ_Ppds':[],'true_thickness_MTZ_Ppds_std':[],
 'mtz_thickness_Ppds':[],'mtz_thickness_Ppds_std':[],'difference_thickness_MTZ_Pds':[],'difference_thickness_MTZ_Pds_std':[],'difference_thickness_MTZ_Ppds':[],'difference_thickness_MTZ_Ppds_std':[],
-'data_Pds':[],'data_Ppds':[],'data_BOOTSTRAP_Pds':[],'data_BOOTSTRAP_Ppds':[]}
+'data_Pds':[],'data_Ppds':[],'data_BOOTSTRAP_Pds':[],'data_BOOTSTRAP_Ppds':[],'RF_BOOTSTRAP_DEPTH_mean_1_Pds':[],'RF_BOOTSTRAP_DEPTH_mean_1_Ppds':[],'RF_BOOTSTRAP_DEPTH_mean_2_Pds':[],'RF_BOOTSTRAP_DEPTH_mean_2_Ppds':[]}
 for i,j in enumerate(RF_BOOTSTRAP_DATA_Pds):
 	SELECTED_BINNED_DATA_dic['data_BOOTSTRAP_Pds'].append(j)
 	SELECTED_BINNED_DATA_dic['data_BOOTSTRAP_Ppds'].append(RF_BOOTSTRAP_DATA_Ppds[i])
+
+	SELECTED_BINNED_DATA_dic['RF_BOOTSTRAP_DEPTH_mean_1_Pds'].append(RF_BOOTSTRAP_DEPTH_mean_1_Pds[i])
+	SELECTED_BINNED_DATA_dic['RF_BOOTSTRAP_DEPTH_mean_1_Ppds'].append(RF_BOOTSTRAP_DEPTH_mean_1_Ppds[i])
+	SELECTED_BINNED_DATA_dic['RF_BOOTSTRAP_DEPTH_mean_2_Pds'].append(RF_BOOTSTRAP_DEPTH_mean_2_Pds[i])
+	SELECTED_BINNED_DATA_dic['RF_BOOTSTRAP_DEPTH_mean_2_Ppds'].append(RF_BOOTSTRAP_DEPTH_mean_2_Ppds[i])
 
 	SELECTED_BINNED_DATA_dic['data_Pds'].append(RF_stacking_Pds[i])
 	SELECTED_BINNED_DATA_dic['data_Ppds'].append(RF_stacking_Ppds[i])
