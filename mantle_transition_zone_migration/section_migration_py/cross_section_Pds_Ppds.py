@@ -1,7 +1,6 @@
 # coding: utf-8
 
 import matplotlib.pyplot as plt
-import matplotlib as mpl
 import numpy as np
 import obspy
 import os
@@ -20,16 +19,19 @@ from matplotlib.ticker import MultipleLocator, FormatStrFormatter
 import json
 import matplotlib.gridspec as gridspec
 from mpl_toolkits.axes_grid1 import make_axes_locatable
+from scipy import interpolate
+
+
 
 
 
 from parameters_py.mgconfig import (
 					RF_DIR,RF_EXT,MODEL_FILE_NPZ,MIN_DEPTH,MAX_DEPTH,INTER_DEPTH,PdS_DIR,
-					PP_DIR,PP_SELEC_DIR,NUMBER_PP_PER_BIN,STA_DIR,
+					PP_DIR,PP_SELEC_DIR,NUMBER_PP_PER_BIN,STA_DIR,GRID_PP_MULT,ROTATE_ANGLE,
 					LLCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLON_LARGE,URCRNRLAT_LARGE,LLCRNRLON_SMALL,SECTION_NUM,
 					URCRNRLON_SMALL,LLCRNRLAT_SMALL,URCRNRLAT_SMALL,PROJECT_LAT,PROJECT_LON,
 					BOUNDARY_1_SHP,BOUNDARY_1_SHP_NAME,BOUNDARY_2_SHP,BOUNDARY_2_SHP_NAME,					
-					RAY_PATH_FIGURE,PP_FIGURE,EXT_FIG,DPI_FIG,DIST_GRID_PP_MED,DIST_GRID_PP,DEPTH_RANGE
+					PP_FIGURE,EXT_FIG,DPI_FIG,DIST_GRID_PP_MED,DIST_GRID_PP,DEPTH_RANGE
 				   )
 
 
@@ -121,8 +123,8 @@ print('\n')
 
 fig_receiver_function_per_bin,ax = plt.subplots(1,1,figsize=(10,5))
 
-m = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_SMALL,
-            llcrnrlat=LLCRNRLAT_SMALL,urcrnrlon=URCRNRLON_SMALL,urcrnrlat=URCRNRLAT_SMALL)
+m = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_LARGE,
+            llcrnrlat=LLCRNRLAT_LARGE,urcrnrlon=URCRNRLON_LARGE,urcrnrlat=URCRNRLAT_LARGE)
 
 m.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
@@ -130,7 +132,7 @@ m.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
 
 x, y = m(lons,lats)
-sc = m.scatter(x,y,40,RF_number,cmap='magma',marker='s',edgecolors='none')
+sc = m.scatter(x,y,40,RF_number,cmap='Greys',marker='o',edgecolors='k')
 plt.colorbar(sc,label='Total of Receiver Functions per bin')
 
 
@@ -297,25 +299,69 @@ fig = plt.figure(figsize=(20, 30))
 
 fig.suptitle('Cross section for Pds and Ppds')
 
-gs = gridspec.GridSpec(5, 3)
+gs = gridspec.GridSpec(6, 3)
 gs.update(wspace=0.2, hspace=0.5)
 
+P_anomaly = fig.add_subplot(gs[0,1:])
 
-MTZ_thickness = fig.add_subplot(gs[0,1:])
+MTZ_thickness = fig.add_subplot(gs[1,1:],sharex=P_anomaly)
 
-pefil_pds = fig.add_subplot(gs[1:3,1:],sharex=MTZ_thickness)
-pefil_ppds = fig.add_subplot(gs[3:5,1:],sharex=MTZ_thickness)
+pefil_pds = fig.add_subplot(gs[2:4,1:],sharex=P_anomaly)
+pefil_ppds = fig.add_subplot(gs[4:6,1:],sharex=P_anomaly)
+
+#_____________________________________________
+
+apparent_410 = fig.add_subplot(gs[2,0])
+apparent_660 = fig.add_subplot(gs[3,0],sharex=apparent_410)
+
+apparent_410_ppds = fig.add_subplot(gs[4, 0],sharex=apparent_410)
+apparent_660_ppds = fig.add_subplot(gs[5, 0],sharex=apparent_410)
+
+#_____________________________________________
+
+map_MTZ_thickness =  fig.add_subplot(gs[0:2,0])
+
+#######################################################################
+m = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_LARGE,
+            llcrnrlat=LLCRNRLAT_LARGE,urcrnrlon=URCRNRLON_LARGE,urcrnrlat=URCRNRLAT_LARGE,ax=map_MTZ_thickness)
+
+m.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
+m.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
 
-P_anomaly = fig.add_subplot(gs[0,0])
 
-apparent_410 = fig.add_subplot(gs[1,0],sharex=P_anomaly)
-apparent_660 = fig.add_subplot(gs[2,0],sharex=P_anomaly)
+l2, = m.drawgreatcircle(AB_lon_line[0],AB_lat_line[0],AB_lon_line[1],AB_lat_line[1],linewidth=2,color='k')
 
-apparent_410_ppds = fig.add_subplot(gs[3, 0],sharex=P_anomaly)
-apparent_660_ppds = fig.add_subplot(gs[4, 0],sharex=P_anomaly)
+xi = np.linspace(LLCRNRLON_SMALL, URCRNRLON_SMALL, 100)
+yi = np.linspace(LLCRNRLAT_SMALL, URCRNRLAT_SMALL, 100)
+grdx, grdy = np.meshgrid(xi, yi)
 
+grdz = interpolate.griddata((np.array(lons), np.array(lats)), np.array(RF_DEPTH_true_thickness_MTZ_Pds), (grdx, grdy),method='cubic')
 
+divider = make_axes_locatable(map_MTZ_thickness)
+cax = divider.append_axes("right", size="5%", pad=0.5)
+x,y = m(*(grdx,grdy))
+
+sc = m.contourf(x,y,grdz,levels=np.arange(200,300,10),cmap='seismic_r',vmin=200,vmax=300)
+m.contour(x,y,grdz,levels=np.arange(200,300,50),colors='k')
+
+for lon, lat in zip(lons,lats):
+	x,y = m(lon, lat)
+	msize = 5
+	#l1, = m.plot(x, y, '.',markersize=msize,markeredgecolor='k',markerfacecolor='none')
+
+fig.colorbar(sc,cax=cax)
+
+for lon, lat in zip(sta_long,sta_lat):
+    x,y = m(lon, lat)
+    msize = 5
+    l1, = m.plot(x, y, '^',markersize=msize,markeredgecolor='k',markerfacecolor='grey')
+
+m.fillcontinents(color='whitesmoke',lake_color='#46bcec',zorder=0)
+m.drawcoastlines(color='dimgray',zorder=1)
+m.drawmeridians(np.arange(0, 360, 5),color='lightgrey',labels=[True,True,True,True])
+m.drawparallels(np.arange(-90, 90, 5),color='lightgrey',labels=[True,True,True,True])
+map_MTZ_thickness.set_title('MTZ True Thickness', y=1.08)
 
 
 #Migration figure
@@ -324,10 +370,10 @@ apparent_660_ppds = fig.add_subplot(gs[4, 0],sharex=P_anomaly)
 #### Figure Pds  ####
 
 
-factor_Pds = 150
+factor_Pds = 100
 
-majorLocatorY = MultipleLocator(100)
-minorLocatorY = MultipleLocator(50)
+majorLocatorY = MultipleLocator(50)
+minorLocatorY = MultipleLocator(10)
 
 
 for _i, _j in enumerate(RF_data_profile_Pds):
@@ -335,8 +381,7 @@ for _i, _j in enumerate(RF_data_profile_Pds):
 	pefil_pds.plot(RF_data_factor_Pds,camadas_terra_10_km,'k',linewidth=0.5)
 	pefil_pds.yaxis.set_major_locator(majorLocatorY)
 	pefil_pds.yaxis.set_minor_locator(minorLocatorY)
-	pefil_pds.grid(True,which='minor',linestyle='--')
-	pefil_pds.grid(True,which='major',color='k',linewidth=1)
+	pefil_pds.grid(True,which='major',color='gray',linewidth=1,linestyle='--')
 
 	pefil_pds.plot(_i/factor_Pds,RF_DEPTH_mean_1_profile_Pds[_i],'ok',ms=3,markerfacecolor='none')
 	pefil_pds.plot(_i/factor_Pds,RF_DEPTH_mean_2_profile_Pds[_i],'ok',ms=3,markerfacecolor='none')
@@ -348,33 +393,25 @@ for _i, _j in enumerate(RF_data_profile_Pds):
 
 	pefil_pds.fill_betweenx(camadas_terra_10_km,RF_data_factor_Pds,_i/factor_Pds,where=np.array(RF_data_factor_Pds)>=_i/factor_Pds, facecolor='black',alpha=0.5, interpolate=True)
 	pefil_pds.fill_betweenx(camadas_terra_10_km,RF_data_factor_Pds,_i/factor_Pds,where=np.array(RF_data_factor_Pds)<=_i/factor_Pds, facecolor='gray',alpha=0.5, interpolate=True)
+	
 	pefil_pds.set_title('Cross-section - Pds')
 	pefil_pds.set_xticks([])
 	pefil_pds.set_ylabel('Depth (km)')
 	pefil_pds.yaxis.set_label_position("right")
 	pefil_pds.tick_params(labelright=True)
 	pefil_pds.set_ylim(MAX_DEPTH,MIN_DEPTH)
-'''
-if abs(abs(AB_lon_line[1]) - abs(AB_lon_line[0])) > abs(abs(AB_lat_line[1]) - abs(AB_lat_line[0])):
-		pefil_pds.text(_i/factor_Pds*0.95,820,"{0:.1f}".format(AB_lon[_i]),rotation=-45,fontsize=10)
-		pefil_pds.set_xlabel('Longitude ($^\circ$)',labelpad=30)
-else:
-		pefil_pds.text(_i/factor_Pds*0.95,820,"{0:.1f}".format(AB_lat[_i]),rotation=-45,fontsize=10)
-		pefil_pds.set_xlabel('Latitude ($^\circ$)',labelpad=30)
-'''
 
 #### Figure Ppds  ####
 
 
-factor_Ppds = 150
+factor_Ppds = 100
 
 for _i, _j in enumerate(RF_data_profile_Ppds):
 	RF_data_factor_Ppds = [_i/factor_Ppds+l for k, l in enumerate(_j)]
 	pefil_ppds.plot(RF_data_factor_Ppds,camadas_terra_10_km,'k',linewidth=0.5)
 	pefil_ppds.yaxis.set_major_locator(majorLocatorY)
 	pefil_ppds.yaxis.set_minor_locator(minorLocatorY)
-	pefil_ppds.grid(True,which='minor',linestyle='--')
-	pefil_ppds.grid(True,which='major',color='k',linewidth=1)
+	pefil_ppds.grid(True,which='major',color='gray',linewidth=1,linestyle='--')
 
 	pefil_ppds.plot(_i/factor_Ppds,RF_DEPTH_mean_1_profile_Ppds[_i],'ok',ms=3,markerfacecolor='none')
 	pefil_ppds.plot(_i/factor_Ppds,RF_DEPTH_mean_2_profile_Ppds[_i],'ok',ms=3,markerfacecolor='none')
@@ -387,6 +424,7 @@ for _i, _j in enumerate(RF_data_profile_Ppds):
 
 	pefil_ppds.fill_betweenx(camadas_terra_10_km,RF_data_factor_Ppds,_i/factor_Ppds,where=np.array(RF_data_factor_Ppds)>=_i/factor_Ppds, facecolor='black',alpha=0.5, interpolate=True)
 	pefil_ppds.fill_betweenx(camadas_terra_10_km,RF_data_factor_Ppds,_i/factor_Ppds,where=np.array(RF_data_factor_Ppds)<=_i/factor_Ppds, facecolor='gray',alpha=0.5, interpolate=True)
+	
 	pefil_ppds.set_xticks([])
 	pefil_ppds.set_title('Cross-section - Ppds')
 	pefil_ppds.set_ylabel('Depth (km)')
@@ -413,10 +451,10 @@ for _i, _j in enumerate(RF_data_profile_Ppds):
 	apparent_410.set_title('410 km Pds')
 	apparent_410.set_ylabel('Depth (km)')
 	apparent_410.yaxis.set_ticks_position('both')
-	apparent_410.yaxis.set_major_locator(MultipleLocator(100))
-	apparent_410.yaxis.set_minor_locator(MultipleLocator(50))
-	apparent_410.grid(True,which='minor',linestyle='--')
-	apparent_410.grid(True,which='major',color='k',linewidth=1)
+	apparent_410.yaxis.set_major_locator(MultipleLocator(50))
+	apparent_410.yaxis.set_minor_locator(MultipleLocator(10))
+	#apparent_410.grid(True,which='minor',linestyle='--')
+	apparent_410.grid(True,which='major',color='gray',linewidth=1,linestyle='--')
 	apparent_410.tick_params(labelleft=True,labelright=False)
 	apparent_410.set_xticks([])
 	apparent_410.set_ylim(500,300)
@@ -436,10 +474,10 @@ for _i, _j in enumerate(RF_data_profile_Ppds):
 	apparent_660.set_ylim(800,600)
 	apparent_660.set_ylabel('Depth (km)')
 	apparent_660.yaxis.set_ticks_position('both')
-	apparent_660.yaxis.set_major_locator(MultipleLocator(100))
-	apparent_660.yaxis.set_minor_locator(MultipleLocator(50))
-	apparent_660.grid(True,which='minor',linestyle='--')
-	apparent_660.grid(True,which='major',color='k',linewidth=1)
+	apparent_660.yaxis.set_major_locator(MultipleLocator(50))
+	apparent_660.yaxis.set_minor_locator(MultipleLocator(10))
+	#apparent_660.grid(True,which='minor',linestyle='--')
+	apparent_660.grid(True,which='major',color='gray',linewidth=1,linestyle='--')
 	apparent_660.tick_params(labelleft=True,labelright=False)
 	apparent_660.set_xticks([])
 
@@ -457,10 +495,10 @@ for _i, _j in enumerate(RF_data_profile_Ppds):
 	apparent_410_ppds.set_ylim(500,300)
 	apparent_410_ppds.set_ylabel('Depth (km)')
 	apparent_410_ppds.yaxis.set_ticks_position('both')
-	apparent_410_ppds.yaxis.set_major_locator(MultipleLocator(100))
-	apparent_410_ppds.yaxis.set_minor_locator(MultipleLocator(50))
-	apparent_410_ppds.grid(True,which='minor',linestyle='--')
-	apparent_410_ppds.grid(True,which='major',color='k',linewidth=1)
+	apparent_410_ppds.yaxis.set_major_locator(MultipleLocator(50))
+	apparent_410_ppds.yaxis.set_minor_locator(MultipleLocator(10))
+	#apparent_410_ppds.grid(True,which='minor',linestyle='--')
+	apparent_410_ppds.grid(True,which='major',color='gray',linewidth=1,linestyle='--')
 	apparent_410_ppds.tick_params(labelleft=True,labelright=False)
 	apparent_410_ppds.set_xticks([])
 
@@ -479,10 +517,10 @@ for _i, _j in enumerate(RF_data_profile_Ppds):
 	apparent_660_ppds.set_ylim(800,600)
 	apparent_660_ppds.set_ylabel('Depth (km)')
 	apparent_660_ppds.yaxis.set_ticks_position('both')
-	apparent_660_ppds.yaxis.set_major_locator(MultipleLocator(100))
-	apparent_660_ppds.yaxis.set_minor_locator(MultipleLocator(50))
-	apparent_660_ppds.grid(True,which='minor',linestyle='--')
-	apparent_660_ppds.grid(True,which='major',color='k',linewidth=1)
+	apparent_660_ppds.yaxis.set_major_locator(MultipleLocator(50))
+	apparent_660_ppds.yaxis.set_minor_locator(MultipleLocator(10))
+	#apparent_660_ppds.grid(True,which='minor',linestyle='--')
+	apparent_660_ppds.grid(True,which='major',color='gray',linewidth=1,linestyle='--')
 	apparent_660_ppds.tick_params(labelleft=True,labelright=False)
 	apparent_660_ppds.set_xticks([])
 	if abs(abs(AB_lon_line[1]) - abs(AB_lon_line[0])) > abs(abs(AB_lat_line[1]) - abs(AB_lat_line[0])):
@@ -503,15 +541,14 @@ for _i, _j in enumerate(RF_data_profile_Ppds):
 
 	MTZ_thickness.errorbar(_i/factor_Ppds,RF_DEPTH_mtz_thickness_profile_Pds[_i], yerr=RF_DEPTH_std_2_profile_Pds[_i], ecolor='k',elinewidth=1,capsize=2,capthick=1)
 	MTZ_thickness.errorbar(_i/factor_Ppds,RF_DEPTH_true_thickness_MTZ_profile_Pds[_i], yerr=RF_DEPTH_std_2_profile_Ppds[_i], ecolor='gray',elinewidth=1,capsize=2,capthick=1)
-	MTZ_thickness.set_ylim(350,150)
+	MTZ_thickness.set_ylim(300,200)
 	MTZ_thickness.set_ylabel('Depth (km)')
 	MTZ_thickness.yaxis.set_label_position("right")
 	MTZ_thickness.set_title('MTZ Apparent and True Thickness')
 	MTZ_thickness.yaxis.set_ticks_position('both')
-	MTZ_thickness.yaxis.set_major_locator(MultipleLocator(100))
-	MTZ_thickness.yaxis.set_minor_locator(MultipleLocator(50))
-	MTZ_thickness.grid(True,which='major',color='k',linewidth=1)
-	MTZ_thickness.grid(True,which='minor',linestyle='--')
+	MTZ_thickness.yaxis.set_major_locator(MultipleLocator(25))
+	MTZ_thickness.yaxis.set_minor_locator(MultipleLocator(10))
+	MTZ_thickness.grid(True,which='major',color='gray',linewidth=1,linestyle='--')
 	MTZ_thickness.tick_params(labelleft=True,labelright=True)
 
 
@@ -526,14 +563,13 @@ for _i, _j in enumerate(RF_data_profile_Ppds):
 
 	P_anomaly.errorbar(_i/factor_Ppds,RF_delta_1_Vp_mean_profile[_i], yerr=RF_delta_1_Vp_std_profile[_i], ecolor='k',elinewidth=1,capsize=2,capthick=1)
 	P_anomaly.errorbar(_i/factor_Ppds,RF_delta_2_Vp_mean_profile[_i], yerr=RF_delta_2_Vp_std_profile[_i], ecolor='k',elinewidth=1,capsize=2,capthick=1)
-	P_anomaly.set_ylim(-0.6,0.6)
+	P_anomaly.set_ylim(-1,1)
 	P_anomaly.set_title('P-velocity anomaly (%)')
 	P_anomaly.yaxis.set_ticks_position('both')
-	P_anomaly.yaxis.set_major_locator(MultipleLocator(0.4))
-	P_anomaly.yaxis.set_minor_locator(MultipleLocator(0.2))
-	P_anomaly.grid(True,which='major',color='k',linewidth=1)
-	P_anomaly.grid(True,which='minor',linestyle='--')
-	P_anomaly.tick_params(labelleft=True,labelright=False)
+	P_anomaly.yaxis.set_major_locator(MultipleLocator(0.5))
+	P_anomaly.yaxis.set_minor_locator(MultipleLocator(0.1))
+	P_anomaly.grid(True,which='major',color='gray',linewidth=1,linestyle='--')
+	P_anomaly.tick_params(labelleft=True,labelright=True)
 	P_anomaly.set_xticks([])
 
 plt.show()

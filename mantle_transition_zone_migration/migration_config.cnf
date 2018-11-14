@@ -52,11 +52,8 @@ PdS_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/Mantle_Transit
 # dir of the piercing points results
 PP_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/Mantle_Transition_Migration_NO_PP/OUTPUT/Piercing_points/
 
-# dir of ray path figures
-RAY_PATH_FIGURE = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/Mantle_Transition_Migration_NO_PP/OUTPUT/Figures/ray_path/
-
-# dir of piercing points figures
-PP_FIGURE = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/Mantle_Transition_Migration_NO_PP/Figures/piercing_points/
+# dir of figures
+PP_FIGURE = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/Mantle_Transition_Migration_NO_PP/OUTPUT/Figures/
 
 # dir of selected piercing points
 PP_SELEC_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/Mantle_Transition_Migration_NO_PP/OUTPUT/Piercing_points/selected/
@@ -93,17 +90,17 @@ PROJECT_LON = -45
 
 #lower and upper corner (lat/lon) of the large map
 
-LLCRNRLON_LARGE=-55
-LLCRNRLAT_LARGE=-15
-URCRNRLON_LARGE=-35
-URCRNRLAT_LARGE=0
+LLCRNRLON_LARGE=-51
+LLCRNRLAT_LARGE=-12
+URCRNRLON_LARGE=-39
+URCRNRLAT_LARGE=-1
 
 #lower and upper corner (lat/lon) of the small map
 
 LLCRNRLON_SMALL=-50
-LLCRNRLAT_SMALL=-10
+LLCRNRLAT_SMALL=-12
 URCRNRLON_SMALL=-38
-URCRNRLAT_SMALL=-1
+URCRNRLAT_SMALL=-2
 
 #figures extention and dpi
 EXT_FIG=pdf
@@ -142,13 +139,13 @@ ROTATE_GRID = True
 FILTER_BY_SHAPEFILE = True
 
 #Shapefile containing lines or polygons representing grid boundary
-SHAPEFILE_GRID = /home/diogo/dados_doutorado/parnaiba_basin/SIG_dados/shapes/bacia_parnaiba/bacia_parnaiba.shp
+SHAPEFILE_GRID = /home/diogo/dados_doutorado/parnaiba_basin/SIG_dados/shapes/shape_rectangle/rectangle_shape_REC.shp
 
 #What is the grid rotation angle in degrees? (clockwise rotation)
 ROTATE_ANGLE = 350
 
 #GRID POINTS multiplyer
-GRID_PP_MULT = 2
+GRID_PP_MULT = 3
 
 # distance between grid points and piercing points for each depth (degree)
 DIST_GRID_PP = 1
@@ -180,4 +177,4 @@ GAMMA = 2
 SECTION_NUM = 2
 
 #Depth range (+/-) that we will use to find the maximum amplitude
-DEPTH_RANGE = 30
+DEPTH_RANGE = 15

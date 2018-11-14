@@ -69,10 +69,7 @@ PdS_DIR = config.get('paths', 'PdS_DIR')
 # dir of the piercing points results
 PP_DIR = config.get('paths', 'PP_DIR')
 
-# dir of Ray Path Figures
-RAY_PATH_FIGURE = config.get('paths', 'RAY_PATH_FIGURE')
-
-# dir of piercing points Figures
+# dir of Figures
 PP_FIGURE = config.get('paths', 'PP_FIGURE')
 
 # dir of selected piercing points txt

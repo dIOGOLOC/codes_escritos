@@ -25,6 +25,10 @@ from matplotlib import cbook
 import collections
 from shapely.geometry import Polygon, MultiPoint, Point
 import shapefile
+from scipy import interpolate
+from mpl_toolkits.axes_grid1 import make_axes_locatable
+
+
 
 
 
@@ -36,7 +40,7 @@ from parameters_py.mgconfig import (
 					LLCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLON_LARGE,URCRNRLAT_LARGE,LLCRNRLON_SMALL,
 					URCRNRLON_SMALL,LLCRNRLAT_SMALL,URCRNRLAT_SMALL,PROJECT_LAT,PROJECT_LON,GRID_PP_MULT,
 					BOUNDARY_1_SHP,BOUNDARY_1_SHP_NAME,BOUNDARY_2_SHP,BOUNDARY_2_SHP_NAME,					
-					RAY_PATH_FIGURE,PP_FIGURE,EXT_FIG,DPI_FIG,DIST_GRID_PP_MED,DIST_GRID_PP,
+					PP_FIGURE,EXT_FIG,DPI_FIG,DIST_GRID_PP_MED,DIST_GRID_PP,
 					DEPTH_RANGE,BOOTSTRAP_INTERATOR,BOOTSTRAP_DEPTH_ESTIMATION,ROTATE_GRID,ROTATE_ANGLE,GAMMA
 				   )
 
@@ -314,9 +318,9 @@ for i,j in enumerate(PP_lon_2_Ppds):
 print('Creating GRID POINTS')
 print('\n')
 
-area = (LLCRNRLON_LARGE,URCRNRLON_LARGE, LLCRNRLAT_LARGE, URCRNRLAT_LARGE)
+area = (LLCRNRLON_SMALL,URCRNRLON_SMALL, LLCRNRLAT_SMALL, URCRNRLAT_SMALL)
 
-shape = (abs(abs(URCRNRLON_LARGE) - abs(LLCRNRLON_LARGE))*GRID_PP_MULT, abs(abs(URCRNRLAT_LARGE) - abs(LLCRNRLAT_LARGE))*GRID_PP_MULT)
+shape = (abs(abs(URCRNRLON_SMALL) - abs(LLCRNRLON_SMALL))*GRID_PP_MULT, abs(abs(URCRNRLAT_SMALL) - abs(LLCRNRLAT_SMALL))*GRID_PP_MULT)
 
 grdx, grdy = gridder.regular(area, shape)
 
@@ -369,15 +373,16 @@ print('\n')
 
 dist_pp_grid_min = [[]]*len(grdx)
 for i,j in enumerate(grdx):
-    dist_pp_grid_min[i] = [np.sqrt((j - pp_1_long_Ppds[k])**2 + (grdy[i] - l)**2) for k,l in enumerate(pp_1_lat_Ppds)]
+    dist_pp_grid_min[i] = [np.sqrt((j - pp_1_long_Ppds[k])**2 + (grdy[i] - l)**2) if np.sqrt((j - pp_1_long_Ppds[k])**2 + (grdy[i] - l)**2) >= 0 else 500 for k,l in enumerate(pp_1_lat_Ppds)]
 
 dist_pp_grid_med = [[]]*len(grdx)
 for i,j in enumerate(grdx):
-    dist_pp_grid_med[i] = [np.sqrt((j - pp_med_long_Ppds[k])**2 + (grdy[i] - l)**2) for k,l in enumerate(pp_med_lat_Ppds)]
+    dist_pp_grid_med[i] = [np.sqrt((j - pp_med_long_Ppds[k])**2 + (grdy[i] - l)**2) if np.sqrt((j - pp_med_long_Ppds[k])**2 + (grdy[i] - l)**2) >= 0 else 500 for k,l in enumerate(pp_med_lat_Ppds)]
     
 dist_pp_grid_max = [[]]*len(grdx)
 for i,j in enumerate(grdx):
-    dist_pp_grid_max[i] = [np.sqrt((j - pp_2_long_Ppds[k])**2 + (grdy[i] - l)**2) for k,l in enumerate(pp_2_lat_Ppds)]
+    dist_pp_grid_max[i] = [np.sqrt((j - pp_2_long_Ppds[k])**2 + (grdy[i] - l)**2) if np.sqrt((j - pp_2_long_Ppds[k])**2 + (grdy[i] - l)**2) >= 0 else 500 for k,l in enumerate(pp_2_lat_Ppds)]
+
 
 grid_sel_min = []
 grid_sel_min_data = []
@@ -484,7 +489,7 @@ for lon_2_Pds, lat_2_Pds in zip(pp_2_long,pp_2_lat):
 for lon_sel, lat_sel in zip(grid_sel_x,grid_sel_y):
     x_sel,y_sel = m_PP(lon_sel, lat_sel)
     msize_2 = 4
-    l5, = m_PP.plot(x_sel, y_sel, 's',markersize=msize_2,markeredgecolor='k',markerfacecolor='None')
+    l5, = m_PP.plot(x_sel, y_sel, 'o',markersize=msize_2,markeredgecolor='k',markerfacecolor='None')
 
 for lon_sel, lat_sel in zip(grid_x_diff,grid_y_diff):
     x_grdx,y_grdy = m_PP(lon_sel, lat_sel)
@@ -493,7 +498,7 @@ for lon_sel, lat_sel in zip(grid_x_diff,grid_y_diff):
 
 m_PP.fillcontinents(color='whitesmoke',lake_color=None,zorder=2,alpha=0.1)
 m_PP.drawcoastlines(color='k',zorder=1)
-m_PP.drawmeridians(np.arange(0, 360, 5),color='lightgrey',labels=[True,True,True,True])
+m_PP.drawmeridians(np.arange(0, 310, 5),color='lightgrey',labels=[True,True,True,True])
 m_PP.drawparallels(np.arange(-90, 90, 5),color='lightgrey',labels=[True,True,True,True])
 
 ax.set_title('Pds Piercing Points',ha='center',va='top',y=1.08)
@@ -531,7 +536,7 @@ for lon_2_Ppds, lat_2_Ppds in zip(pp_2_long_Ppds,pp_2_lat_Ppds):
 for lon_sel, lat_sel in zip(grid_sel_x,grid_sel_y):
     x_sel,y_sel = m_PP1(lon_sel, lat_sel)
     msize_2 = 4
-    l10, = m_PP1.plot(x_sel, y_sel, 's',markersize=msize_2,markeredgecolor='k',markerfacecolor='None')
+    l10, = m_PP1.plot(x_sel, y_sel, 'o',markersize=msize_2,markeredgecolor='k',markerfacecolor='None')
 
 for lon_sel, lat_sel in zip(grid_x_diff,grid_y_diff):
     x_grdx,y_grdy = m_PP1(lon_sel, lat_sel)
@@ -540,7 +545,7 @@ for lon_sel, lat_sel in zip(grid_x_diff,grid_y_diff):
 
 m_PP1.fillcontinents(color='whitesmoke',lake_color=None,zorder=2,alpha=0.1)
 m_PP1.drawcoastlines(color='k',zorder=1)
-m_PP1.drawmeridians(np.arange(0, 360, 5),color='lightgrey',labels=[True,True,True,True])
+m_PP1.drawmeridians(np.arange(0, 310, 5),color='lightgrey',labels=[True,True,True,True])
 m_PP1.drawparallels(np.arange(-90, 90, 5),color='lightgrey',labels=[True,True,True,True])
 
 ax1.set_title('Ppds Piercing Points',ha='center',va='top',y=1.08)
@@ -582,7 +587,7 @@ for lon_med_Pds, lat_med_Pds in zip(pp_med_long_Ppds,pp_med_lat_Ppds):
 for lon_sel, lat_sel in zip(grid_sel_x,grid_sel_y):
     x_sel,y_sel = m_PP(lon_sel, lat_sel)
     msize_2 = 4
-    l5, = m_PP.plot(x_sel, y_sel, 's',markersize=msize_2,markeredgecolor='k',markerfacecolor='None')
+    l5, = m_PP.plot(x_sel, y_sel, 'o',markersize=msize_2,markeredgecolor='k',markerfacecolor='None')
 
 for lon_sel, lat_sel in zip(grid_x_diff,grid_y_diff):
     x_grdx,y_grdy = m_PP(lon_sel, lat_sel)
@@ -591,7 +596,7 @@ for lon_sel, lat_sel in zip(grid_x_diff,grid_y_diff):
 
 m_PP.fillcontinents(color='whitesmoke',lake_color=None,zorder=2,alpha=0.1)
 m_PP.drawcoastlines(color='k',zorder=1)
-m_PP.drawmeridians(np.arange(0, 360, 5),color='lightgrey',labels=[True,True,True,True])
+m_PP.drawmeridians(np.arange(0, 310, 5),color='lightgrey',labels=[True,True,True,True])
 m_PP.drawparallels(np.arange(-90, 90, 5),color='lightgrey',labels=[True,True,True,True])
 
 ax.set_title('Pds Piercing Points',ha='center',va='top',y=1.08)
@@ -632,7 +637,7 @@ for lon_med_Pds, lat_med_Pds in zip(pp_med_long,pp_med_lat):
 for lon_sel, lat_sel in zip(grid_sel_x,grid_sel_y):
     x_sel,y_sel = m_PP(lon_sel, lat_sel)
     msize_2 = 4
-    l5, = m_PP.plot(x_sel, y_sel, 's',markersize=msize_2,markeredgecolor='k',markerfacecolor='None')
+    l5, = m_PP.plot(x_sel, y_sel, 'o',markersize=msize_2,markeredgecolor='k',markerfacecolor='None')
 
 for lon_sel, lat_sel in zip(grid_x_diff,grid_y_diff):
     x_grdx,y_grdy = m_PP(lon_sel, lat_sel)
@@ -641,7 +646,7 @@ for lon_sel, lat_sel in zip(grid_x_diff,grid_y_diff):
 
 m_PP.fillcontinents(color='whitesmoke',lake_color=None,zorder=2,alpha=0.1)
 m_PP.drawcoastlines(color='k',zorder=1)
-m_PP.drawmeridians(np.arange(0, 360, 5),color='lightgrey',labels=[True,True,True,True])
+m_PP.drawmeridians(np.arange(0, 310, 5),color='lightgrey',labels=[True,True,True,True])
 m_PP.drawparallels(np.arange(-90, 90, 5),color='lightgrey',labels=[True,True,True,True])
 
 ax.set_title('Ppds Piercing Points',ha='center',va='top',y=1.08)
@@ -1131,14 +1136,25 @@ colormap = 'seismic'
 
 #Figure Depth of the Mantle Transition Zone for Pds phase for 410 km
 
-m1 = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_SMALL,
-            llcrnrlat=LLCRNRLAT_SMALL,urcrnrlon=URCRNRLON_SMALL,urcrnrlat=URCRNRLAT_SMALL,ax=ax1)
+m1 = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_LARGE,
+            llcrnrlat=LLCRNRLAT_LARGE,urcrnrlon=URCRNRLON_LARGE,urcrnrlat=URCRNRLAT_LARGE,ax=ax1)
 
 m1.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m1.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
-x, y = m1(RF_lon,RF_lat)
-sc1 = m1.scatter(x,y,40,RF_DEPTH_mean_1_Pds,cmap=colormap,marker='s',edgecolors='none',vmin=410-DEPTH_RANGE,vmax=410+DEPTH_RANGE)
+xi = np.linspace(LLCRNRLON_SMALL, URCRNRLON_SMALL, 100)
+yi = np.linspace(LLCRNRLAT_SMALL, URCRNRLAT_SMALL, 100)
+
+gridx, gridy = np.meshgrid(xi, yi)
+
+grdz_RF_DEPTH_mean_1_Pds = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(RF_DEPTH_mean_1_Pds), (gridx, gridy),method='cubic')
+
+divider = make_axes_locatable(ax1)
+cax = divider.append_axes("right", size="5%", pad=0.5)
+
+gd_x,gd_y = m1(*(gridx, gridy))
+sc1 = m1.contourf(gd_x,gd_y,grdz_RF_DEPTH_mean_1_Pds,levels=np.arange(360,460,10),cmap=colormap,vmin=360,vmax=460)
+m1.contour(gd_x,gd_y,grdz_RF_DEPTH_mean_1_Pds,colors='k',levels=np.arange(360,460,50),vmin=360,vmax=460)
 
 for lon, lat in zip(sta_long,sta_lat):
     x,y = m1(lon, lat)
@@ -1147,7 +1163,7 @@ for lon, lat in zip(sta_long,sta_lat):
 
 m1.fillcontinents(color='whitesmoke',lake_color=None,zorder=2,alpha=0.1)
 m1.drawcoastlines(color='k',zorder=1)
-m1.drawmeridians(np.arange(0, 360, 5),color='lightgrey',labels=[True,True,True,True])
+m1.drawmeridians(np.arange(0, 310, 5),color='lightgrey',labels=[True,True,True,True])
 m1.drawparallels(np.arange(-90, 90, 5),color='lightgrey',labels=[True,True,True,True])
 
 
@@ -1156,14 +1172,20 @@ ax1.set_title('410 km Pds', y=1.08)
 
 #Figure Depth of the Mantle Transition Zone for Ppds phase for 410 km
 
-m = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_SMALL,
-            llcrnrlat=LLCRNRLAT_SMALL,urcrnrlon=URCRNRLON_SMALL,urcrnrlat=URCRNRLAT_SMALL,ax=ax)
+m = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_LARGE,
+            llcrnrlat=LLCRNRLAT_LARGE,urcrnrlon=URCRNRLON_LARGE,urcrnrlat=URCRNRLAT_LARGE,ax=ax)
 
 m.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
-x, y = m(RF_lon,RF_lat)
-sc = m.scatter(x,y,40,RF_DEPTH_mean_1_Ppds,cmap=colormap,marker='s',edgecolors='none',vmin=410-DEPTH_RANGE,vmax=410+DEPTH_RANGE)
+grdz_RF_DEPTH_mean_1_Ppds = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(RF_DEPTH_mean_1_Ppds), (gridx, gridy),method='cubic')
+
+divider = make_axes_locatable(ax)
+cax = divider.append_axes("right", size="5%", pad=0.5)
+
+gd_x,gd_y = m(*(gridx, gridy))
+sc = m.contourf(gd_x,gd_y,grdz_RF_DEPTH_mean_1_Ppds,levels=np.arange(360,460,10),cmap=colormap,vmin=360,vmax=460)
+m.contour(gd_x,gd_y,grdz_RF_DEPTH_mean_1_Ppds,colors='k',levels=np.arange(360,460,50),vmin=360,vmax=460)
 
 for lon, lat in zip(sta_long,sta_lat):
     x,y = m(lon, lat)
@@ -1172,7 +1194,7 @@ for lon, lat in zip(sta_long,sta_lat):
 
 m.fillcontinents(color='whitesmoke',lake_color=None,zorder=2,alpha=0.1)
 m.drawcoastlines(color='k',zorder=1)
-m.drawmeridians(np.arange(0, 360, 5),color='lightgrey',labels=[True,True,True,True])
+m.drawmeridians(np.arange(0, 310, 5),color='lightgrey',labels=[True,True,True,True])
 m.drawparallels(np.arange(-90, 90, 5),color='lightgrey',labels=[True,True,True,True])
 
 ax.set_title('410 km Ppds', y=1.08)
@@ -1181,14 +1203,20 @@ ax.set_title('410 km Ppds', y=1.08)
 #Figure Depth of the Mantle Transition Zone for Pds phase for 660 km
 
 
-m2 = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_SMALL,
-            llcrnrlat=LLCRNRLAT_SMALL,urcrnrlon=URCRNRLON_SMALL,urcrnrlat=URCRNRLAT_SMALL,ax=ax2)
+m2 = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_LARGE,
+            llcrnrlat=LLCRNRLAT_LARGE,urcrnrlon=URCRNRLON_LARGE,urcrnrlat=URCRNRLAT_LARGE,ax=ax2)
 
 m2.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m2.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
-x, y = m2(RF_lon,RF_lat)
-sc2 = m2.scatter(x,y,40,RF_DEPTH_mean_2_Pds,cmap=colormap,marker='s',edgecolors='none',vmin=660-DEPTH_RANGE,vmax=660+DEPTH_RANGE)
+grdz_RF_DEPTH_mean_2_Pds = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(RF_DEPTH_mean_2_Pds), (gridx, gridy),method='cubic')
+
+divider = make_axes_locatable(ax2)
+cax = divider.append_axes("right", size="5%", pad=0.5)
+
+gd_x,gd_y = m2(*(gridx, gridy))
+sc2 = m2.contourf(gd_x,gd_y,grdz_RF_DEPTH_mean_2_Pds,levels=np.arange(610,710,10),cmap=colormap,vmin=610,vmax=710)
+m2.contour(gd_x,gd_y,grdz_RF_DEPTH_mean_2_Pds,colors='k',levels=np.arange(610,710,50),vmin=610,vmax=710)
 
 for lon, lat in zip(sta_long,sta_lat):
     x,y = m2(lon, lat)
@@ -1197,21 +1225,27 @@ for lon, lat in zip(sta_long,sta_lat):
 
 m2.fillcontinents(color='whitesmoke',lake_color=None,zorder=2,alpha=0.1)
 m2.drawcoastlines(color='k',zorder=1)
-m2.drawmeridians(np.arange(0, 360, 5),color='lightgrey',labels=[True,True,True,True])
+m2.drawmeridians(np.arange(0, 310, 5),color='lightgrey',labels=[True,True,True,True])
 m2.drawparallels(np.arange(-90, 90, 5),color='lightgrey',labels=[True,True,True,True])
 
 ax2.set_title('660 km Pds', y=1.08)
 
 #Figure Depth of the Mantle Transition Zone for Ppds phase for 660 km
 
-m3 = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_SMALL,
-            llcrnrlat=LLCRNRLAT_SMALL,urcrnrlon=URCRNRLON_SMALL,urcrnrlat=URCRNRLAT_SMALL,ax=ax3)
+m3 = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_LARGE,
+            llcrnrlat=LLCRNRLAT_LARGE,urcrnrlon=URCRNRLON_LARGE,urcrnrlat=URCRNRLAT_LARGE,ax=ax3)
 
 m3.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m3.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
-x, y = m3(RF_lon,RF_lat)
-sc3 = m3.scatter(x,y,40,RF_DEPTH_mean_2_Ppds,cmap=colormap,marker='s',edgecolors='none',vmin=660-DEPTH_RANGE,vmax=660+DEPTH_RANGE)
+grdz_RF_DEPTH_mean_2_Ppds = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(RF_DEPTH_mean_2_Ppds), (gridx, gridy),method='cubic')
+
+divider = make_axes_locatable(ax3)
+cax = divider.append_axes("right", size="5%", pad=0.5)
+
+gd_x,gd_y = m3(*(gridx, gridy))
+sc3 = m3.contourf(gd_x,gd_y,grdz_RF_DEPTH_mean_2_Ppds,levels=np.arange(610,710,10),cmap=colormap,vmin=610,vmax=710)
+m3.contour(gd_x,gd_y,grdz_RF_DEPTH_mean_2_Ppds,colors='k',levels=np.arange(610,710,50),vmin=610,vmax=710)
 
 for lon, lat in zip(sta_long,sta_lat):
     x,y = m3(lon, lat)
@@ -1220,7 +1254,7 @@ for lon, lat in zip(sta_long,sta_lat):
 
 m3.fillcontinents(color='whitesmoke',lake_color=None,zorder=2,alpha=0.1)
 m3.drawcoastlines(color='k',zorder=1)
-m3.drawmeridians(np.arange(0, 360, 5),color='lightgrey',labels=[True,True,True,True])
+m3.drawmeridians(np.arange(0, 310, 5),color='lightgrey',labels=[True,True,True,True])
 m3.drawparallels(np.arange(-90, 90, 5),color='lightgrey',labels=[True,True,True,True])
 
 ax3.set_title('660 km Ppds', y=1.08)
@@ -1236,7 +1270,7 @@ fig.suptitle('Depth per bin')
 
 plt.show()
 
-fig.savefig(PP_FIGURE+'DEPTH_PER_BIN.'+EXT_FIG,dpi=DPI_FIG)
+fig.savefig(PP_FIGURE+'DEPTH.'+EXT_FIG,dpi=DPI_FIG)
 
 ##################################################################################################
 print('Plotting Figure: True depth of the Mantle Transition Zone for Pds and Ppds phases for 410 and 660 km ...')
@@ -1253,14 +1287,25 @@ colormap = 'seismic'
 
 #Figure Depth of the Mantle Transition Zone for Pds phase for 410 km
 
-m1 = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_SMALL,
-            llcrnrlat=LLCRNRLAT_SMALL,urcrnrlon=URCRNRLON_SMALL,urcrnrlat=URCRNRLAT_SMALL,ax=ax1)
+m1 = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_LARGE,
+            llcrnrlat=LLCRNRLAT_LARGE,urcrnrlon=URCRNRLON_LARGE,urcrnrlat=URCRNRLAT_LARGE,ax=ax1)
 
 m1.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m1.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
-x, y = m1(RF_lon,RF_lat)
-sc1 = m1.scatter(x,y,40,RF_DEPTH_mean_1_true_Pds,cmap=colormap,marker='s',edgecolors='none',vmin=410-DEPTH_RANGE,vmax=410+DEPTH_RANGE)
+xi = np.linspace(LLCRNRLON_SMALL, URCRNRLON_SMALL, 100)
+yi = np.linspace(LLCRNRLAT_SMALL, URCRNRLAT_SMALL, 100)
+
+gridx, gridy = np.meshgrid(xi, yi)
+
+grdz_RF_DEPTH_mean_1_true_Pds = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(RF_DEPTH_mean_1_true_Pds), (gridx, gridy),method='cubic')
+
+divider = make_axes_locatable(ax1)
+cax = divider.append_axes("right", size="5%", pad=0.5)
+
+gd_x,gd_y = m1(*(gridx, gridy))
+sc1 = m1.contourf(gd_x,gd_y,grdz_RF_DEPTH_mean_1_true_Pds,levels=np.arange(360,460,10),cmap=colormap,vmin=360,vmax=460)
+m1.contour(gd_x,gd_y,grdz_RF_DEPTH_mean_1_true_Pds,colors='k',levels=np.arange(360,460,50),vmin=360,vmax=460)
 
 for lon, lat in zip(sta_long,sta_lat):
     x,y = m1(lon, lat)
@@ -1269,7 +1314,7 @@ for lon, lat in zip(sta_long,sta_lat):
 
 m1.fillcontinents(color='whitesmoke',lake_color=None,zorder=2,alpha=0.1)
 m1.drawcoastlines(color='k',zorder=1)
-m1.drawmeridians(np.arange(0, 360, 5),color='lightgrey',labels=[True,True,True,True])
+m1.drawmeridians(np.arange(0, 310, 5),color='lightgrey',labels=[True,True,True,True])
 m1.drawparallels(np.arange(-90, 90, 5),color='lightgrey',labels=[True,True,True,True])
 
 
@@ -1277,15 +1322,20 @@ ax1.set_title('410 km Pds', y=1.08)
 
 #Figure Depth of the Mantle Transition Zone for Ppds phase for 410 km
 
-m = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_SMALL,
-            llcrnrlat=LLCRNRLAT_SMALL,urcrnrlon=URCRNRLON_SMALL,urcrnrlat=URCRNRLAT_SMALL,ax=ax)
+m = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_LARGE,
+            llcrnrlat=LLCRNRLAT_LARGE,urcrnrlon=URCRNRLON_LARGE,urcrnrlat=URCRNRLAT_LARGE,ax=ax)
 
 m.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
-x, y = m(RF_lon,RF_lat)
-sc = m.scatter(x,y,40,RF_DEPTH_mean_1_true_Ppds,cmap=colormap,marker='s',edgecolors='none',vmin=410-DEPTH_RANGE,vmax=410+DEPTH_RANGE)
+grdz_RF_DEPTH_mean_1_true_Ppds = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(RF_DEPTH_mean_1_true_Ppds), (gridx, gridy),method='cubic')
 
+divider = make_axes_locatable(ax)
+cax = divider.append_axes("right", size="5%", pad=0.5)
+
+gd_x,gd_y = m1(*(gridx, gridy))
+sc = m.contourf(gd_x,gd_y,grdz_RF_DEPTH_mean_1_true_Ppds,levels=np.arange(360,460,10),cmap=colormap,vmin=360,vmax=460)
+m.contour(gd_x,gd_y,grdz_RF_DEPTH_mean_1_true_Ppds,colors='k',levels=np.arange(360,460,50),vmin=360,vmax=460)
 
 for lon, lat in zip(sta_long,sta_lat):
     x,y = m(lon, lat)
@@ -1294,7 +1344,7 @@ for lon, lat in zip(sta_long,sta_lat):
 
 m.fillcontinents(color='whitesmoke',lake_color=None,zorder=2,alpha=0.1)
 m.drawcoastlines(color='k',zorder=1)
-m.drawmeridians(np.arange(0, 360, 5),color='lightgrey',labels=[True,True,True,True])
+m.drawmeridians(np.arange(0, 310, 5),color='lightgrey',labels=[True,True,True,True])
 m.drawparallels(np.arange(-90, 90, 5),color='lightgrey',labels=[True,True,True,True])
 
 ax.set_title('410 km Ppds', y=1.08)
@@ -1303,14 +1353,20 @@ ax.set_title('410 km Ppds', y=1.08)
 #Figure Depth of the Mantle Transition Zone for Pds phase for 660 km
 
 
-m2 = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_SMALL,
-            llcrnrlat=LLCRNRLAT_SMALL,urcrnrlon=URCRNRLON_SMALL,urcrnrlat=URCRNRLAT_SMALL,ax=ax2)
+m2 = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_LARGE,
+            llcrnrlat=LLCRNRLAT_LARGE,urcrnrlon=URCRNRLON_LARGE,urcrnrlat=URCRNRLAT_LARGE,ax=ax2)
 
 m2.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m2.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
-x, y = m2(RF_lon,RF_lat)
-sc2 = m2.scatter(x,y,40,RF_DEPTH_mean_2_true_Pds,cmap=colormap,marker='s',edgecolors='none',vmin=660-DEPTH_RANGE,vmax=660+DEPTH_RANGE)
+grdz_RF_DEPTH_mean_2_true_Pds = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(RF_DEPTH_mean_2_true_Pds), (gridx, gridy),method='cubic')
+
+divider = make_axes_locatable(ax2)
+cax = divider.append_axes("right", size="5%", pad=0.5)
+
+gd_x,gd_y = m2(*(gridx, gridy))
+sc2 = m2.contourf(gd_x,gd_y,grdz_RF_DEPTH_mean_2_true_Pds,levels=np.arange(610,710,10),cmap=colormap,vmin=610,vmax=710)
+m2.contour(gd_x,gd_y,grdz_RF_DEPTH_mean_2_true_Pds,colors='k',levels=np.arange(610,710,50),vmin=610,vmax=710)
 
 for lon, lat in zip(sta_long,sta_lat):
     x,y = m2(lon, lat)
@@ -1319,22 +1375,27 @@ for lon, lat in zip(sta_long,sta_lat):
 
 m2.fillcontinents(color='whitesmoke',lake_color=None,zorder=2,alpha=0.1)
 m2.drawcoastlines(color='k',zorder=1)
-m2.drawmeridians(np.arange(0, 360, 5),color='lightgrey',labels=[True,True,True,True])
+m2.drawmeridians(np.arange(0, 310, 5),color='lightgrey',labels=[True,True,True,True])
 m2.drawparallels(np.arange(-90, 90, 5),color='lightgrey',labels=[True,True,True,True])
 
 ax2.set_title('660 km Pds', y=1.08)
 
 #Figure Depth of the Mantle Transition Zone for Ppds phase for 660 km
 
-m3 = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_SMALL,
-            llcrnrlat=LLCRNRLAT_SMALL,urcrnrlon=URCRNRLON_SMALL,urcrnrlat=URCRNRLAT_SMALL,ax=ax3)
+m3 = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_LARGE,
+            llcrnrlat=LLCRNRLAT_LARGE,urcrnrlon=URCRNRLON_LARGE,urcrnrlat=URCRNRLAT_LARGE,ax=ax3)
 
 m3.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m3.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
-x, y = m3(RF_lon,RF_lat)
-sc3 = m3.scatter(x,y,40,RF_DEPTH_mean_2_true_Ppds,cmap=colormap,marker='s',edgecolors='none',vmin=660-DEPTH_RANGE,vmax=660+DEPTH_RANGE)
+grdz_RF_DEPTH_mean_2_true_Ppds = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(RF_DEPTH_mean_2_true_Ppds), (gridx, gridy),method='cubic')
 
+divider = make_axes_locatable(ax3)
+cax = divider.append_axes("right", size="5%", pad=0.5)
+
+gd_x,gd_y = m3(*(gridx, gridy))
+sc3 = m3.contourf(gd_x,gd_y,grdz_RF_DEPTH_mean_2_true_Ppds,levels=np.arange(610,710,10),cmap=colormap,vmin=610,vmax=710)
+m3.contour(gd_x,gd_y,grdz_RF_DEPTH_mean_2_true_Ppds,colors='k',levels=np.arange(610,710,50),vmin=610,vmax=710)
 
 for lon, lat in zip(sta_long,sta_lat):
     x,y = m3(lon, lat)
@@ -1343,7 +1404,7 @@ for lon, lat in zip(sta_long,sta_lat):
 
 m3.fillcontinents(color='whitesmoke',lake_color=None,zorder=2,alpha=0.1)
 m3.drawcoastlines(color='k',zorder=1)
-m3.drawmeridians(np.arange(0, 360, 5),color='lightgrey',labels=[True,True,True,True])
+m3.drawmeridians(np.arange(0, 310, 5),color='lightgrey',labels=[True,True,True,True])
 m3.drawparallels(np.arange(-90, 90, 5),color='lightgrey',labels=[True,True,True,True])
 
 ax3.set_title('660 km Ppds', y=1.08)
@@ -1362,7 +1423,7 @@ fig.suptitle('True Depth per bin')
 
 plt.show()
 
-fig.savefig(PP_FIGURE+'TRUE_DEPTH_PER_BIN.'+EXT_FIG,dpi=DPI_FIG)
+fig.savefig(PP_FIGURE+'TRUE_DEPTH.'+EXT_FIG,dpi=DPI_FIG)
 
 ###################################################################################################################
 
@@ -1381,15 +1442,25 @@ colormap_std = 'viridis'
 
 #Figure Depth of the Mantle Transition Zone for Pds phase for 410 km
 
-m1_std = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_SMALL,
-            llcrnrlat=LLCRNRLAT_SMALL,urcrnrlon=URCRNRLON_SMALL,urcrnrlat=URCRNRLAT_SMALL,ax=ax1_std)
+m1_std = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_LARGE,
+            llcrnrlat=LLCRNRLAT_LARGE,urcrnrlon=URCRNRLON_LARGE,urcrnrlat=URCRNRLAT_LARGE,ax=ax1_std)
 
 m1_std.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m1_std.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
-x1_std, y1_std = m1(RF_lon,RF_lat)
-sc1_std = m1_std.scatter(x1_std,y1_std,40,RF_DEPTH_std_1_Pds,cmap=colormap_std,marker='s',edgecolors='none')
+xi = np.linspace(LLCRNRLON_SMALL, URCRNRLON_SMALL, 100)
+yi = np.linspace(LLCRNRLAT_SMALL, URCRNRLAT_SMALL, 100)
 
+gridx, gridy = np.meshgrid(xi, yi)
+
+grdz_RF_DEPTH_std_1_Pds = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(RF_DEPTH_std_1_Pds), (gridx, gridy),method='cubic')
+
+divider = make_axes_locatable(ax1_std)
+cax = divider.append_axes("right", size="5%", pad=0.5)
+
+gd_x,gd_y = m1_std(*(gridx, gridy))
+sc1_std = m1_std.contourf(gd_x,gd_y,grdz_RF_DEPTH_std_1_Pds,levels=np.arange(0,25,1),cmap=colormap_std,vmin=0,vmax=25)
+m1_std.contour(gd_x,gd_y,grdz_RF_DEPTH_std_1_Pds,colors='k',levels=np.arange(0,25,5),vmin=0,vmax=25)
 
 for lon1_std, lat1_std in zip(sta_long,sta_lat):
     x,y = m1_std(lon1_std, lat1_std)
@@ -1398,7 +1469,7 @@ for lon1_std, lat1_std in zip(sta_long,sta_lat):
 
 m1_std.fillcontinents(color='whitesmoke',lake_color=None,zorder=2,alpha=0.1)
 m1_std.drawcoastlines(color='k',zorder=1)
-m1_std.drawmeridians(np.arange(0, 360, 5),color='lightgrey',labels=[True,True,True,True])
+m1_std.drawmeridians(np.arange(0, 310, 5),color='lightgrey',labels=[True,True,True,True])
 m1_std.drawparallels(np.arange(-90, 90, 5),color='lightgrey',labels=[True,True,True,True])
 
 ax1_std.set_title('410 km Pds', y=1.08)
@@ -1406,14 +1477,20 @@ fig_std.colorbar(sc1_std, ax=ax1_std,orientation='horizontal')
 
 #Figure Depth of the Mantle Transition Zone for Ppds phase for 410 km
 
-m_std = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_SMALL,
-            llcrnrlat=LLCRNRLAT_SMALL,urcrnrlon=URCRNRLON_SMALL,urcrnrlat=URCRNRLAT_SMALL,ax=ax_std)
+m_std = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_LARGE,
+            llcrnrlat=LLCRNRLAT_LARGE,urcrnrlon=URCRNRLON_LARGE,urcrnrlat=URCRNRLAT_LARGE,ax=ax_std)
 
 m_std.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m_std.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
-x_std, y_std = m_std(RF_lon,RF_lat)
-sc_std = m_std.scatter(x_std,y_std,40,RF_DEPTH_std_1_Ppds,cmap=colormap_std,marker='s',edgecolors='none')
+grdz_RF_DEPTH_std_1_Ppds = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(RF_DEPTH_std_1_Ppds), (gridx, gridy),method='cubic')
+
+divider = make_axes_locatable(ax_std)
+cax = divider.append_axes("right", size="5%", pad=0.5)
+
+gd_x,gd_y = m_std(*(gridx, gridy))
+sc_std = m_std.contourf(gd_x,gd_y,grdz_RF_DEPTH_std_1_Ppds,levels=np.arange(0,25,1),cmap=colormap_std,vmin=0,vmax=25)
+m_std.contour(gd_x,gd_y,grdz_RF_DEPTH_std_1_Ppds,colors='k',levels=np.arange(0,25,5),vmin=0,vmax=25)
 
 for lon_std, lat_std in zip(sta_long,sta_lat):
     x,y = m_std(lon_std, lat_std)
@@ -1422,7 +1499,7 @@ for lon_std, lat_std in zip(sta_long,sta_lat):
 
 m_std.fillcontinents(color='whitesmoke',lake_color=None,zorder=2,alpha=0.1)
 m_std.drawcoastlines(color='k',zorder=1)
-m_std.drawmeridians(np.arange(0, 360, 5),color='lightgrey',labels=[True,True,True,True])
+m_std.drawmeridians(np.arange(0, 310, 5),color='lightgrey',labels=[True,True,True,True])
 m_std.drawparallels(np.arange(-90, 90, 5),color='lightgrey',labels=[True,True,True,True])
 
 ax_std.set_title('410 km Ppds', y=1.08)
@@ -1430,15 +1507,20 @@ fig_std.colorbar(sc_std, ax=ax_std,orientation='horizontal')
 
 #Figure Depth of the Mantle Transition Zone for Pds phase for 660 km
 
-
-m2_std = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_SMALL,
-            llcrnrlat=LLCRNRLAT_SMALL,urcrnrlon=URCRNRLON_SMALL,urcrnrlat=URCRNRLAT_SMALL,ax=ax2_std)
+m2_std = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_LARGE,
+            llcrnrlat=LLCRNRLAT_LARGE,urcrnrlon=URCRNRLON_LARGE,urcrnrlat=URCRNRLAT_LARGE,ax=ax2_std)
 
 m2_std.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m2_std.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
-x2_std, y2_std = m2_std(RF_lon,RF_lat)
-sc2_std = m2_std.scatter(x2_std,y2_std,40,RF_DEPTH_std_2_Pds,cmap=colormap_std,marker='s',edgecolors='none')
+grdz_RF_DEPTH_std_2_Pds = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(RF_DEPTH_std_2_Pds), (gridx, gridy),method='cubic')
+
+divider = make_axes_locatable(ax2_std)
+cax = divider.append_axes("right", size="5%", pad=0.5)
+
+gd_x,gd_y = m2_std(*(gridx, gridy))
+sc2_std = m2_std.contourf(gd_x,gd_y,grdz_RF_DEPTH_std_2_Pds,levels=np.arange(0,25,1),cmap=colormap_std,vmin=0,vmax=25)
+m2_std.contour(gd_x,gd_y,grdz_RF_DEPTH_std_2_Pds,colors='k',levels=np.arange(0,25,5),vmin=0,vmax=25)
 
 for lon, lat in zip(sta_long,sta_lat):
     x,y = m2_std(lon, lat)
@@ -1447,7 +1529,7 @@ for lon, lat in zip(sta_long,sta_lat):
 
 m2_std.fillcontinents(color='whitesmoke',lake_color=None,zorder=2,alpha=0.1)
 m2_std.drawcoastlines(color='k',zorder=1)
-m2_std.drawmeridians(np.arange(0, 360, 5),color='lightgrey',labels=[True,True,True,True])
+m2_std.drawmeridians(np.arange(0, 310, 5),color='lightgrey',labels=[True,True,True,True])
 m2_std.drawparallels(np.arange(-90, 90, 5),color='lightgrey',labels=[True,True,True,True])
 
 ax2_std.set_title('660 km Pds', y=1.08)
@@ -1455,15 +1537,20 @@ fig_std.colorbar(sc2_std, ax=ax2_std,orientation='horizontal')
 
 #Figure Depth of the Mantle Transition Zone for Ppds phase for 660 km
 
-m3_std = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_SMALL,
-            llcrnrlat=LLCRNRLAT_SMALL,urcrnrlon=URCRNRLON_SMALL,urcrnrlat=URCRNRLAT_SMALL,ax=ax3_std)
+m3_std = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_LARGE,
+            llcrnrlat=LLCRNRLAT_LARGE,urcrnrlon=URCRNRLON_LARGE,urcrnrlat=URCRNRLAT_LARGE,ax=ax3_std)
 
 m3_std.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m3_std.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
-x3_std, y3_std = m3(RF_lon,RF_lat)
-sc3_std = m3_std.scatter(x3_std,y3_std,40,RF_DEPTH_std_2_Ppds,cmap=colormap_std,marker='s',edgecolors='none')
+grdz_RF_DEPTH_std_2_Ppds = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(RF_DEPTH_std_2_Ppds), (gridx, gridy),method='cubic')
 
+divider = make_axes_locatable(ax3_std)
+cax = divider.append_axes("right", size="5%", pad=0.5)
+
+gd_x,gd_y = m3_std(*(gridx, gridy))
+sc3_std = m3_std.contourf(gd_x,gd_y,grdz_RF_DEPTH_std_2_Ppds,levels=np.arange(0,25,1),cmap=colormap_std,vmin=0,vmax=25)
+m3_std.contour(gd_x,gd_y,grdz_RF_DEPTH_std_2_Ppds,colors='k',levels=np.arange(0,25,5),vmin=0,vmax=25)
 
 for lon3_std, lat3_std in zip(sta_long,sta_lat):
     x,y = m3_std(lon3_std, lat3_std)
@@ -1472,7 +1559,7 @@ for lon3_std, lat3_std in zip(sta_long,sta_lat):
 
 m3_std.fillcontinents(color='whitesmoke',lake_color=None,zorder=2,alpha=0.1)
 m3_std.drawcoastlines(color='k',zorder=1)
-m3_std.drawmeridians(np.arange(0, 360, 5),color='lightgrey',labels=[True,True,True,True])
+m3_std.drawmeridians(np.arange(0, 310, 5),color='lightgrey',labels=[True,True,True,True])
 m3_std.drawparallels(np.arange(-90, 90, 5),color='lightgrey',labels=[True,True,True,True])
 
 ax3_std.set_title('660 km Ppds', y=1.08)
@@ -1485,25 +1572,37 @@ fig_std.suptitle('Standard Deviation (bootstraping) per bin')
 
 plt.show()
 
-fig_std.savefig(PP_FIGURE+'TRUE_STD_PER_BIN.'+EXT_FIG,dpi=DPI_FIG)
+fig_std.savefig(PP_FIGURE+'STD__INTERPOLATED.'+EXT_FIG,dpi=DPI_FIG)
 
-###################################################################################################################
+#######################################################################################################################################
 
 print('Plotting Figure: Delta Vp of each bin...')
 #Figure Delta Vp of each bin
 
-colormap_delta_vp = 'viridis'
+colormap_delta_vp = 'seismic'
 
 fig_delta_vp, (ax1_delta_vp, ax2_delta_vp) =  plt.subplots(nrows=1, ncols=2,figsize=(10,5))
 
-m1_delta_vp = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_SMALL,
-            llcrnrlat=LLCRNRLAT_SMALL,urcrnrlon=URCRNRLON_SMALL,urcrnrlat=URCRNRLAT_SMALL,ax=ax1_delta_vp)
+m1_delta_vp = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_LARGE,
+            llcrnrlat=LLCRNRLAT_LARGE,urcrnrlon=URCRNRLON_LARGE,urcrnrlat=URCRNRLAT_LARGE,ax=ax1_delta_vp)
 
 m1_delta_vp.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m1_delta_vp.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
-x, y = m1_delta_vp(RF_lon,RF_lat)
-sc1_delta_vp = m1_delta_vp.scatter(x,y,40,delta_1_Vp_mean,cmap=colormap_delta_vp,marker='s',edgecolors='none')
+xi = np.linspace(LLCRNRLON_SMALL, URCRNRLON_SMALL, 100)
+yi = np.linspace(LLCRNRLAT_SMALL, URCRNRLAT_SMALL, 100)
+
+gridx, gridy = np.meshgrid(xi, yi)
+
+grdz_delta_1_Vp_mean = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(delta_1_Vp_mean), (gridx, gridy),method='cubic')
+
+divider = make_axes_locatable(ax1_delta_vp)
+cax = divider.append_axes("right", size="5%", pad=0.5)
+
+gd_x,gd_y = m1_delta_vp(*(gridx, gridy))
+sc1_delta_vp = m1_delta_vp.contourf(gd_x,gd_y,grdz_delta_1_Vp_mean,levels=np.arange(-1,1.1,0.1),cmap=colormap_delta_vp,vmin=-1,vmax=1)
+m1_delta_vp.contour(gd_x,gd_y,grdz_delta_1_Vp_mean,levels=np.arange(-1,1,0.25),colors='k')
+
 
 for lon, lat in zip(sta_long,sta_lat):
     x,y = m1_delta_vp(lon, lat)
@@ -1512,19 +1611,25 @@ for lon, lat in zip(sta_long,sta_lat):
 
 m1_delta_vp.fillcontinents(color='whitesmoke',lake_color=None,zorder=2,alpha=0.1)
 m1_delta_vp.drawcoastlines(color='k',zorder=1)
-m1_delta_vp.drawmeridians(np.arange(0, 360, 5),color='lightgrey',labels=[True,True,True,True])
+m1_delta_vp.drawmeridians(np.arange(0, 310, 5),color='lightgrey',labels=[True,True,True,True])
 m1_delta_vp.drawparallels(np.arange(-90, 90, 5),color='lightgrey',labels=[True,True,True,True])
 fig_delta_vp.colorbar(sc1_delta_vp,ax=ax1_delta_vp,orientation='horizontal')
 ax1_delta_vp.set_title('Delta Vp - 410 km',y=1.08)
 
-m_delta_vp = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_SMALL,
-            llcrnrlat=LLCRNRLAT_SMALL,urcrnrlon=URCRNRLON_SMALL,urcrnrlat=URCRNRLAT_SMALL,ax=ax2_delta_vp)
+m_delta_vp = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_LARGE,
+            llcrnrlat=LLCRNRLAT_LARGE,urcrnrlon=URCRNRLON_LARGE,urcrnrlat=URCRNRLAT_LARGE,ax=ax2_delta_vp)
 
 m_delta_vp.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m_delta_vp.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
-x, y = m_delta_vp(RF_lon,RF_lat)
-sc_delta_vp = m_delta_vp.scatter(x,y,40,delta_2_Vp_mean,cmap=colormap_delta_vp,marker='s',edgecolors='none')
+grdz_delta_2_Vp_mean = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(delta_2_Vp_mean), (gridx, gridy),method='cubic')
+
+divider = make_axes_locatable(ax2_delta_vp)
+cax = divider.append_axes("right", size="5%", pad=0.5)
+
+gd_x,gd_y = m_delta_vp(*(gridx, gridy))
+sc_delta_vp = m_delta_vp.contourf(gd_x,gd_y,grdz_delta_2_Vp_mean,levels=np.arange(-1,1.1,0.1),cmap=colormap_delta_vp,vmin=-1,vmax=1)
+m_delta_vp.contour(gd_x,gd_y,grdz_delta_2_Vp_mean,levels=np.arange(-1,1,0.25),colors='k')
 
 for lon, lat in zip(sta_long,sta_lat):
     x,y = m_delta_vp(lon, lat)
@@ -1533,36 +1638,43 @@ for lon, lat in zip(sta_long,sta_lat):
 
 m_delta_vp.fillcontinents(color='whitesmoke',lake_color=None,zorder=2,alpha=0.1)
 m_delta_vp.drawcoastlines(color='k',zorder=1)
-m_delta_vp.drawmeridians(np.arange(0, 360, 5),color='lightgrey',labels=[True,True,True,True])
+m_delta_vp.drawmeridians(np.arange(0, 310, 5),color='lightgrey',labels=[True,True,True,True])
 m_delta_vp.drawparallels(np.arange(-90, 90, 5),color='lightgrey',labels=[True,True,True,True])
 fig_delta_vp.colorbar(sc_delta_vp,ax=ax2_delta_vp,orientation='horizontal')
 ax2_delta_vp.set_title('Delta Vp - 660 km',y=1.08)
 
-fig_delta_vp.suptitle(r'$\delta V_{p}$ for each bin'+'\n'+
-r'$\delta V_{p} = \frac{\alpha . \beta . (H_{A}^{(Ppds)} - H_{A}^{(Pds)})}{\alpha . (1 + \frac{\gamma.V_{s0}}{V_{p0}}) . H_{A}^{(Pds)} - \beta . (1 - \frac{\gamma.V_{s0}}{V_{p0}}). H_{A}^{(Ppds)}}$',
-ha='center',va='top')
-
 plt.show()
 
-fig_delta_vp.savefig(PP_FIGURE+'DELTA_VP_PER_BIN.'+EXT_FIG,dpi=DPI_FIG)
+fig_delta_vp.savefig(PP_FIGURE+'DELTA_VP_INTERPOLATED.'+EXT_FIG,dpi=DPI_FIG)
 
-###################################################################################################################
+####################################################################################################################################
 
-print('Plotting Figure: Thickness of the Mantle Transition Zone...')
+print('Plotting Figure: Thickness of the Mantle Transition Zone')
 #Figure Thickness of the Mantle Transition Zone
 
 colormap_MTZ = 'seismic_r'
 
 fig_thickness, (ax_thickness1, ax_thickness2) = plt.subplots(nrows=1, ncols=2,figsize=(10,5))
 
-m_thickness1 = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_SMALL,
-            llcrnrlat=LLCRNRLAT_SMALL,urcrnrlon=URCRNRLON_SMALL,urcrnrlat=URCRNRLAT_SMALL,ax=ax_thickness1)
+m_thickness1 = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_LARGE,
+            llcrnrlat=LLCRNRLAT_LARGE,urcrnrlon=URCRNRLON_LARGE,urcrnrlat=URCRNRLAT_LARGE,ax=ax_thickness1)
 
 m_thickness1.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m_thickness1.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
-x, y = m_thickness1(RF_lon,RF_lat)
-sc_thickness1 = m_thickness1.scatter(x,y,40,thickness_MTZ_Pds,cmap=colormap_MTZ,marker='s',edgecolors='none',vmin=250-DEPTH_RANGE,vmax=250+DEPTH_RANGE)
+xi = np.linspace(LLCRNRLON_SMALL, URCRNRLON_SMALL, 100)
+yi = np.linspace(LLCRNRLAT_SMALL, URCRNRLAT_SMALL, 100)
+
+gridx, gridy = np.meshgrid(xi, yi)
+
+grdz_thickness_MTZ_Pds = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(thickness_MTZ_Pds), (gridx, gridy),method='cubic')
+
+divider = make_axes_locatable(ax_thickness1)
+cax = divider.append_axes("right", size="5%", pad=0.5)
+
+gd_x,gd_y = m_thickness1(*(gridx, gridy))
+sc_thickness1 = m_thickness1.contourf(gd_x,gd_y,grdz_thickness_MTZ_Pds,levels=np.arange(200,310,10),cmap=colormap_MTZ,vmin=200,vmax=300)
+m_thickness1.contour(gd_x,gd_y,grdz_thickness_MTZ_Pds,levels=np.arange(200,300,50),colors='k')
 
 for lon, lat in zip(sta_long,sta_lat):
     x,y = m_thickness1(lon, lat)
@@ -1571,20 +1683,26 @@ for lon, lat in zip(sta_long,sta_lat):
 
 m_thickness1.fillcontinents(color='whitesmoke',lake_color=None,zorder=2,alpha=0.1)
 m_thickness1.drawcoastlines(color='k',zorder=1)
-m_thickness1.drawmeridians(np.arange(0, 360, 5),color='lightgrey',labels=[True,True,True,True])
+m_thickness1.drawmeridians(np.arange(0, 310, 5),color='lightgrey',labels=[True,True,True,True])
 m_thickness1.drawparallels(np.arange(-90, 90, 5),color='lightgrey',labels=[True,True,True,True])
 fig_thickness.colorbar(sc_thickness1,ax=ax_thickness1,orientation='horizontal')
 ax_thickness1.set_title('Thickness of MTZ (Pds)',y=1.08)
 
 
-m_thickness2 = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_SMALL,
-            llcrnrlat=LLCRNRLAT_SMALL,urcrnrlon=URCRNRLON_SMALL,urcrnrlat=URCRNRLAT_SMALL,ax=ax_thickness2)
+m_thickness2 = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_LARGE,
+            llcrnrlat=LLCRNRLAT_LARGE,urcrnrlon=URCRNRLON_LARGE,urcrnrlat=URCRNRLAT_LARGE,ax=ax_thickness2)
 
 m_thickness2.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m_thickness2.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
-x, y = m_thickness2(RF_lon,RF_lat)
-sc_thickness2 = m_thickness2.scatter(x,y,40,thickness_MTZ_Ppds,cmap=colormap_MTZ,marker='s',edgecolors='none',vmin=250-DEPTH_RANGE,vmax=250+DEPTH_RANGE)
+grdz_thickness_MTZ_Ppds = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(thickness_MTZ_Ppds), (gridx, gridy),method='cubic')
+
+divider = make_axes_locatable(ax_thickness2)
+cax = divider.append_axes("right", size="5%", pad=0.5)
+
+gd_x,gd_y = m_thickness2(*(gridx, gridy))
+sc_thickness2 = m_thickness2.contourf(gd_x,gd_y,grdz_thickness_MTZ_Ppds,levels=np.arange(200,310,10),cmap=colormap_MTZ,vmin=200,vmax=300)
+m_thickness2.contour(gd_x,gd_y,grdz_thickness_MTZ_Ppds,levels=np.arange(200,300,50),colors='k')
 
 for lon, lat in zip(sta_long,sta_lat):
     x,y = m_thickness2(lon, lat)
@@ -1593,31 +1711,42 @@ for lon, lat in zip(sta_long,sta_lat):
 
 m_thickness2.fillcontinents(color='whitesmoke',lake_color=None,zorder=2,alpha=0.1)
 m_thickness2.drawcoastlines(color='k',zorder=1)
-m_thickness2.drawmeridians(np.arange(0, 360, 5),color='lightgrey',labels=[True,True,True,True])
+m_thickness2.drawmeridians(np.arange(0, 310, 5),color='lightgrey',labels=[True,True,True,True])
 m_thickness2.drawparallels(np.arange(-90, 90, 5),color='lightgrey',labels=[True,True,True,True])
 fig_thickness.colorbar(sc_thickness2,ax=ax_thickness2,orientation='horizontal')
 ax_thickness2.set_title('Thickness of MTZ (Ppds)',y=1.08)
 
 plt.show()
-fig_thickness.savefig(PP_FIGURE+'THICKNESS_MTZ_PER_BIN.'+EXT_FIG,dpi=DPI_FIG)
+fig_thickness.savefig(PP_FIGURE+'THICKNESS_MTZ.'+EXT_FIG,dpi=DPI_FIG)
 
 ###################################################################################################################
 
-print('Plotting Figure: True Thickness of the Mantle Transition Zone...')
+print('Plotting Figure: True Thickness Interpolated of the Mantle Transition Zone...')
 #Figure Thickness of the Mantle Transition Zone
 
 colormap_MTZ = 'seismic_r'
 
 fig_thickness, (ax_thickness1, ax_thickness2) = plt.subplots(nrows=1, ncols=2,figsize=(10,5))
 
-m_thickness1 = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_SMALL,
-            llcrnrlat=LLCRNRLAT_SMALL,urcrnrlon=URCRNRLON_SMALL,urcrnrlat=URCRNRLAT_SMALL,ax=ax_thickness1)
+m_thickness1 = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_LARGE,
+            llcrnrlat=LLCRNRLAT_LARGE,urcrnrlon=URCRNRLON_LARGE,urcrnrlat=URCRNRLAT_LARGE,ax=ax_thickness1)
 
 m_thickness1.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m_thickness1.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
-x, y = m_thickness1(RF_lon,RF_lat)
-sc_thickness1 = m_thickness1.scatter(x,y,40,true_thickness_MTZ_Pds,cmap=colormap_MTZ,marker='s',edgecolors='none',vmin=250-DEPTH_RANGE,vmax=250+DEPTH_RANGE)
+xi = np.linspace(LLCRNRLON_SMALL, URCRNRLON_SMALL, 100)
+yi = np.linspace(LLCRNRLAT_SMALL, URCRNRLAT_SMALL, 100)
+
+gridx, gridy = np.meshgrid(xi, yi)
+
+grdz_true_thickness_MTZ_Pds = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(true_thickness_MTZ_Pds), (gridx, gridy),method='cubic')
+
+divider = make_axes_locatable(ax_thickness1)
+cax = divider.append_axes("right", size="5%", pad=0.5)
+
+gd_x,gd_y = m_thickness1(*(gridx, gridy))
+sc_thickness1 = m_thickness1.contourf(gd_x,gd_y,grdz_true_thickness_MTZ_Pds,levels=np.arange(200,310,10),cmap=colormap_MTZ,vmin=200,vmax=300)
+m_thickness1.contour(gd_x,gd_y,grdz_true_thickness_MTZ_Pds,levels=np.arange(200,300,50),colors='k')
 
 for lon, lat in zip(sta_long,sta_lat):
     x,y = m_thickness1(lon, lat)
@@ -1626,20 +1755,26 @@ for lon, lat in zip(sta_long,sta_lat):
 
 m_thickness1.fillcontinents(color='whitesmoke',lake_color=None,zorder=2,alpha=0.1)
 m_thickness1.drawcoastlines(color='k',zorder=1)
-m_thickness1.drawmeridians(np.arange(0, 360, 5),color='lightgrey',labels=[True,True,True,True])
+m_thickness1.drawmeridians(np.arange(0, 310, 5),color='lightgrey',labels=[True,True,True,True])
 m_thickness1.drawparallels(np.arange(-90, 90, 5),color='lightgrey',labels=[True,True,True,True])
 fig_thickness.colorbar(sc_thickness1,ax=ax_thickness1,orientation='horizontal')
 ax_thickness1.set_title('True Thickness of MTZ (Pds)',y=1.08)
 
 
-m_thickness2 = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_SMALL,
-            llcrnrlat=LLCRNRLAT_SMALL,urcrnrlon=URCRNRLON_SMALL,urcrnrlat=URCRNRLAT_SMALL,ax=ax_thickness2)
+m_thickness2 = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_LARGE,
+            llcrnrlat=LLCRNRLAT_LARGE,urcrnrlon=URCRNRLON_LARGE,urcrnrlat=URCRNRLAT_LARGE,ax=ax_thickness2)
 
 m_thickness2.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m_thickness2.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
-x, y = m_thickness2(RF_lon,RF_lat)
-sc_thickness2 = m_thickness2.scatter(x,y,40,true_thickness_MTZ_Ppds,cmap=colormap_MTZ,marker='s',edgecolors='none',vmin=250-DEPTH_RANGE,vmax=250+DEPTH_RANGE)
+grdz_true_thickness_MTZ_Ppds = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(true_thickness_MTZ_Ppds), (gridx, gridy),method='cubic')
+
+divider = make_axes_locatable(ax_thickness2)
+cax = divider.append_axes("right", size="5%", pad=0.5)
+
+gd_x,gd_y = m_thickness2(*(gridx, gridy))
+sc_thickness2 = m_thickness2.contourf(gd_x,gd_y,grdz_true_thickness_MTZ_Ppds,levels=np.arange(200,310,10),cmap=colormap_MTZ,vmin=200,vmax=300)
+m_thickness2.contour(gd_x,gd_y,grdz_true_thickness_MTZ_Ppds,levels=np.arange(200,300,50),colors='k')
 
 for lon, lat in zip(sta_long,sta_lat):
     x,y = m_thickness2(lon, lat)
@@ -1648,30 +1783,40 @@ for lon, lat in zip(sta_long,sta_lat):
 
 m_thickness2.fillcontinents(color='whitesmoke',lake_color=None,zorder=2,alpha=0.1)
 m_thickness2.drawcoastlines(color='k',zorder=1)
-m_thickness2.drawmeridians(np.arange(0, 360, 5),color='lightgrey',labels=[True,True,True,True])
+m_thickness2.drawmeridians(np.arange(0, 310, 5),color='lightgrey',labels=[True,True,True,True])
 m_thickness2.drawparallels(np.arange(-90, 90, 5),color='lightgrey',labels=[True,True,True,True])
 fig_thickness.colorbar(sc_thickness2,ax=ax_thickness2,orientation='horizontal')
 ax_thickness2.set_title('True Thickness of MTZ (Ppds)',y=1.08)
 
 plt.show()
-fig_thickness.savefig(PP_FIGURE+'TRUE_THICKNESS_MTZ_PER_BIN.'+EXT_FIG,dpi=DPI_FIG)
+fig_thickness.savefig(PP_FIGURE+'TRUE_THICKNESS_INTERPOLED_MTZ.'+EXT_FIG,dpi=DPI_FIG)
 
 ###################################################################################################################
 
 print('Plotting Figure: Difference between True Thickness and Apparent Thickness of the Mantle Transition Zone...')
 
-colormap_MTZ = 'viridis'
+colormap_MTZ = 'seismic_r'
 
 fig_thickness, (ax_thickness1, ax_thickness2) = plt.subplots(nrows=1, ncols=2,figsize=(10,5))
 
-m_thickness1 = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_SMALL,
-            llcrnrlat=LLCRNRLAT_SMALL,urcrnrlon=URCRNRLON_SMALL,urcrnrlat=URCRNRLAT_SMALL,ax=ax_thickness1)
+m_thickness1 = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_LARGE,
+            llcrnrlat=LLCRNRLAT_LARGE,urcrnrlon=URCRNRLON_LARGE,urcrnrlat=URCRNRLAT_LARGE,ax=ax_thickness1)
 
 m_thickness1.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m_thickness1.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
-x, y = m_thickness1(RF_lon,RF_lat)
-sc_thickness1 = m_thickness1.scatter(x,y,40,diff_thickness_MTZ_Pds,cmap=colormap_MTZ,marker='s',edgecolors='none')
+xi = np.linspace(LLCRNRLON_SMALL, URCRNRLON_SMALL, 100)
+yi = np.linspace(LLCRNRLAT_SMALL, URCRNRLAT_SMALL, 100)
+gridx, gridy = np.meshgrid(xi, yi)
+
+grdz_diff_thickness_MTZ_Pds = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(diff_thickness_MTZ_Pds), (gridx, gridy),method='cubic')
+
+divider = make_axes_locatable(ax_thickness1)
+cax = divider.append_axes("right", size="5%", pad=0.5)
+
+x,y = m_thickness1(*(gridx, gridy))
+sc_thickness1 = m_thickness1.contourf(x,y,grdz_diff_thickness_MTZ_Pds,levels=np.arange(-100,110,10),cmap=colormap_MTZ,vmin=-100,vmax=100)
+m_thickness1.contour(x,y,grdz_diff_thickness_MTZ_Pds,levels=np.arange(-100,100,50),colors='k')
 
 for lon, lat in zip(sta_long,sta_lat):
     x,y = m_thickness1(lon, lat)
@@ -1680,20 +1825,28 @@ for lon, lat in zip(sta_long,sta_lat):
 
 m_thickness1.fillcontinents(color='whitesmoke',lake_color=None,zorder=2,alpha=0.1)
 m_thickness1.drawcoastlines(color='k',zorder=1)
-m_thickness1.drawmeridians(np.arange(0, 360, 5),color='lightgrey',labels=[True,True,True,True])
+m_thickness1.drawmeridians(np.arange(0, 310, 5),color='lightgrey',labels=[True,True,True,True])
 m_thickness1.drawparallels(np.arange(-90, 90, 5),color='lightgrey',labels=[True,True,True,True])
 fig_thickness.colorbar(sc_thickness1,ax=ax_thickness1,orientation='horizontal')
 ax_thickness1.set_title('Difference Thickness of MTZ (Pds)',y=1.08)
 
 
-m_thickness2 = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_SMALL,
-            llcrnrlat=LLCRNRLAT_SMALL,urcrnrlon=URCRNRLON_SMALL,urcrnrlat=URCRNRLAT_SMALL,ax=ax_thickness2)
+m_thickness2 = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_LARGE,
+            llcrnrlat=LLCRNRLAT_LARGE,urcrnrlon=URCRNRLON_LARGE,urcrnrlat=URCRNRLAT_LARGE,ax=ax_thickness2)
 
 m_thickness2.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m_thickness2.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
-x, y = m_thickness2(RF_lon,RF_lat)
-sc_thickness2 = m_thickness2.scatter(x,y,40,diff_thickness_MTZ_Ppds,cmap=colormap_MTZ,marker='s',edgecolors='none')
+
+grdz_diff_thickness_MTZ_Ppds = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(diff_thickness_MTZ_Ppds), (gridx, gridy),method='cubic')
+
+divider = make_axes_locatable(ax_thickness2)
+cax = divider.append_axes("right", size="5%", pad=0.5)
+
+x,y = m_thickness2(*(gridx, gridy))
+sc_thickness2 = m_thickness2.contourf(x,y,grdz_diff_thickness_MTZ_Ppds,levels=np.arange(-100,110,10),cmap=colormap_MTZ,vmin=-100,vmax=100)
+m_thickness2.contour(x,y,grdz_diff_thickness_MTZ_Ppds,levels=np.arange(-100,100,50),colors='k')
+
 
 for lon, lat in zip(sta_long,sta_lat):
     x,y = m_thickness2(lon, lat)
@@ -1702,38 +1855,41 @@ for lon, lat in zip(sta_long,sta_lat):
 
 m_thickness2.fillcontinents(color='whitesmoke',lake_color=None,zorder=2,alpha=0.1)
 m_thickness2.drawcoastlines(color='k',zorder=1)
-m_thickness2.drawmeridians(np.arange(0, 360, 5),color='lightgrey',labels=[True,True,True,True])
+m_thickness2.drawmeridians(np.arange(0, 310, 5),color='lightgrey',labels=[True,True,True,True])
 m_thickness2.drawparallels(np.arange(-90, 90, 5),color='lightgrey',labels=[True,True,True,True])
 fig_thickness.colorbar(sc_thickness2,ax=ax_thickness2,orientation='horizontal')
 ax_thickness2.set_title('Difference Thickness of MTZ (Ppds)',y=1.08)
 
 plt.show()
-fig_thickness.savefig(PP_FIGURE+'DIFFERENCE_BETWEEN_TRUE_THICKNESS_APPARENT_THICKNESS_MTZ_PER_BIN.'+EXT_FIG,dpi=DPI_FIG)
+fig_thickness.savefig(PP_FIGURE+'DIFFERENCE_BETWEEN_TRUE_THICKNESS_APPARENT_THICKNESS_MTZ.'+EXT_FIG,dpi=DPI_FIG)
 
-###################################################################################################################
+###############################################################################################################################
 
-
-print('Plotting Figure: Thickness, True Thickness and Difference Thickness of the Mantle Transition Zone...')
+print('Plotting Figure: True Thickness Interpolated of the Mantle Transition Zone')
+#Figure Thickness of the Mantle Transition Zone
 
 colormap_MTZ = 'seismic_r'
 
-fig_thickness, ax_thickness = plt.subplots(nrows=3, ncols=2,figsize=(10,40))
+fig_thickness, (ax_thickness1, ax_thickness2) = plt.subplots(nrows=1, ncols=2,figsize=(10,5))
 
-ax_thickness1 = ax_thickness[0,0]
-ax_thickness2 = ax_thickness[0,1]
-ax_thickness3 = ax_thickness[1,0]
-ax_thickness4 = ax_thickness[1,1]
-ax_thickness5 = ax_thickness[2,0]
-ax_thickness6 = ax_thickness[2,1]
-
-m_thickness1 = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_SMALL,
-            llcrnrlat=LLCRNRLAT_SMALL,urcrnrlon=URCRNRLON_SMALL,urcrnrlat=URCRNRLAT_SMALL,ax=ax_thickness1)
+m_thickness1 = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_LARGE,
+            llcrnrlat=LLCRNRLAT_LARGE,urcrnrlon=URCRNRLON_LARGE,urcrnrlat=URCRNRLAT_LARGE,ax=ax_thickness1)
 
 m_thickness1.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m_thickness1.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
-x, y = m_thickness1(RF_lon,RF_lat)
-sc_thickness1 = m_thickness1.scatter(x,y,40,thickness_MTZ_Pds,cmap=colormap_MTZ,marker='s',edgecolors='none',vmin=250-DEPTH_RANGE,vmax=250+DEPTH_RANGE)
+xi = np.linspace(LLCRNRLON_SMALL, URCRNRLON_SMALL, 100)
+yi = np.linspace(LLCRNRLAT_SMALL, URCRNRLAT_SMALL, 100)
+gridx, gridy = np.meshgrid(xi, yi)
+
+grdz_true_thickness_MTZ_Pds = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(true_thickness_MTZ_Pds), (gridx, gridy),method='cubic')
+
+divider = make_axes_locatable(ax_thickness1)
+cax = divider.append_axes("right", size="5%", pad=0.5)
+
+x,y = m_thickness1(*(gridx, gridy))
+sc_thickness1 = m_thickness1.contourf(x,y,grdz_true_thickness_MTZ_Pds,levels=np.arange(200,310,10),cmap=colormap_MTZ,vmin=200,vmax=300)
+m_thickness1.contour(x,y,grdz_true_thickness_MTZ_Pds,levels=np.arange(200,310,50),colors='k')
 
 for lon, lat in zip(sta_long,sta_lat):
     x,y = m_thickness1(lon, lat)
@@ -1742,21 +1898,26 @@ for lon, lat in zip(sta_long,sta_lat):
 
 m_thickness1.fillcontinents(color='whitesmoke',lake_color=None,zorder=2,alpha=0.1)
 m_thickness1.drawcoastlines(color='k',zorder=1)
-m_thickness1.drawmeridians(np.arange(0, 360, 5),color='lightgrey',labels=[True,True,True,True])
+m_thickness1.drawmeridians(np.arange(0, 310, 5),color='lightgrey',labels=[True,True,True,True])
 m_thickness1.drawparallels(np.arange(-90, 90, 5),color='lightgrey',labels=[True,True,True,True])
 fig_thickness.colorbar(sc_thickness1,ax=ax_thickness1,orientation='horizontal')
-ax_thickness1.set_title('Thickness of MTZ (Pds)',y=1.08)
+ax_thickness1.set_title('True Thickness of MTZ (Pds)',y=1.08)
 
-########
 
-m_thickness2 = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_SMALL,
-            llcrnrlat=LLCRNRLAT_SMALL,urcrnrlon=URCRNRLON_SMALL,urcrnrlat=URCRNRLAT_SMALL,ax=ax_thickness2)
+m_thickness2 = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_LARGE,
+            llcrnrlat=LLCRNRLAT_LARGE,urcrnrlon=URCRNRLON_LARGE,urcrnrlat=URCRNRLAT_LARGE,ax=ax_thickness2)
 
 m_thickness2.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m_thickness2.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
-x, y = m_thickness2(RF_lon,RF_lat)
-sc_thickness2 = m_thickness2.scatter(x,y,40,thickness_MTZ_Ppds,cmap=colormap_MTZ,marker='s',edgecolors='none',vmin=250-DEPTH_RANGE,vmax=250+DEPTH_RANGE)
+grdz_true_thickness_MTZ_Ppds = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(true_thickness_MTZ_Ppds), (gridx, gridy),method='cubic')
+
+divider = make_axes_locatable(ax_thickness2)
+cax = divider.append_axes("right", size="5%", pad=0.5)
+
+x,y = m_thickness2(*(gridx, gridy))
+sc_thickness2 = m_thickness2.contourf(x,y,grdz_true_thickness_MTZ_Ppds,levels=np.arange(200,310,10),cmap=colormap_MTZ,vmin=200,vmax=300)
+m_thickness2.contour(x,y,grdz_true_thickness_MTZ_Ppds,levels=np.arange(200,310,50),colors='k')
 
 for lon, lat in zip(sta_long,sta_lat):
     x,y = m_thickness2(lon, lat)
@@ -1765,108 +1926,15 @@ for lon, lat in zip(sta_long,sta_lat):
 
 m_thickness2.fillcontinents(color='whitesmoke',lake_color=None,zorder=2,alpha=0.1)
 m_thickness2.drawcoastlines(color='k',zorder=1)
-m_thickness2.drawmeridians(np.arange(0, 360, 5),color='lightgrey',labels=[True,True,True,True])
+m_thickness2.drawmeridians(np.arange(0, 310, 5),color='lightgrey',labels=[True,True,True,True])
 m_thickness2.drawparallels(np.arange(-90, 90, 5),color='lightgrey',labels=[True,True,True,True])
 fig_thickness.colorbar(sc_thickness2,ax=ax_thickness2,orientation='horizontal')
-ax_thickness2.set_title('Thickness of MTZ (Ppds)',y=1.08)
-
-########
-
-m_thickness3 = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_SMALL,
-            llcrnrlat=LLCRNRLAT_SMALL,urcrnrlon=URCRNRLON_SMALL,urcrnrlat=URCRNRLAT_SMALL,ax=ax_thickness3)
-
-m_thickness3.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
-m_thickness3.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
-
-x, y = m_thickness3(RF_lon,RF_lat)
-sc_thickness3 = m_thickness3.scatter(x,y,40,true_thickness_MTZ_Pds,cmap=colormap_MTZ,marker='s',edgecolors='none',vmin=250-DEPTH_RANGE,vmax=250+DEPTH_RANGE)
-
-for lon, lat in zip(sta_long,sta_lat):
-    x,y = m_thickness3(lon, lat)
-    msize = 10
-    l1, = m_thickness3.plot(x, y, '^',markersize=msize,markeredgecolor='k',markerfacecolor='grey')
-
-m_thickness3.fillcontinents(color='whitesmoke',lake_color=None,zorder=2,alpha=0.1)
-m_thickness3.drawcoastlines(color='k',zorder=1)
-m_thickness3.drawmeridians(np.arange(0, 360, 5),color='lightgrey',labels=[True,True,True,True])
-m_thickness3.drawparallels(np.arange(-90, 90, 5),color='lightgrey',labels=[True,True,True,True])
-fig_thickness.colorbar(sc_thickness3,ax=ax_thickness3,orientation='horizontal')
-ax_thickness3.set_title('True Thickness of MTZ (Pds)',y=1.08)
-
-########
-
-m_thickness4 = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_SMALL,
-            llcrnrlat=LLCRNRLAT_SMALL,urcrnrlon=URCRNRLON_SMALL,urcrnrlat=URCRNRLAT_SMALL,ax=ax_thickness4)
-
-m_thickness4.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
-m_thickness4.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
-
-x, y = m_thickness4(RF_lon,RF_lat)
-sc_thickness4 = m_thickness4.scatter(x,y,40,true_thickness_MTZ_Ppds,cmap=colormap_MTZ,marker='s',edgecolors='none',vmin=250-DEPTH_RANGE,vmax=250+DEPTH_RANGE)
-
-for lon, lat in zip(sta_long,sta_lat):
-    x,y = m_thickness4(lon, lat)
-    msize = 10
-    l1, = m_thickness4.plot(x, y, '^',markersize=msize,markeredgecolor='k',markerfacecolor='grey')
-
-m_thickness4.fillcontinents(color='whitesmoke',lake_color=None,zorder=2,alpha=0.1)
-m_thickness4.drawcoastlines(color='k',zorder=1)
-m_thickness4.drawmeridians(np.arange(0, 360, 5),color='lightgrey',labels=[True,True,True,True])
-m_thickness4.drawparallels(np.arange(-90, 90, 5),color='lightgrey',labels=[True,True,True,True])
-fig_thickness.colorbar(sc_thickness4,ax=ax_thickness4,orientation='horizontal')
-ax_thickness4.set_title('True Thickness of MTZ (Ppds)',y=1.08)
-
-########
-
-m_thickness5 = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_SMALL,
-            llcrnrlat=LLCRNRLAT_SMALL,urcrnrlon=URCRNRLON_SMALL,urcrnrlat=URCRNRLAT_SMALL,ax=ax_thickness5)
-
-m_thickness5.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
-m_thickness5.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
-
-x, y = m_thickness5(RF_lon,RF_lat)
-sc_thickness5 = m_thickness5.scatter(x,y,40,diff_thickness_MTZ_Pds,cmap=colormap_MTZ,marker='s',edgecolors='none')
-
-for lon, lat in zip(sta_long,sta_lat):
-    x,y = m_thickness5(lon, lat)
-    msize = 10
-    l1, = m_thickness5.plot(x, y, '^',markersize=msize,markeredgecolor='k',markerfacecolor='grey')
-
-m_thickness5.fillcontinents(color='whitesmoke',lake_color=None,zorder=2,alpha=0.1)
-m_thickness5.drawcoastlines(color='k',zorder=1)
-m_thickness5.drawmeridians(np.arange(0, 360, 5),color='lightgrey',labels=[True,True,True,True])
-m_thickness5.drawparallels(np.arange(-90, 90, 5),color='lightgrey',labels=[True,True,True,True])
-fig_thickness.colorbar(sc_thickness5,ax=ax_thickness5,orientation='horizontal')
-ax_thickness5.set_title('Difference Thickness of MTZ (Pds)',y=1.08)
-
-########
-
-m_thickness6 = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_SMALL,
-            llcrnrlat=LLCRNRLAT_SMALL,urcrnrlon=URCRNRLON_SMALL,urcrnrlat=URCRNRLAT_SMALL,ax=ax_thickness6)
-
-m_thickness6.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
-m_thickness6.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
-
-x, y = m_thickness6(RF_lon,RF_lat)
-sc_thickness6 = m_thickness6.scatter(x,y,40,diff_thickness_MTZ_Ppds,cmap=colormap_MTZ,marker='s',edgecolors='none')
-
-for lon, lat in zip(sta_long,sta_lat):
-    x,y = m_thickness6(lon, lat)
-    msize = 10
-    l1, = m_thickness6.plot(x, y, '^',markersize=msize,markeredgecolor='k',markerfacecolor='grey')
-
-m_thickness6.fillcontinents(color='whitesmoke',lake_color=None,zorder=2,alpha=0.1)
-m_thickness6.drawcoastlines(color='k',zorder=1)
-m_thickness6.drawmeridians(np.arange(0, 360, 5),color='lightgrey',labels=[True,True,True,True])
-m_thickness6.drawparallels(np.arange(-90, 90, 5),color='lightgrey',labels=[True,True,True,True])
-fig_thickness.colorbar(sc_thickness6,ax=ax_thickness6,orientation='horizontal')
-ax_thickness6.set_title('Difference Thickness of MTZ (Ppds)',y=1.08)
-
+ax_thickness2.set_title('True Thickness of MTZ (Ppds)',y=1.08)
 
 plt.show()
-fig_thickness.subplots_adjust(wspace=0.25, hspace=0.4)
-fig_thickness.savefig(PP_FIGURE+'MOSAIC_DIFFERENCE_BETWEEN_TRUE_THICKNESS_APPARENT_THICKNESS_MTZ_PER_BIN.'+EXT_FIG,dpi=DPI_FIG)
+fig_thickness.savefig(PP_FIGURE+'TRUE_THICKNESS_INTERPOLATED_MTZ.'+EXT_FIG,dpi=DPI_FIG)
 
+################################################################################################################################
 
 print('Saving Selected Piercing Points in JSON file')
 print('\n')
