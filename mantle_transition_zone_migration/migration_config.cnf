@@ -139,7 +139,7 @@ ROTATE_GRID = True
 FILTER_BY_SHAPEFILE = True
 
 #Shapefile containing lines or polygons representing grid boundary
-SHAPEFILE_GRID = /home/diogo/dados_doutorado/parnaiba_basin/SIG_dados/shapes/shape_rectangle/rectangle_shape_REC.shp
+SHAPEFILE_GRID = /home/diogo/dados_doutorado/parnaiba_basin/SIG_dados/shapes/bacia_parnaiba/bacia_parnaiba.shp
 
 #What is the grid rotation angle in degrees? (clockwise rotation)
 ROTATE_ANGLE = 350
@@ -155,6 +155,9 @@ DIST_GRID_PP_MED = 1
 
 #number of piercing points per bin
 NUMBER_PP_PER_BIN = 10
+
+#number of stations RF per bin
+NUMBER_STA_PER_BIN = 4
 
 #False or True for depth estimation
 DEPTH_ESTIMATION = True 
@@ -174,7 +177,7 @@ BOOTSTRAP_INTERATOR = 200
 GAMMA = 2
 
 #Number that multiply the difference between the cross-section points
-SECTION_NUM = 2
+SECTION_NUM = 3
 
 #Depth range (+/-) that we will use to find the maximum amplitude
 DEPTH_RANGE = 15

@@ -295,7 +295,7 @@ print('Plotting the Final Figure')
 
 #Cross section figure
 
-fig = plt.figure(figsize=(20, 30))
+fig = plt.figure(figsize=(20, 50))
 
 fig.suptitle('Cross section for Pds and Ppds')
 
@@ -370,7 +370,7 @@ map_MTZ_thickness.set_title('MTZ True Thickness', y=1.08)
 #### Figure Pds  ####
 
 
-factor_Pds = 100
+factor_Pds = 150
 
 majorLocatorY = MultipleLocator(50)
 minorLocatorY = MultipleLocator(10)
@@ -404,7 +404,7 @@ for _i, _j in enumerate(RF_data_profile_Pds):
 #### Figure Ppds  ####
 
 
-factor_Ppds = 100
+factor_Ppds = 150
 
 for _i, _j in enumerate(RF_data_profile_Ppds):
 	RF_data_factor_Ppds = [_i/factor_Ppds+l for k, l in enumerate(_j)]

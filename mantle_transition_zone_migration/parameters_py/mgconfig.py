@@ -158,6 +158,9 @@ DIST_GRID_PP_MED = config.getfloat('migration', 'DIST_GRID_PP_MED')
 # number of piercing points per bin 
 NUMBER_PP_PER_BIN = config.getint('migration', 'NUMBER_PP_PER_BIN')  
 
+#number of stations RF per bin
+NUMBER_STA_PER_BIN = config.getint('migration', 'NUMBER_STA_PER_BIN')  
+
 #False or True for depth estimation
 DEPTH_ESTIMATION = config.getboolean('migration', 'DEPTH_ESTIMATION')  
 
