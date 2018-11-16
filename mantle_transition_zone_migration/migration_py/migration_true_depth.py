@@ -1196,8 +1196,8 @@ gridx, gridy = np.meshgrid(xi, yi)
 grdz_RF_DEPTH_mean_1_Pds = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(RF_DEPTH_mean_1_Pds), (gridx, gridy),method='cubic')
 
 gd_x,gd_y = m1(*(gridx, gridy))
-sc1 = m1.contourf(gd_x,gd_y,grdz_RF_DEPTH_mean_1_Pds,levels=np.arange(360,470,10),cmap=colormap,vmin=360,vmax=460)
-m1.contour(gd_x,gd_y,grdz_RF_DEPTH_mean_1_Pds,colors='k',levels=np.arange(360,470,50),vmin=360,vmax=460)
+sc1 = m1.contourf(gd_x,gd_y,grdz_RF_DEPTH_mean_1_Pds,levels=np.arange(310,520,10),cmap=colormap,vmin=310,vmax=510)
+m1.contour(gd_x,gd_y,grdz_RF_DEPTH_mean_1_Pds,colors='k',levels=np.arange(310,520,50),vmin=310,vmax=510)
 
 for lon, lat in zip(sta_long,sta_lat):
     x,y = m1(lon, lat)
@@ -1224,8 +1224,8 @@ m.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 grdz_RF_DEPTH_mean_1_Ppds = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(RF_DEPTH_mean_1_Ppds), (gridx, gridy),method='cubic')
 
 gd_x,gd_y = m(*(gridx, gridy))
-sc = m.contourf(gd_x,gd_y,grdz_RF_DEPTH_mean_1_Ppds,levels=np.arange(360,470,10),cmap=colormap,vmin=360,vmax=460)
-m.contour(gd_x,gd_y,grdz_RF_DEPTH_mean_1_Ppds,colors='k',levels=np.arange(360,470,50),vmin=360,vmax=460)
+sc = m.contourf(gd_x,gd_y,grdz_RF_DEPTH_mean_1_Ppds,levels=np.arange(310,520,10),cmap=colormap,vmin=310,vmax=510)
+m.contour(gd_x,gd_y,grdz_RF_DEPTH_mean_1_Ppds,colors='k',levels=np.arange(310,520,50),vmin=310,vmax=510)
 
 for lon, lat in zip(sta_long,sta_lat):
     x,y = m(lon, lat)
@@ -1252,8 +1252,8 @@ m2.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 grdz_RF_DEPTH_mean_2_Pds = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(RF_DEPTH_mean_2_Pds), (gridx, gridy),method='cubic')
 
 gd_x,gd_y = m2(*(gridx, gridy))
-sc2 = m2.contourf(gd_x,gd_y,grdz_RF_DEPTH_mean_2_Pds,levels=np.arange(610,720,10),cmap=colormap,vmin=610,vmax=710)
-m2.contour(gd_x,gd_y,grdz_RF_DEPTH_mean_2_Pds,colors='k',levels=np.arange(610,720,50),vmin=610,vmax=710)
+sc2 = m2.contourf(gd_x,gd_y,grdz_RF_DEPTH_mean_2_Pds,levels=np.arange(560,770,10),cmap=colormap,vmin=560,vmax=760)
+m2.contour(gd_x,gd_y,grdz_RF_DEPTH_mean_2_Pds,colors='k',levels=np.arange(560,770,50),vmin=560,vmax=760)
 
 for lon, lat in zip(sta_long,sta_lat):
     x,y = m2(lon, lat)
@@ -1278,8 +1278,8 @@ m3.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 grdz_RF_DEPTH_mean_2_Ppds = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(RF_DEPTH_mean_2_Ppds), (gridx, gridy),method='cubic')
 
 gd_x,gd_y = m3(*(gridx, gridy))
-sc3 = m3.contourf(gd_x,gd_y,grdz_RF_DEPTH_mean_2_Ppds,levels=np.arange(610,720,10),cmap=colormap,vmin=610,vmax=710)
-m3.contour(gd_x,gd_y,grdz_RF_DEPTH_mean_2_Ppds,colors='k',levels=np.arange(610,720,50),vmin=610,vmax=710)
+sc3 = m3.contourf(gd_x,gd_y,grdz_RF_DEPTH_mean_2_Ppds,levels=np.arange(560,770,10),cmap=colormap,vmin=560,vmax=760)
+m3.contour(gd_x,gd_y,grdz_RF_DEPTH_mean_2_Ppds,colors='k',levels=np.arange(560,770,50),vmin=560,vmax=760)
 
 for lon, lat in zip(sta_long,sta_lat):
     x,y = m3(lon, lat)
@@ -1335,8 +1335,8 @@ gridx, gridy = np.meshgrid(xi, yi)
 grdz_RF_DEPTH_mean_1_true_Pds = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(RF_DEPTH_mean_1_true_Pds), (gridx, gridy),method='cubic')
 
 gd_x,gd_y = m1(*(gridx, gridy))
-sc1 = m1.contourf(gd_x,gd_y,grdz_RF_DEPTH_mean_1_true_Pds,levels=np.arange(360,470,10),cmap=colormap,vmin=360,vmax=460)
-m1.contour(gd_x,gd_y,grdz_RF_DEPTH_mean_1_true_Pds,colors='k',levels=np.arange(360,470,50),vmin=360,vmax=460)
+sc1 = m1.contourf(gd_x,gd_y,grdz_RF_DEPTH_mean_1_true_Pds,levels=np.arange(310,520,10),cmap=colormap,vmin=310,vmax=510)
+m1.contour(gd_x,gd_y,grdz_RF_DEPTH_mean_1_true_Pds,colors='k',levels=np.arange(310,520,50),vmin=310,vmax=510)
 
 for lon, lat in zip(sta_long,sta_lat):
     x,y = m1(lon, lat)
@@ -1362,8 +1362,8 @@ m.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 grdz_RF_DEPTH_mean_1_true_Ppds = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(RF_DEPTH_mean_1_true_Ppds), (gridx, gridy),method='cubic')
 
 gd_x,gd_y = m1(*(gridx, gridy))
-sc = m.contourf(gd_x,gd_y,grdz_RF_DEPTH_mean_1_true_Ppds,levels=np.arange(360,470,10),cmap=colormap,vmin=360,vmax=460)
-m.contour(gd_x,gd_y,grdz_RF_DEPTH_mean_1_true_Ppds,colors='k',levels=np.arange(360,470,50),vmin=360,vmax=460)
+sc = m.contourf(gd_x,gd_y,grdz_RF_DEPTH_mean_1_true_Ppds,levels=np.arange(310,520,10),cmap=colormap,vmin=310,vmax=510)
+m.contour(gd_x,gd_y,grdz_RF_DEPTH_mean_1_true_Ppds,colors='k',levels=np.arange(310,520,50),vmin=310,vmax=510)
 
 for lon, lat in zip(sta_long,sta_lat):
     x,y = m(lon, lat)
@@ -1390,8 +1390,8 @@ m2.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 grdz_RF_DEPTH_mean_2_true_Pds = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(RF_DEPTH_mean_2_true_Pds), (gridx, gridy),method='cubic')
 
 gd_x,gd_y = m2(*(gridx, gridy))
-sc2 = m2.contourf(gd_x,gd_y,grdz_RF_DEPTH_mean_2_true_Pds,levels=np.arange(610,720,10),cmap=colormap,vmin=610,vmax=710)
-m2.contour(gd_x,gd_y,grdz_RF_DEPTH_mean_2_true_Pds,colors='k',levels=np.arange(610,720,50),vmin=610,vmax=710)
+sc2 = m2.contourf(gd_x,gd_y,grdz_RF_DEPTH_mean_2_true_Pds,levels=np.arange(560,770,10),cmap=colormap,vmin=560,vmax=760)
+m2.contour(gd_x,gd_y,grdz_RF_DEPTH_mean_2_true_Pds,colors='k',levels=np.arange(560,770,50),vmin=560,vmax=760)
 
 for lon, lat in zip(sta_long,sta_lat):
     x,y = m2(lon, lat)
@@ -1416,8 +1416,8 @@ m3.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 grdz_RF_DEPTH_mean_2_true_Ppds = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(RF_DEPTH_mean_2_true_Ppds), (gridx, gridy),method='cubic')
 
 gd_x,gd_y = m3(*(gridx, gridy))
-sc3 = m3.contourf(gd_x,gd_y,grdz_RF_DEPTH_mean_2_true_Ppds,levels=np.arange(610,720,10),cmap=colormap,vmin=610,vmax=710)
-m3.contour(gd_x,gd_y,grdz_RF_DEPTH_mean_2_true_Ppds,colors='k',levels=np.arange(610,720,50),vmin=610,vmax=710)
+sc3 = m3.contourf(gd_x,gd_y,grdz_RF_DEPTH_mean_2_true_Ppds,levels=np.arange(560,770,10),cmap=colormap,vmin=560,vmax=760)
+m3.contour(gd_x,gd_y,grdz_RF_DEPTH_mean_2_true_Ppds,colors='k',levels=np.arange(560,770,50),vmin=560,vmax=760)
 
 for lon, lat in zip(sta_long,sta_lat):
     x,y = m3(lon, lat)
@@ -1589,7 +1589,7 @@ fig_std.savefig(PP_FIGURE+'STD__INTERPOLATED.'+EXT_FIG,dpi=DPI_FIG)
 print('Plotting Figure: Delta Vp of each bin...')
 #Figure Delta Vp of each bin
 
-colormap_delta_vp = 'seismic'
+colormap_delta_vp = 'seismic_r'
 
 fig_delta_vp, (ax1_delta_vp, ax2_delta_vp) =  plt.subplots(nrows=1, ncols=2,figsize=(10,5))
 
@@ -1650,6 +1650,73 @@ ax2_delta_vp.set_title('Delta Vp - 660 km',y=1.08)
 plt.show()
 
 fig_delta_vp.savefig(PP_FIGURE+'DELTA_VP_INTERPOLATED.'+EXT_FIG,dpi=DPI_FIG)
+
+####################################################################################################################################
+
+print('Plotting Figure: Std Delta Vp of each bin...')
+#Figure Delta Vp of each bin
+
+colormap_delta_vp = 'viridis_r'
+
+fig_delta_vp, (ax1_delta_vp, ax2_delta_vp) =  plt.subplots(nrows=1, ncols=2,figsize=(10,5))
+
+m1_delta_vp = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_LARGE,
+            llcrnrlat=LLCRNRLAT_LARGE,urcrnrlon=URCRNRLON_LARGE,urcrnrlat=URCRNRLAT_LARGE,ax=ax1_delta_vp)
+
+m1_delta_vp.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
+m1_delta_vp.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
+
+xi = np.linspace(LLCRNRLON_SMALL, URCRNRLON_SMALL, 100)
+yi = np.linspace(LLCRNRLAT_SMALL, URCRNRLAT_SMALL, 100)
+
+gridx, gridy = np.meshgrid(xi, yi)
+
+grdz_delta_1_Vp_mean = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(delta_1_Vp_std), (gridx, gridy),method='cubic')
+
+gd_x,gd_y = m1_delta_vp(*(gridx, gridy))
+sc1_delta_vp = m1_delta_vp.contourf(gd_x,gd_y,grdz_delta_1_Vp_mean,levels=np.arange(-1,1.1,0.1),cmap=colormap_delta_vp,vmin=-1,vmax=1)
+m1_delta_vp.contour(gd_x,gd_y,grdz_delta_1_Vp_mean,levels=np.arange(-1,1.1,0.25),colors='k')
+
+
+for lon, lat in zip(sta_long,sta_lat):
+    x,y = m1_delta_vp(lon, lat)
+    msize = 10
+    l1, = m1_delta_vp.plot(x, y, '^',markersize=msize,markeredgecolor='k',markerfacecolor='grey')
+
+m1_delta_vp.fillcontinents(color='whitesmoke',lake_color=None,zorder=2,alpha=0.1)
+m1_delta_vp.drawcoastlines(color='k',zorder=1)
+m1_delta_vp.drawmeridians(np.arange(0, 310, 5),color='lightgrey',labels=[True,True,True,True])
+m1_delta_vp.drawparallels(np.arange(-90, 90, 5),color='lightgrey',labels=[True,True,True,True])
+fig_delta_vp.colorbar(sc1_delta_vp,ax=ax1_delta_vp,orientation='horizontal')
+ax1_delta_vp.set_title('Delta Vp - 410 km',y=1.08)
+
+m_delta_vp = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_LARGE,
+            llcrnrlat=LLCRNRLAT_LARGE,urcrnrlon=URCRNRLON_LARGE,urcrnrlat=URCRNRLAT_LARGE,ax=ax2_delta_vp)
+
+m_delta_vp.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
+m_delta_vp.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
+
+grdz_delta_2_Vp_mean = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(delta_2_Vp_std), (gridx, gridy),method='cubic')
+
+gd_x,gd_y = m_delta_vp(*(gridx, gridy))
+sc_delta_vp = m_delta_vp.contourf(gd_x,gd_y,grdz_delta_2_Vp_mean,levels=np.arange(-1,1.1,0.1),cmap=colormap_delta_vp,vmin=-1,vmax=1)
+m_delta_vp.contour(gd_x,gd_y,grdz_delta_2_Vp_mean,levels=np.arange(-1,1.1,0.25),colors='k')
+
+for lon, lat in zip(sta_long,sta_lat):
+    x,y = m_delta_vp(lon, lat)
+    msize = 10
+    l1, = m_delta_vp.plot(x, y, '^',markersize=msize,markeredgecolor='k',markerfacecolor='grey')
+
+m_delta_vp.fillcontinents(color='whitesmoke',lake_color=None,zorder=2,alpha=0.1)
+m_delta_vp.drawcoastlines(color='k',zorder=1)
+m_delta_vp.drawmeridians(np.arange(0, 310, 5),color='lightgrey',labels=[True,True,True,True])
+m_delta_vp.drawparallels(np.arange(-90, 90, 5),color='lightgrey',labels=[True,True,True,True])
+fig_delta_vp.colorbar(sc_delta_vp,ax=ax2_delta_vp,orientation='horizontal')
+ax2_delta_vp.set_title('Delta Vp - 660 km',y=1.08)
+
+plt.show()
+
+fig_delta_vp.savefig(PP_FIGURE+'std_DELTA_VP_INTERPOLATED.'+EXT_FIG,dpi=DPI_FIG)
 
 ####################################################################################################################################
 

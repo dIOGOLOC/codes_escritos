@@ -157,7 +157,7 @@ DIST_GRID_PP_MED = 1
 NUMBER_PP_PER_BIN = 10
 
 #number of stations RF per bin
-NUMBER_STA_PER_BIN = 4
+NUMBER_STA_PER_BIN = 3
 
 #False or True for depth estimation
 DEPTH_ESTIMATION = True 
