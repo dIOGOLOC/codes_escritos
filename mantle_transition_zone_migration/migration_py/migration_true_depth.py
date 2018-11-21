@@ -1,6 +1,7 @@
 
 # coding: utf-8
 
+
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 import numpy as np
@@ -12,7 +13,10 @@ import copy
 import matplotlib
 from matplotlib.cm import get_cmap
 from mpl_toolkits.mplot3d import Axes3D
-from mpl_toolkits.basemap import Basemap
+import cartopy.crs as ccrs
+from cartopy.io.shapereader import Reader
+import cartopy.feature as cfeature
+
 from fatiando import gridder, utils
 import scipy.io
 import matplotlib.cm as cm
@@ -31,9 +35,6 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 
 
-
-
-
 from parameters_py.mgconfig import (
 					RF_DIR,RF_EXT,MODEL_FILE_NPZ,MIN_DEPTH,MAX_DEPTH,INTER_DEPTH,PdS_DIR,SHAPEFILE_GRID,FILTER_BY_SHAPEFILE,
 					PP_DIR,PP_SELEC_DIR,NUMBER_PP_PER_BIN,STA_DIR,
@@ -41,7 +42,7 @@ from parameters_py.mgconfig import (
 					URCRNRLON_SMALL,LLCRNRLAT_SMALL,URCRNRLAT_SMALL,PROJECT_LAT,PROJECT_LON,GRID_PP_MULT,
 					BOUNDARY_1_SHP,BOUNDARY_1_SHP_NAME,BOUNDARY_2_SHP,BOUNDARY_2_SHP_NAME,					
 					PP_FIGURE,EXT_FIG,DPI_FIG,DIST_GRID_PP_MED,DIST_GRID_PP,NUMBER_STA_PER_BIN,
-					DEPTH_RANGE,BOOTSTRAP_INTERATOR,BOOTSTRAP_DEPTH_ESTIMATION,ROTATE_GRID,ROTATE_ANGLE,GAMMA
+					DEPTH_RANGE,BOOTSTRAP_INTERATOR,BOOTSTRAP_DEPTH_ESTIMATION,GAMMA
 				   )
 
 print('Starting Receiver Functions migration code to estimate the true depths of the Earth discontinuities')
@@ -165,11 +166,13 @@ pp_1_long  = [[]]*len(PP_lon_1)
 
 
 for i,j in enumerate(PP_lon_1):
-    for k,l in enumerate(j):
-        if LLCRNRLON_LARGE<= l <= URCRNRLON_LARGE and PP_depth_1[i][k] == 410:
-                pp_1_lat[i] = PP_lat_1[i][k] 
-                pp_1_long[i] = l
+	for k,l in enumerate(j):
+		if LLCRNRLON_LARGE<= l <= URCRNRLON_LARGE and PP_depth_1[i][k] == 410:
+				pp_1_lat[i] = PP_lat_1[i][k]
+				pp_1_long[i] = l
 
+pp_1_lat = [i for i in pp_1_lat if type(i) == float ]
+pp_1_long = [i for i in pp_1_long if type(i) == float ]
 
 print('Pds Piercing Points - '+"{0:.0f}".format(DEPTH_MED))
 print('\n')
@@ -181,8 +184,11 @@ pp_med_long  = [[]]*len(PP_lon_med)
 for i,j in enumerate(PP_lon_med):
 	for k,l in enumerate(j):
 		if LLCRNRLON_LARGE <= l <= URCRNRLON_LARGE and PP_depth_med[i][k] == DEPTH_MED:
-			pp_med_lat[i] = PP_lat_med[i][k] 
-			pp_med_long[i] = l
+				pp_med_lat[i] = PP_lat_med[i][k]
+				pp_med_long[i] = l
+
+pp_med_lat = [i for i in pp_med_lat if type(i) == float ]
+pp_med_long = [i for i in pp_med_long if type(i) == float ]
 
 print('P660s Piercing Points')
 print('\n')
@@ -195,9 +201,12 @@ pp_2_long  = [[]]*len(PP_lon_2)
 for i,j in enumerate(PP_lon_2):
 	for k,l in enumerate(j):
 		if LLCRNRLON_LARGE <= l <= URCRNRLON_LARGE and PP_depth_2[i][k] == 660:
-			pp_2_lat[i] = PP_lat_2[i][k]
-			pp_2_long[i] = l
+			if PP_lon_2[i][k]  != [] and PP_lat_2[i][k] != []:
+				pp_2_lat[i] = PP_lat_2[i][k]
+				pp_2_long[i] = l
 
+pp_2_lat = [i for i in pp_2_lat if type(i) == float ]
+pp_2_long = [i for i in pp_2_long if type(i) == float ]
 
 print('Importing Ppds piercing points to each PHASE')
 print('\n')
@@ -279,11 +288,13 @@ pp_1_long_Ppds  = [[]]*len(PP_lon_1_Ppds)
 
 
 for i,j in enumerate(PP_lon_1_Ppds):
-    for k,l in enumerate(j):
-        if LLCRNRLON_LARGE<= l <= URCRNRLON_LARGE and PP_depth_1_Ppds[i][k] == 410:
-                pp_1_lat_Ppds[i] = PP_lat_1_Ppds[i][k] 
-                pp_1_long_Ppds[i] = l
+	for k,l in enumerate(j):
+		if LLCRNRLON_LARGE<= l <= URCRNRLON_LARGE and PP_depth_1_Ppds[i][k] == 410:
+				pp_1_lat_Ppds[i] = PP_lat_1_Ppds[i][k]
+				pp_1_long_Ppds[i] = l
 
+pp_1_lat_Ppds = [i for i in pp_1_lat_Ppds if type(i) == float ]
+pp_1_long_Ppds = [i for i in pp_1_long_Ppds if type(i) == float ]
 
 
 print('Ppds Piercing Points - '+"{0:.0f}".format(DEPTH_MED))
@@ -296,9 +307,11 @@ pp_med_long_Ppds  = [[]]*len(PP_lon_med_Ppds)
 for i,j in enumerate(PP_lon_med_Ppds):
 	for k,l in enumerate(j):
 		if LLCRNRLON_LARGE<= l <= URCRNRLON_LARGE and PP_depth_med_Ppds[i][k] == DEPTH_MED:
-			pp_med_lat_Ppds[i] = PP_lat_med_Ppds[i][k]
-			pp_med_long_Ppds[i] = l
+				pp_med_lat_Ppds[i] = PP_lat_med_Ppds[i][k]
+				pp_med_long_Ppds[i] = l
 
+pp_med_lat_Ppds = [i for i in pp_med_lat_Ppds if type(i) == float ]
+pp_med_long_Ppds = [i for i in pp_med_long_Ppds if type(i) == float ]
 
 print('PPv660s Piercing Points')
 print('\n')
@@ -306,13 +319,18 @@ print('\n')
 
 pp_2_lat_Ppds  = [[]]*len(PP_lon_2_Ppds)
 pp_2_long_Ppds  = [[]]*len(PP_lon_2_Ppds)
+pp_2_depth_Ppds  = [[]]*len(PP_lon_2_Ppds)
 
 
 for i,j in enumerate(PP_lon_2_Ppds):
-    for k,l in enumerate(j):
-        if LLCRNRLON_LARGE <= l <= URCRNRLON_LARGE and PP_depth_2_Ppds[i][k] == 660:
-                pp_2_lat_Ppds[i] = PP_lat_2_Ppds[i][k] 
-                pp_2_long_Ppds[i] = l
+	for k,l in enumerate(j):
+		if LLCRNRLON_LARGE <= l <= URCRNRLON_LARGE and PP_depth_2_Ppds[i][k] == 660:
+				pp_2_lat_Ppds[i] = PP_lat_2_Ppds[i][k]
+				pp_2_long_Ppds[i] = l
+
+pp_2_lat_Ppds = [i for i in pp_2_lat_Ppds if type(i) == float ]
+pp_2_long_Ppds = [i for i in pp_2_long_Ppds if type(i) == float ]
+
 
 
 print('Creating GRID POINTS')
@@ -323,29 +341,6 @@ area = (LLCRNRLON_SMALL,URCRNRLON_SMALL, LLCRNRLAT_SMALL, URCRNRLAT_SMALL)
 shape = (abs(abs(URCRNRLON_SMALL) - abs(LLCRNRLON_SMALL))*GRID_PP_MULT, abs(abs(URCRNRLAT_SMALL) - abs(LLCRNRLAT_SMALL))*GRID_PP_MULT)
 
 grdx, grdy = gridder.regular(area, shape)
-
-if ROTATE_GRID == True:
-
-	radians = ROTATE_ANGLE*np.pi/180
-	grdx_rot = []
-	grdy_rot = []
-
-	for i,j in enumerate(grdx):
-
-		x = grdx[i]
-		y = grdy[i]
-
-		ox = URCRNRLON_LARGE
-		oy = URCRNRLAT_LARGE
-
-		qx = ox + np.cos(radians) * (x - ox) + np.sin(radians) * (y - oy)
-		qy = oy + -np.sin(radians) * (x - ox) + np.cos(radians) * (y - oy)
-
-		grdx_rot.append(float(qx))
-		grdy_rot.append(float(qy))
-
-	grdx = grdx_rot
-	grdy = grdy_rot
 
 if FILTER_BY_SHAPEFILE == True:
 	polygon = shapefile.Reader(SHAPEFILE_GRID) 
@@ -373,15 +368,15 @@ print('\n')
 
 dist_pp_grid_min = [[]]*len(grdx)
 for i,j in enumerate(grdx):
-    dist_pp_grid_min[i] = [np.sqrt((j - pp_1_long_Ppds[k])**2 + (grdy[i] - l)**2) if np.sqrt((j - pp_1_long_Ppds[k])**2 + (grdy[i] - l)**2) >= 0 else 500 for k,l in enumerate(pp_1_lat_Ppds)]
+    dist_pp_grid_min[i] = [np.sqrt((j - pp_1_long_Ppds[k])**2 + (grdy[i] - l)**2) for k,l in enumerate(pp_1_lat_Ppds)]
 
 dist_pp_grid_med = [[]]*len(grdx)
 for i,j in enumerate(grdx):
-    dist_pp_grid_med[i] = [np.sqrt((j - pp_med_long_Ppds[k])**2 + (grdy[i] - l)**2) if np.sqrt((j - pp_med_long_Ppds[k])**2 + (grdy[i] - l)**2) >= 0 else 500 for k,l in enumerate(pp_med_lat_Ppds)]
+    dist_pp_grid_med[i] = [np.sqrt((j - pp_med_long_Ppds[k])**2 + (grdy[i] - l)**2) for k,l in enumerate(pp_med_lat_Ppds)]
     
 dist_pp_grid_max = [[]]*len(grdx)
 for i,j in enumerate(grdx):
-    dist_pp_grid_max[i] = [np.sqrt((j - pp_2_long_Ppds[k])**2 + (grdy[i] - l)**2) if np.sqrt((j - pp_2_long_Ppds[k])**2 + (grdy[i] - l)**2) >= 0 else 500 for k,l in enumerate(pp_2_lat_Ppds)]
+    dist_pp_grid_max[i] = [np.sqrt((j - pp_2_long_Ppds[k])**2 + (grdy[i] - l)**2) for k,l in enumerate(pp_2_lat_Ppds)]
 
 
 grid_sel_min = []
@@ -451,140 +446,86 @@ print('Plotting: Figure Pds and Ppds Piercing Points')
 print('\n')
 
 
-fig_PP, (ax, ax1) =  plt.subplots(nrows=1, ncols=2,figsize=(20,20))
+fig_PP_Pds_Ppds, (ax, ax1) = plt.subplots(ncols=2, subplot_kw={'projection': ccrs.Mercator(central_longitude=PROJECT_LON, globe=None)},figsize=(20,20))
 
 #Figure Pds
 
-m_PP = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_LARGE,
-            llcrnrlat=LLCRNRLAT_LARGE,urcrnrlon=URCRNRLON_LARGE,urcrnrlat=URCRNRLAT_LARGE,ax=ax)
-
-m_PP.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
-m_PP.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
-
-for lon, lat in zip(sta_long,sta_lat):
-    x,y = m_PP(lon, lat)
-    msize = 10
-    l1, = m_PP.plot(x, y, '^',markersize=msize,markeredgecolor='k',markerfacecolor='grey')
-
-
-for lon_1_Pds, lat_1_Pds in zip(pp_1_long,pp_1_lat):
-    x_1_Pds,y_1_Pds = m_PP(lon_1_Pds, lat_1_Pds)
-    msize_1 = 5
-    l2, = m_PP.plot(x_1_Pds, y_1_Pds, '.',markersize=msize_1,markeredgecolor='k',markerfacecolor='b')
-
-
-for lon_med_Pds, lat_med_Pds in zip(pp_med_long,pp_med_lat):
-    x_med_Pds,y_med_Pds = m_PP(lon_med_Pds, lat_med_Pds)
-    msize_1 = 5
-    l3, = m_PP.plot(x_med_Pds, y_med_Pds, '.',markersize=msize_1,markeredgecolor='k',markerfacecolor='g')
-
-
-for lon_2_Pds, lat_2_Pds in zip(pp_2_long,pp_2_lat):
-    x_2_Pds,y_2_Pds = m_PP(lon_2_Pds, lat_2_Pds)
-    msize_2 = 5
-    l4, = m_PP.plot(x_2_Pds, y_2_Pds, '.',markersize=msize_2,markeredgecolor='k',markerfacecolor='r')
-
-
-for lon_sel, lat_sel in zip(grid_sel_x,grid_sel_y):
-    x_sel,y_sel = m_PP(lon_sel, lat_sel)
-    msize_2 = 4
-    l5, = m_PP.plot(x_sel, y_sel, 'o',markersize=msize_2,markeredgecolor='k',markerfacecolor='None')
-
-m_PP.fillcontinents(color='whitesmoke',lake_color=None,zorder=2,alpha=0.1)
-m_PP.drawcoastlines(color='k',zorder=1)
-m_PP.drawmeridians(np.arange(0, 310, 5),color='lightgrey',labels=[True,True,True,True])
-m_PP.drawparallels(np.arange(-90, 90, 5),color='lightgrey',labels=[True,True,True,True])
-
+ax.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
+l1, = ax.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.Geodetic())
+l2, = ax.plot(pp_1_long,pp_1_lat, '.',markersize=5,markeredgecolor='k',markerfacecolor='b',transform=ccrs.Geodetic())
+l3, = ax.plot(pp_med_long,pp_med_lat, '.',markersize=5,markeredgecolor='k',markerfacecolor='g',transform=ccrs.Geodetic())
+l4, = ax.plot(pp_2_long,pp_2_lat, '.',markersize=5,markeredgecolor='k',markerfacecolor='r',transform=ccrs.Geodetic())
+l5, = ax.plot(grid_sel_x, grid_sel_y, 'o',markersize=3,markeredgecolor='k',markerfacecolor='None',transform=ccrs.Geodetic())
 ax.set_title('Pds Piercing Points',ha='center',va='top',y=1.08)
 ax.legend([l1,l2,l3,l4,l5],['Stations','Piercing Points 410 km','Piercing Points '+"{0:.0f}".format(DEPTH_MED)+' km','Piercing Points 660 km','Selected Grid'],scatterpoints=1, frameon=True,labelspacing=1, loc='lower right',facecolor='w',fontsize='smaller')
 
-#Figure Ppds
+reader_1_SHP = Reader(BOUNDARY_1_SHP)
+shape_1_SHP = list(reader_1_SHP.geometries())
+plot_shape_1_SHP = cfeature.ShapelyFeature(shape_1_SHP, ccrs.PlateCarree())
+ax.add_feature(plot_shape_1_SHP, facecolor='none', edgecolor='k',linewidth=3)
 
-m_PP1 = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_LARGE,
-            llcrnrlat=LLCRNRLAT_LARGE,urcrnrlon=URCRNRLON_LARGE,urcrnrlat=URCRNRLAT_LARGE,ax=ax1)
-
-m_PP1.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
-m_PP1.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
-
-for lon, lat in zip(sta_long,sta_lat):
-    x,y = m_PP1(lon, lat)
-    msize = 10
-    l6, = m_PP1.plot(x, y, '^',markersize=msize,markeredgecolor='k',markerfacecolor='grey')
+reader_2_SHP = Reader(BOUNDARY_2_SHP)
+shape_2_SHP = list(reader_2_SHP.geometries())
+plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
+ax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
+ax.gridlines(draw_labels=True)
 
 
-for lon_1_Ppds, lat_1_Ppds in zip(pp_1_long_Ppds,pp_1_lat_Ppds):
-    x_1_Ppds,y_1_Ppds = m_PP1(lon_1_Ppds, lat_1_Ppds)
-    msize = 5
-    l7, = m_PP1.plot(x_1_Ppds, y_1_Ppds, '.',markersize=msize,markeredgecolor='k',markerfacecolor='b')
+##############################################################################################
 
-for lon_med_Ppds, lat_med_Ppds in zip(pp_med_long_Ppds,pp_med_lat_Ppds):
-    x_med_Ppds,y_med_Ppds = m_PP1(lon_med_Ppds, lat_med_Ppds)
-    msize = 5
-    l8, = m_PP1.plot(x_med_Ppds, y_med_Ppds, '.',markersize=msize,markeredgecolor='k',markerfacecolor='g')
-
-for lon_2_Ppds, lat_2_Ppds in zip(pp_2_long_Ppds,pp_2_lat_Ppds):
-    x_2_Ppds,y_2_Ppds = m_PP1(lon_2_Ppds, lat_2_Ppds)
-    msize_2 = 5
-    l9, = m_PP1.plot(x_2_Ppds, y_2_Ppds, '.',markersize=msize_2,markeredgecolor='k',markerfacecolor='r')
-
-for lon_sel, lat_sel in zip(grid_sel_x,grid_sel_y):
-    x_sel,y_sel = m_PP1(lon_sel, lat_sel)
-    msize_2 = 4
-    l10, = m_PP1.plot(x_sel, y_sel, 'o',markersize=msize_2,markeredgecolor='k',markerfacecolor='None')
-
-m_PP1.fillcontinents(color='whitesmoke',lake_color=None,zorder=2,alpha=0.1)
-m_PP1.drawcoastlines(color='k',zorder=1)
-m_PP1.drawmeridians(np.arange(0, 310, 5),color='lightgrey',labels=[True,True,True,True])
-m_PP1.drawparallels(np.arange(-90, 90, 5),color='lightgrey',labels=[True,True,True,True])
-
+ax1.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
+l1, = ax1.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.Geodetic())
+l2, = ax1.plot(pp_1_long_Ppds,pp_1_lat_Ppds, '.',markersize=5,markeredgecolor='k',markerfacecolor='b',transform=ccrs.Geodetic())
+l3, = ax1.plot(pp_med_long_Ppds,pp_med_lat_Ppds, '.',markersize=5,markeredgecolor='k',markerfacecolor='g',transform=ccrs.Geodetic())
+l4, = ax1.plot(pp_2_long_Ppds,pp_2_lat_Ppds, '.',markersize=5,markeredgecolor='k',markerfacecolor='r',transform=ccrs.Geodetic())
+l5, = ax1.plot(grid_sel_x, grid_sel_y, 'o',markersize=3,markeredgecolor='k',markerfacecolor='None',transform=ccrs.Geodetic())
 ax1.set_title('Ppds Piercing Points',ha='center',va='top',y=1.08)
-ax1.legend([l6,l7,l8,l9,l10],['Stations','Piercing Points 410 km','Piercing Points '+"{0:.0f}".format(DEPTH_MED)+' km','Piercing Points 660 km','Selected Grid'],scatterpoints=1, frameon=True,labelspacing=0.5, loc='lower right',facecolor='w',fontsize='smaller')
+ax1.legend([l1,l2,l3,l4,l5],['Stations','Piercing Points 410 km','Piercing Points '+"{0:.0f}".format(DEPTH_MED)+' km','Piercing Points 660 km','Selected Grid'],scatterpoints=1, frameon=True,labelspacing=1, loc='lower right',facecolor='w',fontsize='smaller')
+
+reader_1_SHP = Reader(BOUNDARY_1_SHP)
+shape_1_SHP = list(reader_1_SHP.geometries())
+plot_shape_1_SHP = cfeature.ShapelyFeature(shape_1_SHP, ccrs.PlateCarree())
+ax1.add_feature(plot_shape_1_SHP, facecolor='none', edgecolor='k',linewidth=3)
+
+reader_2_SHP = Reader(BOUNDARY_2_SHP)
+shape_2_SHP = list(reader_2_SHP.geometries())
+plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
+ax1.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
+ax1.gridlines(draw_labels=True)
 
 
 plt.show()
 
 os.makedirs(PP_FIGURE,exist_ok=True)
-fig_PP.savefig(PP_FIGURE+'PP_Pds_Ppds.'+EXT_FIG,dpi=DPI_FIG)
-
+fig_PP_Pds_Ppds.savefig(PP_FIGURE+'PP_Pds_Ppds.'+EXT_FIG,dpi=DPI_FIG)
 ###################################################################################################################
 
 print('Plotting: Figure Pds Average Piercing Points')
 print('\n')
 
 
-fig_PP, ax =  plt.subplots(nrows=1, ncols=1,figsize=(20,20))
+fig_PP, ax = plt.subplots(ncols=1, subplot_kw={'projection': ccrs.Mercator(central_longitude=PROJECT_LON, globe=None)},figsize=(20,20))
 
 #Figure Pds
 
-m_PP = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_LARGE,
-            llcrnrlat=LLCRNRLAT_LARGE,urcrnrlon=URCRNRLON_LARGE,urcrnrlat=URCRNRLAT_LARGE,ax=ax)
+ax.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
+l1, = ax.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.Geodetic())
+l3, = ax.plot(pp_med_long,pp_med_lat, 'X',markersize=5,markeredgecolor='k',markerfacecolor='k',alpha=0.5,transform=ccrs.Geodetic())
+l5, = ax.plot(grid_sel_x, grid_sel_y, 'o',markersize=3,markeredgecolor='k',markerfacecolor='None',transform=ccrs.Geodetic())
 
-m_PP.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
-m_PP.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
+reader_1_SHP = Reader(BOUNDARY_1_SHP)
+shape_1_SHP = list(reader_1_SHP.geometries())
+plot_shape_1_SHP = cfeature.ShapelyFeature(shape_1_SHP, ccrs.PlateCarree())
+ax.add_feature(plot_shape_1_SHP, facecolor='none', edgecolor='k',linewidth=3)
 
-for lon, lat in zip(sta_long,sta_lat):
-    x,y = m_PP(lon, lat)
-    msize = 10
-    l1, = m_PP.plot(x, y, '^',markersize=msize,markeredgecolor='k',markerfacecolor='grey')
-
-for lon_med_Pds, lat_med_Pds in zip(pp_med_long_Ppds,pp_med_lat_Ppds):
-    x_med_Pds,y_med_Pds = m_PP(lon_med_Pds, lat_med_Pds)
-    msize_1 = 5
-    l3, = m_PP.plot(x_med_Pds, y_med_Pds, 'X',markersize=msize_1,markeredgecolor='k',markerfacecolor='k',alpha=0.5)
-
-
-for lon_sel, lat_sel in zip(grid_sel_x,grid_sel_y):
-    x_sel,y_sel = m_PP(lon_sel, lat_sel)
-    msize_2 = 4
-    l5, = m_PP.plot(x_sel, y_sel, 'o',markersize=msize_2,markeredgecolor='k',markerfacecolor='None')
-
-m_PP.fillcontinents(color='whitesmoke',lake_color=None,zorder=2,alpha=0.1)
-m_PP.drawcoastlines(color='k',zorder=1)
-m_PP.drawmeridians(np.arange(0, 310, 5),color='lightgrey',labels=[True,True,True,True])
-m_PP.drawparallels(np.arange(-90, 90, 5),color='lightgrey',labels=[True,True,True,True])
+reader_2_SHP = Reader(BOUNDARY_2_SHP)
+shape_2_SHP = list(reader_2_SHP.geometries())
+plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
+ax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 
 ax.set_title('Pds Piercing Points',ha='center',va='top',y=1.08)
 ax.legend([l1,l3,l5],['Stations','Piercing Points '+"{0:.0f}".format(DEPTH_MED)+' km','Selected Grid'],scatterpoints=1, frameon=True,labelspacing=1, loc='lower right',facecolor='w',fontsize='smaller')
+ax.gridlines(draw_labels=True)
 
 plt.show()
 
@@ -595,40 +536,27 @@ fig_PP.savefig(PP_FIGURE+'PP_MED_Pds.'+EXT_FIG,dpi=DPI_FIG)
 
 print('Plotting: Figure Ppds Average Piercing Points')
 print('\n')
-
-
-fig_PP, ax =  plt.subplots(nrows=1, ncols=1,figsize=(20,20))
+fig_PP, ax = plt.subplots(ncols=1, subplot_kw={'projection': ccrs.Mercator(central_longitude=PROJECT_LON, globe=None)},figsize=(20,20))
 
 #Figure Pds
 
-m_PP = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_LARGE,
-            llcrnrlat=LLCRNRLAT_LARGE,urcrnrlon=URCRNRLON_LARGE,urcrnrlat=URCRNRLAT_LARGE,ax=ax)
+ax.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
+l1, = ax.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.Geodetic())
+l3, = ax.plot(pp_med_long_Ppds,pp_med_lat_Ppds, 'X',markersize=5,markeredgecolor='k',markerfacecolor='k',alpha=0.5,transform=ccrs.Geodetic())
+l5, = ax.plot(grid_sel_x, grid_sel_y, 'o',markersize=3,markeredgecolor='k',markerfacecolor='None',transform=ccrs.Geodetic())
 
-m_PP.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
-m_PP.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
+reader_1_SHP = Reader(BOUNDARY_1_SHP)
+shape_1_SHP = list(reader_1_SHP.geometries())
+plot_shape_1_SHP = cfeature.ShapelyFeature(shape_1_SHP, ccrs.PlateCarree())
+ax.add_feature(plot_shape_1_SHP, facecolor='none', edgecolor='k',linewidth=3)
 
-for lon, lat in zip(sta_long,sta_lat):
-    x,y = m_PP(lon, lat)
-    msize = 10
-    l1, = m_PP.plot(x, y, '^',markersize=msize,markeredgecolor='k',markerfacecolor='grey')
+reader_2_SHP = Reader(BOUNDARY_2_SHP)
+shape_2_SHP = list(reader_2_SHP.geometries())
+plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
+ax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
+ax.gridlines(draw_labels=True)
 
-for lon_med_Pds, lat_med_Pds in zip(pp_med_long,pp_med_lat):
-    x_med_Pds,y_med_Pds = m_PP(lon_med_Pds, lat_med_Pds)
-    msize_1 = 5
-    l3, = m_PP.plot(x_med_Pds, y_med_Pds, 'X',markersize=msize_1,markeredgecolor='k',markerfacecolor='k',alpha=0.5)
-
-
-for lon_sel, lat_sel in zip(grid_sel_x,grid_sel_y):
-    x_sel,y_sel = m_PP(lon_sel, lat_sel)
-    msize_2 = 4
-    l5, = m_PP.plot(x_sel, y_sel, 'o',markersize=msize_2,markeredgecolor='k',markerfacecolor='None')
-
-m_PP.fillcontinents(color='whitesmoke',lake_color=None,zorder=2,alpha=0.1)
-m_PP.drawcoastlines(color='k',zorder=1)
-m_PP.drawmeridians(np.arange(0, 310, 5),color='lightgrey',labels=[True,True,True,True])
-m_PP.drawparallels(np.arange(-90, 90, 5),color='lightgrey',labels=[True,True,True,True])
-
-ax.set_title('Ppds Piercing Points',ha='center',va='top',y=1.08)
+ax.set_title('Pds Piercing Points',ha='center',va='top',y=1.08)
 ax.legend([l1,l3,l5],['Stations','Piercing Points '+"{0:.0f}".format(DEPTH_MED)+' km','Selected Grid'],scatterpoints=1, frameon=True,labelspacing=1, loc='lower right',facecolor='w',fontsize='smaller')
 
 plt.show()
@@ -1126,37 +1054,25 @@ for i,j in enumerate(RF_data_raw_Ppds):
 print('Plotting: Figure Final Grid and Ppds Average Piercing Points')
 print('\n')
 
-
-fig_PP, ax =  plt.subplots(nrows=1, ncols=1,figsize=(20,20))
+fig_PP, ax = plt.subplots(ncols=1, subplot_kw={'projection': ccrs.Mercator(central_longitude=PROJECT_LON, globe=None)},figsize=(20,20))
 
 #Figure Pds
 
-m_PP = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_LARGE,
-            llcrnrlat=LLCRNRLAT_LARGE,urcrnrlon=URCRNRLON_LARGE,urcrnrlat=URCRNRLAT_LARGE,ax=ax)
+ax.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
+l1, = ax.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.Geodetic())
+l3, = ax.plot(pp_med_long_Ppds,pp_med_lat_Ppds, 'X',markersize=5,markeredgecolor='k',markerfacecolor='k',alpha=0.5,transform=ccrs.Geodetic())
+l5, = ax.plot(RF_lon,RF_lat, 'o',markersize=3,markeredgecolor='k',markerfacecolor='None',transform=ccrs.Geodetic())
 
-m_PP.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
-m_PP.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
+reader_1_SHP = Reader(BOUNDARY_1_SHP)
+shape_1_SHP = list(reader_1_SHP.geometries())
+plot_shape_1_SHP = cfeature.ShapelyFeature(shape_1_SHP, ccrs.PlateCarree())
+ax.add_feature(plot_shape_1_SHP, facecolor='none', edgecolor='k',linewidth=3)
 
-for lon, lat in zip(sta_long,sta_lat):
-    x,y = m_PP(lon, lat)
-    msize = 10
-    l1, = m_PP.plot(x, y, '^',markersize=msize,markeredgecolor='k',markerfacecolor='grey')
-
-for lon_med_Pds, lat_med_Pds in zip(pp_med_long,pp_med_lat):
-    x_med_Pds,y_med_Pds = m_PP(lon_med_Pds, lat_med_Pds)
-    msize_1 = 5
-    l3, = m_PP.plot(x_med_Pds, y_med_Pds, 'X',markersize=msize_1,markeredgecolor='k',markerfacecolor='k',alpha=0.5)
-
-
-for lon_sel, lat_sel in zip(RF_lon,RF_lat):
-    x_sel,y_sel = m_PP(lon_sel, lat_sel)
-    msize_2 = 4
-    l5, = m_PP.plot(x_sel, y_sel, 'o',markersize=msize_2,markeredgecolor='k',markerfacecolor='None')
-
-m_PP.fillcontinents(color='whitesmoke',lake_color=None,zorder=2,alpha=0.1)
-m_PP.drawcoastlines(color='k',zorder=1)
-m_PP.drawmeridians(np.arange(0, 310, 5),color='lightgrey',labels=[True,True,True,True])
-m_PP.drawparallels(np.arange(-90, 90, 5),color='lightgrey',labels=[True,True,True,True])
+reader_2_SHP = Reader(BOUNDARY_2_SHP)
+shape_2_SHP = list(reader_2_SHP.geometries())
+plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
+ax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
+ax.gridlines(draw_labels=True)
 
 ax.set_title('Figure Final Grid and Ppds Average Piercing Points',ha='center',va='top',y=1.08)
 ax.legend([l1,l3,l5],['Stations','Piercing Points '+"{0:.0f}".format(DEPTH_MED)+' km','Selected Grid'],scatterpoints=1, frameon=True,labelspacing=1, loc='lower right',facecolor='w',fontsize='smaller')
@@ -1171,10 +1087,10 @@ fig_PP.savefig(PP_FIGURE+'PP_FINAL_GRID.'+EXT_FIG,dpi=DPI_FIG)
 print('Plotting Figure: Depth of the Mantle Transition Zone for Pds and Ppds phases for 410 and 660 km ...')
 #Figure Depth of the Mantle Transition Zone for Pds and Ppds phases for 410 and 660 km
 
-fig, axes = plt.subplots(nrows=2, ncols=2,figsize=(10,10),squeeze=False,sharex=False,sharey=False)
+fig, axes = plt.subplots(nrows=2, ncols=2, subplot_kw={'projection': ccrs.Mercator(central_longitude=PROJECT_LON, globe=None)},figsize=(20,20))
 
-ax1 = axes[0, 0]
-ax = axes[0, 1]
+ax = axes[0, 0]
+ax1 = axes[0, 1]
 ax2 = axes[1, 0]
 ax3 = axes[1, 1]
 
@@ -1182,114 +1098,105 @@ colormap = 'seismic'
 
 #Figure Depth of the Mantle Transition Zone for Pds phase for 410 km
 
-m1 = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_LARGE,
-            llcrnrlat=LLCRNRLAT_LARGE,urcrnrlon=URCRNRLON_LARGE,urcrnrlat=URCRNRLAT_LARGE,ax=ax1)
+ax.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
 
-m1.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
-m1.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
+reader_1_SHP = Reader(BOUNDARY_1_SHP)
+shape_1_SHP = list(reader_1_SHP.geometries())
+plot_shape_1_SHP = cfeature.ShapelyFeature(shape_1_SHP, ccrs.PlateCarree())
+ax.add_feature(plot_shape_1_SHP, facecolor='none', edgecolor='k',linewidth=3)
 
-xi = np.linspace(LLCRNRLON_SMALL, URCRNRLON_SMALL, 100)
-yi = np.linspace(LLCRNRLAT_SMALL, URCRNRLAT_SMALL, 100)
+reader_2_SHP = Reader(BOUNDARY_2_SHP)
+shape_2_SHP = list(reader_2_SHP.geometries())
+plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
+ax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
+ax.gridlines(draw_labels=True)
+
+xi = np.linspace(LLCRNRLON_SMALL, URCRNRLON_SMALL, abs(abs(URCRNRLON_SMALL) - abs(LLCRNRLON_SMALL))*GRID_PP_MULT)
+yi = np.linspace(LLCRNRLAT_SMALL, URCRNRLAT_SMALL, abs(abs(URCRNRLAT_SMALL) - abs(LLCRNRLAT_SMALL))*GRID_PP_MULT)
 
 gridx, gridy = np.meshgrid(xi, yi)
 
-grdz_RF_DEPTH_mean_1_Pds = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(RF_DEPTH_mean_1_Pds), (gridx, gridy),method='cubic')
+grdz_RF_DEPTH_mean_1_Pds = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(RF_DEPTH_mean_1_Pds), (gridx, gridy),method='linear')
 
-gd_x,gd_y = m1(*(gridx, gridy))
-sc1 = m1.contourf(gd_x,gd_y,grdz_RF_DEPTH_mean_1_Pds,levels=np.arange(310,520,10),cmap=colormap,vmin=310,vmax=510)
-m1.contour(gd_x,gd_y,grdz_RF_DEPTH_mean_1_Pds,colors='k',levels=np.arange(310,520,50),vmin=310,vmax=510)
+sc = ax.contourf(gridx,gridy,grdz_RF_DEPTH_mean_1_Pds,levels=np.arange(310,520,10),cmap=colormap,vmin=310,vmax=510, transform=ccrs.PlateCarree())
+ax.contour(gridx,gridy,grdz_RF_DEPTH_mean_1_Pds,colors='k',levels=np.arange(310,520,50),vmin=310,vmax=510, transform=ccrs.PlateCarree())
 
-for lon, lat in zip(sta_long,sta_lat):
-    x,y = m1(lon, lat)
-    msize = 10
-    l1, = m1.plot(x, y, '^',markersize=msize,markeredgecolor='k',markerfacecolor='grey')
+ax.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
 
-m1.fillcontinents(color='whitesmoke',lake_color=None,zorder=2,alpha=0.1)
-m1.drawcoastlines(color='k',zorder=1)
-m1.drawmeridians(np.arange(0, 310, 5),color='lightgrey',labels=[True,True,True,True])
-m1.drawparallels(np.arange(-90, 90, 5),color='lightgrey',labels=[True,True,True,True])
-
-
-ax1.set_title('410 km Pds', y=1.08)
+ax.set_title('410 km Pds', y=1.08)
 
 
 #Figure Depth of the Mantle Transition Zone for Ppds phase for 410 km
 
-m = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_LARGE,
-            llcrnrlat=LLCRNRLAT_LARGE,urcrnrlon=URCRNRLON_LARGE,urcrnrlat=URCRNRLAT_LARGE,ax=ax)
 
-m.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
-m.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
+ax1.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
 
-grdz_RF_DEPTH_mean_1_Ppds = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(RF_DEPTH_mean_1_Ppds), (gridx, gridy),method='cubic')
+reader_1_SHP = Reader(BOUNDARY_1_SHP)
+shape_1_SHP = list(reader_1_SHP.geometries())
+plot_shape_1_SHP = cfeature.ShapelyFeature(shape_1_SHP, ccrs.PlateCarree())
+ax1.add_feature(plot_shape_1_SHP, facecolor='none', edgecolor='k',linewidth=3)
 
-gd_x,gd_y = m(*(gridx, gridy))
-sc = m.contourf(gd_x,gd_y,grdz_RF_DEPTH_mean_1_Ppds,levels=np.arange(310,520,10),cmap=colormap,vmin=310,vmax=510)
-m.contour(gd_x,gd_y,grdz_RF_DEPTH_mean_1_Ppds,colors='k',levels=np.arange(310,520,50),vmin=310,vmax=510)
+reader_2_SHP = Reader(BOUNDARY_2_SHP)
+shape_2_SHP = list(reader_2_SHP.geometries())
+plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
+ax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
+ax1.gridlines(draw_labels=True)
 
-for lon, lat in zip(sta_long,sta_lat):
-    x,y = m(lon, lat)
-    msize = 10
-    l1, = m.plot(x, y, '^',markersize=msize,markeredgecolor='k',markerfacecolor='grey')
+grdz_RF_DEPTH_mean_1_Ppds = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(RF_DEPTH_mean_1_Ppds), (gridx, gridy),method='linear')
 
-m.fillcontinents(color='whitesmoke',lake_color=None,zorder=2,alpha=0.1)
-m.drawcoastlines(color='k',zorder=1)
-m.drawmeridians(np.arange(0, 310, 5),color='lightgrey',labels=[True,True,True,True])
-m.drawparallels(np.arange(-90, 90, 5),color='lightgrey',labels=[True,True,True,True])
+sc1 = ax1.contourf(gridx,gridy,grdz_RF_DEPTH_mean_1_Ppds,levels=np.arange(310,520,10),cmap=colormap,vmin=310,vmax=510, transform=ccrs.PlateCarree())
+ax1.contour(gridx,gridy,grdz_RF_DEPTH_mean_1_Ppds,colors='k',levels=np.arange(310,520,50),vmin=310,vmax=510, transform=ccrs.PlateCarree())
 
-ax.set_title('410 km Ppds', y=1.08)
+ax1.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
+
+ax1.set_title('410 km Ppds', y=1.08)
 
 
 #Figure Depth of the Mantle Transition Zone for Pds phase for 660 km
 
+ax2.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
 
-m2 = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_LARGE,
-            llcrnrlat=LLCRNRLAT_LARGE,urcrnrlon=URCRNRLON_LARGE,urcrnrlat=URCRNRLAT_LARGE,ax=ax2)
+reader_1_SHP = Reader(BOUNDARY_1_SHP)
+shape_1_SHP = list(reader_1_SHP.geometries())
+plot_shape_1_SHP = cfeature.ShapelyFeature(shape_1_SHP, ccrs.PlateCarree())
+ax2.add_feature(plot_shape_1_SHP, facecolor='none', edgecolor='k',linewidth=3)
 
-m2.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
-m2.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
+reader_2_SHP = Reader(BOUNDARY_2_SHP)
+shape_2_SHP = list(reader_2_SHP.geometries())
+plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
+ax2.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
+ax2.gridlines(draw_labels=True)
 
-grdz_RF_DEPTH_mean_2_Pds = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(RF_DEPTH_mean_2_Pds), (gridx, gridy),method='cubic')
+grdz_RF_DEPTH_mean_2_Pds = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(RF_DEPTH_mean_2_Pds), (gridx, gridy),method='linear')
 
-gd_x,gd_y = m2(*(gridx, gridy))
-sc2 = m2.contourf(gd_x,gd_y,grdz_RF_DEPTH_mean_2_Pds,levels=np.arange(560,770,10),cmap=colormap,vmin=560,vmax=760)
-m2.contour(gd_x,gd_y,grdz_RF_DEPTH_mean_2_Pds,colors='k',levels=np.arange(560,770,50),vmin=560,vmax=760)
+sc2 = ax2.contourf(gridx,gridy,grdz_RF_DEPTH_mean_2_Pds,levels=np.arange(560,770,10),cmap=colormap,vmin=560,vmax=760, transform=ccrs.PlateCarree())
+ax2.contour(gridx,gridy,grdz_RF_DEPTH_mean_2_Pds,colors='k',levels=np.arange(560,770,50),vmin=560,vmax=760, transform=ccrs.PlateCarree())
 
-for lon, lat in zip(sta_long,sta_lat):
-    x,y = m2(lon, lat)
-    msize = 10
-    l1, = m2.plot(x, y, '^',markersize=msize,markeredgecolor='k',markerfacecolor='grey')
-
-m2.fillcontinents(color='whitesmoke',lake_color=None,zorder=2,alpha=0.1)
-m2.drawcoastlines(color='k',zorder=1)
-m2.drawmeridians(np.arange(0, 310, 5),color='lightgrey',labels=[True,True,True,True])
-m2.drawparallels(np.arange(-90, 90, 5),color='lightgrey',labels=[True,True,True,True])
+ax2.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
 
 ax2.set_title('660 km Pds', y=1.08)
 
 #Figure Depth of the Mantle Transition Zone for Ppds phase for 660 km
 
-m3 = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_LARGE,
-            llcrnrlat=LLCRNRLAT_LARGE,urcrnrlon=URCRNRLON_LARGE,urcrnrlat=URCRNRLAT_LARGE,ax=ax3)
+ax3.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
 
-m3.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
-m3.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
+reader_1_SHP = Reader(BOUNDARY_1_SHP)
+shape_1_SHP = list(reader_1_SHP.geometries())
+plot_shape_1_SHP = cfeature.ShapelyFeature(shape_1_SHP, ccrs.PlateCarree())
+ax3.add_feature(plot_shape_1_SHP, facecolor='none', edgecolor='k',linewidth=3)
 
-grdz_RF_DEPTH_mean_2_Ppds = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(RF_DEPTH_mean_2_Ppds), (gridx, gridy),method='cubic')
+reader_2_SHP = Reader(BOUNDARY_2_SHP)
+shape_2_SHP = list(reader_2_SHP.geometries())
+plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
+ax3.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
+ax3.gridlines(draw_labels=True)
 
-gd_x,gd_y = m3(*(gridx, gridy))
-sc3 = m3.contourf(gd_x,gd_y,grdz_RF_DEPTH_mean_2_Ppds,levels=np.arange(560,770,10),cmap=colormap,vmin=560,vmax=760)
-m3.contour(gd_x,gd_y,grdz_RF_DEPTH_mean_2_Ppds,colors='k',levels=np.arange(560,770,50),vmin=560,vmax=760)
+grdz_RF_DEPTH_mean_2_Ppds = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(RF_DEPTH_mean_2_Ppds), (gridx, gridy),method='linear')
 
-for lon, lat in zip(sta_long,sta_lat):
-    x,y = m3(lon, lat)
-    msize = 10
-    l1, = m3.plot(x, y, '^',markersize=msize,markeredgecolor='k',markerfacecolor='grey')
+sc3 = ax3.contourf(gridx,gridy,grdz_RF_DEPTH_mean_2_Ppds,levels=np.arange(560,770,10),cmap=colormap,vmin=560,vmax=760,transform=ccrs.PlateCarree())
+ax3.contour(gridx,gridy,grdz_RF_DEPTH_mean_2_Ppds,colors='k',levels=np.arange(560,770,50),vmin=560,vmax=760,transform=ccrs.PlateCarree())
 
-m3.fillcontinents(color='whitesmoke',lake_color=None,zorder=2,alpha=0.1)
-m3.drawcoastlines(color='k',zorder=1)
-m3.drawmeridians(np.arange(0, 310, 5),color='lightgrey',labels=[True,True,True,True])
-m3.drawparallels(np.arange(-90, 90, 5),color='lightgrey',labels=[True,True,True,True])
+ax3.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
 
 ax3.set_title('660 km Ppds', y=1.08)
 
@@ -1305,7 +1212,7 @@ fig.suptitle('Depth per bin')
 plt.show()
 
 fig.savefig(PP_FIGURE+'DEPTH.'+EXT_FIG,dpi=DPI_FIG)
-
+'''
 ##################################################################################################
 print('Plotting Figure: True depth of the Mantle Transition Zone for Pds and Ppds phases for 410 and 660 km ...')
 #Figure True depth of the Mantle Transition Zone for Pds and Ppds phases for 410 and 660 km
@@ -1327,12 +1234,9 @@ m1 = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_L
 m1.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m1.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
-xi = np.linspace(LLCRNRLON_SMALL, URCRNRLON_SMALL, 100)
-yi = np.linspace(LLCRNRLAT_SMALL, URCRNRLAT_SMALL, 100)
-
 gridx, gridy = np.meshgrid(xi, yi)
 
-grdz_RF_DEPTH_mean_1_true_Pds = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(RF_DEPTH_mean_1_true_Pds), (gridx, gridy),method='cubic')
+grdz_RF_DEPTH_mean_1_true_Pds = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(RF_DEPTH_mean_1_true_Pds), (gridx, gridy),method='linear')
 
 gd_x,gd_y = m1(*(gridx, gridy))
 sc1 = m1.contourf(gd_x,gd_y,grdz_RF_DEPTH_mean_1_true_Pds,levels=np.arange(310,520,10),cmap=colormap,vmin=310,vmax=510)
@@ -1359,7 +1263,7 @@ m = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LO
 m.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
-grdz_RF_DEPTH_mean_1_true_Ppds = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(RF_DEPTH_mean_1_true_Ppds), (gridx, gridy),method='cubic')
+grdz_RF_DEPTH_mean_1_true_Ppds = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(RF_DEPTH_mean_1_true_Ppds), (gridx, gridy),method='linear')
 
 gd_x,gd_y = m1(*(gridx, gridy))
 sc = m.contourf(gd_x,gd_y,grdz_RF_DEPTH_mean_1_true_Ppds,levels=np.arange(310,520,10),cmap=colormap,vmin=310,vmax=510)
@@ -1387,7 +1291,7 @@ m2 = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_L
 m2.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m2.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
-grdz_RF_DEPTH_mean_2_true_Pds = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(RF_DEPTH_mean_2_true_Pds), (gridx, gridy),method='cubic')
+grdz_RF_DEPTH_mean_2_true_Pds = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(RF_DEPTH_mean_2_true_Pds), (gridx, gridy),method='linear')
 
 gd_x,gd_y = m2(*(gridx, gridy))
 sc2 = m2.contourf(gd_x,gd_y,grdz_RF_DEPTH_mean_2_true_Pds,levels=np.arange(560,770,10),cmap=colormap,vmin=560,vmax=760)
@@ -1413,7 +1317,7 @@ m3 = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_L
 m3.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m3.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
-grdz_RF_DEPTH_mean_2_true_Ppds = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(RF_DEPTH_mean_2_true_Ppds), (gridx, gridy),method='cubic')
+grdz_RF_DEPTH_mean_2_true_Ppds = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(RF_DEPTH_mean_2_true_Ppds), (gridx, gridy),method='linear')
 
 gd_x,gd_y = m3(*(gridx, gridy))
 sc3 = m3.contourf(gd_x,gd_y,grdz_RF_DEPTH_mean_2_true_Ppds,levels=np.arange(560,770,10),cmap=colormap,vmin=560,vmax=760)
@@ -1470,12 +1374,9 @@ m1_std = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJE
 m1_std.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m1_std.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
-xi = np.linspace(LLCRNRLON_SMALL, URCRNRLON_SMALL, 100)
-yi = np.linspace(LLCRNRLAT_SMALL, URCRNRLAT_SMALL, 100)
-
 gridx, gridy = np.meshgrid(xi, yi)
 
-grdz_RF_DEPTH_std_1_Pds = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(RF_DEPTH_std_1_Pds), (gridx, gridy),method='cubic')
+grdz_RF_DEPTH_std_1_Pds = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(RF_DEPTH_std_1_Pds), (gridx, gridy),method='linear')
 
 gd_x,gd_y = m1_std(*(gridx, gridy))
 sc1_std = m1_std.contourf(gd_x,gd_y,grdz_RF_DEPTH_std_1_Pds,levels=np.arange(0,60,10),cmap=colormap_std,vmin=0,vmax=50)
@@ -1502,7 +1403,7 @@ m_std = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJEC
 m_std.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m_std.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
-grdz_RF_DEPTH_std_1_Ppds = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(RF_DEPTH_std_1_Ppds), (gridx, gridy),method='cubic')
+grdz_RF_DEPTH_std_1_Ppds = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(RF_DEPTH_std_1_Ppds), (gridx, gridy),method='linear')
 
 gd_x,gd_y = m_std(*(gridx, gridy))
 sc_std = m_std.contourf(gd_x,gd_y,grdz_RF_DEPTH_std_1_Ppds,levels=np.arange(0,60,10),cmap=colormap_std,vmin=0,vmax=50)
@@ -1529,7 +1430,7 @@ m2_std = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJE
 m2_std.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m2_std.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
-grdz_RF_DEPTH_std_2_Pds = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(RF_DEPTH_std_2_Pds), (gridx, gridy),method='cubic')
+grdz_RF_DEPTH_std_2_Pds = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(RF_DEPTH_std_2_Pds), (gridx, gridy),method='linear')
 
 gd_x,gd_y = m2_std(*(gridx, gridy))
 sc2_std = m2_std.contourf(gd_x,gd_y,grdz_RF_DEPTH_std_2_Pds,levels=np.arange(0,60,10),cmap=colormap_std,vmin=0,vmax=50)
@@ -1556,7 +1457,7 @@ m3_std = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJE
 m3_std.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m3_std.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
-grdz_RF_DEPTH_std_2_Ppds = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(RF_DEPTH_std_2_Ppds), (gridx, gridy),method='cubic')
+grdz_RF_DEPTH_std_2_Ppds = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(RF_DEPTH_std_2_Ppds), (gridx, gridy),method='linear')
 
 gd_x,gd_y = m3_std(*(gridx, gridy))
 sc3_std = m3_std.contourf(gd_x,gd_y,grdz_RF_DEPTH_std_2_Ppds,levels=np.arange(0,60,10),cmap=colormap_std,vmin=0,vmax=50)
@@ -1599,12 +1500,9 @@ m1_delta_vp = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=
 m1_delta_vp.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m1_delta_vp.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
-xi = np.linspace(LLCRNRLON_SMALL, URCRNRLON_SMALL, 100)
-yi = np.linspace(LLCRNRLAT_SMALL, URCRNRLAT_SMALL, 100)
-
 gridx, gridy = np.meshgrid(xi, yi)
 
-grdz_delta_1_Vp_mean = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(delta_1_Vp_mean), (gridx, gridy),method='cubic')
+grdz_delta_1_Vp_mean = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(delta_1_Vp_mean), (gridx, gridy),method='linear')
 
 gd_x,gd_y = m1_delta_vp(*(gridx, gridy))
 sc1_delta_vp = m1_delta_vp.contourf(gd_x,gd_y,grdz_delta_1_Vp_mean,levels=np.arange(-1,1.1,0.1),cmap=colormap_delta_vp,vmin=-1,vmax=1)
@@ -1629,7 +1527,7 @@ m_delta_vp = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=P
 m_delta_vp.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m_delta_vp.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
-grdz_delta_2_Vp_mean = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(delta_2_Vp_mean), (gridx, gridy),method='cubic')
+grdz_delta_2_Vp_mean = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(delta_2_Vp_mean), (gridx, gridy),method='linear')
 
 gd_x,gd_y = m_delta_vp(*(gridx, gridy))
 sc_delta_vp = m_delta_vp.contourf(gd_x,gd_y,grdz_delta_2_Vp_mean,levels=np.arange(-1,1.1,0.1),cmap=colormap_delta_vp,vmin=-1,vmax=1)
@@ -1666,16 +1564,13 @@ m1_delta_vp = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=
 m1_delta_vp.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m1_delta_vp.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
-xi = np.linspace(LLCRNRLON_SMALL, URCRNRLON_SMALL, 100)
-yi = np.linspace(LLCRNRLAT_SMALL, URCRNRLAT_SMALL, 100)
-
 gridx, gridy = np.meshgrid(xi, yi)
 
-grdz_delta_1_Vp_mean = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(delta_1_Vp_std), (gridx, gridy),method='cubic')
+grdz_delta_1_Vp_mean = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(delta_1_Vp_std), (gridx, gridy),method='linear')
 
 gd_x,gd_y = m1_delta_vp(*(gridx, gridy))
-sc1_delta_vp = m1_delta_vp.contourf(gd_x,gd_y,grdz_delta_1_Vp_mean,levels=np.arange(-1,1.1,0.1),cmap=colormap_delta_vp,vmin=-1,vmax=1)
-m1_delta_vp.contour(gd_x,gd_y,grdz_delta_1_Vp_mean,levels=np.arange(-1,1.1,0.25),colors='k')
+sc1_delta_vp = m1_delta_vp.contourf(gd_x,gd_y,grdz_delta_1_Vp_mean,levels=np.arange(0,1.1,0.1),cmap=colormap_delta_vp,vmin=0,vmax=1)
+m1_delta_vp.contour(gd_x,gd_y,grdz_delta_1_Vp_mean,levels=np.arange(0,1.1,0.25),colors='k')
 
 
 for lon, lat in zip(sta_long,sta_lat):
@@ -1696,11 +1591,11 @@ m_delta_vp = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=P
 m_delta_vp.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m_delta_vp.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
-grdz_delta_2_Vp_mean = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(delta_2_Vp_std), (gridx, gridy),method='cubic')
+grdz_delta_2_Vp_mean = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(delta_2_Vp_std), (gridx, gridy),method='linear')
 
 gd_x,gd_y = m_delta_vp(*(gridx, gridy))
-sc_delta_vp = m_delta_vp.contourf(gd_x,gd_y,grdz_delta_2_Vp_mean,levels=np.arange(-1,1.1,0.1),cmap=colormap_delta_vp,vmin=-1,vmax=1)
-m_delta_vp.contour(gd_x,gd_y,grdz_delta_2_Vp_mean,levels=np.arange(-1,1.1,0.25),colors='k')
+sc_delta_vp = m_delta_vp.contourf(gd_x,gd_y,grdz_delta_2_Vp_mean,levels=np.arange(0,1.1,0.1),cmap=colormap_delta_vp,vmin=0,vmax=1)
+m_delta_vp.contour(gd_x,gd_y,grdz_delta_2_Vp_mean,levels=np.arange(0,1.1,0.25),colors='k')
 
 for lon, lat in zip(sta_long,sta_lat):
     x,y = m_delta_vp(lon, lat)
@@ -1733,12 +1628,9 @@ m_thickness1 = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0
 m_thickness1.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m_thickness1.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
-xi = np.linspace(LLCRNRLON_SMALL, URCRNRLON_SMALL, 100)
-yi = np.linspace(LLCRNRLAT_SMALL, URCRNRLAT_SMALL, 100)
-
 gridx, gridy = np.meshgrid(xi, yi)
 
-grdz_thickness_MTZ_Pds = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(thickness_MTZ_Pds), (gridx, gridy),method='cubic')
+grdz_thickness_MTZ_Pds = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(thickness_MTZ_Pds), (gridx, gridy),method='linear')
 
 gd_x,gd_y = m_thickness1(*(gridx, gridy))
 sc_thickness1 = m_thickness1.contourf(gd_x,gd_y,grdz_thickness_MTZ_Pds,levels=np.arange(200,310,10),cmap=colormap_MTZ,vmin=200,vmax=300)
@@ -1763,7 +1655,7 @@ m_thickness2 = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0
 m_thickness2.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m_thickness2.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
-grdz_thickness_MTZ_Ppds = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(thickness_MTZ_Ppds), (gridx, gridy),method='cubic')
+grdz_thickness_MTZ_Ppds = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(thickness_MTZ_Ppds), (gridx, gridy),method='linear')
 
 gd_x,gd_y = m_thickness2(*(gridx, gridy))
 sc_thickness2 = m_thickness2.contourf(gd_x,gd_y,grdz_thickness_MTZ_Ppds,levels=np.arange(200,310,10),cmap=colormap_MTZ,vmin=200,vmax=300)
@@ -1799,12 +1691,9 @@ m_thickness1 = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0
 m_thickness1.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m_thickness1.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
-xi = np.linspace(LLCRNRLON_SMALL, URCRNRLON_SMALL, 100)
-yi = np.linspace(LLCRNRLAT_SMALL, URCRNRLAT_SMALL, 100)
-
 gridx, gridy = np.meshgrid(xi, yi)
 
-grdz_thickness_MTZ_Pds = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(thickness_MTZ_Pds_std), (gridx, gridy),method='cubic')
+grdz_thickness_MTZ_Pds = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(thickness_MTZ_Pds_std), (gridx, gridy),method='linear')
 
 gd_x,gd_y = m_thickness1(*(gridx, gridy))
 sc_thickness1 = m_thickness1.contourf(gd_x,gd_y,grdz_thickness_MTZ_Pds,levels=np.arange(0,60,10),cmap=colormap_MTZ,vmin=0,vmax=50)
@@ -1829,7 +1718,7 @@ m_thickness2 = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0
 m_thickness2.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m_thickness2.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
-grdz_thickness_MTZ_Ppds = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(thickness_MTZ_Ppds_std), (gridx, gridy),method='cubic')
+grdz_thickness_MTZ_Ppds = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(thickness_MTZ_Ppds_std), (gridx, gridy),method='linear')
 
 gd_x,gd_y = m_thickness2(*(gridx, gridy))
 sc_thickness2 = m_thickness2.contourf(gd_x,gd_y,grdz_thickness_MTZ_Ppds,levels=np.arange(0,60,10),cmap=colormap_MTZ,vmin=0,vmax=50)
@@ -1865,12 +1754,9 @@ m_thickness1 = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0
 m_thickness1.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m_thickness1.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
-xi = np.linspace(LLCRNRLON_SMALL, URCRNRLON_SMALL, 100)
-yi = np.linspace(LLCRNRLAT_SMALL, URCRNRLAT_SMALL, 100)
-
 gridx, gridy = np.meshgrid(xi, yi)
 
-grdz_true_thickness_MTZ_Pds = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(true_thickness_MTZ_Pds), (gridx, gridy),method='cubic')
+grdz_true_thickness_MTZ_Pds = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(true_thickness_MTZ_Pds), (gridx, gridy),method='linear')
 
 gd_x,gd_y = m_thickness1(*(gridx, gridy))
 sc_thickness1 = m_thickness1.contourf(gd_x,gd_y,grdz_true_thickness_MTZ_Pds,levels=np.arange(200,310,10),cmap=colormap_MTZ,vmin=200,vmax=300)
@@ -1895,7 +1781,7 @@ m_thickness2 = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0
 m_thickness2.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m_thickness2.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
-grdz_true_thickness_MTZ_Ppds = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(true_thickness_MTZ_Ppds), (gridx, gridy),method='cubic')
+grdz_true_thickness_MTZ_Ppds = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(true_thickness_MTZ_Ppds), (gridx, gridy),method='linear')
 
 gd_x,gd_y = m_thickness2(*(gridx, gridy))
 sc_thickness2 = m_thickness2.contourf(gd_x,gd_y,grdz_true_thickness_MTZ_Ppds,levels=np.arange(200,310,10),cmap=colormap_MTZ,vmin=200,vmax=300)
@@ -1930,12 +1816,9 @@ m_thickness1 = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0
 m_thickness1.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m_thickness1.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
-xi = np.linspace(LLCRNRLON_SMALL, URCRNRLON_SMALL, 100)
-yi = np.linspace(LLCRNRLAT_SMALL, URCRNRLAT_SMALL, 100)
-
 gridx, gridy = np.meshgrid(xi, yi)
 
-grdz_true_thickness_MTZ_Pds = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(true_thickness_MTZ_Pds_std), (gridx, gridy),method='cubic')
+grdz_true_thickness_MTZ_Pds = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(true_thickness_MTZ_Pds_std), (gridx, gridy),method='linear')
 
 gd_x,gd_y = m_thickness1(*(gridx, gridy))
 sc_thickness1 = m_thickness1.contourf(gd_x,gd_y,grdz_true_thickness_MTZ_Pds,levels=np.arange(0,60,10),cmap=colormap_MTZ,vmin=0,vmax=50)
@@ -1960,7 +1843,7 @@ m_thickness2 = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0
 m_thickness2.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m_thickness2.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
-grdz_true_thickness_MTZ_Ppds = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(true_thickness_MTZ_Ppds_std), (gridx, gridy),method='cubic')
+grdz_true_thickness_MTZ_Ppds = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(true_thickness_MTZ_Ppds_std), (gridx, gridy),method='linear')
 
 gd_x,gd_y = m_thickness2(*(gridx, gridy))
 sc_thickness2 = m_thickness2.contourf(gd_x,gd_y,grdz_true_thickness_MTZ_Ppds,levels=np.arange(0,60,10),cmap=colormap_MTZ,vmin=0,vmax=50)
@@ -1996,11 +1879,9 @@ m_thickness1 = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0
 m_thickness1.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m_thickness1.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
-xi = np.linspace(LLCRNRLON_SMALL, URCRNRLON_SMALL, 100)
-yi = np.linspace(LLCRNRLAT_SMALL, URCRNRLAT_SMALL, 100)
 gridx, gridy = np.meshgrid(xi, yi)
 
-grdz_diff_thickness_MTZ_Pds = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(diff_thickness_MTZ_Pds), (gridx, gridy),method='cubic')
+grdz_diff_thickness_MTZ_Pds = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(diff_thickness_MTZ_Pds), (gridx, gridy),method='linear')
 
 x,y = m_thickness1(*(gridx, gridy))
 sc_thickness1 = m_thickness1.contourf(x,y,grdz_diff_thickness_MTZ_Pds,levels=np.arange(-100,110,10),cmap=colormap_MTZ,vmin=-100,vmax=100)
@@ -2026,7 +1907,7 @@ m_thickness2.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m_thickness2.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
 
-grdz_diff_thickness_MTZ_Ppds = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(diff_thickness_MTZ_Ppds), (gridx, gridy),method='cubic')
+grdz_diff_thickness_MTZ_Ppds = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(diff_thickness_MTZ_Ppds), (gridx, gridy),method='linear')
 
 x,y = m_thickness2(*(gridx, gridy))
 sc_thickness2 = m_thickness2.contourf(x,y,grdz_diff_thickness_MTZ_Ppds,levels=np.arange(-100,110,10),cmap=colormap_MTZ,vmin=-100,vmax=100)
@@ -2063,11 +1944,9 @@ m_thickness1 = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0
 m_thickness1.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m_thickness1.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
-xi = np.linspace(LLCRNRLON_SMALL, URCRNRLON_SMALL, 100)
-yi = np.linspace(LLCRNRLAT_SMALL, URCRNRLAT_SMALL, 100)
 gridx, gridy = np.meshgrid(xi, yi)
 
-grdz_diff_thickness_MTZ_Pds = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(difference_thickness_MTZ_model_Pds), (gridx, gridy),method='cubic')
+grdz_diff_thickness_MTZ_Pds = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(difference_thickness_MTZ_model_Pds), (gridx, gridy),method='linear')
 
 x,y = m_thickness1(*(gridx, gridy))
 sc_thickness1 = m_thickness1.contourf(x,y,grdz_diff_thickness_MTZ_Pds,levels=np.arange(-100,110,10),cmap=colormap_MTZ,vmin=-100,vmax=100)
@@ -2093,7 +1972,7 @@ m_thickness2.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m_thickness2.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
 
-grdz_diff_thickness_MTZ_Ppds = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(difference_thickness_MTZ_model_Ppds), (gridx, gridy),method='cubic')
+grdz_diff_thickness_MTZ_Ppds = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(difference_thickness_MTZ_model_Ppds), (gridx, gridy),method='linear')
 
 x,y = m_thickness2(*(gridx, gridy))
 sc_thickness2 = m_thickness2.contourf(x,y,grdz_diff_thickness_MTZ_Ppds,levels=np.arange(-100,110,10),cmap=colormap_MTZ,vmin=-100,vmax=100)
@@ -2130,11 +2009,9 @@ m_thickness1 = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0
 m_thickness1.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m_thickness1.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
-xi = np.linspace(LLCRNRLON_SMALL, URCRNRLON_SMALL, 100)
-yi = np.linspace(LLCRNRLAT_SMALL, URCRNRLAT_SMALL, 100)
 gridx, gridy = np.meshgrid(xi, yi)
 
-grdz_diff_thickness_MTZ_Pds = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(difference_thickness_MTZ_model_Pds_std), (gridx, gridy),method='cubic')
+grdz_diff_thickness_MTZ_Pds = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(difference_thickness_MTZ_model_Pds_std), (gridx, gridy),method='linear')
 
 x,y = m_thickness1(*(gridx, gridy))
 sc_thickness1 = m_thickness1.contourf(x,y,grdz_diff_thickness_MTZ_Pds,levels=np.arange(0,60,10),cmap=colormap_MTZ,vmin=0,vmax=50)
@@ -2160,7 +2037,7 @@ m_thickness2.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m_thickness2.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
 
 
-grdz_diff_thickness_MTZ_Ppds = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(difference_thickness_MTZ_model_Ppds_std), (gridx, gridy),method='cubic')
+grdz_diff_thickness_MTZ_Ppds = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(difference_thickness_MTZ_model_Ppds_std), (gridx, gridy),method='linear')
 
 x,y = m_thickness2(*(gridx, gridy))
 sc_thickness2 = m_thickness2.contourf(x,y,grdz_diff_thickness_MTZ_Ppds,levels=np.arange(0,60,10),cmap=colormap_MTZ,vmin=0,vmax=50)
@@ -2185,6 +2062,9 @@ print('Saving Selected Piercing Points in JSON file')
 print('\n')
 
 os.makedirs(PP_SELEC_DIR,exist_ok=True)
+'''
+
+
 
 SELECTED_BINNED_DATA_dic = {'lat':[],'lon':[],'len_Pds':[],'len_Ppds':[],'true_mean_1_Pds':[],'true_std_1_Pds':[],'true_mean_2_Pds':[],'true_std_2_Pds':[],
 'true_mean_1_Ppds':[],'true_std_1_Ppds':[],'true_mean_2_Ppds':[],'true_std_2_Ppds':[],'mean_1_Pds':[],'std_1_Pds':[],'mean_2_Pds':[],'std_2_Pds':[],'mean_1_Ppds':[],'std_1_Ppds':[],'mean_2_Ppds':[],
@@ -2193,6 +2073,7 @@ SELECTED_BINNED_DATA_dic = {'lat':[],'lon':[],'len_Pds':[],'len_Ppds':[],'true_m
 'mtz_thickness_Ppds':[],'mtz_thickness_Ppds_std':[],'difference_thickness_MTZ_Pds':[],'difference_thickness_MTZ_Pds_std':[],'difference_thickness_MTZ_Ppds':[],'difference_thickness_MTZ_Ppds_std':[],
 'data_Pds':[],'data_Ppds':[],'data_BOOTSTRAP_Pds':[],'data_BOOTSTRAP_Ppds':[],'RF_BOOTSTRAP_DEPTH_mean_1_Pds':[],'RF_BOOTSTRAP_DEPTH_mean_1_Ppds':[],'RF_BOOTSTRAP_DEPTH_mean_2_Pds':[],'RF_BOOTSTRAP_DEPTH_mean_2_Ppds':[],
 'difference_thickness_MTZ_model_Pds':[],'difference_thickness_MTZ_model_Pds_std':[],'difference_thickness_MTZ_model_Ppds':[],'difference_thickness_MTZ_model_Ppds_std':[]}
+
 for i,j in enumerate(RF_BOOTSTRAP_DATA_Pds):
 	SELECTED_BINNED_DATA_dic['data_BOOTSTRAP_Pds'].append(j)
 	SELECTED_BINNED_DATA_dic['data_BOOTSTRAP_Ppds'].append(RF_BOOTSTRAP_DATA_Ppds[i])

@@ -73,13 +73,13 @@ PP_SELEC_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/Mantle_Tr
 #   tectonic provinces
 
 
-BOUNDARY_1_SHP = /home/diogo/dados_doutorado/parnaiba_basin/SIG_dados/shapes/bacia_parnaiba/bacia_parnaiba
+BOUNDARY_1_SHP = /home/diogo/dados_doutorado/parnaiba_basin/SIG_dados/shapes/bacia_parnaiba/bacia_parnaiba.shp
 BOUNDARY_1_SHP_NAME = bacia
 
-BOUNDARY_2_SHP = /home/diogo/dados_doutorado/parnaiba_basin/SIG_dados/shapes/Estados/Brasil
+BOUNDARY_2_SHP = /home/diogo/dados_doutorado/parnaiba_basin/SIG_dados/shapes/Estados/Brasil.shp
 BOUNDARY_2_SHP_NAME = estados
 
-TECTO_SHP = /home/diogo/dados_doutorado/parnaiba_basin/SIG_dados/shapes/Geologico_Simplificado/Litologia/geologicosimplificado_lito
+TECTO_SHP = /home/diogo/dados_doutorado/parnaiba_basin/SIG_dados/shapes/Geologico_Simplificado/Litologia/geologicosimplificado_lito.shp
 TECTO_SHP_name = geologia
 
 # Lat and Lon of large maps and small maps
@@ -112,6 +112,9 @@ INITIAL_DATE_EVENT = 2014-01-01T00:00:00
 #Date event final  (exemple: 2008-01-01T00:00:00)
 FINAL_DATE_EVENT = 2018-10-01T00:00:00
 
+#CROSS-SECTION AXIS DIRECTION ('x' or 'y'):
+CROSS_SECTION_AXIS  = y
+
 #==================
 [time]
 #==================
@@ -132,26 +135,20 @@ INTER_DEPTH = 10
 [migration]
 # ==========
 
-#Rotate grid?
-ROTATE_GRID = True
-
 #Filter by shapefile the grid?
 FILTER_BY_SHAPEFILE = True
 
 #Shapefile containing lines or polygons representing grid boundary
 SHAPEFILE_GRID = /home/diogo/dados_doutorado/parnaiba_basin/SIG_dados/shapes/bacia_parnaiba/bacia_parnaiba.shp
 
-#What is the grid rotation angle in degrees? (clockwise rotation)
-ROTATE_ANGLE = 350
-
 #GRID POINTS multiplyer
 GRID_PP_MULT = 3
 
 # distance between grid points and piercing points for each depth (degree)
-DIST_GRID_PP = 1
+DIST_GRID_PP = 0.7
 
 # mean distance between grid points and piercing points (degree)
-DIST_GRID_PP_MED = 1
+DIST_GRID_PP_MED = 0.7
 
 #number of piercing points per bin
 NUMBER_PP_PER_BIN = 10
@@ -180,4 +177,4 @@ GAMMA = 2
 SECTION_NUM = 3
 
 #Depth range (+/-) that we will use to find the maximum amplitude
-DEPTH_RANGE = 15
+DEPTH_RANGE = 20

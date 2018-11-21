@@ -119,6 +119,9 @@ INITIAL_DATE_EVENT = config.get('maps', 'INITIAL_DATE_EVENT')
 #Date event final  (exemple: 2008-01-01T00:00:00)
 FINAL_DATE_EVENT = config.get('maps', 'FINAL_DATE_EVENT')
 
+#CROSS-SECTION AXIS DIRECTION ('x' or 'y'):
+CROSS_SECTION_AXIS  = config.get('maps', 'CROSS_SECTION_AXIS')
+
 # ---------------
 # time
 # ---------------
@@ -134,17 +137,11 @@ INTER_DEPTH = config.getint('time', 'INTER_DEPTH')
 # migration
 # ---------------
 
-#Rotate grid?
-ROTATE_GRID = config.getboolean('migration', 'ROTATE_GRID') 
-
 #Filter by shapefile the grid?
 FILTER_BY_SHAPEFILE = config.getboolean('migration', 'FILTER_BY_SHAPEFILE') 
 
 #Shapefile containing lines or polygons representing grid boundary
 SHAPEFILE_GRID = config.get('migration', 'SHAPEFILE_GRID') 
-
-#What is the grid rotation angle in degrees? (clockwise rotation)
-ROTATE_ANGLE = config.getfloat('migration', 'ROTATE_ANGLE') 
 
 #GRID POINTS multiplyer
 GRID_PP_MULT = config.getfloat('migration', 'GRID_PP_MULT') 

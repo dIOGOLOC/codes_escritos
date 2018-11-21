@@ -10,7 +10,6 @@ import copy
 import matplotlib
 from matplotlib.cm import get_cmap
 from mpl_toolkits.mplot3d import Axes3D
-from mpl_toolkits.basemap import Basemap
 import shapefile
 from fatiando import gridder, utils
 import scipy.io
@@ -31,7 +30,7 @@ from tvtk.api import tvtk
 
 from parameters_py.mgconfig import (
 					RF_DIR,RF_EXT,MODEL_FILE_NPZ,MIN_DEPTH,MAX_DEPTH,INTER_DEPTH,PdS_DIR,
-					PP_DIR,PP_SELEC_DIR,NUMBER_PP_PER_BIN,STA_DIR,GRID_PP_MULT,ROTATE_ANGLE,
+					PP_DIR,PP_SELEC_DIR,NUMBER_PP_PER_BIN,STA_DIR,GRID_PP_MULT,
 					LLCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLON_LARGE,URCRNRLAT_LARGE,LLCRNRLON_SMALL,SECTION_NUM,
 					URCRNRLON_SMALL,LLCRNRLAT_SMALL,URCRNRLAT_SMALL,PROJECT_LAT,PROJECT_LON,
 					BOUNDARY_1_SHP,BOUNDARY_1_SHP_NAME,BOUNDARY_2_SHP,BOUNDARY_2_SHP_NAME,					
@@ -60,6 +59,122 @@ sta_lat = sta_dic['sta_lat']
 sta_long = sta_dic['sta_long']
 sta_data = sta_dic['sta_data']
 sta_time = sta_dic['sta_time']
+
+print('Creating my earth model')
+print('\n')
+
+camadas_terra_10_km = np.arange(MIN_DEPTH,MAX_DEPTH+INTER_DEPTH,INTER_DEPTH)
+
+dist_med_camada_terra = [abs(c - ((410+660)/2)) for x,c in enumerate(camadas_terra_10_km)]
+
+DEPTH_MED = camadas_terra_10_km[dist_med_camada_terra.index(min(dist_med_camada_terra))]
+
+print('Importing Pds piercing points to each PHASE')
+print('\n')
+
+PHASES = 'P410s','P'+"{0:.0f}".format(DEPTH_MED)+'s','P660s'
+
+print('Importing Pds Piercing Points for '+PHASES[0])
+print('\n')
+
+filename_1 = PP_DIR+'PP_'+PHASES[0]+'_dic.json'
+
+PP_1_dic = json.load(open(filename_1))
+
+PP_dist_1 = []
+PP_time_1 = []
+PP_lat_1 = []
+PP_lon_1 = []
+PP_depth_1 = [] 
+
+for i,j in enumerate(PP_1_dic):
+	PP_dist_1.append(j['dist'][0])
+	PP_time_1.append(j['time'][0])
+	PP_lat_1.append(j['lat'][0])
+	PP_lon_1.append(j['lon'][0])
+	PP_depth_1.append(j['depth'][0])
+
+print('Importing Pds Piercing Points for '+PHASES[1])
+print('\n')
+
+filename_med = PP_DIR+'PP_'+PHASES[1]+'_dic.json'
+
+PP_med_dic = json.load(open(filename_med))
+
+PP_dist_med = []
+PP_time_med = []
+PP_lat_med = []
+PP_lon_med = []
+PP_depth_med = [] 
+
+for i,j in enumerate(PP_med_dic):
+	PP_dist_med.append(j['dist'][0])
+	PP_time_med.append(j['time'][0])
+	PP_lat_med.append(j['lat'][0])
+	PP_lon_med.append(j['lon'][0])
+	PP_depth_med.append(j['depth'][0])
+
+print('Importing Pds Piercing Points for '+PHASES[2])
+print('\n')
+
+filename_2 = PP_DIR+'PP_'+PHASES[2]+'_dic.json'
+
+PP_2_dic = json.load(open(filename_2))
+
+PP_dist_2 = []
+PP_time_2 = []
+PP_lat_2 = []
+PP_lon_2 = []
+PP_depth_2 = [] 
+
+for i,j in enumerate(PP_2_dic):
+	PP_dist_2.append(j['dist'][0])
+	PP_time_2.append(j['time'][0])
+	PP_lat_2.append(j['lat'][0])
+	PP_lon_2.append(j['lon'][0])
+	PP_depth_2.append(j['depth'][0])
+
+print('P410s Piercing Points')
+print('\n')
+
+pp_1_lat  = [[]]*len(PP_lon_1)
+pp_1_long  = [[]]*len(PP_lon_1)
+
+
+for i,j in enumerate(PP_lon_1):
+    for k,l in enumerate(j):
+        if LLCRNRLON_LARGE<= l <= URCRNRLON_LARGE and PP_depth_1[i][k] == 410:
+                pp_1_lat[i] = PP_lat_1[i][k] 
+                pp_1_long[i] = l
+
+
+print('Pds Piercing Points - '+"{0:.0f}".format(DEPTH_MED))
+print('\n')
+
+pp_med_lat  = [[]]*len(PP_lon_med)
+pp_med_long  = [[]]*len(PP_lon_med)
+
+
+for i,j in enumerate(PP_lon_med):
+	for k,l in enumerate(j):
+		if LLCRNRLON_LARGE <= l <= URCRNRLON_LARGE and PP_depth_med[i][k] == DEPTH_MED:
+			pp_med_lat[i] = PP_lat_med[i][k] 
+			pp_med_long[i] = l
+
+print('P660s Piercing Points')
+print('\n')
+
+
+pp_2_lat  = [[]]*len(PP_lon_2)
+pp_2_long  = [[]]*len(PP_lon_2)
+
+
+for i,j in enumerate(PP_lon_2):
+	for k,l in enumerate(j):
+		if LLCRNRLON_LARGE <= l <= URCRNRLON_LARGE and PP_depth_2[i][k] == 660:
+			pp_2_lat[i] = PP_lat_2[i][k]
+			pp_2_long[i] = l
+
 
 print('Importing selected binned data')
 print('\n')
@@ -116,11 +231,6 @@ RF_delta_2_Vp_std = SELECTED_BINNED_DATA_dic['delta_2_Vp_std']
 RF_delta_2_Vs_mean = SELECTED_BINNED_DATA_dic['delta_2_Vs_mean']
 RF_delta_2_Vs_std = SELECTED_BINNED_DATA_dic['delta_2_Vs_std']
 
-print('Creating my earth model')
-print('\n')
-
-camadas_terra_10_km = np.arange(MIN_DEPTH,MAX_DEPTH+INTER_DEPTH,INTER_DEPTH)
-
 grid_camadas_x = []
 grid_camadas_y = []
 grid_camadas_z = []
@@ -136,6 +246,13 @@ grid_camadas_y_660 = []
 grid_camadas_z_660 = []
 grid_Pds_data_660 = []
 
+
+grid_PP_x_660 = []
+grid_PP_y_660 = []
+grid_PP_z_660 = []
+grid_PP_data_660 = []
+
+
 for i,j in enumerate(camadas_terra_10_km):
 	if j in range(380, 450) or j in range(630, 700):
 		for k,l in enumerate(lons):
@@ -148,6 +265,7 @@ for i,j in enumerate(camadas_terra_10_km):
 			grid_camadas_x.append(lons[k])
 			grid_camadas_y.append(lats[k])
 			grid_camadas_z.append(-j)
+			#grid_Pds_data.append(RF_stacking_Ppds[k][i])
 			grid_Pds_data.append(RF_stacking_Pds[k][i]/100)
 
 
@@ -168,14 +286,21 @@ for i,j in enumerate(camadas_terra_10_km):
 			grid_camadas_z_660.append(-j)
 			grid_Pds_data_660.append(RF_stacking_Pds[k][i])
 
+for i,j in enumerate(pp_2_lat):
+	if j != []:
+		grid_PP_x_660.append(pp_2_long[i])
+		grid_PP_y_660.append(pp_2_lat[i])
+		grid_PP_z_660.append(-660)
+
 
 ################################################################################
 print('Plotting: Figure 3D mesh with Mayavi')
 print('\n')
 
-xi = np.linspace(LLCRNRLON_SMALL, URCRNRLON_SMALL, 100)
-yi = np.linspace(LLCRNRLAT_SMALL, URCRNRLAT_SMALL, 100)
-zi = np.linspace(-800, -300, 100)
+
+xi = np.linspace(LLCRNRLON_SMALL, URCRNRLON_SMALL, abs(abs(URCRNRLON_SMALL) - abs(LLCRNRLON_SMALL))*GRID_PP_MULT) 
+yi = np.linspace(LLCRNRLAT_SMALL, URCRNRLAT_SMALL, abs(abs(URCRNRLAT_SMALL) - abs(LLCRNRLAT_SMALL))*GRID_PP_MULT)
+zi = np.linspace(-800, -300, 50)
 
 gridx, gridy, gridz = np.meshgrid(xi,yi,zi)
 
@@ -198,25 +323,3 @@ mlab.outline()
 mlab.show()
 
 print('Ending the grid 3D CODE')
-
-'''
-print('Plotting: Figure 3D Grid with Mayavi')
-print('\n')
-
-mlab.figure(1, fgcolor=(0, 0, 0), bgcolor=(1, 1, 1))
-
-# Visualize the points
-pts_410 = mlab.points3d(grid_camadas_x_410, grid_camadas_y_410, grid_camadas_z_410,grid_Pds_data_410, scale_mode='none', scale_factor=0.2,colormap="seismic")
-pts_660 = mlab.points3d(grid_camadas_x_660, grid_camadas_y_660, grid_camadas_z_660,grid_Pds_data_660, scale_mode='none', scale_factor=0.2,colormap="seismic")
-
-# Create and visualize the mesh
-mesh_410 = mlab.pipeline.delaunay2d(pts_410)
-surf_410 = mlab.pipeline.surface(mesh_410,colormap="seismic")
-
-mesh_660 = mlab.pipeline.delaunay2d(pts_660)
-surf_660 = mlab.pipeline.surface(mesh_660,colormap="seismic")
-
-mlab.show()
-
-print('Ending the grid 3D CODE')
-'''
