@@ -142,13 +142,13 @@ FILTER_BY_SHAPEFILE = True
 SHAPEFILE_GRID = /home/diogo/dados_doutorado/parnaiba_basin/SIG_dados/shapes/bacia_parnaiba/bacia_parnaiba.shp
 
 #GRID POINTS multiplyer
-GRID_PP_MULT = 3
+GRID_PP_MULT = 4
 
 # distance between grid points and piercing points for each depth (degree)
-DIST_GRID_PP = 0.7
+DIST_GRID_PP = 1
 
 # mean distance between grid points and piercing points (degree)
-DIST_GRID_PP_MED = 0.7
+DIST_GRID_PP_MED = 0.5
 
 #number of piercing points per bin
 NUMBER_PP_PER_BIN = 10
@@ -174,7 +174,7 @@ BOOTSTRAP_INTERATOR = 200
 GAMMA = 2
 
 #Number that multiply the difference between the cross-section points
-SECTION_NUM = 3
+SECTION_NUM = 4
 
 #Depth range (+/-) that we will use to find the maximum amplitude
-DEPTH_RANGE = 20
+DEPTH_RANGE = 40

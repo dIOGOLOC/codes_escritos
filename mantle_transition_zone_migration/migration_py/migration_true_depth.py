@@ -31,6 +31,8 @@ from shapely.geometry import Polygon, MultiPoint, Point
 import shapefile
 from scipy import interpolate
 from mpl_toolkits.axes_grid1 import make_axes_locatable
+from matplotlib.patches import Circle
+
 
 
 
@@ -538,12 +540,15 @@ print('Plotting: Figure Ppds Average Piercing Points')
 print('\n')
 fig_PP, ax = plt.subplots(ncols=1, subplot_kw={'projection': ccrs.Mercator(central_longitude=PROJECT_LON, globe=None)},figsize=(20,20))
 
-#Figure Pds
+#Figure Ppds
 
 ax.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
 l1, = ax.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.Geodetic())
 l3, = ax.plot(pp_med_long_Ppds,pp_med_lat_Ppds, 'X',markersize=5,markeredgecolor='k',markerfacecolor='k',alpha=0.5,transform=ccrs.Geodetic())
 l5, = ax.plot(grid_sel_x, grid_sel_y, 'o',markersize=3,markeredgecolor='k',markerfacecolor='None',transform=ccrs.Geodetic())
+for i,j in enumerate(pp_med_long_Ppds):
+	circulo = Circle(radius=DIST_GRID_PP_MED, xy=(pp_med_long_Ppds[i],pp_med_lat_Ppds[i]), color='gray',linewidth=0,alpha=0.2,transform=ccrs.Geodetic())
+	ax.add_patch(circulo)
 
 reader_1_SHP = Reader(BOUNDARY_1_SHP)
 shape_1_SHP = list(reader_1_SHP.geometries())
@@ -556,8 +561,8 @@ plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
 ax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 ax.gridlines(draw_labels=True)
 
-ax.set_title('Pds Piercing Points',ha='center',va='top',y=1.08)
-ax.legend([l1,l3,l5],['Stations','Piercing Points '+"{0:.0f}".format(DEPTH_MED)+' km','Selected Grid'],scatterpoints=1, frameon=True,labelspacing=1, loc='lower right',facecolor='w',fontsize='smaller')
+ax.set_title('Ppds Piercing Points',ha='center',va='top',y=1.08)
+ax.legend([l1,l3,l5,circulo],['Stations','Piercing Points '+"{0:.0f}".format(DEPTH_MED)+' km','Selected Grid','Piercing Points Fresnel Zone'],scatterpoints=1, frameon=True,labelspacing=1, loc='lower right',facecolor='w',fontsize='smaller')
 
 plt.show()
 
@@ -716,7 +721,7 @@ if BOOTSTRAP_DEPTH_ESTIMATION == True:
 				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['RF_DATA'] = RF_STACKING_BOOTSTRAP_Pds
 				RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['RF_DATA'] = RF_STACKING_BOOTSTRAP_Ppds
 
-				######## Estimating apparent depth ########
+				######## Estimating 410 km apparent depth ########
 
 				#410 km Pds
 
@@ -727,11 +732,27 @@ if BOOTSTRAP_DEPTH_ESTIMATION == True:
 
 				#410 km Ppds
 
-				lst_depth_amp_410_Ppds = [RF_STACKING_BOOTSTRAP_Ppds[x] for x,c in enumerate(camadas_terra_10_km) if 410-DEPTH_RANGE <= c <= 410+DEPTH_RANGE]
-				lst_depth_pp_410_Ppds = [c for x,c in enumerate(camadas_terra_10_km) if 410-DEPTH_RANGE <= c <= 410+DEPTH_RANGE]
+				lst_depth_amp_410_Ppds = [RF_STACKING_BOOTSTRAP_Ppds[x] for x,c in enumerate(camadas_terra_10_km) if 410-DEPTH_RANGE/2 <= c <= 410+DEPTH_RANGE/2]
+				lst_depth_pp_410_Ppds = [c for x,c in enumerate(camadas_terra_10_km) if 410-DEPTH_RANGE/2 <= c <= 410+DEPTH_RANGE/2]
 				lst_410_depth_Ppds = lst_depth_pp_410_Ppds[lst_depth_amp_410_Ppds.index(max(lst_depth_amp_410_Ppds))]
 				lst_410_amp_Ppds = lst_depth_amp_410_Ppds.index(max(lst_depth_amp_410_Ppds))
 
+
+				######## Estimating 660 km apparent depth ########
+
+				#660 km Pds
+
+				lst_depth_amp_660_Pds = [RF_STACKING_BOOTSTRAP_Pds[x] for x,c in enumerate(camadas_terra_10_km) if 660-DEPTH_RANGE <= c <= 660+DEPTH_RANGE]
+				lst_depth_pp_660_Pds = [c for x,c in enumerate(camadas_terra_10_km) if 660-DEPTH_RANGE <= c <= 660+DEPTH_RANGE]
+				lst_660_depth_Pds = lst_depth_pp_660_Pds[lst_depth_amp_660_Pds.index(max(lst_depth_amp_660_Pds))]
+				lst_660_amp_Pds = lst_depth_amp_660_Pds.index(max(lst_depth_amp_660_Pds))
+				
+				#660 km Ppds
+
+				lst_depth_amp_660_Ppds = [RF_STACKING_BOOTSTRAP_Ppds[x] for x,c in enumerate(camadas_terra_10_km) if 660-DEPTH_RANGE/2 <= c <= 660+DEPTH_RANGE/2]
+				lst_depth_pp_660_Ppds = [c for x,c in enumerate(camadas_terra_10_km) if 660-DEPTH_RANGE/2 <= c <= 660+DEPTH_RANGE/2]
+				lst_660_depth_Ppds = lst_depth_pp_660_Ppds[lst_depth_amp_660_Ppds.index(max(lst_depth_amp_660_Ppds))]
+				lst_660_amp_Ppds = lst_depth_amp_660_Ppds.index(max(lst_depth_amp_660_Ppds))
 
 				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['410_mean'] = lst_410_depth_Pds
 
@@ -739,6 +760,25 @@ if BOOTSTRAP_DEPTH_ESTIMATION == True:
 
 				print('410 Pds Depth = '+str(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['410_mean']))
 				print('410 Ppds Depth = '+str(RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['410_mean']))
+
+				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['660_mean'] = lst_660_depth_Pds
+
+				RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['660_mean'] = lst_660_depth_Ppds
+
+				print('660 km Pds Depth = '+str(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['660_mean']))
+				print('660 km Ppds Depth = '+str(RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['660_mean']))
+
+
+				######## Estimating MTZ thickness ########
+
+				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['thickness_MTZ_mean'] = lst_660_depth_Pds - lst_410_depth_Pds
+
+				RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['thickness_MTZ_mean'] = lst_660_depth_Ppds - lst_410_depth_Ppds
+
+				print('MTZ Pds thickness = '+str(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['thickness_MTZ_mean']))
+				print('MTZ Ppds thickness = '+str(RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['thickness_MTZ_mean']))
+
+
 
 				######## Estimating TRUE depth ########
 
@@ -750,15 +790,15 @@ if BOOTSTRAP_DEPTH_ESTIMATION == True:
 				H_a_Pds = lst_410_depth_Pds
 				H_a_Ppds = lst_410_depth_Ppds
 
-				lst_delta_Vp_410_Pds = (alfa*beta*(H_a_Ppds - H_a_Pds))/(((alfa*H_a_Pds)+(alfa*H_a_Pds*gamma_vp_vs_1)) - ((beta*H_a_Ppds)-(beta*H_a_Ppds*gamma_vp_vs_1)))
+				lst_delta_Vp_410_Pds = (alfa*beta*(H_a_Ppds - H_a_Pds)) * ((alfa*(1+gamma_vp_vs_1)*H_a_Pds) - (beta*(1-gamma_vp_vs_1)*H_a_Ppds))**(-1)
 
 				lst_delta_Vs_410_Pds = lst_delta_Vp_410_Pds * GAMMA * Vp_Vs_ratio_depth_1
 
-				lst_true_410_mean_Pds = H_a_Pds* ((Vp_depth_1-Vs_depth_1)/(Vp_depth_1*Vs_depth_1)) * ((Vs_depth_1+lst_delta_Vs_410_Pds)*(Vp_depth_1+lst_delta_Vp_410_Pds))/(Vp_depth_1+lst_delta_Vp_410_Pds-Vs_depth_1-lst_delta_Vs_410_Pds)
+				lst_true_410_mean_Pds = (H_a_Pds) * ((Vp_depth_1-Vs_depth_1)/(Vp_depth_1*Vs_depth_1)) * (((Vs_depth_1+lst_delta_Vs_410_Pds)*(Vp_depth_1+lst_delta_Vp_410_Pds))/(Vp_depth_1+lst_delta_Vp_410_Pds-Vs_depth_1-lst_delta_Vs_410_Pds))
 
-				lst_true_410_mean_Ppds = H_a_Ppds * ((Vp_depth_1+Vs_depth_1)/(Vp_depth_1*Vs_depth_1)) * ((Vs_depth_1+lst_delta_Vs_410_Pds)*(Vp_depth_1+lst_delta_Vp_410_Pds))/(Vp_depth_1+lst_delta_Vp_410_Pds+Vs_depth_1+lst_delta_Vs_410_Pds)
+				lst_true_410_mean_Ppds = (H_a_Ppds) * ((Vp_depth_1+Vs_depth_1)/(Vp_depth_1*Vs_depth_1)) * (((Vs_depth_1+lst_delta_Vs_410_Pds)*(Vp_depth_1+lst_delta_Vp_410_Pds))/(Vp_depth_1+lst_delta_Vp_410_Pds+Vs_depth_1+lst_delta_Vs_410_Pds))
+						
 					
-				
 				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['delta_Vp_410_mean'] = lst_delta_Vp_410_Pds
 
 				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['delta_Vs_410_mean'] = lst_delta_Vs_410_Pds
@@ -767,35 +807,14 @@ if BOOTSTRAP_DEPTH_ESTIMATION == True:
 
 				RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['true_410_mean'] = lst_true_410_mean_Ppds
 
+				print('Equation 10 (Gao & Liu,2013) is true? = '+str((H_a_Pds/H_a_Ppds) == ((alfa+lst_delta_Vp_410_Pds-lst_delta_Vs_410_Pds)/(beta+lst_delta_Vp_410_Pds+lst_delta_Vs_410_Pds))*(beta/alfa)))
+
 				print('Delta Vp 410 km = '+str(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['delta_Vp_410_mean']))
 				print('Delta Vs 410 km = '+str(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['delta_Vs_410_mean']))				
-				
+					
 				print('410 km Pds True Depth = '+str(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['true_410_mean']))
 				print('410 km Ppds True Depth = '+str(RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['true_410_mean']))
-
-				######## Estimating apparent depth ########
-
-				#660 km Pds
-
-				lst_depth_amp_660_Pds = [RF_STACKING_BOOTSTRAP_Pds[x] for x,c in enumerate(camadas_terra_10_km) if 660-DEPTH_RANGE <= c <= 660+DEPTH_RANGE]
-				lst_depth_pp_660_Pds = [c for x,c in enumerate(camadas_terra_10_km) if 660-DEPTH_RANGE <= c <= 660+DEPTH_RANGE]
-				lst_660_depth_Pds = lst_depth_pp_660_Pds[lst_depth_amp_660_Pds.index(max(lst_depth_amp_660_Pds))]
-				lst_660_amp_Pds = lst_depth_amp_660_Pds.index(max(lst_depth_amp_660_Pds))
-				
-				#660 km Ppds
-
-				lst_depth_amp_660_Ppds = [RF_STACKING_BOOTSTRAP_Ppds[x] for x,c in enumerate(camadas_terra_10_km) if 660-DEPTH_RANGE <= c <= 660+DEPTH_RANGE]
-				lst_depth_pp_660_Ppds = [c for x,c in enumerate(camadas_terra_10_km) if 660-DEPTH_RANGE <= c <= 660+DEPTH_RANGE]
-				lst_660_depth_Ppds = lst_depth_pp_660_Ppds[lst_depth_amp_660_Ppds.index(max(lst_depth_amp_660_Ppds))]
-				lst_660_amp_Ppds = lst_depth_amp_660_Ppds.index(max(lst_depth_amp_660_Ppds))
-
-				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['660_mean'] = lst_660_depth_Pds
-
-				RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['660_mean'] = lst_660_depth_Ppds
-
-				print('660 km Pds Depth = '+str(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['660_mean']))
-				print('660 km Ppds Depth = '+str(RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['660_mean']))
-
+	
 				######## Estimating TRUE depth ########
 
 				Vp_Vs_ratio_depth_2 = Vs_depth_2/Vp_depth_2
@@ -806,14 +825,14 @@ if BOOTSTRAP_DEPTH_ESTIMATION == True:
 				H_a_Pds_660 = lst_660_depth_Pds
 				H_a_Ppds_660 = lst_660_depth_Ppds
 
-				lst_delta_Vp_660_Pds = (alfa*beta*(H_a_Ppds_660 - H_a_Pds_660))/(((alfa*H_a_Pds_660)+(alfa*H_a_Pds_660*gamma_vp_vs_1)) - ((beta*H_a_Ppds_660)-(beta*H_a_Ppds_660*gamma_vp_vs_1)))
+				lst_delta_Vp_660_Pds = (alfa*beta*(H_a_Ppds_660 - H_a_Pds_660)) / (alfa*(1+gamma_vp_vs_2)*H_a_Pds_660 - beta*(1-gamma_vp_vs_2)*H_a_Ppds_660)
 
 				lst_delta_Vs_660_Pds = lst_delta_Vp_660_Pds * GAMMA * Vp_Vs_ratio_depth_2
 
-				lst_true_660_mean_Pds = H_a_Pds_660* ((Vp_depth_2-Vs_depth_2)/(Vp_depth_2*Vs_depth_2)) * ((Vs_depth_2+lst_delta_Vs_660_Pds)*(Vp_depth_2+lst_delta_Vp_660_Pds))/(Vp_depth_2+lst_delta_Vp_660_Pds-Vs_depth_2-lst_delta_Vs_660_Pds)
+				lst_true_660_mean_Pds = (H_a_Pds_660) * ((Vp_depth_2-Vs_depth_2)/(Vp_depth_2*Vs_depth_2)) * (((Vs_depth_2+lst_delta_Vs_660_Pds)*(Vp_depth_2+lst_delta_Vp_660_Pds))/(Vp_depth_2+lst_delta_Vp_660_Pds-Vs_depth_2-lst_delta_Vs_660_Pds))
 
-				lst_true_660_mean_Ppds = H_a_Ppds_660 * ((Vp_depth_2+Vs_depth_2)/(Vp_depth_2*Vs_depth_2)) * ((Vs_depth_2+lst_delta_Vs_660_Pds)*(Vp_depth_2+lst_delta_Vp_660_Pds))/(Vp_depth_2+lst_delta_Vp_660_Pds+Vs_depth_2+lst_delta_Vs_660_Pds)
-	
+				lst_true_660_mean_Ppds = (H_a_Ppds_660) * ((Vp_depth_2+Vs_depth_2)/(Vp_depth_2*Vs_depth_2)) * (((Vs_depth_2+lst_delta_Vs_660_Pds)*(Vp_depth_2+lst_delta_Vp_660_Pds))/(Vp_depth_2+lst_delta_Vp_660_Pds+Vs_depth_2+lst_delta_Vs_660_Pds))
+		
 				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['delta_Vp_660_mean'] = lst_delta_Vp_660_Pds
 
 				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['delta_Vs_660_mean'] = lst_delta_Vs_660_Pds
@@ -822,21 +841,13 @@ if BOOTSTRAP_DEPTH_ESTIMATION == True:
 
 				RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['true_660_mean'] = lst_true_660_mean_Ppds
 
+				print('Equation 10 (Gao & Liu,2013) is true? = '+str((H_a_Pds_660/H_a_Ppds_660) == (((alfa+lst_delta_Vp_660_Pds-lst_delta_Vs_660_Pds)/(beta+lst_delta_Vp_660_Pds+lst_delta_Vs_660_Pds))*(beta/alfa))))
+
 				print('Delta Vp 660 km = '+str(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['delta_Vp_660_mean']))
 				print('Delta Vs 660 km = '+str(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['delta_Vs_660_mean']))
 
 				print('660 km Pds True Depth = '+str(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['true_660_mean']))
 				print('660 km Ppds True Depth = '+str(RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['true_660_mean']))
-
-				######## Estimating MTZ thickness ########
-
-				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['thickness_MTZ_mean'] = lst_660_depth_Pds - lst_410_depth_Pds
-
-				RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['thickness_MTZ_mean'] = lst_660_depth_Ppds - lst_410_depth_Ppds
-
-				print('MTZ Pds thickness = '+str(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['thickness_MTZ_mean']))
-				print('MTZ Ppds thickness = '+str(RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['thickness_MTZ_mean']))
-
 
 				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['true_thickness_MTZ_mean'] = lst_true_660_mean_Pds - lst_true_410_mean_Pds
 
@@ -864,8 +875,7 @@ if BOOTSTRAP_DEPTH_ESTIMATION == True:
 
 
 #############################################################################################################################################################################################
-print('Allocating results')
-#Allocating mean and std results:
+print('Allocating results and Stacking Pds and Ppds data')
 
 RF_lat = []
 RF_lon = []
@@ -932,122 +942,221 @@ RF_BOOTSTRAP_DEPTH_mean_1_Ppds = []
 RF_BOOTSTRAP_DEPTH_mean_2_Pds = []
 RF_BOOTSTRAP_DEPTH_mean_2_Ppds = []
 
+len_RF_stacking_Pds = []
+RF_stacking_Pds = []
+
+len_RF_stacking_Ppds = []
+RF_stacking_Ppds = []
+
 
 for i,j in enumerate(RF_data_raw_Pds):
 	if len(j) >= NUMBER_PP_PER_BIN and RF_STA_number_raw[i] >= NUMBER_STA_PER_BIN:
+		stacking_Pds_data = [sum(x)/len(j)  for x in zip(*j)]
+		RF_stacking_Pds.append(stacking_Pds_data)
+		len_RF_stacking_Pds.append(len(j))
+
+		stacking_Ppds_data = [sum(x)/len(RF_data_raw_Ppds[i])  for x in zip(*RF_data_raw_Ppds[i])]
+		RF_stacking_Ppds.append(stacking_Ppds_data)
+		len_RF_stacking_Ppds.append(len(RF_data_raw_Ppds[i]))
+
 		RF_lat.append(RF_BOOTSTRAP_ESTIMATION_Pds[0][i]['lat'])
 		RF_lon.append(RF_BOOTSTRAP_ESTIMATION_Pds[0][i]['lon'])
 
+		amp_410_Pds = [stacking_Pds_data[x] for x,c in enumerate(camadas_terra_10_km) if 410-DEPTH_RANGE <= c <= 410+DEPTH_RANGE]
+		max_amp_410_Pds = max(amp_410_Pds)
+		
+		
+		amp_410_Ppds = [stacking_Ppds_data[x] for x,c in enumerate(camadas_terra_10_km) if 410-DEPTH_RANGE/2 <= c <= 410+DEPTH_RANGE/2]
+		max_amp_410_Ppds = max(amp_410_Ppds)
+
+
+		amp_660_Pds = [stacking_Pds_data[x] for x,c in enumerate(camadas_terra_10_km) if 660-DEPTH_RANGE <= c <= 660+DEPTH_RANGE]
+		max_amp_660_Pds = max(amp_660_Pds)
+		
+		
+		amp_660_Ppds = [stacking_Ppds_data[x] for x,c in enumerate(camadas_terra_10_km) if 660-DEPTH_RANGE/2 <= c <= 660+DEPTH_RANGE/2]
+		max_amp_660_Ppds = max(amp_660_Ppds)
+		
 		flat_DATA_list_Pds = [RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['RF_DATA'] for _k in range(BOOTSTRAP_INTERATOR)]
 		flat_DATA_list_Ppds = [RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['RF_DATA'] for _k in range(BOOTSTRAP_INTERATOR)]
 		RF_BOOTSTRAP_DATA_Pds.append(flat_DATA_list_Pds)
 		RF_BOOTSTRAP_DATA_Ppds.append(flat_DATA_list_Ppds)
 
-
 		flat_mean_1_Pds = [float(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['410_mean']) for _k in range(BOOTSTRAP_INTERATOR)]
 		RF_BOOTSTRAP_DEPTH_mean_1_Pds.append(flat_mean_1_Pds)
-		RF_DEPTH_mean_1_Pds.append(np.mean(flat_mean_1_Pds))
-		RF_DEPTH_std_1_Pds.append(np.std(flat_mean_1_Pds))
+
+		if  max_amp_410_Pds > 0:
+
+			RF_DEPTH_mean_1_Pds.append(np.mean(flat_mean_1_Pds))
+			RF_DEPTH_std_1_Pds.append(np.std(flat_mean_1_Pds))
+
+		else: 
+
+			RF_DEPTH_mean_1_Pds.append(np.nan)
+			RF_DEPTH_std_1_Pds.append(np.nan)	
+
 
 		flat_mean_1_Ppds = [float(RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['410_mean']) for _k in range(BOOTSTRAP_INTERATOR)]
-		RF_BOOTSTRAP_DEPTH_mean_1_Ppds.append(flat_mean_1_Ppds)
-		RF_DEPTH_mean_1_Ppds.append(np.mean(flat_mean_1_Ppds))
-		RF_DEPTH_std_1_Ppds.append(np.std(flat_mean_1_Ppds))
+		RF_BOOTSTRAP_DEPTH_mean_1_Ppds.append(flat_mean_1_Ppds)		
+
+		if  max_amp_410_Ppds > 0:
+
+			RF_DEPTH_mean_1_Ppds.append(np.mean(flat_mean_1_Ppds))
+			RF_DEPTH_std_1_Ppds.append(np.std(flat_mean_1_Ppds))
+
+		else: 
+
+			RF_DEPTH_mean_1_Ppds.append(np.nan)
+			RF_DEPTH_std_1_Ppds.append(np.nan)
+
 
 		flat_mean_2_Pds = [float(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['660_mean']) for _k in range(BOOTSTRAP_INTERATOR)]
 		RF_BOOTSTRAP_DEPTH_mean_2_Pds.append(flat_mean_2_Pds)
-		RF_DEPTH_mean_2_Pds.append(np.mean(flat_mean_2_Pds))
-		RF_DEPTH_std_2_Pds.append(np.std(flat_mean_2_Pds))
+
+		if  max_amp_660_Pds > 0:
+
+			RF_DEPTH_mean_2_Pds.append(np.mean(flat_mean_2_Pds))
+			RF_DEPTH_std_2_Pds.append(np.std(flat_mean_2_Pds))
+
+		else: 
+
+			RF_DEPTH_mean_2_Pds.append(np.nan)
+			RF_DEPTH_std_2_Pds.append(np.nan)
 
 		flat_mean_2_Ppds = [float(RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['660_mean']) for _k in range(BOOTSTRAP_INTERATOR)]
 		RF_BOOTSTRAP_DEPTH_mean_2_Ppds.append(flat_mean_2_Ppds)
-		RF_DEPTH_mean_2_Ppds.append(np.mean(flat_mean_2_Ppds))
-		RF_DEPTH_std_2_Ppds.append(np.std(flat_mean_2_Ppds))
+
+		if  max_amp_660_Ppds > 0:
+
+			RF_DEPTH_mean_2_Ppds.append(np.mean(flat_mean_2_Ppds))
+			RF_DEPTH_std_2_Ppds.append(np.std(flat_mean_2_Ppds))
+
+		else: 
+
+			RF_DEPTH_mean_2_Ppds.append(np.nan)
+			RF_DEPTH_std_2_Ppds.append(np.nan)
+
+		if  max_amp_410_Pds > 0 and max_amp_660_Pds > 0:
+
+			flat_thickness_MTZ_Pds = [float(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['thickness_MTZ_mean']) for _k in range(BOOTSTRAP_INTERATOR)]
+			thickness_MTZ_Pds.append(np.mean(flat_thickness_MTZ_Pds))
+			thickness_MTZ_Pds_std.append(np.std(flat_thickness_MTZ_Pds))
+
+		else:
+
+			thickness_MTZ_Pds.append(np.nan)
+			thickness_MTZ_Pds_std.append(np.nan)
+
+		if  max_amp_410_Ppds > 0 and max_amp_660_Ppds > 0:
 
 
-		flat_delta_1_Vp_mean = [float(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['delta_Vp_410_mean']) for _k in range(BOOTSTRAP_INTERATOR)]
-		delta_1_Vp_mean.append(np.mean(flat_delta_1_Vp_mean))
-		delta_1_Vp_std.append(np.std(flat_delta_1_Vp_mean))
+			flat_thickness_MTZ_Ppds = [float(RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['thickness_MTZ_mean']) for _k in range(BOOTSTRAP_INTERATOR)]
+			thickness_MTZ_Ppds.append(np.mean(flat_thickness_MTZ_Ppds))
+			thickness_MTZ_Ppds_std.append(np.std(flat_thickness_MTZ_Ppds))
 
-		flat_delta_1_Vs_mean = [float(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['delta_Vs_410_mean']) for _k in range(BOOTSTRAP_INTERATOR)]
-		delta_1_Vs_mean.append(np.mean(flat_delta_1_Vs_mean))
-		delta_1_Vs_std.append(np.std(flat_delta_1_Vs_mean))
+		else:
+			
+			thickness_MTZ_Ppds.append(np.nan)
+			thickness_MTZ_Ppds_std.append(np.nan)
 
-
-		flat_mean_1_true_Pds = [float(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['true_410_mean']) for _k in range(BOOTSTRAP_INTERATOR)] 
-		RF_DEPTH_mean_1_true_Pds.append(np.mean(flat_mean_1_true_Pds))
-		RF_DEPTH_std_1_true_Pds.append(np.std(flat_mean_1_true_Pds))
-
-		flat_mean_1_true_Ppds = [float(RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['true_410_mean']) for _k in range(BOOTSTRAP_INTERATOR)]
-		RF_DEPTH_mean_1_true_Ppds.append(np.mean(flat_mean_1_true_Ppds))
-		RF_DEPTH_std_1_true_Ppds.append(np.std(flat_mean_1_true_Ppds))
-
-		flat_delta_2_Vp = [float(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['delta_Vp_660_mean']) for _k in range(BOOTSTRAP_INTERATOR)]
-		delta_2_Vp_mean.append(np.mean(flat_delta_2_Vp))
-		delta_2_Vp_std.append(np.std(flat_delta_2_Vp))
-
-		flat_delta_2_Vs = [float(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['delta_Vs_660_mean']) for _k in range(BOOTSTRAP_INTERATOR)]
-		delta_2_Vs_mean.append(np.mean(flat_delta_2_Vs))
-		delta_2_Vs_std.append(np.std(flat_delta_2_Vs))
+		if  max_amp_410_Pds > 0 and max_amp_410_Ppds > 0 and max_amp_660_Pds > 0 and max_amp_660_Ppds > 0:
 
 
-		flat_mean_2_true_Pds = [float(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['true_660_mean']) for _k in range(BOOTSTRAP_INTERATOR)]
-		RF_DEPTH_mean_2_true_Pds.append(np.mean(flat_mean_2_true_Pds))
-		RF_DEPTH_std_2_true_Pds.append(np.std(flat_mean_2_true_Pds))
+			flat_delta_1_Vp_mean = [float(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['delta_Vp_410_mean']) for _k in range(BOOTSTRAP_INTERATOR)]
+			delta_1_Vp_mean.append(np.mean(flat_delta_1_Vp_mean))
+			delta_1_Vp_std.append(np.std(flat_delta_1_Vp_mean))
 
-		flat_mean_2_true_Ppds = [float(RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['true_660_mean']) for _k in range(BOOTSTRAP_INTERATOR)]
-		RF_DEPTH_mean_2_true_Ppds.append(np.mean(flat_mean_2_true_Ppds))
-		RF_DEPTH_std_2_true_Ppds.append(np.std(flat_mean_2_true_Ppds))
+			flat_delta_1_Vs_mean = [float(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['delta_Vs_410_mean']) for _k in range(BOOTSTRAP_INTERATOR)]
+			delta_1_Vs_mean.append(np.mean(flat_delta_1_Vs_mean))
+			delta_1_Vs_std.append(np.std(flat_delta_1_Vs_mean))
 
-		flat_thickness_MTZ_Pds = [float(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['thickness_MTZ_mean']) for _k in range(BOOTSTRAP_INTERATOR)]
-		thickness_MTZ_Pds.append(np.mean(flat_thickness_MTZ_Pds))
-		thickness_MTZ_Pds_std.append(np.std(flat_thickness_MTZ_Pds))
 
-		flat_thickness_MTZ_Ppds = [float(RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['thickness_MTZ_mean']) for _k in range(BOOTSTRAP_INTERATOR)]
-		thickness_MTZ_Ppds.append(np.mean(flat_thickness_MTZ_Ppds))
-		thickness_MTZ_Ppds_std.append(np.std(flat_thickness_MTZ_Ppds))
+			flat_mean_1_true_Pds = [float(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['true_410_mean']) for _k in range(BOOTSTRAP_INTERATOR)]
+			RF_DEPTH_mean_1_true_Pds.append(np.mean(flat_mean_1_true_Pds))
+			RF_DEPTH_std_1_true_Pds.append(np.std(flat_mean_1_true_Pds))
 
-		flat_true_thickness_MTZ_Pds = [float(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['true_thickness_MTZ_mean']) for _k in range(BOOTSTRAP_INTERATOR)]
-		true_thickness_MTZ_Pds.append(np.mean(flat_true_thickness_MTZ_Pds))
-		true_thickness_MTZ_Pds_std.append(np.std(flat_true_thickness_MTZ_Pds))
+			flat_mean_1_true_Ppds = [float(RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['true_410_mean']) for _k in range(BOOTSTRAP_INTERATOR)]
+			RF_DEPTH_mean_1_true_Ppds.append(np.mean(flat_mean_1_true_Ppds))
+			RF_DEPTH_std_1_true_Ppds.append(np.std(flat_mean_1_true_Ppds))
 
-		flat_true_thickness_MTZ_Ppds = [float(RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['true_thickness_MTZ_mean']) for _k in range(BOOTSTRAP_INTERATOR)]
-		true_thickness_MTZ_Ppds.append(np.mean(flat_true_thickness_MTZ_Ppds))
-		true_thickness_MTZ_Ppds_std.append(np.std(flat_true_thickness_MTZ_Ppds))
+			flat_delta_2_Vp = [float(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['delta_Vp_660_mean']) for _k in range(BOOTSTRAP_INTERATOR)]
+			delta_2_Vp_mean.append(np.mean(flat_delta_2_Vp))
+			delta_2_Vp_std.append(np.std(flat_delta_2_Vp))
 
-		flat_diff_thickness_MTZ_Pds = [float(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['difference_thickness_MTZ']) for _k in range(BOOTSTRAP_INTERATOR)]
-		diff_thickness_MTZ_Pds.append(np.mean(flat_diff_thickness_MTZ_Pds))
-		diff_thickness_MTZ_Pds_std.append(np.std(flat_diff_thickness_MTZ_Pds))
+			flat_delta_2_Vs = [float(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['delta_Vs_660_mean']) for _k in range(BOOTSTRAP_INTERATOR)]
+			delta_2_Vs_mean.append(np.mean(flat_delta_2_Vs))
+			delta_2_Vs_std.append(np.std(flat_delta_2_Vs))
 
-		flat_diff_thickness_MTZ_Ppds = [float(RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['difference_thickness_MTZ']) for _k in range(BOOTSTRAP_INTERATOR)]
-		diff_thickness_MTZ_Ppds.append(np.mean(flat_diff_thickness_MTZ_Ppds))
-		diff_thickness_MTZ_Ppds_std.append(np.std(flat_diff_thickness_MTZ_Ppds))
 
-		flat_difference_thickness_MTZ_model_Pds = [float(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['difference_thickness_MTZ_model']) for _k in range(BOOTSTRAP_INTERATOR)]
-		difference_thickness_MTZ_model_Pds.append(np.mean(flat_difference_thickness_MTZ_model_Pds))
-		difference_thickness_MTZ_model_Pds_std.append(np.std(flat_difference_thickness_MTZ_model_Pds))
+			flat_mean_2_true_Pds = [float(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['true_660_mean']) for _k in range(BOOTSTRAP_INTERATOR)]
+			RF_DEPTH_mean_2_true_Pds.append(np.mean(flat_mean_2_true_Pds))
+			RF_DEPTH_std_2_true_Pds.append(np.std(flat_mean_2_true_Pds))
 
-		flat_difference_thickness_MTZ_model_Ppds = [float(RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['difference_thickness_MTZ_model']) for _k in range(BOOTSTRAP_INTERATOR)]
-		difference_thickness_MTZ_model_Ppds.append(np.mean(flat_difference_thickness_MTZ_model_Ppds))
-		difference_thickness_MTZ_model_Ppds_std.append(np.std(flat_difference_thickness_MTZ_model_Ppds))
-#############################################################################################################################################################################################
+			flat_mean_2_true_Ppds = [float(RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['true_660_mean']) for _k in range(BOOTSTRAP_INTERATOR)]
+			RF_DEPTH_mean_2_true_Ppds.append(np.mean(flat_mean_2_true_Ppds))
+			RF_DEPTH_std_2_true_Ppds.append(np.std(flat_mean_2_true_Ppds))
 
-print('Stacking Pds and Ppds data')
-len_RF_stacking_Pds = []
-RF_stacking_Pds = []
 
-for i,j in enumerate(RF_data_raw_Pds):
-	if len(j) >= NUMBER_PP_PER_BIN and RF_STA_number_raw[i] >= NUMBER_STA_PER_BIN:
-		RF_stacking_Pds.append([sum(x)/len(j)  for x in zip(*j)])
-		len_RF_stacking_Pds.append(len(j))
+			flat_true_thickness_MTZ_Pds = [float(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['true_thickness_MTZ_mean']) for _k in range(BOOTSTRAP_INTERATOR)]
+			true_thickness_MTZ_Pds.append(np.mean(flat_true_thickness_MTZ_Pds))
+			true_thickness_MTZ_Pds_std.append(np.std(flat_true_thickness_MTZ_Pds))
 
-len_RF_stacking_Ppds = []
-RF_stacking_Ppds = []
+			flat_true_thickness_MTZ_Ppds = [float(RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['true_thickness_MTZ_mean']) for _k in range(BOOTSTRAP_INTERATOR)]
+			true_thickness_MTZ_Ppds.append(np.mean(flat_true_thickness_MTZ_Ppds))
+			true_thickness_MTZ_Ppds_std.append(np.std(flat_true_thickness_MTZ_Ppds))
 
-for i,j in enumerate(RF_data_raw_Ppds):
-	if len(j) >= NUMBER_PP_PER_BIN and RF_STA_number_raw[i] >= NUMBER_STA_PER_BIN:
-		RF_stacking_Ppds.append([sum(x)/len(j)  for x in zip(*j)])
-		len_RF_stacking_Ppds.append(len(j))
+			flat_diff_thickness_MTZ_Pds = [float(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['difference_thickness_MTZ']) for _k in range(BOOTSTRAP_INTERATOR)]
+			diff_thickness_MTZ_Pds.append(np.mean(flat_diff_thickness_MTZ_Pds))
+			diff_thickness_MTZ_Pds_std.append(np.std(flat_diff_thickness_MTZ_Pds))
+
+			flat_diff_thickness_MTZ_Ppds = [float(RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['difference_thickness_MTZ']) for _k in range(BOOTSTRAP_INTERATOR)]
+			diff_thickness_MTZ_Ppds.append(np.mean(flat_diff_thickness_MTZ_Ppds))
+			diff_thickness_MTZ_Ppds_std.append(np.std(flat_diff_thickness_MTZ_Ppds))
+
+			flat_difference_thickness_MTZ_model_Pds = [float(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['difference_thickness_MTZ_model']) for _k in range(BOOTSTRAP_INTERATOR)]
+			difference_thickness_MTZ_model_Pds.append(np.mean(flat_difference_thickness_MTZ_model_Pds))
+			difference_thickness_MTZ_model_Pds_std.append(np.std(flat_difference_thickness_MTZ_model_Pds))
+
+			flat_difference_thickness_MTZ_model_Ppds = [float(RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['difference_thickness_MTZ_model']) for _k in range(BOOTSTRAP_INTERATOR)]
+			difference_thickness_MTZ_model_Ppds.append(np.mean(flat_difference_thickness_MTZ_model_Ppds))
+			difference_thickness_MTZ_model_Ppds_std.append(np.std(flat_difference_thickness_MTZ_model_Ppds))
+
+		else: 
+
+			delta_1_Vp_mean.append(np.nan)
+			delta_1_Vp_std.append(np.nan)
+			delta_1_Vs_mean.append(np.nan)
+			delta_1_Vs_std.append(np.nan)
+
+			RF_DEPTH_mean_1_true_Pds.append(np.nan)
+			RF_DEPTH_std_1_true_Pds.append(np.nan)
+			RF_DEPTH_mean_1_true_Ppds.append(np.nan)
+			RF_DEPTH_std_1_true_Ppds.append(np.nan)
+
+			delta_2_Vp_mean.append(np.nan)
+			delta_2_Vp_std.append(np.nan)
+			delta_2_Vs_mean.append(np.nan)
+			delta_2_Vs_std.append(np.nan)
+
+			RF_DEPTH_mean_2_true_Pds.append(np.nan)
+			RF_DEPTH_std_2_true_Pds.append(np.nan)
+			RF_DEPTH_mean_2_true_Ppds.append(np.nan)
+			RF_DEPTH_std_2_true_Ppds.append(np.nan)
+
+			true_thickness_MTZ_Pds.append(np.nan)
+			true_thickness_MTZ_Pds_std.append(np.nan)
+			true_thickness_MTZ_Ppds.append(np.nan)
+			true_thickness_MTZ_Ppds_std.append(np.nan)
+
+			diff_thickness_MTZ_Pds.append(np.nan)
+			diff_thickness_MTZ_Pds_std.append(np.nan)
+			diff_thickness_MTZ_Ppds.append(np.nan)
+			diff_thickness_MTZ_Ppds_std.append(np.nan)
+
+			difference_thickness_MTZ_model_Pds.append(np.nan)
+			difference_thickness_MTZ_model_Pds_std.append(np.nan)
+			difference_thickness_MTZ_model_Ppds.append(np.nan)
+			difference_thickness_MTZ_model_Ppds_std.append(np.nan)
 
 ###################################################################################################################
 
@@ -1062,7 +1171,9 @@ ax.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
 l1, = ax.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.Geodetic())
 l3, = ax.plot(pp_med_long_Ppds,pp_med_lat_Ppds, 'X',markersize=5,markeredgecolor='k',markerfacecolor='k',alpha=0.5,transform=ccrs.Geodetic())
 l5, = ax.plot(RF_lon,RF_lat, 'o',markersize=3,markeredgecolor='k',markerfacecolor='None',transform=ccrs.Geodetic())
-
+for i,j in enumerate(pp_med_long_Ppds):
+	circulo = Circle(radius=DIST_GRID_PP_MED, xy=(pp_med_long_Ppds[i],pp_med_lat_Ppds[i]), color='gray',linewidth=0,alpha=0.2,transform=ccrs.Geodetic())
+	ax.add_patch(circulo)
 reader_1_SHP = Reader(BOUNDARY_1_SHP)
 shape_1_SHP = list(reader_1_SHP.geometries())
 plot_shape_1_SHP = cfeature.ShapelyFeature(shape_1_SHP, ccrs.PlateCarree())
@@ -1074,8 +1185,8 @@ plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
 ax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 ax.gridlines(draw_labels=True)
 
-ax.set_title('Figure Final Grid and Ppds Average Piercing Points',ha='center',va='top',y=1.08)
-ax.legend([l1,l3,l5],['Stations','Piercing Points '+"{0:.0f}".format(DEPTH_MED)+' km','Selected Grid'],scatterpoints=1, frameon=True,labelspacing=1, loc='lower right',facecolor='w',fontsize='smaller')
+ax.set_title('Figure: Final Grid and Ppds Average Piercing Points',ha='center',va='top',y=1.08)
+ax.legend([l1,l3,l5,circulo],['Stations','Piercing Points '+"{0:.0f}".format(DEPTH_MED)+' km','Selected Grid','Piercing Points Fresnel Zone'],scatterpoints=1, frameon=True,labelspacing=1, loc='lower right',facecolor='w',fontsize='smaller')
 
 plt.show()
 
@@ -1084,15 +1195,13 @@ fig_PP.savefig(PP_FIGURE+'PP_FINAL_GRID.'+EXT_FIG,dpi=DPI_FIG)
 
 #############################################################################################################################################################################################
 
-print('Plotting Figure: Depth of the Mantle Transition Zone for Pds and Ppds phases for 410 and 660 km ...')
-#Figure Depth of the Mantle Transition Zone for Pds and Ppds phases for 410 and 660 km
+print('Plotting Figure: Depth of the Mantle Transition Zone for Pds phases for 410 and 660 km ...')
+#Figure Depth of the Mantle Transition Zone for Pds phases for 410 and 660 km
 
-fig, axes = plt.subplots(nrows=2, ncols=2, subplot_kw={'projection': ccrs.Mercator(central_longitude=PROJECT_LON, globe=None)},figsize=(20,20))
+fig, axes = plt.subplots(nrows=1, ncols=2, subplot_kw={'projection': ccrs.Mercator(central_longitude=PROJECT_LON, globe=None)},figsize=(10,20))
 
-ax = axes[0, 0]
-ax1 = axes[0, 1]
-ax2 = axes[1, 0]
-ax3 = axes[1, 1]
+ax = axes[0]
+ax2 = axes[1]
 
 colormap = 'seismic'
 
@@ -1111,45 +1220,11 @@ plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
 ax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 ax.gridlines(draw_labels=True)
 
-xi = np.linspace(LLCRNRLON_SMALL, URCRNRLON_SMALL, abs(abs(URCRNRLON_SMALL) - abs(LLCRNRLON_SMALL))*GRID_PP_MULT)
-yi = np.linspace(LLCRNRLAT_SMALL, URCRNRLAT_SMALL, abs(abs(URCRNRLAT_SMALL) - abs(LLCRNRLAT_SMALL))*GRID_PP_MULT)
-
-gridx, gridy = np.meshgrid(xi, yi)
-
-grdz_RF_DEPTH_mean_1_Pds = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(RF_DEPTH_mean_1_Pds), (gridx, gridy),method='linear')
-
-sc = ax.contourf(gridx,gridy,grdz_RF_DEPTH_mean_1_Pds,levels=np.arange(310,520,10),cmap=colormap,vmin=310,vmax=510, transform=ccrs.PlateCarree())
-ax.contour(gridx,gridy,grdz_RF_DEPTH_mean_1_Pds,colors='k',levels=np.arange(310,520,50),vmin=310,vmax=510, transform=ccrs.PlateCarree())
+sc = ax.scatter(np.array(RF_lon), np.array(RF_lat),40,np.array(RF_DEPTH_mean_1_Pds), marker='s', edgecolors='k',cmap=colormap,vmin=360,vmax=460, transform=ccrs.PlateCarree())
 
 ax.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
 
 ax.set_title('410 km Pds', y=1.08)
-
-
-#Figure Depth of the Mantle Transition Zone for Ppds phase for 410 km
-
-
-ax1.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
-
-reader_1_SHP = Reader(BOUNDARY_1_SHP)
-shape_1_SHP = list(reader_1_SHP.geometries())
-plot_shape_1_SHP = cfeature.ShapelyFeature(shape_1_SHP, ccrs.PlateCarree())
-ax1.add_feature(plot_shape_1_SHP, facecolor='none', edgecolor='k',linewidth=3)
-
-reader_2_SHP = Reader(BOUNDARY_2_SHP)
-shape_2_SHP = list(reader_2_SHP.geometries())
-plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
-ax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
-ax1.gridlines(draw_labels=True)
-
-grdz_RF_DEPTH_mean_1_Ppds = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(RF_DEPTH_mean_1_Ppds), (gridx, gridy),method='linear')
-
-sc1 = ax1.contourf(gridx,gridy,grdz_RF_DEPTH_mean_1_Ppds,levels=np.arange(310,520,10),cmap=colormap,vmin=310,vmax=510, transform=ccrs.PlateCarree())
-ax1.contour(gridx,gridy,grdz_RF_DEPTH_mean_1_Ppds,colors='k',levels=np.arange(310,520,50),vmin=310,vmax=510, transform=ccrs.PlateCarree())
-
-ax1.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
-
-ax1.set_title('410 km Ppds', y=1.08)
 
 
 #Figure Depth of the Mantle Transition Zone for Pds phase for 660 km
@@ -1167,43 +1242,16 @@ plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
 ax2.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 ax2.gridlines(draw_labels=True)
 
-grdz_RF_DEPTH_mean_2_Pds = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(RF_DEPTH_mean_2_Pds), (gridx, gridy),method='linear')
-
-sc2 = ax2.contourf(gridx,gridy,grdz_RF_DEPTH_mean_2_Pds,levels=np.arange(560,770,10),cmap=colormap,vmin=560,vmax=760, transform=ccrs.PlateCarree())
-ax2.contour(gridx,gridy,grdz_RF_DEPTH_mean_2_Pds,colors='k',levels=np.arange(560,770,50),vmin=560,vmax=760, transform=ccrs.PlateCarree())
+sc2 = ax2.scatter(np.array(RF_lon), np.array(RF_lat),40,np.array(RF_DEPTH_mean_2_Pds), marker='s', edgecolors='k',cmap=colormap,vmin=610,vmax=710, transform=ccrs.PlateCarree())
 
 ax2.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
 
 ax2.set_title('660 km Pds', y=1.08)
 
-#Figure Depth of the Mantle Transition Zone for Ppds phase for 660 km
-
-ax3.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
-
-reader_1_SHP = Reader(BOUNDARY_1_SHP)
-shape_1_SHP = list(reader_1_SHP.geometries())
-plot_shape_1_SHP = cfeature.ShapelyFeature(shape_1_SHP, ccrs.PlateCarree())
-ax3.add_feature(plot_shape_1_SHP, facecolor='none', edgecolor='k',linewidth=3)
-
-reader_2_SHP = Reader(BOUNDARY_2_SHP)
-shape_2_SHP = list(reader_2_SHP.geometries())
-plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
-ax3.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
-ax3.gridlines(draw_labels=True)
-
-grdz_RF_DEPTH_mean_2_Ppds = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(RF_DEPTH_mean_2_Ppds), (gridx, gridy),method='linear')
-
-sc3 = ax3.contourf(gridx,gridy,grdz_RF_DEPTH_mean_2_Ppds,levels=np.arange(560,770,10),cmap=colormap,vmin=560,vmax=760,transform=ccrs.PlateCarree())
-ax3.contour(gridx,gridy,grdz_RF_DEPTH_mean_2_Ppds,colors='k',levels=np.arange(560,770,50),vmin=560,vmax=760,transform=ccrs.PlateCarree())
-
-ax3.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
-
-ax3.set_title('660 km Ppds', y=1.08)
+#______________________________________________________________________
 
 fig.colorbar(sc, ax=ax,orientation='horizontal')
-fig.colorbar(sc1, ax=ax1,orientation='horizontal')
 fig.colorbar(sc2, ax=ax2,orientation='horizontal')
-fig.colorbar(sc3, ax=ax3,orientation='horizontal')
 
 fig.subplots_adjust(wspace=0.25, hspace=0.25)
 
@@ -1211,137 +1259,135 @@ fig.suptitle('Depth per bin')
 
 plt.show()
 
-fig.savefig(PP_FIGURE+'DEPTH.'+EXT_FIG,dpi=DPI_FIG)
-'''
-##################################################################################################
-print('Plotting Figure: True depth of the Mantle Transition Zone for Pds and Ppds phases for 410 and 660 km ...')
-#Figure True depth of the Mantle Transition Zone for Pds and Ppds phases for 410 and 660 km
+fig.savefig(PP_FIGURE+'DEPTH_Pds.'+EXT_FIG,dpi=DPI_FIG)
 
-fig, axes = plt.subplots(nrows=2, ncols=2,figsize=(10,10),squeeze=False,sharex=False,sharey=False)
+#############################################################################################################################################################################################
 
-ax1 = axes[0, 0]
-ax = axes[0, 1]
-ax2 = axes[1, 0]
-ax3 = axes[1, 1]
+print('Plotting Figure: Depth of the Mantle Transition Zone for Ppds phases for 410 and 660 km ...')
+#Figure Depth of the Mantle Transition Zone for Ppds phases for 410 and 660 km
+
+fig, axes = plt.subplots(nrows=1, ncols=2, subplot_kw={'projection': ccrs.Mercator(central_longitude=PROJECT_LON, globe=None)},figsize=(10,20))
+
+ax = axes[0]
+ax2 = axes[1]
+
+colormap = 'seismic'
+
+#Figure Depth of the Mantle Transition Zone for Ppds phase for 410 km
+
+ax.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
+
+reader_1_SHP = Reader(BOUNDARY_1_SHP)
+shape_1_SHP = list(reader_1_SHP.geometries())
+plot_shape_1_SHP = cfeature.ShapelyFeature(shape_1_SHP, ccrs.PlateCarree())
+ax.add_feature(plot_shape_1_SHP, facecolor='none', edgecolor='k',linewidth=3)
+
+reader_2_SHP = Reader(BOUNDARY_2_SHP)
+shape_2_SHP = list(reader_2_SHP.geometries())
+plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
+ax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
+ax.gridlines(draw_labels=True)
+
+sc = ax.scatter(np.array(RF_lon), np.array(RF_lat),40,np.array(RF_DEPTH_mean_1_Ppds), marker='s', edgecolors='k',cmap=colormap,vmin=360,vmax=460, transform=ccrs.PlateCarree())
+
+ax.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
+
+ax.set_title('410 km Ppds', y=1.08)
+
+
+#Figure Depth of the Mantle Transition Zone for Ppds phase for 660 km
+
+ax2.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
+
+reader_1_SHP = Reader(BOUNDARY_1_SHP)
+shape_1_SHP = list(reader_1_SHP.geometries())
+plot_shape_1_SHP = cfeature.ShapelyFeature(shape_1_SHP, ccrs.PlateCarree())
+ax2.add_feature(plot_shape_1_SHP, facecolor='none', edgecolor='k',linewidth=3)
+
+reader_2_SHP = Reader(BOUNDARY_2_SHP)
+shape_2_SHP = list(reader_2_SHP.geometries())
+plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
+ax2.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
+ax2.gridlines(draw_labels=True)
+
+sc2 = ax2.scatter(np.array(RF_lon), np.array(RF_lat),40,np.array(RF_DEPTH_mean_2_Ppds), marker='s', edgecolors='k',cmap=colormap,vmin=610,vmax=710, transform=ccrs.PlateCarree())
+
+ax2.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
+
+ax2.set_title('660 km Ppds', y=1.08)
+
+#______________________________________________________________________
+
+fig.colorbar(sc, ax=ax,orientation='horizontal')
+fig.colorbar(sc2, ax=ax2,orientation='horizontal')
+
+fig.subplots_adjust(wspace=0.25, hspace=0.25)
+
+fig.suptitle('Depth per bin')
+
+plt.show()
+
+fig.savefig(PP_FIGURE+'DEPTH_Ppds.'+EXT_FIG,dpi=DPI_FIG)
+
+#############################################################################################################################################################################################
+
+print('Plotting Figure: True depth of the Mantle Transition Zone for Pds phases for 410 and 660 km ...')
+#Figure True depth of the Mantle Transition Zone for Pds phases for 410 and 660 km
+
+fig, axes = plt.subplots(nrows=1, ncols=2, subplot_kw={'projection': ccrs.Mercator(central_longitude=PROJECT_LON, globe=None)},figsize=(10,20))
+
+ax = axes[0]
+ax2 = axes[1]
 
 colormap = 'seismic'
 
 #Figure Depth of the Mantle Transition Zone for Pds phase for 410 km
 
-m1 = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_LARGE,
-            llcrnrlat=LLCRNRLAT_LARGE,urcrnrlon=URCRNRLON_LARGE,urcrnrlat=URCRNRLAT_LARGE,ax=ax1)
+ax.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
 
-m1.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
-m1.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
+reader_1_SHP = Reader(BOUNDARY_1_SHP)
+shape_1_SHP = list(reader_1_SHP.geometries())
+plot_shape_1_SHP = cfeature.ShapelyFeature(shape_1_SHP, ccrs.PlateCarree())
+ax.add_feature(plot_shape_1_SHP, facecolor='none', edgecolor='k',linewidth=3)
 
-gridx, gridy = np.meshgrid(xi, yi)
+reader_2_SHP = Reader(BOUNDARY_2_SHP)
+shape_2_SHP = list(reader_2_SHP.geometries())
+plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
+ax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
+ax.gridlines(draw_labels=True)
 
-grdz_RF_DEPTH_mean_1_true_Pds = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(RF_DEPTH_mean_1_true_Pds), (gridx, gridy),method='linear')
+sc = ax.scatter(np.array(RF_lon), np.array(RF_lat),40,np.array(RF_DEPTH_mean_1_true_Pds), marker='s', edgecolors='k',cmap=colormap,vmin=360,vmax=460, transform=ccrs.PlateCarree())
 
-gd_x,gd_y = m1(*(gridx, gridy))
-sc1 = m1.contourf(gd_x,gd_y,grdz_RF_DEPTH_mean_1_true_Pds,levels=np.arange(310,520,10),cmap=colormap,vmin=310,vmax=510)
-m1.contour(gd_x,gd_y,grdz_RF_DEPTH_mean_1_true_Pds,colors='k',levels=np.arange(310,520,50),vmin=310,vmax=510)
+ax.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
 
-for lon, lat in zip(sta_long,sta_lat):
-    x,y = m1(lon, lat)
-    msize = 10
-    l1, = m1.plot(x, y, '^',markersize=msize,markeredgecolor='k',markerfacecolor='grey')
-
-m1.fillcontinents(color='whitesmoke',lake_color=None,zorder=2,alpha=0.1)
-m1.drawcoastlines(color='k',zorder=1)
-m1.drawmeridians(np.arange(0, 310, 5),color='lightgrey',labels=[True,True,True,True])
-m1.drawparallels(np.arange(-90, 90, 5),color='lightgrey',labels=[True,True,True,True])
-
-
-ax1.set_title('410 km Pds', y=1.08)
-
-#Figure Depth of the Mantle Transition Zone for Ppds phase for 410 km
-
-m = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_LARGE,
-            llcrnrlat=LLCRNRLAT_LARGE,urcrnrlon=URCRNRLON_LARGE,urcrnrlat=URCRNRLAT_LARGE,ax=ax)
-
-m.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
-m.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
-
-grdz_RF_DEPTH_mean_1_true_Ppds = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(RF_DEPTH_mean_1_true_Ppds), (gridx, gridy),method='linear')
-
-gd_x,gd_y = m1(*(gridx, gridy))
-sc = m.contourf(gd_x,gd_y,grdz_RF_DEPTH_mean_1_true_Ppds,levels=np.arange(310,520,10),cmap=colormap,vmin=310,vmax=510)
-m.contour(gd_x,gd_y,grdz_RF_DEPTH_mean_1_true_Ppds,colors='k',levels=np.arange(310,520,50),vmin=310,vmax=510)
-
-for lon, lat in zip(sta_long,sta_lat):
-    x,y = m(lon, lat)
-    msize = 10
-    l1, = m.plot(x, y, '^',markersize=msize,markeredgecolor='k',markerfacecolor='grey')
-
-m.fillcontinents(color='whitesmoke',lake_color=None,zorder=2,alpha=0.1)
-m.drawcoastlines(color='k',zorder=1)
-m.drawmeridians(np.arange(0, 310, 5),color='lightgrey',labels=[True,True,True,True])
-m.drawparallels(np.arange(-90, 90, 5),color='lightgrey',labels=[True,True,True,True])
-
-ax.set_title('410 km Ppds', y=1.08)
+ax.set_title('410 km Pds', y=1.08)
 
 
 #Figure Depth of the Mantle Transition Zone for Pds phase for 660 km
 
+ax2.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
 
-m2 = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_LARGE,
-            llcrnrlat=LLCRNRLAT_LARGE,urcrnrlon=URCRNRLON_LARGE,urcrnrlat=URCRNRLAT_LARGE,ax=ax2)
+reader_1_SHP = Reader(BOUNDARY_1_SHP)
+shape_1_SHP = list(reader_1_SHP.geometries())
+plot_shape_1_SHP = cfeature.ShapelyFeature(shape_1_SHP, ccrs.PlateCarree())
+ax2.add_feature(plot_shape_1_SHP, facecolor='none', edgecolor='k',linewidth=3)
 
-m2.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
-m2.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
+reader_2_SHP = Reader(BOUNDARY_2_SHP)
+shape_2_SHP = list(reader_2_SHP.geometries())
+plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
+ax2.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
+ax2.gridlines(draw_labels=True)
 
-grdz_RF_DEPTH_mean_2_true_Pds = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(RF_DEPTH_mean_2_true_Pds), (gridx, gridy),method='linear')
+sc2 = ax2.scatter(np.array(RF_lon), np.array(RF_lat),40,np.array(RF_DEPTH_mean_2_true_Pds), marker='s', edgecolors='k',cmap=colormap,vmin=610,vmax=710, transform=ccrs.PlateCarree())
 
-gd_x,gd_y = m2(*(gridx, gridy))
-sc2 = m2.contourf(gd_x,gd_y,grdz_RF_DEPTH_mean_2_true_Pds,levels=np.arange(560,770,10),cmap=colormap,vmin=560,vmax=760)
-m2.contour(gd_x,gd_y,grdz_RF_DEPTH_mean_2_true_Pds,colors='k',levels=np.arange(560,770,50),vmin=560,vmax=760)
-
-for lon, lat in zip(sta_long,sta_lat):
-    x,y = m2(lon, lat)
-    msize = 10
-    l1, = m2.plot(x, y, '^',markersize=msize,markeredgecolor='k',markerfacecolor='grey')
-
-m2.fillcontinents(color='whitesmoke',lake_color=None,zorder=2,alpha=0.1)
-m2.drawcoastlines(color='k',zorder=1)
-m2.drawmeridians(np.arange(0, 310, 5),color='lightgrey',labels=[True,True,True,True])
-m2.drawparallels(np.arange(-90, 90, 5),color='lightgrey',labels=[True,True,True,True])
+ax2.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
 
 ax2.set_title('660 km Pds', y=1.08)
 
-#Figure Depth of the Mantle Transition Zone for Ppds phase for 660 km
+#______________________________________________________________________
 
-m3 = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_LARGE,
-            llcrnrlat=LLCRNRLAT_LARGE,urcrnrlon=URCRNRLON_LARGE,urcrnrlat=URCRNRLAT_LARGE,ax=ax3)
-
-m3.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
-m3.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
-
-grdz_RF_DEPTH_mean_2_true_Ppds = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(RF_DEPTH_mean_2_true_Ppds), (gridx, gridy),method='linear')
-
-gd_x,gd_y = m3(*(gridx, gridy))
-sc3 = m3.contourf(gd_x,gd_y,grdz_RF_DEPTH_mean_2_true_Ppds,levels=np.arange(560,770,10),cmap=colormap,vmin=560,vmax=760)
-m3.contour(gd_x,gd_y,grdz_RF_DEPTH_mean_2_true_Ppds,colors='k',levels=np.arange(560,770,50),vmin=560,vmax=760)
-
-for lon, lat in zip(sta_long,sta_lat):
-    x,y = m3(lon, lat)
-    msize = 10
-    l1, = m3.plot(x, y, '^',markersize=msize,markeredgecolor='k',markerfacecolor='grey')
-
-m3.fillcontinents(color='whitesmoke',lake_color=None,zorder=2,alpha=0.1)
-m3.drawcoastlines(color='k',zorder=1)
-m3.drawmeridians(np.arange(0, 310, 5),color='lightgrey',labels=[True,True,True,True])
-m3.drawparallels(np.arange(-90, 90, 5),color='lightgrey',labels=[True,True,True,True])
-
-ax3.set_title('660 km Ppds', y=1.08)
-
-#cbar_ax1 = fig.add_axes([0.2, 0.5, 0.6, 0.02])
 fig.colorbar(sc, ax=ax,orientation='horizontal')
-fig.colorbar(sc1, ax=ax1,orientation='horizontal')
 fig.colorbar(sc2, ax=ax2,orientation='horizontal')
-
-#cbar_ax2 = fig.add_axes([0.2, 0.1, 0.6, 0.02])
-fig.colorbar(sc3, ax=ax3,orientation='horizontal')
 
 fig.subplots_adjust(wspace=0.25, hspace=0.25)
 
@@ -1349,10 +1395,83 @@ fig.suptitle('True Depth per bin')
 
 plt.show()
 
-fig.savefig(PP_FIGURE+'TRUE_DEPTH.'+EXT_FIG,dpi=DPI_FIG)
+fig.savefig(PP_FIGURE+'TRUE_DEPTH_Pds.'+EXT_FIG,dpi=DPI_FIG)
 
 ###################################################################################################################
 
+print('Plotting Figure: True depth of the Mantle Transition Zone for Ppds phases for 410 and 660 km ...')
+#Figure True depth of the Mantle Transition Zone for Ppds  phases for 410 and 660 km
+
+fig, axes = plt.subplots(nrows=1, ncols=2, subplot_kw={'projection': ccrs.Mercator(central_longitude=PROJECT_LON, globe=None)},figsize=(10,20))
+
+ax = axes[0]
+ax2 = axes[1]
+
+colormap = 'seismic'
+
+#Figure Depth of the Mantle Transition Zone for Ppds phase for 410 km
+
+ax.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
+
+reader_1_SHP = Reader(BOUNDARY_1_SHP)
+shape_1_SHP = list(reader_1_SHP.geometries())
+plot_shape_1_SHP = cfeature.ShapelyFeature(shape_1_SHP, ccrs.PlateCarree())
+ax.add_feature(plot_shape_1_SHP, facecolor='none', edgecolor='k',linewidth=3)
+
+reader_2_SHP = Reader(BOUNDARY_2_SHP)
+shape_2_SHP = list(reader_2_SHP.geometries())
+plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
+ax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
+ax.gridlines(draw_labels=True)
+
+sc = ax.scatter(np.array(RF_lon), np.array(RF_lat),40,np.array(RF_DEPTH_mean_1_true_Ppds), marker='s', edgecolors='k',cmap=colormap,vmin=360,vmax=460, transform=ccrs.PlateCarree())
+
+ax.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
+
+ax.set_title('410 km Ppds', y=1.08)
+
+#Figure Depth of the Mantle Transition Zone for Ppds phase for 660 km
+
+ax2.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
+
+reader_1_SHP = Reader(BOUNDARY_1_SHP)
+shape_1_SHP = list(reader_1_SHP.geometries())
+plot_shape_1_SHP = cfeature.ShapelyFeature(shape_1_SHP, ccrs.PlateCarree())
+ax2.add_feature(plot_shape_1_SHP, facecolor='none', edgecolor='k',linewidth=3)
+
+reader_2_SHP = Reader(BOUNDARY_2_SHP)
+shape_2_SHP = list(reader_2_SHP.geometries())
+plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
+ax2.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
+ax2.gridlines(draw_labels=True)
+
+xi = np.linspace(LLCRNRLON_SMALL, URCRNRLON_SMALL, abs(abs(URCRNRLON_SMALL) - abs(LLCRNRLON_SMALL))*GRID_PP_MULT*10)
+yi = np.linspace(LLCRNRLAT_SMALL, URCRNRLAT_SMALL, abs(abs(URCRNRLAT_SMALL) - abs(LLCRNRLAT_SMALL))*GRID_PP_MULT*10)
+
+gridx, gridy = np.meshgrid(xi, yi)
+
+grdz_RF_DEPTH_mean_2_true_Ppds = interpolate.griddata((np.array(RF_lon), np.array(RF_lat)), np.array(RF_DEPTH_mean_2_true_Ppds), (gridx, gridy),method='linear')
+
+sc2 = ax2.scatter(np.array(RF_lon), np.array(RF_lat),40,np.array(RF_DEPTH_mean_2_true_Ppds), marker='s', edgecolors='k',cmap=colormap,vmin=610,vmax=710, transform=ccrs.PlateCarree())
+
+ax2.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
+
+ax2.set_title('660 km Ppds', y=1.08)
+
+#______________________________________________________________________
+
+fig.colorbar(sc, ax=ax,orientation='horizontal')
+fig.colorbar(sc2, ax=ax2,orientation='horizontal')
+
+fig.subplots_adjust(wspace=0.25, hspace=0.25)
+
+fig.suptitle('True Depth per bin')
+
+plt.show()
+
+fig.savefig(PP_FIGURE+'TRUE_DEPTH_Ppds.'+EXT_FIG,dpi=DPI_FIG)
+
+'''
 print('Plotting Figure: Std (bootstraping) of the Mantle Transition Zone for Pds and Ppds phases for 410 and 660 km ...')
 
 #Figure True std (bootstraping) of the Mantle Transition Zone for Pds and Ppds phases for 410 and 660 km
@@ -1373,6 +1492,10 @@ m1_std = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJE
 
 m1_std.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
 m1_std.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
+
+
+xi = np.linspace(LLCRNRLON_SMALL, URCRNRLON_SMALL, abs(abs(URCRNRLON_SMALL) - abs(LLCRNRLON_SMALL))*GRID_PP_MULT*10)
+yi = np.linspace(LLCRNRLAT_SMALL, URCRNRLAT_SMALL, abs(abs(URCRNRLAT_SMALL) - abs(LLCRNRLAT_SMALL))*GRID_PP_MULT*10)
 
 gridx, gridy = np.meshgrid(xi, yi)
 
@@ -2058,13 +2181,14 @@ ax_thickness2.set_title('STD Difference between True Thickness (Ppds) and Model 
 
 plt.show()
 fig_thickness.savefig(PP_FIGURE+'Std_DIFFERENCE_BETWEEN_TRUE_THICKNESS_MODEL_MTZ.'+EXT_FIG,dpi=DPI_FIG)
+
+'''
+
+
 print('Saving Selected Piercing Points in JSON file')
 print('\n')
 
 os.makedirs(PP_SELEC_DIR,exist_ok=True)
-'''
-
-
 
 SELECTED_BINNED_DATA_dic = {'lat':[],'lon':[],'len_Pds':[],'len_Ppds':[],'true_mean_1_Pds':[],'true_std_1_Pds':[],'true_mean_2_Pds':[],'true_std_2_Pds':[],
 'true_mean_1_Ppds':[],'true_std_1_Ppds':[],'true_mean_2_Ppds':[],'true_std_2_Ppds':[],'mean_1_Pds':[],'std_1_Pds':[],'mean_2_Pds':[],'std_2_Pds':[],'mean_1_Ppds':[],'std_1_Ppds':[],'mean_2_Ppds':[],
