@@ -171,7 +171,7 @@ BOOTSTRAP_INTERATOR = config.getint('migration', 'BOOTSTRAP_INTERATOR')
 GAMMA = config.getfloat('migration', 'GAMMA') 
 
 #Number that multiply the difference between the cross-section points
-SECTION_NUM = config.getfloat('migration', 'SECTION_NUM') 
+MIN_AMP_PDS_PPDS = config.getfloat('migration', 'MIN_AMP_PDS_PPDS') 
 
 #Number that multiply the difference between the cross-section points
 DEPTH_RANGE = config.getfloat('migration', 'DEPTH_RANGE') 

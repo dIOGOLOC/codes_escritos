@@ -1,6 +1,8 @@
 # coding: utf-8
 
 import matplotlib.pyplot as plt
+import matplotlib as mpl
+
 import numpy as np
 import obspy
 import os
@@ -23,6 +25,11 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 from scipy import interpolate
 from shapely.geometry import Polygon, MultiPoint, Point, LinearRing
 import shapefile
+from matplotlib.colors import Normalize
+from matplotlib.patches import Circle,Rectangle
+import math
+
+
 
 
 
@@ -119,6 +126,7 @@ RF_delta_2_Vp_mean = SELECTED_BINNED_DATA_dic['delta_2_Vp_mean']
 RF_delta_2_Vp_std = SELECTED_BINNED_DATA_dic['delta_2_Vp_std']
 RF_delta_2_Vs_mean = SELECTED_BINNED_DATA_dic['delta_2_Vs_mean']
 RF_delta_2_Vs_std = SELECTED_BINNED_DATA_dic['delta_2_Vs_std']
+
 
 area = (LLCRNRLON_SMALL,URCRNRLON_SMALL, LLCRNRLAT_SMALL, URCRNRLAT_SMALL)
 
@@ -361,9 +369,10 @@ else:
 
 print('Plotting cross-sections according to the '+CROSS_SECTION_AXIS+' direction')
 for i,j in enumerate(RF_data_profile_Pds):
+
 	#Cross section figure
 
-	fig = plt.figure(figsize=(20, 50))
+	fig = plt.figure(figsize=(25, 10))
 
 	fig.suptitle('Cross section for Pds and Ppds')
 
@@ -390,9 +399,19 @@ for i,j in enumerate(RF_data_profile_Pds):
 	map_MTZ_thickness =  fig.add_subplot(gs[0:2,0], projection=ccrs.PlateCarree())
 
 	#######################################################################
-	colormap = 'seismic_r'
+	colormap = cm.seismic_r
 
 	map_MTZ_thickness.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
+	map_MTZ_thickness.yaxis.set_ticks_position('both')
+	map_MTZ_thickness.xaxis.set_ticks_position('both')
+
+	map_MTZ_thickness.set_xticks(np.arange(LLCRNRLON_LARGE,URCRNRLON_LARGE,4), crs=ccrs.PlateCarree())
+	map_MTZ_thickness.set_yticks(np.arange(LLCRNRLAT_LARGE,URCRNRLAT_LARGE,4), crs=ccrs.PlateCarree())
+	map_MTZ_thickness.tick_params(labelbottom='off',labeltop='on',labelleft='on',labelright='on')
+
+
+
+	map_MTZ_thickness.grid(True,which='major',color='gray',linewidth=1,linestyle='--')
 
 	reader_1_SHP = Reader(BOUNDARY_1_SHP)
 	shape_1_SHP = list(reader_1_SHP.geometries())
@@ -403,24 +422,25 @@ for i,j in enumerate(RF_data_profile_Pds):
 	shape_2_SHP = list(reader_2_SHP.geometries())
 	plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
 	map_MTZ_thickness.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
-	map_MTZ_thickness.gridlines(draw_labels=True)
 
-	#xi = np.linspace(LLCRNRLON_SMALL, URCRNRLON_SMALL, abs(abs(URCRNRLON_SMALL) - abs(LLCRNRLON_SMALL))*GRID_PP_MULT)
-	#yi = np.linspace(LLCRNRLAT_SMALL, URCRNRLAT_SMALL, abs(abs(URCRNRLAT_SMALL) - abs(LLCRNRLAT_SMALL))*GRID_PP_MULT)
+	norm_map_MTZ_thickness = mpl.colors.Normalize(vmin=200,vmax=300,clip=True)
+	colors_map_MTZ_thickness = colormap(norm_map_MTZ_thickness(RF_DEPTH_true_thickness_MTZ_Pds))
 
-	#gridx, gridy = np.meshgrid(xi, yi)
+	for t,y in enumerate(lons):
+		if math.isnan(RF_DEPTH_true_thickness_MTZ_Pds[t]) == False:
+			retangulo_410 = Rectangle(xy=(lons[t] - DIST_GRID_PP_MED, lats[t] - DIST_GRID_PP_MED),width=DIST_GRID_PP_MED, height=DIST_GRID_PP_MED,fc=colors_map_MTZ_thickness[t], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+			map_MTZ_thickness.add_patch(retangulo_410)
+		else:
+			pass
 
-	#grdz_RF_DEPTH_true_thickness_MTZ_Pds = interpolate.griddata((np.array(lons), np.array(lats)), np.array(RF_DEPTH_true_thickness_MTZ_Pds), (gridx, gridy),method='linear')
-
-	#sc = map_MTZ_thickness.contourf(gridx,gridy,grdz_RF_DEPTH_true_thickness_MTZ_Pds,levels=np.arange(200,310,10),cmap=colormap,vmin=200,vmax=300, transform=ccrs.PlateCarree())
-	#map_MTZ_thickness.contour(gridx,gridy,grdz_RF_DEPTH_true_thickness_MTZ_Pds,colors='k',levels=np.arange(200,310,50),vmin=200,vmax=300, transform=ccrs.PlateCarree())
-
-	sc = map_MTZ_thickness.scatter(np.array(lons), np.array(lats),5, np.array(RF_DEPTH_true_thickness_MTZ_Pds),marker='s',cmap=colormap,vmin=200,vmax=300) 
-	fig.colorbar(sc,ax=map_MTZ_thickness,pad=0.2,orientation='vertical',fraction=.1)
-
-	map_MTZ_thickness.plot(AB_lon[i],AB_lat[i],linewidth=5,color='r')
-
+	map_MTZ_thickness.plot(AB_lon[i],AB_lat[i],linewidth=2,color='k')
 	map_MTZ_thickness.set_title('MTZ True Thickness', y=1.08)
+
+	sm_map_MTZ_thickness = plt.cm.ScalarMappable(cmap=colormap,norm=norm_map_MTZ_thickness)
+	sm_map_MTZ_thickness._A = []
+	fig.colorbar(sm_map_MTZ_thickness,ax=map_MTZ_thickness,orientation='vertical',shrink=0.9,pad=0.1,label='Thickness (km)')
+
+
 
 
 	#Migration figure
@@ -434,7 +454,7 @@ for i,j in enumerate(RF_data_profile_Pds):
 	majorLocatorY = MultipleLocator(50)
 	minorLocatorY = MultipleLocator(10)
 
-
+	
 	for _i, _j in enumerate(RF_data_profile_Pds[i]):
 		RF_data_factor_Pds = [_i/factor_Pds+l for k, l in enumerate(_j)]
 		pefil_pds.plot(RF_data_factor_Pds,camadas_terra_10_km,'k',linewidth=0.5)
@@ -626,7 +646,7 @@ for i,j in enumerate(RF_data_profile_Pds):
 		P_anomaly.grid(True,which='major',color='gray',linewidth=1,linestyle='--')
 		P_anomaly.tick_params(labelleft=True,labelright=True)
 		P_anomaly.set_xticks([])
-
-	fig.savefig(PP_FIGURE+'SELECTED_BINNED_DATA_'+CROSS_SECTION_AXIS+'CROSS_SECTION_Pds_Ppds_'+str(i)+'.'+EXT_FIG,dpi=DPI_FIG)
-plt.show()
+	
+	fig.savefig(PP_FIGURE+'SELECTED_BINNED_DATA_'+CROSS_SECTION_AXIS+'_CROSS_SECTION_Pds_Ppds_PROFILE_'+str(i+1)+'.'+EXT_FIG,dpi=DPI_FIG)
+#plt.show()
 print('Ending the Cross section CODE')

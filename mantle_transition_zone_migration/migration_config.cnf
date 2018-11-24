@@ -93,13 +93,13 @@ PROJECT_LON = -45
 LLCRNRLON_LARGE=-51
 LLCRNRLAT_LARGE=-12
 URCRNRLON_LARGE=-39
-URCRNRLAT_LARGE=-1
+URCRNRLAT_LARGE=0
 
 #lower and upper corner (lat/lon) of the small map
 
 LLCRNRLON_SMALL=-50
-LLCRNRLAT_SMALL=-12
-URCRNRLON_SMALL=-38
+LLCRNRLAT_SMALL=-10
+URCRNRLON_SMALL=-40
 URCRNRLAT_SMALL=-2
 
 #figures extention and dpi
@@ -173,8 +173,8 @@ BOOTSTRAP_INTERATOR = 200
 
 GAMMA = 2
 
-#Number that multiply the difference between the cross-section points
-SECTION_NUM = 4
+#Minimum amplitude of the 410 and 660 km (both Pds and Ppds ) to compute apparent and true depth
+MIN_AMP_PDS_PPDS = 0.001
 
 #Depth range (+/-) that we will use to find the maximum amplitude
 DEPTH_RANGE = 40
