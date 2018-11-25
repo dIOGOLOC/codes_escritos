@@ -458,7 +458,7 @@ l2, = ax.plot(pp_1_long,pp_1_lat, '.',markersize=5,markeredgecolor='k',markerfac
 l3, = ax.plot(pp_med_long,pp_med_lat, '.',markersize=5,markeredgecolor='k',markerfacecolor='g',transform=ccrs.Geodetic())
 l4, = ax.plot(pp_2_long,pp_2_lat, '.',markersize=5,markeredgecolor='k',markerfacecolor='r',transform=ccrs.Geodetic())
 for i,j in enumerate(grdx):
-	retangulo = Rectangle(xy=(grdx[i] - DIST_GRID_PP_MED, grdy[i] - DIST_GRID_PP_MED),width=DIST_GRID_PP_MED, height=DIST_GRID_PP_MED,color='None', ec='k',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+	retangulo = Rectangle(xy=(grdx[i] - DIST_GRID_PP_MED/(GRID_PP_MULT/2), grdy[i] - DIST_GRID_PP_MED/(GRID_PP_MULT/2)),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),color='None', ec='k',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
 	ax.add_patch(retangulo)
 ax.set_title('Pds Piercing Points',ha='center',va='top',y=1.08)
 ax.legend([l1,l2,l3,l4,retangulo],['Stations','Piercing Points 410 km','Piercing Points '+"{0:.0f}".format(DEPTH_MED)+' km','Piercing Points 660 km','Selected Grid'],scatterpoints=1, frameon=True,labelspacing=1, loc='lower right',facecolor='w',fontsize='smaller')
@@ -483,7 +483,7 @@ l2, = ax1.plot(pp_1_long_Ppds,pp_1_lat_Ppds, '.',markersize=5,markeredgecolor='k
 l3, = ax1.plot(pp_med_long_Ppds,pp_med_lat_Ppds, '.',markersize=5,markeredgecolor='k',markerfacecolor='g',transform=ccrs.Geodetic())
 l4, = ax1.plot(pp_2_long_Ppds,pp_2_lat_Ppds, '.',markersize=5,markeredgecolor='k',markerfacecolor='r',transform=ccrs.Geodetic())
 for i,j in enumerate(grdx):
-	retangulo = Rectangle(xy=(grdx[i] - DIST_GRID_PP_MED, grdy[i] - DIST_GRID_PP_MED),width=DIST_GRID_PP_MED, height=DIST_GRID_PP_MED,color='None', ec='k',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+	retangulo = Rectangle(xy=(grdx[i] - DIST_GRID_PP_MED/(GRID_PP_MULT/2), grdy[i] - DIST_GRID_PP_MED/(GRID_PP_MULT/2)),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),color='None', ec='k',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
 	ax1.add_patch(retangulo)
 ax1.set_title('Ppds Piercing Points',ha='center',va='top',y=1.08)
 ax1.legend([l1,l2,l3,l4,retangulo],['Stations','Piercing Points 410 km','Piercing Points '+"{0:.0f}".format(DEPTH_MED)+' km','Piercing Points 660 km','Selected Grid'],scatterpoints=1, frameon=True,labelspacing=1, loc='lower right',facecolor='w',fontsize='smaller')
@@ -519,10 +519,10 @@ l1, = ax.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerface
 l3, = ax.plot(pp_med_long_Ppds,pp_med_lat_Ppds, 'X',markersize=5,markeredgecolor='k',markerfacecolor='k',alpha=0.5,transform=ccrs.Geodetic())
 
 for i,j in enumerate(grdx):
-	retangulo = Rectangle(xy=(grdx[i] - DIST_GRID_PP_MED, grdy[i] - DIST_GRID_PP_MED),width=DIST_GRID_PP_MED, height=DIST_GRID_PP_MED,color='None', ec='k',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+	retangulo = Rectangle(xy=(grdx[i] - DIST_GRID_PP_MED/(GRID_PP_MULT/2), grdy[i] - DIST_GRID_PP_MED/(GRID_PP_MULT/2)),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),color='None', ec='k',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
 	ax.add_patch(retangulo)
 for i,j in enumerate(pp_med_long_Ppds):
-	circulo = Circle(radius=DIST_GRID_PP_MED, xy=(pp_med_long_Ppds[i],pp_med_lat_Ppds[i]), color='gray',linewidth=0,alpha=0.2,transform=ccrs.Geodetic(),zorder=1)
+	circulo = Circle(radius=DIST_GRID_PP_MED/(GRID_PP_MULT/2), xy=(pp_med_long_Ppds[i],pp_med_lat_Ppds[i]), color='gray',linewidth=0,alpha=0.2,transform=ccrs.Geodetic(),zorder=1)
 	ax.add_patch(circulo)
 
 reader_1_SHP = Reader(BOUNDARY_1_SHP)
@@ -539,7 +539,7 @@ ax.set_title('Pds Piercing Points',ha='center',va='top',y=1.08)
 ax.legend([l1,l3,retangulo,circulo],['Stations','Piercing Points '+"{0:.0f}".format(DEPTH_MED)+' km','Selected Grid','Piercing Points Fresnel Zone'],scatterpoints=1, frameon=True,labelspacing=1, loc='lower right',facecolor='w',fontsize='smaller')
 ax.gridlines(draw_labels=True)
 
-plt.show()
+#plt.show()
 
 os.makedirs(PP_FIGURE,exist_ok=True)
 fig_PP.savefig(PP_FIGURE+'PP_MED_Pds.'+EXT_FIG,dpi=DPI_FIG)
@@ -556,10 +556,10 @@ ax.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
 l1, = ax.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.Geodetic())
 l3, = ax.plot(pp_med_long_Ppds,pp_med_lat_Ppds, 'X',markersize=5,markeredgecolor='k',markerfacecolor='k',alpha=0.5,transform=ccrs.Geodetic())
 for i,j in enumerate(grdx):
-	retangulo = Rectangle(xy=(grdx[i] - DIST_GRID_PP_MED, grdy[i] - DIST_GRID_PP_MED),width=DIST_GRID_PP_MED, height=DIST_GRID_PP_MED,color='None', ec='k',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+	retangulo = Rectangle(xy=(grdx[i] - DIST_GRID_PP_MED/(GRID_PP_MULT/2), grdy[i] - DIST_GRID_PP_MED/(GRID_PP_MULT/2)),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),color='None', ec='k',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
 	ax.add_patch(retangulo)
 for i,j in enumerate(pp_med_long_Ppds):
-	circulo = Circle(radius=DIST_GRID_PP_MED, xy=(pp_med_long_Ppds[i],pp_med_lat_Ppds[i]), color='gray',linewidth=0,alpha=0.2,transform=ccrs.Geodetic(),zorder=1)
+	circulo = Circle(radius=DIST_GRID_PP_MED/(GRID_PP_MULT/2), xy=(pp_med_long_Ppds[i],pp_med_lat_Ppds[i]), color='gray',linewidth=0,alpha=0.2,transform=ccrs.Geodetic(),zorder=1)
 	ax.add_patch(circulo)
 
 reader_1_SHP = Reader(BOUNDARY_1_SHP)
@@ -1183,10 +1183,10 @@ ax.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
 l1, = ax.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.Geodetic())
 l3, = ax.plot(pp_med_long_Ppds,pp_med_lat_Ppds, 'X',markersize=5,markeredgecolor='k',markerfacecolor='k',alpha=0.5,transform=ccrs.Geodetic())
 for i,j in enumerate(RF_lon):
-	retangulo = Rectangle(xy=(RF_lon[i] - DIST_GRID_PP_MED, RF_lat[i] - DIST_GRID_PP_MED),width=DIST_GRID_PP_MED, height=DIST_GRID_PP_MED,color='None', ec='k',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+	retangulo = Rectangle(xy=(RF_lon[i] - DIST_GRID_PP_MED/(GRID_PP_MULT/2), RF_lat[i] - DIST_GRID_PP_MED/(GRID_PP_MULT/2)),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),color='None', ec='k',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
 	ax.add_patch(retangulo)
 for i,j in enumerate(pp_med_long_Ppds):
-	circulo = Circle(radius=DIST_GRID_PP_MED, xy=(pp_med_long_Ppds[i],pp_med_lat_Ppds[i]), color='gray',linewidth=0,alpha=0.2,transform=ccrs.Geodetic(),zorder=1)
+	circulo = Circle(radius=DIST_GRID_PP_MED/(GRID_PP_MULT/2), xy=(pp_med_long_Ppds[i],pp_med_lat_Ppds[i]), color='gray',linewidth=0,alpha=0.2,transform=ccrs.Geodetic(),zorder=1)
 	ax.add_patch(circulo)
 
 reader_1_SHP = Reader(BOUNDARY_1_SHP)
@@ -1218,7 +1218,7 @@ fig, axes = plt.subplots(nrows=1, ncols=2, subplot_kw={'projection': ccrs.Mercat
 ax = axes[0]
 ax2 = axes[1]
 
-colormap = cm.seismic_r
+colormap = cm.bwr_r
 
 #Figure Depth of the Mantle Transition Zone for Pds phase for 410 km
 
@@ -1241,7 +1241,7 @@ colors_410 = colormap(norm_410(RF_DEPTH_mean_1_Pds))
 
 for i,j in enumerate(RF_lon):
 	if math.isnan(RF_DEPTH_mean_1_Pds[i]) == False:
-		retangulo_410 = Rectangle(xy=(RF_lon[i] - DIST_GRID_PP_MED, RF_lat[i] - DIST_GRID_PP_MED),width=DIST_GRID_PP_MED, height=DIST_GRID_PP_MED,color=colors_410[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+		retangulo_410 = Rectangle(xy=(RF_lon[i] - DIST_GRID_PP_MED/(GRID_PP_MULT/2), RF_lat[i] - DIST_GRID_PP_MED/(GRID_PP_MULT/2)),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),color=colors_410[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
 		ax.add_patch(retangulo_410)
 	else:
 		pass
@@ -1272,7 +1272,7 @@ colors_660 = colormap(norm_660(RF_DEPTH_mean_2_Pds))
 
 for i,j in enumerate(RF_lon):
 	if math.isnan(RF_DEPTH_mean_2_Pds[i]) == False:
-		retangulo_660 = Rectangle(xy=(RF_lon[i] - DIST_GRID_PP_MED, RF_lat[i] - DIST_GRID_PP_MED),width=DIST_GRID_PP_MED, height=DIST_GRID_PP_MED,color=colors_660[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+		retangulo_660 = Rectangle(xy=(RF_lon[i] - DIST_GRID_PP_MED/(GRID_PP_MULT/2), RF_lat[i] - DIST_GRID_PP_MED/(GRID_PP_MULT/2)),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),color=colors_660[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
 		ax2.add_patch(retangulo_660)
 	else: 
 		pass
@@ -1328,7 +1328,7 @@ colors_410 = colormap(norm_410(RF_DEPTH_mean_1_Ppds))
 
 for i,j in enumerate(RF_lon):
 	if math.isnan(RF_DEPTH_mean_1_Ppds[i]) == False:
-		retangulo_410 = Rectangle(xy=(RF_lon[i] - DIST_GRID_PP_MED, RF_lat[i] - DIST_GRID_PP_MED),width=DIST_GRID_PP_MED, height=DIST_GRID_PP_MED,color=colors_410[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+		retangulo_410 = Rectangle(xy=(RF_lon[i] - DIST_GRID_PP_MED/(GRID_PP_MULT/2), RF_lat[i] - DIST_GRID_PP_MED/(GRID_PP_MULT/2)),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),color=colors_410[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
 		ax.add_patch(retangulo_410)
 	else:
 		pass
@@ -1359,7 +1359,7 @@ colors_660 = colormap(norm_660(RF_DEPTH_mean_2_Ppds))
 
 for i,j in enumerate(RF_lon):
 	if math.isnan(RF_DEPTH_mean_2_Ppds[i]) == False:
-		retangulo_660 = Rectangle(xy=(RF_lon[i] - DIST_GRID_PP_MED, RF_lat[i] - DIST_GRID_PP_MED),width=DIST_GRID_PP_MED, height=DIST_GRID_PP_MED,color=colors_660[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+		retangulo_660 = Rectangle(xy=(RF_lon[i] - DIST_GRID_PP_MED/(GRID_PP_MULT/2), RF_lat[i] - DIST_GRID_PP_MED/(GRID_PP_MULT/2)),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),color=colors_660[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
 		ax2.add_patch(retangulo_660)
 	else:
 		pass
@@ -1415,7 +1415,7 @@ colors_410 = colormap(norm_410(RF_DEPTH_mean_1_true_Pds))
 
 for i,j in enumerate(RF_lon):
 	if math.isnan(RF_DEPTH_mean_1_true_Pds[i]) == False:
-		retangulo_410 = Rectangle(xy=(RF_lon[i] - DIST_GRID_PP_MED, RF_lat[i] - DIST_GRID_PP_MED),width=DIST_GRID_PP_MED, height=DIST_GRID_PP_MED,color=colors_410[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+		retangulo_410 = Rectangle(xy=(RF_lon[i] - DIST_GRID_PP_MED/(GRID_PP_MULT/2), RF_lat[i] - DIST_GRID_PP_MED/(GRID_PP_MULT/2)),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),color=colors_410[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
 		ax.add_patch(retangulo_410)
 	else:
 		pass
@@ -1447,7 +1447,7 @@ colors_660 = colormap(norm_660(RF_DEPTH_mean_2_true_Pds))
 
 for i,j in enumerate(RF_lon):
 	if math.isnan(RF_DEPTH_mean_2_true_Pds[i]) == False:
-		retangulo_660 = Rectangle(xy=(RF_lon[i] - DIST_GRID_PP_MED, RF_lat[i] - DIST_GRID_PP_MED),width=DIST_GRID_PP_MED, height=DIST_GRID_PP_MED,color=colors_660[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+		retangulo_660 = Rectangle(xy=(RF_lon[i] - DIST_GRID_PP_MED/(GRID_PP_MULT/2), RF_lat[i] - DIST_GRID_PP_MED/(GRID_PP_MULT/2)),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),color=colors_660[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
 		ax2.add_patch(retangulo_660)
 	else:
 		pass
@@ -1504,7 +1504,7 @@ colors_410 = colormap(norm_410(RF_DEPTH_mean_1_true_Ppds))
 for i,j in enumerate(RF_lon):
 	if math.isnan(RF_DEPTH_mean_1_true_Ppds[i]) == False:
 
-		retangulo_410 = Rectangle(xy=(RF_lon[i] - DIST_GRID_PP_MED, RF_lat[i] - DIST_GRID_PP_MED),width=DIST_GRID_PP_MED, height=DIST_GRID_PP_MED,color=colors_410[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+		retangulo_410 = Rectangle(xy=(RF_lon[i] - DIST_GRID_PP_MED/(GRID_PP_MULT/2), RF_lat[i] - DIST_GRID_PP_MED/(GRID_PP_MULT/2)),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),color=colors_410[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
 		ax.add_patch(retangulo_410)
 
 	else:
@@ -1537,7 +1537,7 @@ colors_660 = colormap(norm_660(RF_DEPTH_mean_2_true_Ppds))
 
 for i,j in enumerate(RF_lon):
 	if math.isnan(RF_DEPTH_mean_1_true_Ppds[i]) == False:
-		retangulo_660 = Rectangle(xy=(RF_lon[i] - DIST_GRID_PP_MED, RF_lat[i] - DIST_GRID_PP_MED),width=DIST_GRID_PP_MED, height=DIST_GRID_PP_MED,color=colors_660[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+		retangulo_660 = Rectangle(xy=(RF_lon[i] - DIST_GRID_PP_MED/(GRID_PP_MULT/2), RF_lat[i] - DIST_GRID_PP_MED/(GRID_PP_MULT/2)),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),color=colors_660[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
 		ax2.add_patch(retangulo_660)
 	else:
 		pass
@@ -1594,7 +1594,7 @@ colors_410 = colormap_std(norm_410(RF_DEPTH_std_1_Pds))
 
 for i,j in enumerate(RF_lon):
 	if math.isnan(RF_DEPTH_std_1_Pds[i]) == False:
-		retangulo_410 = Rectangle(xy=(RF_lon[i] - DIST_GRID_PP_MED, RF_lat[i] - DIST_GRID_PP_MED),width=DIST_GRID_PP_MED, height=DIST_GRID_PP_MED,color=colors_410[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+		retangulo_410 = Rectangle(xy=(RF_lon[i] - DIST_GRID_PP_MED/(GRID_PP_MULT/2), RF_lat[i] - DIST_GRID_PP_MED/(GRID_PP_MULT/2)),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),color=colors_410[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
 		ax.add_patch(retangulo_410)
 	else:
 		pass
@@ -1626,7 +1626,7 @@ colors_660 = colormap_std(norm_660(RF_DEPTH_std_2_Pds))
 
 for i,j in enumerate(RF_lon):
 	if math.isnan(RF_DEPTH_std_2_Pds[i]) == False:
-		retangulo_660 = Rectangle(xy=(RF_lon[i] - DIST_GRID_PP_MED, RF_lat[i] - DIST_GRID_PP_MED),width=DIST_GRID_PP_MED, height=DIST_GRID_PP_MED,color=colors_660[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+		retangulo_660 = Rectangle(xy=(RF_lon[i] - DIST_GRID_PP_MED/(GRID_PP_MULT/2), RF_lat[i] - DIST_GRID_PP_MED/(GRID_PP_MULT/2)),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),color=colors_660[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
 		ax2.add_patch(retangulo_660)
 	else: 
 		pass
@@ -1680,7 +1680,7 @@ colors_410 = colormap_std(norm_410(RF_DEPTH_std_1_Ppds))
 
 for i,j in enumerate(RF_lon):
 	if math.isnan(RF_DEPTH_std_1_Ppds[i]) == False:
-		retangulo_410 = Rectangle(xy=(RF_lon[i] - DIST_GRID_PP_MED, RF_lat[i] - DIST_GRID_PP_MED),width=DIST_GRID_PP_MED, height=DIST_GRID_PP_MED,color=colors_410[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+		retangulo_410 = Rectangle(xy=(RF_lon[i] - DIST_GRID_PP_MED/(GRID_PP_MULT/2), RF_lat[i] - DIST_GRID_PP_MED/(GRID_PP_MULT/2)),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),color=colors_410[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
 		ax.add_patch(retangulo_410)
 	else:
 		pass
@@ -1712,7 +1712,7 @@ colors_660 = colormap_std(norm_660(RF_DEPTH_std_2_Ppds))
 
 for i,j in enumerate(RF_lon):
 	if math.isnan(RF_DEPTH_std_2_Ppds[i]) == False:
-		retangulo_660 = Rectangle(xy=(RF_lon[i] - DIST_GRID_PP_MED, RF_lat[i] - DIST_GRID_PP_MED),width=DIST_GRID_PP_MED, height=DIST_GRID_PP_MED,color=colors_660[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+		retangulo_660 = Rectangle(xy=(RF_lon[i] - DIST_GRID_PP_MED/(GRID_PP_MULT/2), RF_lat[i] - DIST_GRID_PP_MED/(GRID_PP_MULT/2)),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),color=colors_660[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
 		ax2.add_patch(retangulo_660)
 	else:
 		pass
@@ -1764,7 +1764,7 @@ colors_410 = colormap(norm_410(delta_1_Vp_mean))
 
 for i,j in enumerate(RF_lon):
 	if math.isnan(delta_1_Vp_mean[i]) == False:
-		retangulo_410 = Rectangle(xy=(RF_lon[i] - DIST_GRID_PP_MED, RF_lat[i] - DIST_GRID_PP_MED),width=DIST_GRID_PP_MED, height=DIST_GRID_PP_MED,color=colors_410[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+		retangulo_410 = Rectangle(xy=(RF_lon[i] - DIST_GRID_PP_MED/(GRID_PP_MULT/2), RF_lat[i] - DIST_GRID_PP_MED/(GRID_PP_MULT/2)),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),color=colors_410[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
 		ax.add_patch(retangulo_410)
 	else: 
 		pass
@@ -1794,7 +1794,7 @@ colors_660 = colormap(norm_660(delta_2_Vp_mean))
 
 for i,j in enumerate(RF_lon):
 	if math.isnan(delta_2_Vp_mean[i]) == False:
-		retangulo_660 = Rectangle(xy=(RF_lon[i] - DIST_GRID_PP_MED, RF_lat[i] - DIST_GRID_PP_MED),width=DIST_GRID_PP_MED, height=DIST_GRID_PP_MED,color=colors_660[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+		retangulo_660 = Rectangle(xy=(RF_lon[i] - DIST_GRID_PP_MED/(GRID_PP_MULT/2), RF_lat[i] - DIST_GRID_PP_MED/(GRID_PP_MULT/2)),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),color=colors_660[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
 		ax2.add_patch(retangulo_660)
 	else:
 		pass
@@ -1849,7 +1849,7 @@ colors_410 = colormap(norm_410(thickness_MTZ_Pds))
 
 for i,j in enumerate(RF_lon):
 	if math.isnan(thickness_MTZ_Pds[i]) == False:
-		retangulo_410 = Rectangle(xy=(RF_lon[i] - DIST_GRID_PP_MED, RF_lat[i] - DIST_GRID_PP_MED),width=DIST_GRID_PP_MED, height=DIST_GRID_PP_MED,color=colors_410[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+		retangulo_410 = Rectangle(xy=(RF_lon[i] - DIST_GRID_PP_MED/(GRID_PP_MULT/2), RF_lat[i] - DIST_GRID_PP_MED/(GRID_PP_MULT/2)),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),color=colors_410[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
 		ax.add_patch(retangulo_410)
 	else:
 		pass
@@ -1880,7 +1880,7 @@ colors_660 = colormap(norm_660(thickness_MTZ_Ppds))
 
 for i,j in enumerate(RF_lon):
 	if math.isnan(thickness_MTZ_Ppds[i]) == False:
-		retangulo_660 = Rectangle(xy=(RF_lon[i] - DIST_GRID_PP_MED, RF_lat[i] - DIST_GRID_PP_MED),width=DIST_GRID_PP_MED, height=DIST_GRID_PP_MED,color=colors_660[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+		retangulo_660 = Rectangle(xy=(RF_lon[i] - DIST_GRID_PP_MED/(GRID_PP_MULT/2), RF_lat[i] - DIST_GRID_PP_MED/(GRID_PP_MULT/2)),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),color=colors_660[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
 		ax2.add_patch(retangulo_660)
 	else:
 		pass
@@ -1933,7 +1933,7 @@ colors_410 = colormap_std(norm_410(thickness_MTZ_Pds_std))
 
 for i,j in enumerate(RF_lon):
 	if math.isnan(thickness_MTZ_Pds_std[i]) == False:
-		retangulo_410 = Rectangle(xy=(RF_lon[i] - DIST_GRID_PP_MED, RF_lat[i] - DIST_GRID_PP_MED),width=DIST_GRID_PP_MED, height=DIST_GRID_PP_MED,color=colors_410[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+		retangulo_410 = Rectangle(xy=(RF_lon[i] - DIST_GRID_PP_MED/(GRID_PP_MULT/2), RF_lat[i] - DIST_GRID_PP_MED/(GRID_PP_MULT/2)),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),color=colors_410[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
 		ax.add_patch(retangulo_410)
 	else:
 		pass
@@ -1964,7 +1964,7 @@ colors_660 = colormap_std(norm_660(thickness_MTZ_Ppds_std))
 
 for i,j in enumerate(RF_lon):
 	if math.isnan(thickness_MTZ_Ppds_std[i]) == False:
-		retangulo_660 = Rectangle(xy=(RF_lon[i] - DIST_GRID_PP_MED, RF_lat[i] - DIST_GRID_PP_MED),width=DIST_GRID_PP_MED, height=DIST_GRID_PP_MED,color=colors_660[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+		retangulo_660 = Rectangle(xy=(RF_lon[i] - DIST_GRID_PP_MED/(GRID_PP_MULT/2), RF_lat[i] - DIST_GRID_PP_MED/(GRID_PP_MULT/2)),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),color=colors_660[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
 		ax2.add_patch(retangulo_660)
 	else: 
 		pass
@@ -2018,7 +2018,7 @@ colors_410 = colormap(norm_410(true_thickness_MTZ_Pds))
 
 for i,j in enumerate(RF_lon):
 	if math.isnan(true_thickness_MTZ_Pds[i]) == False:
-		retangulo_410 = Rectangle(xy=(RF_lon[i] - DIST_GRID_PP_MED, RF_lat[i] - DIST_GRID_PP_MED),width=DIST_GRID_PP_MED, height=DIST_GRID_PP_MED,color=colors_410[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+		retangulo_410 = Rectangle(xy=(RF_lon[i] - DIST_GRID_PP_MED/(GRID_PP_MULT/2), RF_lat[i] - DIST_GRID_PP_MED/(GRID_PP_MULT/2)),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),color=colors_410[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
 		ax.add_patch(retangulo_410)
 	else:
 		pass
@@ -2048,7 +2048,7 @@ colors_660 = colormap(norm_660(true_thickness_MTZ_Ppds))
 
 for i,j in enumerate(RF_lon):
 	if math.isnan(true_thickness_MTZ_Ppds[i]) == False:
-		retangulo_660 = Rectangle(xy=(RF_lon[i] - DIST_GRID_PP_MED, RF_lat[i] - DIST_GRID_PP_MED),width=DIST_GRID_PP_MED, height=DIST_GRID_PP_MED,color=colors_660[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+		retangulo_660 = Rectangle(xy=(RF_lon[i] - DIST_GRID_PP_MED/(GRID_PP_MULT/2), RF_lat[i] - DIST_GRID_PP_MED/(GRID_PP_MULT/2)),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),color=colors_660[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
 		ax2.add_patch(retangulo_660)
 	else:
 		pass
@@ -2099,7 +2099,7 @@ colors_410 = colormap_std(norm_410(true_thickness_MTZ_Pds_std))
 
 for i,j in enumerate(RF_lon):
 	if math.isnan(true_thickness_MTZ_Pds_std[i]) == False:
-		retangulo_410 = Rectangle(xy=(RF_lon[i] - DIST_GRID_PP_MED, RF_lat[i] - DIST_GRID_PP_MED),width=DIST_GRID_PP_MED, height=DIST_GRID_PP_MED,color=colors_410[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+		retangulo_410 = Rectangle(xy=(RF_lon[i] - DIST_GRID_PP_MED/(GRID_PP_MULT/2), RF_lat[i] - DIST_GRID_PP_MED/(GRID_PP_MULT/2)),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),color=colors_410[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
 		ax.add_patch(retangulo_410)
 	else:
 		pass
@@ -2128,7 +2128,7 @@ colors_660 = colormap_std(norm_660(true_thickness_MTZ_Ppds_std))
 
 for i,j in enumerate(RF_lon):
 	if math.isnan(true_thickness_MTZ_Ppds_std[i]) == False:
-		retangulo_660 = Rectangle(xy=(RF_lon[i] - DIST_GRID_PP_MED, RF_lat[i] - DIST_GRID_PP_MED),width=DIST_GRID_PP_MED, height=DIST_GRID_PP_MED,color=colors_660[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+		retangulo_660 = Rectangle(xy=(RF_lon[i] - DIST_GRID_PP_MED/(GRID_PP_MULT/2), RF_lat[i] - DIST_GRID_PP_MED/(GRID_PP_MULT/2)),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),color=colors_660[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
 		ax2.add_patch(retangulo_660)
 	else:
 		pass
@@ -2181,7 +2181,7 @@ colors_410 = colormap(norm_410(difference_thickness_MTZ_model_Ppds))
 
 for i,j in enumerate(RF_lon):
 	if math.isnan(difference_thickness_MTZ_model_Ppds[i]) == False:
-		retangulo_410 = Rectangle(xy=(RF_lon[i] - DIST_GRID_PP_MED, RF_lat[i] - DIST_GRID_PP_MED),width=DIST_GRID_PP_MED, height=DIST_GRID_PP_MED,color=colors_410[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+		retangulo_410 = Rectangle(xy=(RF_lon[i] - DIST_GRID_PP_MED/(GRID_PP_MULT/2), RF_lat[i] - DIST_GRID_PP_MED/(GRID_PP_MULT/2)),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),color=colors_410[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
 		ax.add_patch(retangulo_410)
 	else:
 		pass
@@ -2211,7 +2211,7 @@ colors_660 = colormap(norm_660(difference_thickness_MTZ_model_Ppds))
 
 for i,j in enumerate(RF_lon):
 	if math.isnan(difference_thickness_MTZ_model_Ppds[i]) == False:
-		retangulo_660 = Rectangle(xy=(RF_lon[i] - DIST_GRID_PP_MED, RF_lat[i] - DIST_GRID_PP_MED),width=DIST_GRID_PP_MED, height=DIST_GRID_PP_MED,color=colors_660[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+		retangulo_660 = Rectangle(xy=(RF_lon[i] - DIST_GRID_PP_MED/(GRID_PP_MULT/2), RF_lat[i] - DIST_GRID_PP_MED/(GRID_PP_MULT/2)),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),color=colors_660[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
 		ax2.add_patch(retangulo_660)
 	else:
 		pass
@@ -2264,7 +2264,7 @@ colors_410 = colormap_std(norm_410(difference_thickness_MTZ_model_Pds_std))
 
 for i,j in enumerate(RF_lon):
 	if math.isnan(difference_thickness_MTZ_model_Pds_std[i]) == False:
-		retangulo_410 = Rectangle(xy=(RF_lon[i] - DIST_GRID_PP_MED, RF_lat[i] - DIST_GRID_PP_MED),width=DIST_GRID_PP_MED, height=DIST_GRID_PP_MED,color=colors_410[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+		retangulo_410 = Rectangle(xy=(RF_lon[i] - DIST_GRID_PP_MED/(GRID_PP_MULT/2), RF_lat[i] - DIST_GRID_PP_MED/(GRID_PP_MULT/2)),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),color=colors_410[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
 		ax.add_patch(retangulo_410)
 	else:
 		pass
@@ -2294,7 +2294,7 @@ colors_660 = colormap_std(norm_660(difference_thickness_MTZ_model_Ppds_std))
 
 for i,j in enumerate(RF_lon):
 	if math.isnan(difference_thickness_MTZ_model_Ppds_std[i]) == False:
-		retangulo_660 = Rectangle(xy=(RF_lon[i] - DIST_GRID_PP_MED, RF_lat[i] - DIST_GRID_PP_MED),width=DIST_GRID_PP_MED, height=DIST_GRID_PP_MED,color=colors_660[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+		retangulo_660 = Rectangle(xy=(RF_lon[i] - DIST_GRID_PP_MED/(GRID_PP_MULT/2), RF_lat[i] - DIST_GRID_PP_MED/(GRID_PP_MULT/2)),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),color=colors_660[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
 		ax2.add_patch(retangulo_660)
 	else:
 		pass

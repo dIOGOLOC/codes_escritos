@@ -206,7 +206,7 @@ if CROSS_SECTION_AXIS == 'x':
 
 	AB_lat = [[]]*len(rows[:,0])
 
-	for i,j in enumerate(rows[:,0]):
+	for i,j in enumerate(rows[:,0][::-1]):
 
 		lat_lon = [(lons[k],lats[k]) for k,l in enumerate(lats)]
 		grid_column = [(rows[i,:][k],cols[i,:][k]) for k,l in enumerate(rows[i,:])]
@@ -312,7 +312,7 @@ else:
 
 	AB_lat = [[]]*len(rows[0,:])
 
-	for i,j in enumerate(rows[0,:]):
+	for i,j in enumerate(rows[0,:][::-1]):
 		
 		lat_lon = [(lons[k],lats[k]) for k,l in enumerate(lats)]
 		grid_column = [(rows[:,i][k],cols[:,i][k]) for k,l in enumerate(rows[:,i])]
@@ -399,7 +399,7 @@ for i,j in enumerate(RF_data_profile_Pds):
 	map_MTZ_thickness =  fig.add_subplot(gs[0:2,0], projection=ccrs.PlateCarree())
 
 	#######################################################################
-	colormap = cm.seismic_r
+	colormap = cm.bwr_r
 
 	map_MTZ_thickness.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
 	map_MTZ_thickness.yaxis.set_ticks_position('both')
@@ -428,13 +428,16 @@ for i,j in enumerate(RF_data_profile_Pds):
 
 	for t,y in enumerate(lons):
 		if math.isnan(RF_DEPTH_true_thickness_MTZ_Pds[t]) == False:
-			retangulo_410 = Rectangle(xy=(lons[t] - DIST_GRID_PP_MED, lats[t] - DIST_GRID_PP_MED),width=DIST_GRID_PP_MED, height=DIST_GRID_PP_MED,fc=colors_map_MTZ_thickness[t], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+			retangulo_410 = Rectangle(xy=(lons[t] - DIST_GRID_PP_MED/(GRID_PP_MULT/2), lats[t] - DIST_GRID_PP_MED/(GRID_PP_MULT/2)),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),fc=colors_map_MTZ_thickness[t], ec='None',transform=ccrs.Geodetic(),zorder=2)
 			map_MTZ_thickness.add_patch(retangulo_410)
 		else:
 			pass
 
-	map_MTZ_thickness.plot(AB_lon[i],AB_lat[i],linewidth=2,color='k')
-	map_MTZ_thickness.set_title('MTZ True Thickness', y=1.08)
+	for x,c in enumerate(AB_lon[i]):
+		ret_profile = Rectangle(xy=(AB_lon[i][x] - DIST_GRID_PP_MED/(GRID_PP_MULT/2), AB_lat[i][x] - DIST_GRID_PP_MED/(GRID_PP_MULT/2)),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),fc='k',alpha=0.2,ec='None',transform=ccrs.Geodetic(),zorder=10)
+		map_MTZ_thickness.add_patch(ret_profile)
+
+	map_MTZ_thickness.set_title('MTZ True Thickness', y=1.1)
 
 	sm_map_MTZ_thickness = plt.cm.ScalarMappable(cmap=colormap,norm=norm_map_MTZ_thickness)
 	sm_map_MTZ_thickness._A = []
