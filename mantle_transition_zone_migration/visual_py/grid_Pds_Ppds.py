@@ -31,7 +31,7 @@ from tvtk.api import tvtk
 from parameters_py.mgconfig import (
 					RF_DIR,RF_EXT,MODEL_FILE_NPZ,MIN_DEPTH,MAX_DEPTH,INTER_DEPTH,PdS_DIR,
 					PP_DIR,PP_SELEC_DIR,NUMBER_PP_PER_BIN,STA_DIR,GRID_PP_MULT,
-					LLCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLON_LARGE,URCRNRLAT_LARGE,LLCRNRLON_SMALL,SECTION_NUM,
+					LLCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLON_LARGE,URCRNRLAT_LARGE,LLCRNRLON_SMALL,
 					URCRNRLON_SMALL,LLCRNRLAT_SMALL,URCRNRLAT_SMALL,PROJECT_LAT,PROJECT_LON,
 					BOUNDARY_1_SHP,BOUNDARY_1_SHP_NAME,BOUNDARY_2_SHP,BOUNDARY_2_SHP_NAME,					
 					PP_FIGURE,EXT_FIG,DPI_FIG,DIST_GRID_PP_MED,DIST_GRID_PP,DEPTH_RANGE
@@ -304,7 +304,7 @@ zi = np.linspace(-800, -300, 50)
 
 gridx, gridy, gridz = np.meshgrid(xi,yi,zi)
 
-volume = interpolate.griddata((np.array(grid_camadas_x),np.array(grid_camadas_y),np.array(grid_camadas_z)), np.array(grid_Pds_data), (gridx, gridy,gridz),method='linear')
+volume = interpolate.griddata((np.array(grid_camadas_x),np.array(grid_camadas_y),np.array(grid_camadas_z)), np.array(grid_Pds_data), (gridx, gridy,gridz),method='nearest')
 
 
 mlab.figure(1, fgcolor=(0, 0, 0), bgcolor=(1, 1, 1))

@@ -151,10 +151,10 @@ DIST_GRID_PP = 1
 DIST_GRID_PP_MED = 0.5
 
 #number of piercing points per bin
-NUMBER_PP_PER_BIN = 10
+NUMBER_PP_PER_BIN = 20
 
 #number of stations RF per bin
-NUMBER_STA_PER_BIN = 3
+NUMBER_STA_PER_BIN = 2
 
 #False or True for depth estimation
 DEPTH_ESTIMATION = True 
