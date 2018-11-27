@@ -460,7 +460,7 @@ l4, = ax.plot(pp_2_long,pp_2_lat, '.',markersize=5,markeredgecolor='k',markerfac
 for i,j in enumerate(grdx):
 	retangulo = Rectangle(xy=(grdx[i] - DIST_GRID_PP_MED/(GRID_PP_MULT/2), grdy[i] - DIST_GRID_PP_MED/(GRID_PP_MULT/2)),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),color='None', ec='k',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
 	ax.add_patch(retangulo)
-ax.set_title('Pds Piercing Points',ha='center',va='top',y=1.08)
+#ax.set_title('Pds Piercing Points',ha='center',va='top',y=1.08)
 ax.legend([l1,l2,l3,l4,retangulo],['Stations','Piercing Points 410 km','Piercing Points '+"{0:.0f}".format(DEPTH_MED)+' km','Piercing Points 660 km','Selected Grid'],scatterpoints=1, frameon=True,labelspacing=1, loc='lower right',facecolor='w',fontsize='smaller')
 
 reader_1_SHP = Reader(BOUNDARY_1_SHP)
@@ -535,7 +535,7 @@ shape_2_SHP = list(reader_2_SHP.geometries())
 plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
 ax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 
-ax.set_title('Pds Piercing Points',ha='center',va='top',y=1.08)
+#ax.set_title('Pds Piercing Points',ha='center',va='top',y=1.08)
 ax.legend([l1,l3,retangulo,circulo],['Stations','Piercing Points '+"{0:.0f}".format(DEPTH_MED)+' km','Selected Grid','Piercing Points Fresnel Zone'],scatterpoints=1, frameon=True,labelspacing=1, loc='lower right',facecolor='w',fontsize='smaller')
 ax.gridlines(draw_labels=True)
 
@@ -573,7 +573,7 @@ plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
 ax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 ax.gridlines(draw_labels=True)
 
-ax.set_title('Ppds Piercing Points',ha='center',va='top',y=1.08)
+#ax.set_title('Ppds Piercing Points',ha='center',va='top',y=1.08)
 ax.legend([l1,l3,retangulo,circulo],['Stations','Piercing Points '+"{0:.0f}".format(DEPTH_MED)+' km','Selected Grid','Piercing Points Fresnel Zone'],scatterpoints=1, frameon=True,labelspacing=1, loc='lower right',facecolor='w',fontsize='smaller')
 
 #plt.show()
@@ -1200,7 +1200,7 @@ plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
 ax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 ax.gridlines(draw_labels=True)
 
-ax.set_title('Figure: Final Grid and Ppds Average Piercing Points',ha='center',va='top',y=1.08)
+#ax.set_title('Figure: Final Grid and Ppds Average Piercing Points',ha='center',va='top',y=1.08)
 ax.legend([l1,l3,retangulo,circulo],['Stations','Piercing Points '+"{0:.0f}".format(DEPTH_MED)+' km','Selected Grid','Piercing Points Fresnel Zone'],scatterpoints=1, frameon=True,labelspacing=1, loc='lower right',facecolor='w',fontsize='smaller')
 
 #plt.show()
@@ -1248,7 +1248,7 @@ for i,j in enumerate(RF_lon):
 
 ax.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
 
-ax.set_title('410 km Pds', y=1.08)
+#ax.set_title('410 km Pds', y=1.08)
 
 
 #Figure Depth of the Mantle Transition Zone for Pds phase for 660 km
@@ -1279,7 +1279,7 @@ for i,j in enumerate(RF_lon):
 
 ax2.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
 
-ax2.set_title('660 km Pds', y=1.08)
+#ax2.set_title('660 km Pds', y=1.08)
 
 #______________________________________________________________________
 
@@ -1291,11 +1291,11 @@ sm_660 = plt.cm.ScalarMappable(cmap=colormap,norm=norm_660)
 sm_660._A = []
 fig.colorbar(sm_660,ax=ax2,orientation='horizontal',shrink=0.8)
 
-fig.suptitle('Apparent depth per bin')
+#fig.suptitle('Apparent depth per bin')
 
 #plt.show()
 
-fig.savefig(PP_FIGURE+'Apparent_depth_Pds.'+EXT_FIG,dpi=DPI_FIG)
+#fig.savefig(PP_FIGURE+'Apparent_depth_Pds.'+EXT_FIG,dpi=DPI_FIG)
 
 #############################################################################################################################################################################################
 
@@ -1335,7 +1335,7 @@ for i,j in enumerate(RF_lon):
 
 ax.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
 
-ax.set_title('410 km Ppds', y=1.08)
+#ax.set_title('410 km Ppds', y=1.08)
 
 
 #Figure Depth of the Mantle Transition Zone for Ppds phase for 660 km
@@ -1366,7 +1366,7 @@ for i,j in enumerate(RF_lon):
 
 ax2.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
 
-ax2.set_title('660 km Ppds', y=1.08)
+#ax2.set_title('660 km Ppds', y=1.08)
 
 #______________________________________________________________________
 
@@ -1378,11 +1378,11 @@ sm_660 = plt.cm.ScalarMappable(cmap=colormap,norm=norm_660)
 sm_660._A = []
 fig.colorbar(sm_660,ax=ax2,orientation='horizontal',shrink=0.8)
 
-fig.suptitle('Apparent depth per bin')
+#fig.suptitle('Apparent depth per bin')
 
 #plt.show()
 
-fig.savefig(PP_FIGURE+'Apparent_depth_Ppds.'+EXT_FIG,dpi=DPI_FIG)
+#fig.savefig(PP_FIGURE+'Apparent_depth_Ppds.'+EXT_FIG,dpi=DPI_FIG)
 
 #############################################################################################################################################################################################
 
@@ -1423,7 +1423,7 @@ for i,j in enumerate(RF_lon):
 
 ax.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
 
-ax.set_title('410 km Pds', y=1.08)
+#ax.set_title('410 km Pds', y=1.08)
 
 
 #Figure Depth of the Mantle Transition Zone for Ppds phase for 660 km
@@ -1454,7 +1454,7 @@ for i,j in enumerate(RF_lon):
 
 ax2.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
 
-ax2.set_title('660 km Pds', y=1.08)
+#ax2.set_title('660 km Pds', y=1.08)
 
 #______________________________________________________________________
 
@@ -1466,11 +1466,11 @@ sm_660 = plt.cm.ScalarMappable(cmap=colormap,norm=norm_660)
 sm_660._A = []
 fig.colorbar(sm_660,ax=ax2,orientation='horizontal',shrink=0.8)
 
-fig.suptitle('True depth per bin')
+#fig.suptitle('True depth per bin')
 
 #plt.show()
 
-fig.savefig(PP_FIGURE+'TRUE_DEPTH_Pds.'+EXT_FIG,dpi=DPI_FIG)
+#fig.savefig(PP_FIGURE+'TRUE_DEPTH_Pds.'+EXT_FIG,dpi=DPI_FIG)
 
 ###################################################################################################################
 
@@ -1513,7 +1513,7 @@ for i,j in enumerate(RF_lon):
 
 ax.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
 
-ax.set_title('410 km Ppds', y=1.08)
+#ax.set_title('410 km Ppds', y=1.08)
 
 
 #Figure Depth of the Mantle Transition Zone for Ppds phase for 660 km
@@ -1544,7 +1544,7 @@ for i,j in enumerate(RF_lon):
 
 ax2.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
 
-ax2.set_title('660 km Ppds', y=1.08)
+#ax2.set_title('660 km Ppds', y=1.08)
 
 #______________________________________________________________________
 
@@ -1556,11 +1556,11 @@ sm_660 = plt.cm.ScalarMappable(cmap=colormap,norm=norm_660)
 sm_660._A = []
 fig.colorbar(sm_660,ax=ax2,orientation='horizontal',shrink=0.8)
 
-fig.suptitle('True depth per bin')
+#fig.suptitle('True depth per bin')
 
 #plt.show()
 
-fig.savefig(PP_FIGURE+'TRUE_DEPTH_Ppds.'+EXT_FIG,dpi=DPI_FIG)
+#fig.savefig(PP_FIGURE+'TRUE_DEPTH_Ppds.'+EXT_FIG,dpi=DPI_FIG)
 
 ###################################################################################################################
 
@@ -1602,7 +1602,7 @@ for i,j in enumerate(RF_lon):
 
 ax.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
 
-ax.set_title('Std 410 km Pds', y=1.08)
+#ax.set_title('Std 410 km Pds', y=1.08)
 
 
 #Figure std Pds phase for 660 km
@@ -1633,7 +1633,7 @@ for i,j in enumerate(RF_lon):
 
 ax2.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
 
-ax2.set_title('Std 660 km Pds', y=1.08)
+#ax2.set_title('Std 660 km Pds', y=1.08)
 
 #______________________________________________________________________
 
@@ -1645,11 +1645,11 @@ sm_660 = plt.cm.ScalarMappable(cmap=colormap_std,norm=norm_660)
 sm_660._A = []
 fig.colorbar(sm_660,ax=ax2,orientation='horizontal',shrink=0.8)
 
-fig.suptitle('STD depth per bin')
+#fig.suptitle('STD depth per bin')
 
 #plt.show()
 
-fig.savefig(PP_FIGURE+'STD_DEPTH_Pds.'+EXT_FIG,dpi=DPI_FIG)
+#fig.savefig(PP_FIGURE+'STD_DEPTH_Pds.'+EXT_FIG,dpi=DPI_FIG)
 
 #######################################################################################################################################
 
@@ -1688,7 +1688,7 @@ for i,j in enumerate(RF_lon):
 
 ax.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
 
-ax.set_title('Std 410 km Ppds', y=1.08)
+#ax.set_title('Std 410 km Ppds', y=1.08)
 
 
 #Figure std Pds phase for 660 km
@@ -1718,7 +1718,7 @@ for i,j in enumerate(RF_lon):
 		pass
 ax2.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
 
-ax2.set_title('Std 660 km Pds', y=1.08)
+#ax2.set_title('Std 660 km Pds', y=1.08)
 
 #______________________________________________________________________
 
@@ -1730,11 +1730,11 @@ sm_660 = plt.cm.ScalarMappable(cmap=colormap_std,norm=norm_660)
 sm_660._A = []
 fig.colorbar(sm_660,ax=ax2,orientation='horizontal',shrink=0.8)
 
-fig.suptitle('Std depth per bin')
+#fig.suptitle('Std depth per bin')
 
 #plt.show()
 
-fig.savefig(PP_FIGURE+'STD_DEPTH_Ppds.'+EXT_FIG,dpi=DPI_FIG)
+#fig.savefig(PP_FIGURE+'STD_DEPTH_Ppds.'+EXT_FIG,dpi=DPI_FIG)
 
 #######################################################################################################################################
 
@@ -1772,7 +1772,7 @@ for i,j in enumerate(RF_lon):
 
 ax.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
 
-ax.set_title('Delta Vp - 410 km', y=1.08)
+#ax.set_title('Delta Vp - 410 km', y=1.08)
 
 
 ax2.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
@@ -1801,7 +1801,7 @@ for i,j in enumerate(RF_lon):
 
 ax2.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
 
-ax2.set_title('Delta Vp - 660 km', y=1.08)
+#ax2.set_title('Delta Vp - 660 km', y=1.08)
 
 #______________________________________________________________________
 
@@ -1813,11 +1813,11 @@ sm_660 = plt.cm.ScalarMappable(cmap=colormap,norm=norm_660)
 sm_660._A = []
 fig.colorbar(sm_660,ax=ax2,orientation='horizontal',shrink=0.8)
 
-fig.suptitle('Delta Vp per bin')
+#fig.suptitle('Delta Vp per bin')
 
 #plt.show()
 
-fig.savefig(PP_FIGURE+'DELTA_VP.'+EXT_FIG,dpi=DPI_FIG)
+#fig.savefig(PP_FIGURE+'DELTA_VP.'+EXT_FIG,dpi=DPI_FIG)
 
 
 #######################################################################################################################################
@@ -1857,7 +1857,7 @@ for i,j in enumerate(RF_lon):
 
 ax.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
 
-ax.set_title('Thickness of MTZ (Pds)', y=1.08)
+#ax.set_title('Thickness of MTZ (Pds)', y=1.08)
 
 
 #Figure Depth of the Mantle Transition Zone for Ppds phase for 660 km
@@ -1887,7 +1887,7 @@ for i,j in enumerate(RF_lon):
 
 ax2.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
 
-ax2.set_title('Thickness of MTZ (Ppds)', y=1.08)
+#ax2.set_title('Thickness of MTZ (Ppds)', y=1.08)
 
 #______________________________________________________________________
 
@@ -1899,11 +1899,11 @@ sm_660 = plt.cm.ScalarMappable(cmap=colormap,norm=norm_660)
 sm_660._A = []
 fig.colorbar(sm_660,ax=ax2,orientation='horizontal',shrink=0.8)
 
-fig.suptitle('Thickness of the Mantle Transition Zone')
+#fig.suptitle('Thickness of the Mantle Transition Zone')
 
 #plt.show()
 
-fig.savefig(PP_FIGURE+'THICKNESS_MTZ.'+EXT_FIG,dpi=DPI_FIG)
+#fig.savefig(PP_FIGURE+'THICKNESS_MTZ.'+EXT_FIG,dpi=DPI_FIG)
 
 ####################################################################################################################################
 print('Plotting Figure: Std Thickness of the Mantle Transition Zone')
@@ -1941,7 +1941,7 @@ for i,j in enumerate(RF_lon):
 
 ax.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
 
-ax.set_title('STD Thickness of MTZ (Pds)', y=1.08)
+#ax.set_title('STD Thickness of MTZ (Pds)', y=1.08)
 
 
 #Figure Depth of the Mantle Transition Zone for Ppds phase for 660 km
@@ -1971,7 +1971,7 @@ for i,j in enumerate(RF_lon):
 
 ax2.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
 
-ax2.set_title('STD Thickness of MTZ (Ppds)', y=1.08)
+#ax2.set_title('STD Thickness of MTZ (Ppds)', y=1.08)
 
 #______________________________________________________________________
 
@@ -1983,11 +1983,11 @@ sm_660 = plt.cm.ScalarMappable(cmap=colormap_std,norm=norm_660)
 sm_660._A = []
 fig.colorbar(sm_660,ax=ax2,orientation='horizontal',shrink=0.8)
 
-fig.suptitle('STD Thickness of the Mantle Transition Zone')
+#fig.suptitle('STD Thickness of the Mantle Transition Zone')
 
 #plt.show()
 
-fig.savefig(PP_FIGURE+'STD_THICKNESS_MTZ.'+EXT_FIG,dpi=DPI_FIG)
+#fig.savefig(PP_FIGURE+'STD_THICKNESS_MTZ.'+EXT_FIG,dpi=DPI_FIG)
 
 
 ####################################################################################################################################
@@ -2026,7 +2026,7 @@ for i,j in enumerate(RF_lon):
 
 ax.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
 
-ax.set_title('True Thickness of MTZ (Pds)', y=1.08)
+#ax.set_title('True Thickness of MTZ (Pds)', y=1.08)
 
 
 
@@ -2055,7 +2055,7 @@ for i,j in enumerate(RF_lon):
 
 ax2.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
 
-ax2.set_title('True Thickness of MTZ (Ppds)', y=1.08)
+#ax2.set_title('True Thickness of MTZ (Ppds)', y=1.08)
 
 #______________________________________________________________________
 
@@ -2067,11 +2067,11 @@ sm_660 = plt.cm.ScalarMappable(cmap=colormap,norm=norm_660)
 sm_660._A = []
 fig.colorbar(sm_660,ax=ax2,orientation='horizontal',shrink=0.8)
 
-fig.suptitle('True Thickness of the Mantle Transition Zone')
+#fig.suptitle('True Thickness of the Mantle Transition Zone')
 
 #plt.show()
 
-fig.savefig(PP_FIGURE+'TRUE_THICKNESS_MTZ.'+EXT_FIG,dpi=DPI_FIG)
+#fig.savefig(PP_FIGURE+'TRUE_THICKNESS_MTZ.'+EXT_FIG,dpi=DPI_FIG)
 
 ####################################################################################################################################
 print('Plotting Figure: Std True Thickness of the Mantle Transition Zone')
@@ -2106,7 +2106,7 @@ for i,j in enumerate(RF_lon):
 
 ax.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
 
-ax.set_title('STD True Thickness of MTZ (Pds)', y=1.08)
+#ax.set_title('STD True Thickness of MTZ (Pds)', y=1.08)
 
 
 
@@ -2135,7 +2135,7 @@ for i,j in enumerate(RF_lon):
 
 ax2.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
 
-ax2.set_title('STD True Thickness of MTZ (Ppds)', y=1.08)
+#ax2.set_title('STD True Thickness of MTZ (Ppds)', y=1.08)
 
 #______________________________________________________________________
 
@@ -2147,11 +2147,11 @@ sm_660 = plt.cm.ScalarMappable(cmap=colormap_std,norm=norm_660)
 sm_660._A = []
 fig.colorbar(sm_660,ax=ax2,orientation='horizontal',shrink=0.8)
 
-fig.suptitle('STD True Thickness of the Mantle Transition Zone')
+#fig.suptitle('STD True Thickness of the Mantle Transition Zone')
 
 #plt.show()
 
-fig.savefig(PP_FIGURE+'STD_TRUE_THICKNESS_MTZ.'+EXT_FIG,dpi=DPI_FIG)
+#fig.savefig(PP_FIGURE+'STD_TRUE_THICKNESS_MTZ.'+EXT_FIG,dpi=DPI_FIG)
 
 ###################################################################################################################
 
@@ -2189,7 +2189,7 @@ for i,j in enumerate(RF_lon):
 
 ax.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
 
-ax.set_title('Difference between MTZ True Thickness (Pds)', y=1.08)
+#ax.set_title('Difference between MTZ True Thickness (Pds)', y=1.08)
 
 
 
@@ -2218,7 +2218,7 @@ for i,j in enumerate(RF_lon):
 
 ax2.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
 
-ax2.set_title('Difference between MTZ True Thickness (Ppds)', y=1.08)
+#ax2.set_title('Difference between MTZ True Thickness (Ppds)', y=1.08)
 
 #______________________________________________________________________
 
@@ -2230,11 +2230,11 @@ sm_660 = plt.cm.ScalarMappable(cmap=colormap,norm=norm_660)
 sm_660._A = []
 fig.colorbar(sm_660,ax=ax2,orientation='horizontal',shrink=0.8)
 
-fig.suptitle('Difference between True Mantle Transition Zone Thickness')
+#fig.suptitle('Difference between True Mantle Transition Zone Thickness')
 
 #plt.show()
 
-fig.savefig(PP_FIGURE+'DIFFERENCE_BETWEEN_TRUE_THICKNESS_MODEL_MTZ.'+EXT_FIG,dpi=DPI_FIG)
+#fig.savefig(PP_FIGURE+'DIFFERENCE_BETWEEN_TRUE_THICKNESS_MODEL_MTZ.'+EXT_FIG,dpi=DPI_FIG)
 
 ###############################################################################################################################
 
@@ -2272,7 +2272,7 @@ for i,j in enumerate(RF_lon):
 
 ax.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
 
-ax.set_title('Difference between MTZ True Thickness (Pds)', y=1.08)
+#ax.set_title('Difference between MTZ True Thickness (Pds)', y=1.08)
 
 
 
@@ -2301,7 +2301,7 @@ for i,j in enumerate(RF_lon):
 
 ax2.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
 
-ax2.set_title('STD Difference between MTZ True Thickness (Ppds)', y=1.08)
+#ax2.set_title('STD Difference between MTZ True Thickness (Ppds)', y=1.08)
 
 #______________________________________________________________________
 
@@ -2313,11 +2313,11 @@ sm_660 = plt.cm.ScalarMappable(cmap=colormap_std,norm=norm_660)
 sm_660._A = []
 fig.colorbar(sm_660,ax=ax2,orientation='horizontal',shrink=0.8)
 
-fig.suptitle('STD Difference between True Mantle Transition Zone Thickness')
+#fig.suptitle('STD Difference between True Mantle Transition Zone Thickness')
 
 #plt.show()
 
-fig.savefig(PP_FIGURE+'STD_DIFFERENCE_BETWEEN_TRUE_THICKNESS_MODEL_MTZ.'+EXT_FIG,dpi=DPI_FIG)
+#fig.savefig(PP_FIGURE+'STD_DIFFERENCE_BETWEEN_TRUE_THICKNESS_MODEL_MTZ.'+EXT_FIG,dpi=DPI_FIG)
 
 
 ###############################################################################################################################
@@ -2360,16 +2360,18 @@ ax.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor=
 geodetic_transform = ccrs.Geodetic()._as_mpl_transform(ax)
 text_transform = mpl.transforms.offset_copy(geodetic_transform, units='dots', x=0)
 
-plt.text(-40.3, -0.5, 's = '+str(NUMBER_STA_PER_BIN),
-             verticalalignment='center', horizontalalignment='left',fontsize=10, fontweight='bold',
-             transform=text_transform)
+plt.text(-42, -0.5, 's = '+str(NUMBER_STA_PER_BIN),
+             verticalalignment='center', horizontalalignment='left',fontsize=20, fontweight='bold',
+             transform=text_transform,
+			 bbox=dict(facecolor='white', boxstyle="round",edgecolor='w'))
 
-plt.text(-40.3, -1.0,  'p = '+str(NUMBER_PP_PER_BIN),
-             verticalalignment='center', horizontalalignment='left',fontsize=10, fontweight='bold',
-             transform=text_transform)
+plt.text(-42, -1.5,  'p = '+str(NUMBER_PP_PER_BIN),
+             verticalalignment='center', horizontalalignment='left',fontsize=20, fontweight='bold',
+             transform=text_transform,
+			 bbox=dict(facecolor='white', boxstyle="round",edgecolor='w'))
 
 
-ax.set_title('Difference between MTZ True Thickness', y=1.08)
+#ax.set_title('Difference between MTZ True Thickness', y=1.08)
 
 ax2.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
 
@@ -2399,17 +2401,19 @@ ax2.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor
 geodetic_transform = ccrs.Geodetic()._as_mpl_transform(ax2)
 text_transform = mpl.transforms.offset_copy(geodetic_transform, units='dots', x=0)
 
-plt.text(-40.3, -0.5, 's = '+str(NUMBER_STA_PER_BIN),
-             verticalalignment='center', horizontalalignment='left',fontsize=10, fontweight='bold',
-             transform=text_transform)
+plt.text(-42, -0.5, 's = '+str(NUMBER_STA_PER_BIN),
+             verticalalignment='center', horizontalalignment='left',fontsize=20, fontweight='bold',
+             transform=text_transform,
+			 bbox=dict(facecolor='white', boxstyle="round",edgecolor='w'))
 
-plt.text(-40.3, -1.0,  'p = '+str(NUMBER_PP_PER_BIN),
-             verticalalignment='center', horizontalalignment='left',fontsize=10, fontweight='bold',
-             transform=text_transform)
+plt.text(-42, -1.5,  'p = '+str(NUMBER_PP_PER_BIN),
+             verticalalignment='center', horizontalalignment='left',fontsize=20, fontweight='bold',
+             transform=text_transform,
+			 bbox=dict(facecolor='white', boxstyle="round",edgecolor='w'))
 
 
 
-ax2.set_title('STD Difference between MTZ True Thickness', y=1.08)
+#ax2.set_title('STD Difference between MTZ True Thickness', y=1.08)
 
 #______________________________________________________________________
 
@@ -2421,7 +2425,7 @@ sm_660 = plt.cm.ScalarMappable(cmap=colormap_std,norm=norm_660)
 sm_660._A = []
 fig.colorbar(sm_660,ax=ax2,orientation='horizontal',shrink=0.8)
 
-fig.suptitle('Difference between True MTZ Thickness and STD Difference between True MTZ Thickness')
+#fig.suptitle('Difference between True MTZ Thickness and STD Difference between True MTZ Thickness')
 
 #plt.show()
 

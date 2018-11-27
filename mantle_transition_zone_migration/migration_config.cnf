@@ -103,8 +103,8 @@ URCRNRLON_SMALL=-40
 URCRNRLAT_SMALL=-2
 
 #figures extention and dpi
-EXT_FIG=pdf
-DPI_FIG=300
+EXT_FIG=jpg
+DPI_FIG=200
 
 #Date event initial  (exemple: 2008-01-01T00:00:00)
 INITIAL_DATE_EVENT = 2014-01-01T00:00:00
@@ -151,7 +151,7 @@ DIST_GRID_PP = 1
 DIST_GRID_PP_MED = 0.5
 
 #number of piercing points per bin
-NUMBER_PP_PER_BIN = 20
+NUMBER_PP_PER_BIN = 30
 
 #number of stations RF per bin
 NUMBER_STA_PER_BIN = 2
