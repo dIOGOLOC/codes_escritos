@@ -11,8 +11,9 @@ import copy
 import matplotlib
 from matplotlib.cm import get_cmap
 from mpl_toolkits.mplot3d import Axes3D
-from mpl_toolkits.basemap import Basemap
-import shapefile
+import cartopy.crs as ccrs
+from cartopy.io.shapereader import Reader
+import cartopy.feature as cfeature
 from fatiando import gridder, utils
 import scipy.io
 import matplotlib.cm as cm
@@ -20,16 +21,19 @@ from matplotlib.ticker import MultipleLocator, FormatStrFormatter
 import json
 import matplotlib.gridspec as gridspec
 from mpl_toolkits.axes_grid1 import make_axes_locatable
+from matplotlib.patches import Circle,Rectangle
+import math
 
 
 
 from parameters_py.mgconfig import (
 					RF_DIR,RF_EXT,MODEL_FILE_NPZ,MIN_DEPTH,MAX_DEPTH,INTER_DEPTH,PdS_DIR,
-					PP_DIR,PP_SELEC_DIR,NUMBER_PP_PER_BIN,STA_DIR,
-					LLCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLON_LARGE,URCRNRLAT_LARGE,LLCRNRLON_SMALL,SECTION_NUM,
+					PP_DIR,PP_SELEC_DIR,NUMBER_PP_PER_BIN,STA_DIR,GRID_PP_MULT,COLORMAP_STD,
+					LLCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLON_LARGE,URCRNRLAT_LARGE,LLCRNRLON_SMALL,
 					URCRNRLON_SMALL,LLCRNRLAT_SMALL,URCRNRLAT_SMALL,PROJECT_LAT,PROJECT_LON,
 					BOUNDARY_1_SHP,BOUNDARY_1_SHP_NAME,BOUNDARY_2_SHP,BOUNDARY_2_SHP_NAME,					
-					RAY_PATH_FIGURE,PP_FIGURE,EXT_FIG,DPI_FIG,DIST_GRID_PP_MED,DIST_GRID_PP,DEPTH_RANGE
+					PP_FIGURE,EXT_FIG,DPI_FIG,DIST_GRID_PP_MED,DIST_GRID_PP,DEPTH_RANGE,COLORMAP_VEL,
+					NUMBER_PP_PER_BIN,NUMBER_STA_PER_BIN
 				   )
 
 
@@ -125,55 +129,89 @@ print('\n')
 
 camadas_terra_10_km = np.arange(MIN_DEPTH,MAX_DEPTH+INTER_DEPTH,INTER_DEPTH)
 
-print('Plotting Total of Receiver Functions per bin')
+print('Plotting ...')
 print('\n')
 
-fig_receiver_function_per_bin,ax = plt.subplots(1,1,figsize=(10,5))
+#Color Maps
 
-m = Basemap(resolution='l',projection='merc',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,llcrnrlon=LLCRNRLON_SMALL,
-            llcrnrlat=LLCRNRLAT_SMALL,urcrnrlon=URCRNRLON_SMALL,urcrnrlat=URCRNRLAT_SMALL)
+colormap = plt.get_cmap(COLORMAP_VEL)
 
-m.readshapefile(BOUNDARY_1_SHP,name=BOUNDARY_1_SHP_NAME,linewidth=3)
-m.readshapefile(BOUNDARY_2_SHP,name=BOUNDARY_2_SHP_NAME,linewidth=0.7)
+fig, ax = plt.subplots(nrows=1, ncols=1, subplot_kw={'projection': ccrs.Mercator(central_longitude=PROJECT_LON, globe=None)},figsize=(10,5))
+
+ax.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
+ax.yaxis.set_ticks_position('both')
+ax.xaxis.set_ticks_position('both')
+
+ax.set_xticks(np.arange(LLCRNRLON_LARGE,URCRNRLON_LARGE,4), crs=ccrs.PlateCarree())
+ax.set_yticks(np.arange(LLCRNRLAT_LARGE,URCRNRLAT_LARGE,4), crs=ccrs.PlateCarree())
+ax.tick_params(labelbottom='off',labeltop='on',labelleft='on',labelright='on')
+
+ax.grid(True,which='major',color='gray',linewidth=1,linestyle='--')
+
+reader_1_SHP = Reader(BOUNDARY_1_SHP)
+shape_1_SHP = list(reader_1_SHP.geometries())
+plot_shape_1_SHP = cfeature.ShapelyFeature(shape_1_SHP, ccrs.PlateCarree())
+ax.add_feature(plot_shape_1_SHP, facecolor='none', edgecolor='k',linewidth=3)
+
+reader_2_SHP = Reader(BOUNDARY_2_SHP)
+shape_2_SHP = list(reader_2_SHP.geometries())
+plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
+ax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
+
+norm_410 = mpl.colors.Normalize(vmin=200,vmax=300,clip=True)
+colors_410 = colormap(norm_410(RF_DEPTH_true_thickness_MTZ_Pds))
+
+for i,j in enumerate(lons):
+	retangulo = Rectangle(xy=(lons[i] - DIST_GRID_PP_MED/(GRID_PP_MULT/2), lats[i] - DIST_GRID_PP_MED/(GRID_PP_MULT/2)),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),color='None', ec='k',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+	ax.add_patch(retangulo)
+
+for i,j in enumerate(lons):
+	if math.isnan(RF_DEPTH_true_thickness_MTZ_Pds[i]) == False:
+		retangulo_410 = Rectangle(xy=(lons[i] - DIST_GRID_PP_MED/(GRID_PP_MULT/2), lats[i] - DIST_GRID_PP_MED/(GRID_PP_MULT/2)),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),color=colors_410[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=3)
+		ax.add_patch(retangulo_410)
+	else:
+		pass
+
+ax.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
+
+#______________________________________________________________________
+
+sm_410 = plt.cm.ScalarMappable(cmap=colormap,norm=norm_410)
+sm_410._A = []
+fig.colorbar(sm_410,ax=ax,orientation='horizontal',shrink=0.8)
 
 
-
-x, y = m(lons,lats)
-sc = m.scatter(x,y,40,RF_number,cmap='copper',marker='s',edgecolors='none')
-plt.colorbar(sc,label='Total of Receiver Functions per bin')
-
-
-
-m.fillcontinents(color='whitesmoke',lake_color=None,zorder=2,alpha=0.1)
-m.drawcoastlines(color='k',zorder=1)
-m.drawmeridians(np.arange(0, 360, 5),color='lightgrey',labels=[True,True,True,True])
-m.drawparallels(np.arange(-90, 90, 5),color='lightgrey',labels=[True,True,True,True])
-
-plt.title('Pick two points for cross-section and them close the windows', y=1.08)
+plt.title('Pick four points for bootstrapping cross-section and them close the windows', y=1.08)
 
 
 lon_click = []
 lat_click = []
+
 def onclick(event):
 	dist = []
+
 	for i,j in enumerate(lons):
-		lon_x,lat_y = m(j,lats[i])
-		dist.append(np.sqrt((event.xdata-lon_x)**2+(event.ydata-lat_y)**2))
+		latx,laty = ax.projection.transform_point(lons[i],lats[i],src_crs=ccrs.PlateCarree())
+		dist.append(np.sqrt((event.xdata-latx)**2+(event.ydata-laty)**2))
 	ind= np.argmin(dist)
 	print('Cross section lon and lat selected')
 	print('lon=%f, lat=%f' %(lons[ind],lats[ind]))
 	lon_click.append(lons[ind])
 	lat_click.append(lats[ind])
-	ax.plot(event.xdata,event.ydata,'xr',ms=10)
+	ax.plot(lons[ind],lats[ind],'Xr',ms=10, transform=ccrs.PlateCarree(),zorder=20)
 	plt.draw()
 	if len(lon_click) == 4:
-		fig_receiver_function_per_bin.canvas.mpl_disconnect(cid)
+		fig.canvas.mpl_disconnect(cid)
 
 	return lon_click,lat_click
 
-cid = fig_receiver_function_per_bin.canvas.mpl_connect('button_press_event', onclick)
+cid = fig.canvas.mpl_connect('button_press_event', onclick)
 
 plt.show()
+
+RESULTS_FOLDER = PP_FIGURE+'/'+'RESULTS_NUMBER_PP_PER_BIN_'+str(NUMBER_PP_PER_BIN)+'_NUMBER_STA_PER_BIN_'+str(NUMBER_STA_PER_BIN)+'/'
+os.makedirs(RESULTS_FOLDER,exist_ok=True)
+fig.savefig(RESULTS_FOLDER+'SELECTED_BINNED_DATA_CROSS_SECTION_Pds_Ppds_bootstrap_points.'+EXT_FIG,dpi=DPI_FIG)
 
 print('Calculating the distance between selected points and selected grid')
 print('\n')
@@ -207,7 +245,9 @@ RF_DEPTH_std_1_profile_Ppds = []
 RF_DEPTH_mean_2_profile_Ppds = []
 RF_DEPTH_std_2_profile_Ppds = []
 RF_DEPTH_mean_1_true_profile_Ppds = []
+RF_DEPTH_std_1_true_profile_Ppds = []
 RF_DEPTH_mean_2_true_profile_Ppds = []
+RF_DEPTH_std_2_true_profile_Ppds = []
 RF_DEPTH_mtz_thickness_profile_Ppds = [] 
 RF_DEPTH_true_thickness_MTZ_profile_Ppds = [] 
 
@@ -266,7 +306,9 @@ for i,j in enumerate(lon_click):
 		RF_DEPTH_mean_2_profile_Ppds.append(RF_DEPTH_mean_2_Ppds[dist.index(min(dist))])
 		RF_DEPTH_std_2_profile_Ppds.append(RF_DEPTH_std_2_Ppds[dist.index(min(dist))])
 		RF_DEPTH_mean_1_true_profile_Ppds.append(RF_DEPTH_mean_1_true_Ppds[dist.index(min(dist))])
+		RF_DEPTH_std_1_true_profile_Ppds.append(RF_DEPTH_std_1_true_Ppds[dist.index(min(dist))])
 		RF_DEPTH_mean_2_true_profile_Ppds.append(RF_DEPTH_mean_2_true_Ppds[dist.index(min(dist))])
+		RF_DEPTH_std_2_true_profile_Ppds.append(RF_DEPTH_std_2_true_Ppds[dist.index(min(dist))])
 		RF_DEPTH_mtz_thickness_profile_Ppds.append(RF_DEPTH_mtz_thickness_Ppds[dist.index(min(dist))])
 		RF_DEPTH_true_thickness_MTZ_profile_Ppds.append(RF_DEPTH_true_thickness_MTZ_Ppds[dist.index(min(dist))]) 
 
@@ -314,8 +356,8 @@ for _i, _j in enumerate(RF_data_profile_Pds):
 		max_x = [max(a) for a in zip(*x_data_Pds)]
 		pds_grid.fill_betweenx(y=camadas_terra_10_km,x1=min_x, x2=max_x, facecolor='whitesmoke',alpha=0.8, interpolate=True, zorder=5)
 
-		pds_grid.text(min(min_x),RF_DEPTH_mean_1_profile_Pds[_i],str(round(RF_DEPTH_mean_1_profile_Pds[_i]))+'±'+str(round(RF_DEPTH_std_1_profile_Pds[_i])),zorder=40, weight = 'bold',fontsize='x-small')
-		pds_grid.text(min(min_x),RF_DEPTH_mean_2_profile_Pds[_i],str(round(RF_DEPTH_mean_2_profile_Pds[_i]))+'±'+str(round(RF_DEPTH_std_2_profile_Pds[_i])),zorder=41, weight = 'bold',fontsize='x-small')
+		pds_grid.text(min(min_x),RF_DEPTH_mean_1_true_profile_Pds[_i],str(round(RF_DEPTH_mean_1_true_profile_Pds[_i]))+'±'+str(round(RF_DEPTH_std_1_true_profile_Pds[_i])),zorder=40, weight = 'bold',fontsize='x-small')
+		pds_grid.text(min(min_x),RF_DEPTH_mean_2_true_profile_Pds[_i],str(round(RF_DEPTH_mean_2_true_profile_Pds[_i]))+'±'+str(round(RF_DEPTH_std_2_true_profile_Pds[_i])),zorder=41, weight = 'bold',fontsize='x-small')
 
 
 		RF_data_factor_Pds = [_i/factor_Pds+l for k, l in enumerate(_j)]
@@ -357,8 +399,8 @@ for _i, _j in enumerate(RF_data_profile_Pds):
 		RF_data_factor_Ppds = [_i/factor_Ppds+l for k, l in enumerate(RF_data_profile_Ppds[_i])]
 		ppds_grid.plot(RF_data_factor_Ppds,camadas_terra_10_km,'k',linewidth=2, zorder=30)
 
-		ppds_grid.text(min(min_x),RF_DEPTH_mean_1_profile_Ppds[_i],str(round(RF_DEPTH_mean_1_profile_Ppds[_i]))+'±'+str(round(RF_DEPTH_std_1_profile_Ppds[_i])),zorder=40, weight = 'bold',fontsize='x-small')
-		ppds_grid.text(min(min_x),RF_DEPTH_mean_2_profile_Ppds[_i],str(round(RF_DEPTH_mean_2_profile_Ppds[_i]))+'±'+str(round(RF_DEPTH_std_2_profile_Ppds[_i])),zorder=41, weight = 'bold',fontsize='x-small')
+		ppds_grid.text(min(min_x),RF_DEPTH_mean_1_true_profile_Ppds[_i],str(round(RF_DEPTH_mean_1_true_profile_Ppds[_i]))+'±'+str(round(RF_DEPTH_std_1_true_profile_Ppds[_i])),zorder=40, weight = 'bold',fontsize='x-small')
+		ppds_grid.text(min(min_x),RF_DEPTH_mean_2_true_profile_Ppds[_i],str(round(RF_DEPTH_mean_2_true_profile_Ppds[_i]))+'±'+str(round(RF_DEPTH_std_2_true_profile_Ppds[_i])),zorder=41, weight = 'bold',fontsize='x-small')
 
 
 		ppds_grid.fill_betweenx(camadas_terra_10_km,RF_data_factor_Ppds,_i/factor_Ppds,where=np.array(RF_data_factor_Ppds)>=_i/factor_Ppds, facecolor='dimgrey',interpolate=True, zorder=19)
@@ -393,7 +435,7 @@ for _i, _j in enumerate(RF_data_profile_Pds):
 		pds_grid_410_660.yaxis.set_ticks_position('both')
 		pds_grid_410_660.yaxis.set_major_locator(MultipleLocator(50))
 		pds_grid_410_660.grid(True,which='major',linestyle='--')
-		pds_grid_410_660.set_xlim(0,60)
+		pds_grid_410_660.set_xlim(0,100)
 		pds_grid_410_660.set_ylim(800,300)
 		pds_grid_410_660.axes.axes.xaxis.set_ticklabels([])
 
@@ -415,7 +457,7 @@ for _i, _j in enumerate(RF_data_profile_Pds):
 
 		ppds_grid_410_660.hist(RF_BOOTSTRAP_DEPTH_mean_2_Ppds_profile[_i],bins=5,orientation='horizontal',color='k')
 		ppds_grid_410_660.yaxis.set_ticks_position('both')
-		ppds_grid_410_660.set_xlim(0,60)
+		ppds_grid_410_660.set_xlim(0,100)
 		ppds_grid_410_660.yaxis.set_ticks_position('both')
 		ppds_grid_410_660.yaxis.set_major_locator(MultipleLocator(50))
 		ppds_grid_410_660.grid(True,which='major',linestyle='--')
@@ -434,6 +476,6 @@ for _i, _j in enumerate(RF_data_profile_Pds):
 
 plt.show()
 
-fig.savefig(PP_FIGURE+'SELECTED_BINNED_DATA_CROSS_SECTION_Pds_Ppds_bootstrap.'+EXT_FIG,dpi=DPI_FIG)
+fig.savefig(RESULTS_FOLDER+'SELECTED_BINNED_DATA_CROSS_SECTION_Pds_Ppds_bootstrap.'+EXT_FIG,dpi=DPI_FIG)
 
 print('Ending the Cross section CODE')

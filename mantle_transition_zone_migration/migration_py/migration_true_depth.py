@@ -29,7 +29,6 @@ import collections
 from matplotlib.collections import PatchCollection
 
 from shapely.geometry import Polygon, MultiPoint, Point
-import shapefile
 from scipy import interpolate
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from matplotlib.patches import Circle,Rectangle
@@ -45,7 +44,7 @@ from parameters_py.mgconfig import (
 					URCRNRLON_SMALL,LLCRNRLAT_SMALL,URCRNRLAT_SMALL,PROJECT_LAT,PROJECT_LON,GRID_PP_MULT,
 					BOUNDARY_1_SHP,BOUNDARY_1_SHP_NAME,BOUNDARY_2_SHP,BOUNDARY_2_SHP_NAME,					
 					PP_FIGURE,EXT_FIG,DPI_FIG,DIST_GRID_PP_MED,DIST_GRID_PP,NUMBER_STA_PER_BIN,
-					DEPTH_RANGE,BOOTSTRAP_INTERATOR,BOOTSTRAP_DEPTH_ESTIMATION,GAMMA
+					DEPTH_RANGE,BOOTSTRAP_INTERATOR,BOOTSTRAP_DEPTH_ESTIMATION,GAMMA,COLORMAP_STD,COLORMAP_VEL
 				   )
 
 print('Starting Receiver Functions migration code to estimate the true depths of the Earth discontinuities')
@@ -66,9 +65,6 @@ for i,j in enumerate(model_10_km.model.s_mod.v_mod.layers):
 		Vp_depth_2 = j[2]
 		Vs_depth_2 = j[4]
 		
-
-
-
 print('Looking for Receiver Functions data in JSON file in '+STA_DIR)
 print('\n')
 filename_STA = STA_DIR+'sta_dic.json'
@@ -501,9 +497,9 @@ ax1.gridlines(draw_labels=True)
 
 
 #plt.show()
-
-os.makedirs(PP_FIGURE,exist_ok=True)
-fig_PP_Pds_Ppds.savefig(PP_FIGURE+'PP_Pds_Ppds.'+EXT_FIG,dpi=DPI_FIG)
+RESULTS_FOLDER = PP_FIGURE+'/'+'RESULTS_NUMBER_PP_PER_BIN_'+str(NUMBER_PP_PER_BIN)+'_NUMBER_STA_PER_BIN_'+str(NUMBER_STA_PER_BIN)+'/'
+os.makedirs(RESULTS_FOLDER,exist_ok=True)
+fig_PP_Pds_Ppds.savefig(RESULTS_FOLDER+'PP_Pds_Ppds.'+EXT_FIG,dpi=DPI_FIG)
 ###################################################################################################################
 
 print('Plotting: Figure Pds Average Piercing Points')
@@ -541,8 +537,7 @@ ax.gridlines(draw_labels=True)
 
 #plt.show()
 
-os.makedirs(PP_FIGURE,exist_ok=True)
-fig_PP.savefig(PP_FIGURE+'PP_MED_Pds.'+EXT_FIG,dpi=DPI_FIG)
+fig_PP.savefig(RESULTS_FOLDER+'PP_MED_Pds.'+EXT_FIG,dpi=DPI_FIG)
 
 ###################################################################################################################
 
@@ -578,8 +573,7 @@ ax.legend([l1,l3,retangulo,circulo],['Stations','Piercing Points '+"{0:.0f}".for
 
 #plt.show()
 
-os.makedirs(PP_FIGURE,exist_ok=True)
-fig_PP.savefig(PP_FIGURE+'PP_MED_Ppds.'+EXT_FIG,dpi=DPI_FIG)
+fig_PP.savefig(RESULTS_FOLDER+'PP_MED_Ppds.'+EXT_FIG,dpi=DPI_FIG)
 
 ##########################################################################################################################################
 
@@ -1172,6 +1166,18 @@ for i,j in enumerate(RF_data_raw_Pds):
 
 ###################################################################################################################
 
+#Color Maps
+
+colormap = plt.get_cmap(COLORMAP_VEL)
+
+
+colormap_std = plt.get_cmap(COLORMAP_STD)
+
+
+###################################################################################################################
+
+
+
 print('Plotting: Figure Final Grid and Ppds Average Piercing Points')
 print('\n')
 
@@ -1205,8 +1211,7 @@ ax.legend([l1,l3,retangulo,circulo],['Stations','Piercing Points '+"{0:.0f}".for
 
 #plt.show()
 
-os.makedirs(PP_FIGURE,exist_ok=True)
-fig_PP.savefig(PP_FIGURE+'PP_FINAL_GRID.'+EXT_FIG,dpi=DPI_FIG)
+fig_PP.savefig(RESULTS_FOLDER+'PP_FINAL_GRID.'+EXT_FIG,dpi=DPI_FIG)
 
 #############################################################################################################################################################################################
 
@@ -1217,8 +1222,6 @@ fig, axes = plt.subplots(nrows=1, ncols=2, subplot_kw={'projection': ccrs.Mercat
 
 ax = axes[0]
 ax2 = axes[1]
-
-colormap = cm.bwr_r
 
 #Figure Depth of the Mantle Transition Zone for Pds phase for 410 km
 
@@ -1295,7 +1298,7 @@ fig.colorbar(sm_660,ax=ax2,orientation='horizontal',shrink=0.8)
 
 #plt.show()
 
-#fig.savefig(PP_FIGURE+'Apparent_depth_Pds.'+EXT_FIG,dpi=DPI_FIG)
+fig.savefig(RESULTS_FOLDER+'Apparent_depth_Pds.'+EXT_FIG,dpi=DPI_FIG)
 
 #############################################################################################################################################################################################
 
@@ -1382,7 +1385,7 @@ fig.colorbar(sm_660,ax=ax2,orientation='horizontal',shrink=0.8)
 
 #plt.show()
 
-#fig.savefig(PP_FIGURE+'Apparent_depth_Ppds.'+EXT_FIG,dpi=DPI_FIG)
+fig.savefig(RESULTS_FOLDER+'Apparent_depth_Ppds.'+EXT_FIG,dpi=DPI_FIG)
 
 #############################################################################################################################################################################################
 
@@ -1470,7 +1473,7 @@ fig.colorbar(sm_660,ax=ax2,orientation='horizontal',shrink=0.8)
 
 #plt.show()
 
-#fig.savefig(PP_FIGURE+'TRUE_DEPTH_Pds.'+EXT_FIG,dpi=DPI_FIG)
+fig.savefig(RESULTS_FOLDER+'TRUE_DEPTH_Pds.'+EXT_FIG,dpi=DPI_FIG)
 
 ###################################################################################################################
 
@@ -1560,7 +1563,7 @@ fig.colorbar(sm_660,ax=ax2,orientation='horizontal',shrink=0.8)
 
 #plt.show()
 
-#fig.savefig(PP_FIGURE+'TRUE_DEPTH_Ppds.'+EXT_FIG,dpi=DPI_FIG)
+fig.savefig(RESULTS_FOLDER+'TRUE_DEPTH_Ppds.'+EXT_FIG,dpi=DPI_FIG)
 
 ###################################################################################################################
 
@@ -1571,8 +1574,6 @@ fig, axes = plt.subplots(nrows=1, ncols=2, subplot_kw={'projection': ccrs.Mercat
 
 ax = axes[0]
 ax2 = axes[1]
-
-colormap_std = cm.YlOrRd
 
 #Figure std Pds phase for 410 km
 
@@ -1649,7 +1650,7 @@ fig.colorbar(sm_660,ax=ax2,orientation='horizontal',shrink=0.8)
 
 #plt.show()
 
-#fig.savefig(PP_FIGURE+'STD_DEPTH_Pds.'+EXT_FIG,dpi=DPI_FIG)
+fig.savefig(RESULTS_FOLDER+'STD_DEPTH_Pds.'+EXT_FIG,dpi=DPI_FIG)
 
 #######################################################################################################################################
 
@@ -1734,7 +1735,7 @@ fig.colorbar(sm_660,ax=ax2,orientation='horizontal',shrink=0.8)
 
 #plt.show()
 
-#fig.savefig(PP_FIGURE+'STD_DEPTH_Ppds.'+EXT_FIG,dpi=DPI_FIG)
+fig.savefig(RESULTS_FOLDER+'STD_DEPTH_Ppds.'+EXT_FIG,dpi=DPI_FIG)
 
 #######################################################################################################################################
 
@@ -1817,7 +1818,7 @@ fig.colorbar(sm_660,ax=ax2,orientation='horizontal',shrink=0.8)
 
 #plt.show()
 
-#fig.savefig(PP_FIGURE+'DELTA_VP.'+EXT_FIG,dpi=DPI_FIG)
+fig.savefig(RESULTS_FOLDER+'DELTA_VP.'+EXT_FIG,dpi=DPI_FIG)
 
 
 #######################################################################################################################################
@@ -1903,7 +1904,7 @@ fig.colorbar(sm_660,ax=ax2,orientation='horizontal',shrink=0.8)
 
 #plt.show()
 
-#fig.savefig(PP_FIGURE+'THICKNESS_MTZ.'+EXT_FIG,dpi=DPI_FIG)
+fig.savefig(RESULTS_FOLDER+'THICKNESS_MTZ.'+EXT_FIG,dpi=DPI_FIG)
 
 ####################################################################################################################################
 print('Plotting Figure: Std Thickness of the Mantle Transition Zone')
@@ -1987,7 +1988,7 @@ fig.colorbar(sm_660,ax=ax2,orientation='horizontal',shrink=0.8)
 
 #plt.show()
 
-#fig.savefig(PP_FIGURE+'STD_THICKNESS_MTZ.'+EXT_FIG,dpi=DPI_FIG)
+fig.savefig(RESULTS_FOLDER+'STD_THICKNESS_MTZ.'+EXT_FIG,dpi=DPI_FIG)
 
 
 ####################################################################################################################################
@@ -2071,7 +2072,7 @@ fig.colorbar(sm_660,ax=ax2,orientation='horizontal',shrink=0.8)
 
 #plt.show()
 
-#fig.savefig(PP_FIGURE+'TRUE_THICKNESS_MTZ.'+EXT_FIG,dpi=DPI_FIG)
+fig.savefig(RESULTS_FOLDER+'TRUE_THICKNESS_MTZ.'+EXT_FIG,dpi=DPI_FIG)
 
 ####################################################################################################################################
 print('Plotting Figure: Std True Thickness of the Mantle Transition Zone')
@@ -2151,7 +2152,7 @@ fig.colorbar(sm_660,ax=ax2,orientation='horizontal',shrink=0.8)
 
 #plt.show()
 
-#fig.savefig(PP_FIGURE+'STD_TRUE_THICKNESS_MTZ.'+EXT_FIG,dpi=DPI_FIG)
+fig.savefig(RESULTS_FOLDER+'STD_TRUE_THICKNESS_MTZ.'+EXT_FIG,dpi=DPI_FIG)
 
 ###################################################################################################################
 
@@ -2234,7 +2235,7 @@ fig.colorbar(sm_660,ax=ax2,orientation='horizontal',shrink=0.8)
 
 #plt.show()
 
-#fig.savefig(PP_FIGURE+'DIFFERENCE_BETWEEN_TRUE_THICKNESS_MODEL_MTZ.'+EXT_FIG,dpi=DPI_FIG)
+fig.savefig(RESULTS_FOLDER+'DIFFERENCE_BETWEEN_TRUE_THICKNESS_MODEL_MTZ.'+EXT_FIG,dpi=DPI_FIG)
 
 ###############################################################################################################################
 
@@ -2317,7 +2318,7 @@ fig.colorbar(sm_660,ax=ax2,orientation='horizontal',shrink=0.8)
 
 #plt.show()
 
-#fig.savefig(PP_FIGURE+'STD_DIFFERENCE_BETWEEN_TRUE_THICKNESS_MODEL_MTZ.'+EXT_FIG,dpi=DPI_FIG)
+fig.savefig(RESULTS_FOLDER+'STD_DIFFERENCE_BETWEEN_TRUE_THICKNESS_MODEL_MTZ.'+EXT_FIG,dpi=DPI_FIG)
 
 
 ###############################################################################################################################
@@ -2429,9 +2430,75 @@ fig.colorbar(sm_660,ax=ax2,orientation='horizontal',shrink=0.8)
 
 #plt.show()
 
-fig.savefig(PP_FIGURE+'DIFFERENCE_BETWEEN_TRUE_THICKNESS_MODEL_MTZ_DIFFERENCE_BETWEEN_TRUE_THICKNESS_MODEL_MTZ_STD_s_'+str(NUMBER_STA_PER_BIN)+'_p_'+str(NUMBER_PP_PER_BIN)+'.'+EXT_FIG,dpi=DPI_FIG)
+fig.savefig(RESULTS_FOLDER+'DIFFERENCE_BETWEEN_TRUE_THICKNESS_MODEL_MTZ_DIFFERENCE_BETWEEN_TRUE_THICKNESS_MODEL_MTZ_STD_s_'+str(NUMBER_STA_PER_BIN)+'_p_'+str(NUMBER_PP_PER_BIN)+'.'+EXT_FIG,dpi=DPI_FIG)
 
 ###############################################################################################################################
+
+
+
+
+print('Plotting Figure: Difference between True MTZ Thickness')
+
+fig, ax = plt.subplots(nrows=1, ncols=1, subplot_kw={'projection': ccrs.Mercator(central_longitude=PROJECT_LON, globe=None)},figsize=(10,10),sharey=True)
+
+ax.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
+
+reader_1_SHP = Reader(BOUNDARY_1_SHP)
+shape_1_SHP = list(reader_1_SHP.geometries())
+plot_shape_1_SHP = cfeature.ShapelyFeature(shape_1_SHP, ccrs.PlateCarree())
+ax.add_feature(plot_shape_1_SHP, facecolor='none', edgecolor='k',linewidth=3)
+
+reader_2_SHP = Reader(BOUNDARY_2_SHP)
+shape_2_SHP = list(reader_2_SHP.geometries())
+plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
+ax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
+ax.gridlines(draw_labels=True)
+
+norm_410 = mpl.colors.Normalize(vmin=200,vmax=300,clip=True)
+colors_410 = colormap(norm_410(true_thickness_MTZ_Pds))
+
+for i,j in enumerate(RF_lon):
+	retangulo = Rectangle(xy=(RF_lon[i] - DIST_GRID_PP_MED/(GRID_PP_MULT/2), RF_lat[i] - DIST_GRID_PP_MED/(GRID_PP_MULT/2)),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),color='None', ec='k',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+	ax.add_patch(retangulo)
+
+for i,j in enumerate(RF_lon):
+	if math.isnan(true_thickness_MTZ_Pds[i]) == False:
+		retangulo_410 = Rectangle(xy=(RF_lon[i] - DIST_GRID_PP_MED/(GRID_PP_MULT/2), RF_lat[i] - DIST_GRID_PP_MED/(GRID_PP_MULT/2)),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),color=colors_410[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=3)
+		ax.add_patch(retangulo_410)
+	else:
+		pass
+
+
+ax.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
+geodetic_transform = ccrs.Geodetic()._as_mpl_transform(ax)
+text_transform = mpl.transforms.offset_copy(geodetic_transform, units='dots', x=0)
+
+plt.text(-42, -0.5, 's = '+str(NUMBER_STA_PER_BIN),
+             verticalalignment='center', horizontalalignment='left',fontsize=20, fontweight='bold',
+             transform=text_transform,
+			 bbox=dict(facecolor='white', boxstyle="round",edgecolor='w'))
+
+plt.text(-42, -1.5,  'p = '+str(NUMBER_PP_PER_BIN),
+             verticalalignment='center', horizontalalignment='left',fontsize=20, fontweight='bold',
+             transform=text_transform,
+			 bbox=dict(facecolor='white', boxstyle="round",edgecolor='w'))
+
+
+#ax.set_title('Difference between MTZ True Thickness', y=1.08)
+#______________________________________________________________________
+
+sm_410 = plt.cm.ScalarMappable(cmap=colormap,norm=norm_410)
+sm_410._A = []
+fig.colorbar(sm_410,ax=ax,orientation='horizontal',shrink=0.8)
+
+#fig.suptitle('Difference between True MTZ Thickness and STD Difference between True MTZ Thickness')
+
+#plt.show()
+
+fig.savefig(RESULTS_FOLDER+'DIFFERENCE_BETWEEN_TRUE_THICKNESS_MODEL_MTZ_'+str(NUMBER_STA_PER_BIN)+'_p_'+str(NUMBER_PP_PER_BIN)+'.'+EXT_FIG,dpi=DPI_FIG)
+
+###############################################################################################################################
+
 
 print('Saving Selected Piercing Points in JSON file')
 print('\n')

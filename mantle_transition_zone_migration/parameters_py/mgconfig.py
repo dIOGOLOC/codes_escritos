@@ -122,6 +122,13 @@ FINAL_DATE_EVENT = config.get('maps', 'FINAL_DATE_EVENT')
 #CROSS-SECTION AXIS DIRECTION ('x' or 'y'):
 CROSS_SECTION_AXIS  = config.get('maps', 'CROSS_SECTION_AXIS')
 
+#Colormap to velocity map (see https://matplotlib.org/examples/color/colormaps_reference.html)
+COLORMAP_VEL = config.get('maps', 'COLORMAP_VEL')
+
+#Colormap to standard deviation map (see https://matplotlib.org/examples/color/colormaps_reference.html)
+COLORMAP_STD = config.get('maps', 'COLORMAP_STD')
+
+
 # ---------------
 # time
 # ---------------

@@ -115,6 +115,12 @@ FINAL_DATE_EVENT = 2018-10-01T00:00:00
 #CROSS-SECTION AXIS DIRECTION ('x' or 'y'):
 CROSS_SECTION_AXIS  = y
 
+#Colormap to velocity map (see https://matplotlib.org/examples/color/colormaps_reference.html)
+COLORMAP_VEL = bwr_r
+
+#Colormap to standard deviation map (see https://matplotlib.org/examples/color/colormaps_reference.html)
+COLORMAP_STD = viridis
+
 #==================
 [time]
 #==================
@@ -151,10 +157,10 @@ DIST_GRID_PP = 1
 DIST_GRID_PP_MED = 0.5
 
 #number of piercing points per bin
-NUMBER_PP_PER_BIN = 30
+NUMBER_PP_PER_BIN = 10
 
 #number of stations RF per bin
-NUMBER_STA_PER_BIN = 2
+NUMBER_STA_PER_BIN = 3
 
 #False or True for depth estimation
 DEPTH_ESTIMATION = True 
