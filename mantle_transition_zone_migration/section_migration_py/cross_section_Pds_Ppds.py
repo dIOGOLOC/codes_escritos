@@ -151,6 +151,9 @@ shape_new = (int(abs(abs(max(lons)) - abs(min(lons)))*GRID_PP_MULT)+1,int(abs(ab
 rows = np.array(grdx).reshape(shape_new)
 cols = np.array(grdy).reshape(shape_new)
 
+RESULTS_FOLDER = PP_FIGURE+'/'+'RESULTS_NUMBER_PP_PER_BIN_'+str(NUMBER_PP_PER_BIN)+'_NUMBER_STA_PER_BIN_'+str(NUMBER_STA_PER_BIN)+'/'
+os.makedirs(RESULTS_FOLDER,exist_ok=True)
+
 print('Allocating cross-section data')
 print('\n')
 
@@ -650,6 +653,6 @@ for i,j in enumerate(RF_data_profile_Pds):
 		P_anomaly.tick_params(labelleft=True,labelright=True)
 		P_anomaly.set_xticks([])
 	
-	fig.savefig(PP_FIGURE+'SELECTED_BINNED_DATA_'+CROSS_SECTION_AXIS+'_CROSS_SECTION_Pds_Ppds_PROFILE_'+str(i+1)+'.'+EXT_FIG,dpi=DPI_FIG)
+	fig.savefig(RESULTS_FOLDER+'SELECTED_BINNED_DATA_'+CROSS_SECTION_AXIS+'_CROSS_SECTION_Pds_Ppds_PROFILE_'+str(i+1)+'.'+EXT_FIG,dpi=DPI_FIG)
 #plt.show()
 print('Ending the Cross section CODE')

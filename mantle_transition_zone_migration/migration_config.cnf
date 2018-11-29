@@ -36,6 +36,7 @@
 
 # dir of receiver functions
 RF_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/Mantle_Transition_Migration_NO_PP/MTZ_data/0.5/
+#RF_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/Mantle_Transition_Migration_YES_PP/MTZ_data/0.5/
 
 # extension of receiver functions
 RF_EXT = .eqr
@@ -45,18 +46,23 @@ MODEL_FILE_NPZ = /home/diogo/diogo_git/codes_escritos/mantle_transition_zone_mig
 
 # dir of the stations data
 STA_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/Mantle_Transition_Migration_NO_PP/OUTPUT/Stations/
+#STA_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/Mantle_Transition_Migration_YES_PP/OUTPUT/Stations/
 
 # dir of the Pds results
 PdS_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/Mantle_Transition_Migration_NO_PP/OUTPUT/Phases/
+#PdS_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/Mantle_Transition_Migration_YES_PP/OUTPUT/Phases/
 
 # dir of the piercing points results
 PP_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/Mantle_Transition_Migration_NO_PP/OUTPUT/Piercing_points/
+#PP_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/Mantle_Transition_Migration_YES_PP/OUTPUT/Piercing_points/
 
 # dir of figures
 PP_FIGURE = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/Mantle_Transition_Migration_NO_PP/OUTPUT/Figures/
+#PP_FIGURE = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/Mantle_Transition_Migration_YES_PP/OUTPUT/Figures/
 
 # dir of selected piercing points
 PP_SELEC_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/Mantle_Transition_Migration_NO_PP/OUTPUT/Piercing_points/selected/
+#PP_SELEC_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/Mantle_Transition_Migration_YES_PP/OUTPUT/Piercing_points/selected/
 
 
 #=====
@@ -180,7 +186,7 @@ BOOTSTRAP_INTERATOR = 200
 GAMMA = 2
 
 #Minimum amplitude of the 410 and 660 km (both Pds and Ppds ) to compute apparent and true depth
-MIN_AMP_PDS_PPDS = 0.0005
+MIN_AMP_PDS_PPDS = 0.001
 
 #Depth range (+/-) that we will use to find the maximum amplitude
-DEPTH_RANGE = 20
+DEPTH_RANGE = 40

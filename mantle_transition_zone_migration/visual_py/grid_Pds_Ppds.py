@@ -265,8 +265,8 @@ for i,j in enumerate(camadas_terra_10_km):
 			grid_camadas_x.append(lons[k])
 			grid_camadas_y.append(lats[k])
 			grid_camadas_z.append(-j)
-			#grid_Pds_data.append(RF_stacking_Ppds[k][i])
-			grid_Pds_data.append(RF_stacking_Pds[k][i]/100)
+			grid_Pds_data.append(RF_stacking_Ppds[k][i])
+			#grid_Pds_data.append(RF_stacking_Pds[k][i]/100)
 
 
 for i,j in enumerate(camadas_terra_10_km):
@@ -304,7 +304,7 @@ zi = np.linspace(-800, -300, 50)
 
 gridx, gridy, gridz = np.meshgrid(xi,yi,zi)
 
-volume = interpolate.griddata((np.array(grid_camadas_x),np.array(grid_camadas_y),np.array(grid_camadas_z)), np.array(grid_Pds_data), (gridx, gridy,gridz),method='nearest')
+volume = interpolate.griddata((np.array(grid_camadas_x),np.array(grid_camadas_y),np.array(grid_camadas_z)), np.array(grid_Pds_data), (gridx, gridy,gridz),method='linear')
 
 
 mlab.figure(1, fgcolor=(0, 0, 0), bgcolor=(1, 1, 1))
