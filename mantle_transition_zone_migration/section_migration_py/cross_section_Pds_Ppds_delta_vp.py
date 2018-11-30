@@ -382,10 +382,12 @@ for i,j in enumerate(RF_data_profile_Pds):
 	gs = gridspec.GridSpec(6, 3)
 	gs.update(wspace=0.2, hspace=0.5)
 
-	MTZ_thickness = fig.add_subplot(gs[:2,1:])
+	P_anomaly = fig.add_subplot(gs[0,1:])
 
-	pefil_pds = fig.add_subplot(gs[2:4,1:],sharex=MTZ_thickness)
-	pefil_ppds = fig.add_subplot(gs[4:6,1:],sharex=MTZ_thickness)
+	MTZ_thickness = fig.add_subplot(gs[1,1:],sharex=P_anomaly)
+
+	pefil_pds = fig.add_subplot(gs[2:4,1:],sharex=P_anomaly)
+	pefil_ppds = fig.add_subplot(gs[4:6,1:],sharex=P_anomaly)
 
 	#_____________________________________________
 
@@ -618,26 +620,44 @@ for i,j in enumerate(RF_data_profile_Pds):
 		#### Figure MTZ True and Apparent thickness  ####
 
 	for _i, _j in enumerate(RF_data_profile_Ppds[i]):
-		#MTZ_thickness.axhline(y=250,linewidth=0.5, color='k')
+		MTZ_thickness.axhline(y=250,linewidth=0.5, color='k')
 
-		MTZ_thickness.plot(_i/factor_Ppds,RF_DEPTH_mtz_thickness_profile_Pds[i][_i],marker='o',markerfacecolor='none',markeredgecolor='gray')
-		MTZ_thickness.plot(_i/factor_Ppds,RF_DEPTH_mtz_thickness_profile_Ppds[i][_i],marker='^',markerfacecolor='none',markeredgecolor='dimgray')
-		MTZ_thickness.plot(_i/factor_Ppds,RF_DEPTH_true_thickness_MTZ_profile_Pds[i][_i],marker='s',markerfacecolor='none',markeredgecolor='k')
+		MTZ_thickness.plot(_i/factor_Ppds,RF_DEPTH_mtz_thickness_profile_Pds[i][_i],marker='o',markerfacecolor='none',markeredgecolor='k')
+		MTZ_thickness.plot(_i/factor_Ppds,RF_DEPTH_true_thickness_MTZ_profile_Pds[i][_i],marker='s',markerfacecolor='none',markeredgecolor='gray')
 
-		MTZ_thickness.errorbar(_i/factor_Ppds,RF_DEPTH_mtz_thickness_profile_Pds[i][_i], yerr=RF_DEPTH_std_2_profile_Pds[i][_i], ecolor='gray',elinewidth=1,capsize=2,capthick=1)
-		MTZ_thickness.errorbar(_i/factor_Ppds,RF_DEPTH_mtz_thickness_profile_Ppds[i][_i], yerr=RF_DEPTH_std_2_profile_Ppds[i][_i], ecolor='dimgray',elinewidth=1,capsize=2,capthick=1)
-		MTZ_thickness.errorbar(_i/factor_Ppds,RF_DEPTH_true_thickness_MTZ_profile_Pds[i][_i], yerr=RF_DEPTH_std_2_profile_Ppds[i][_i], ecolor='k',elinewidth=1,capsize=2,capthick=1)
+		MTZ_thickness.errorbar(_i/factor_Ppds,RF_DEPTH_mtz_thickness_profile_Pds[i][_i], yerr=RF_DEPTH_std_2_profile_Pds[i][_i], ecolor='k',elinewidth=1,capsize=2,capthick=1)
+		MTZ_thickness.errorbar(_i/factor_Ppds,RF_DEPTH_true_thickness_MTZ_profile_Pds[i][_i], yerr=RF_DEPTH_std_2_profile_Ppds[i][_i], ecolor='gray',elinewidth=1,capsize=2,capthick=1)
 		MTZ_thickness.set_ylim(300,200)
 		MTZ_thickness.set_ylabel('Depth (km)')
 		MTZ_thickness.yaxis.set_label_position("right")
 		MTZ_thickness.set_title('MTZ Apparent and True Thickness')
 		MTZ_thickness.yaxis.set_ticks_position('both')
-		MTZ_thickness.yaxis.set_major_locator(MultipleLocator(20))
+		MTZ_thickness.yaxis.set_major_locator(MultipleLocator(25))
 		MTZ_thickness.yaxis.set_minor_locator(MultipleLocator(10))
 		MTZ_thickness.grid(True,which='major',color='gray',linewidth=1,linestyle='--')
 		MTZ_thickness.tick_params(labelleft=True,labelright=True)
 
 
+	#### Figure 410 km and 660 km P-velocity anomaly  ####
+
+
+	for _i, _j in enumerate(RF_data_profile_Ppds[i]):
+		P_anomaly.axhline(y=0,linewidth=0.5, color='k')
+
+		P_anomaly.plot(_i/factor_Ppds,RF_delta_1_Vp_mean_profile[i][_i],marker='^',markerfacecolor='none',markeredgecolor='k')
+		P_anomaly.plot(_i/factor_Ppds,RF_delta_2_Vp_mean_profile[i][_i],marker='v',markerfacecolor='none',markeredgecolor='k')
+
+		P_anomaly.errorbar(_i/factor_Ppds,RF_delta_1_Vp_mean_profile[i][_i], yerr=RF_delta_1_Vp_std_profile[i][_i], ecolor='k',elinewidth=1,capsize=2,capthick=1)
+		P_anomaly.errorbar(_i/factor_Ppds,RF_delta_2_Vp_mean_profile[i][_i], yerr=RF_delta_2_Vp_std_profile[i][_i], ecolor='k',elinewidth=1,capsize=2,capthick=1)
+		P_anomaly.set_ylim(-1,1)
+		P_anomaly.set_title('P-velocity anomaly (%)')
+		P_anomaly.yaxis.set_ticks_position('both')
+		P_anomaly.yaxis.set_major_locator(MultipleLocator(0.5))
+		P_anomaly.yaxis.set_minor_locator(MultipleLocator(0.1))
+		P_anomaly.grid(True,which='major',color='gray',linewidth=1,linestyle='--')
+		P_anomaly.tick_params(labelleft=True,labelright=True)
+		P_anomaly.set_xticks([])
+	
 	fig.savefig(RESULTS_FOLDER+'SELECTED_BINNED_DATA_'+CROSS_SECTION_AXIS+'_CROSS_SECTION_Pds_Ppds_PROFILE_'+str(i+1)+'.'+EXT_FIG,dpi=DPI_FIG)
 #plt.show()
 print('Ending the Cross section CODE')

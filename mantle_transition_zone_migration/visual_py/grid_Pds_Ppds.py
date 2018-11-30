@@ -33,7 +33,7 @@ from parameters_py.mgconfig import (
 					PP_DIR,PP_SELEC_DIR,NUMBER_PP_PER_BIN,STA_DIR,GRID_PP_MULT,
 					LLCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLON_LARGE,URCRNRLAT_LARGE,LLCRNRLON_SMALL,
 					URCRNRLON_SMALL,LLCRNRLAT_SMALL,URCRNRLAT_SMALL,PROJECT_LAT,PROJECT_LON,
-					BOUNDARY_1_SHP,BOUNDARY_1_SHP_NAME,BOUNDARY_2_SHP,BOUNDARY_2_SHP_NAME,					
+					BOUNDARY_1_SHP,BOUNDARY_2_SHP,					
 					PP_FIGURE,EXT_FIG,DPI_FIG,DIST_GRID_PP_MED,DIST_GRID_PP,DEPTH_RANGE
 				   )
 
@@ -265,7 +265,7 @@ for i,j in enumerate(camadas_terra_10_km):
 			grid_camadas_x.append(lons[k])
 			grid_camadas_y.append(lats[k])
 			grid_camadas_z.append(-j)
-			grid_Pds_data.append(RF_stacking_Ppds[k][i])
+			grid_Pds_data.append(RF_stacking_Pds[k][i])
 			#grid_Pds_data.append(RF_stacking_Pds[k][i]/100)
 
 

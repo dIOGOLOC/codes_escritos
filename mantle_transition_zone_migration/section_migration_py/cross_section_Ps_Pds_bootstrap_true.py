@@ -144,7 +144,7 @@ ax.xaxis.set_ticks_position('both')
 
 ax.set_xticks(np.arange(LLCRNRLON_LARGE,URCRNRLON_LARGE,4), crs=ccrs.PlateCarree())
 ax.set_yticks(np.arange(LLCRNRLAT_LARGE,URCRNRLAT_LARGE,4), crs=ccrs.PlateCarree())
-ax.tick_params(labelbottom=True,labeltop=True,labelleft=True,labelright=True)
+ax.tick_params(labelbottom='off',labeltop='on',labelleft='on',labelright='on')
 
 ax.grid(True,which='major',color='gray',linewidth=1,linestyle='--')
 
@@ -356,8 +356,8 @@ for _i, _j in enumerate(RF_data_profile_Pds):
 		max_x = [max(a) for a in zip(*x_data_Pds)]
 		pds_grid.fill_betweenx(y=camadas_terra_10_km,x1=min_x, x2=max_x, facecolor='whitesmoke',alpha=0.8, interpolate=True, zorder=5)
 
-		pds_grid.text(min(min_x),RF_DEPTH_mean_1_profile_Pds[_i],str(round(RF_DEPTH_mean_1_profile_Pds[_i]))+'±'+str(round(RF_DEPTH_std_1_profile_Pds[_i])),zorder=40, weight = 'bold',fontsize='x-small')
-		pds_grid.text(min(min_x),RF_DEPTH_mean_2_profile_Pds[_i],str(round(RF_DEPTH_mean_2_profile_Pds[_i]))+'±'+str(round(RF_DEPTH_std_2_profile_Pds[_i])),zorder=41, weight = 'bold',fontsize='x-small')
+		pds_grid.text(min(min_x),RF_DEPTH_mean_1_true_profile_Pds[_i],str(round(RF_DEPTH_mean_1_true_profile_Pds[_i]))+'±'+str(round(RF_DEPTH_std_1_true_profile_Pds[_i])),zorder=40, weight = 'bold',fontsize='x-small')
+		pds_grid.text(min(min_x),RF_DEPTH_mean_2_true_profile_Pds[_i],str(round(RF_DEPTH_mean_2_true_profile_Pds[_i]))+'±'+str(round(RF_DEPTH_std_2_true_profile_Pds[_i])),zorder=41, weight = 'bold',fontsize='x-small')
 
 
 		RF_data_factor_Pds = [_i/factor_Pds+l for k, l in enumerate(_j)]
@@ -399,8 +399,8 @@ for _i, _j in enumerate(RF_data_profile_Pds):
 		RF_data_factor_Ppds = [_i/factor_Ppds+l for k, l in enumerate(RF_data_profile_Ppds[_i])]
 		ppds_grid.plot(RF_data_factor_Ppds,camadas_terra_10_km,'k',linewidth=2, zorder=30)
 
-		ppds_grid.text(min(min_x),RF_DEPTH_mean_1_profile_Ppds[_i],str(round(RF_DEPTH_mean_1_profile_Ppds[_i]))+'±'+str(round(RF_DEPTH_std_1_profile_Ppds[_i])),zorder=40, weight = 'bold',fontsize='x-small')
-		ppds_grid.text(min(min_x),RF_DEPTH_mean_2_profile_Ppds[_i],str(round(RF_DEPTH_mean_2_profile_Ppds[_i]))+'±'+str(round(RF_DEPTH_std_2_profile_Ppds[_i])),zorder=41, weight = 'bold',fontsize='x-small')
+		ppds_grid.text(min(min_x),RF_DEPTH_mean_1_true_profile_Ppds[_i],str(round(RF_DEPTH_mean_1_true_profile_Ppds[_i]))+'±'+str(round(RF_DEPTH_std_1_true_profile_Ppds[_i])),zorder=40, weight = 'bold',fontsize='x-small')
+		ppds_grid.text(min(min_x),RF_DEPTH_mean_2_true_profile_Ppds[_i],str(round(RF_DEPTH_mean_2_true_profile_Ppds[_i]))+'±'+str(round(RF_DEPTH_std_2_true_profile_Ppds[_i])),zorder=41, weight = 'bold',fontsize='x-small')
 
 
 		ppds_grid.fill_betweenx(camadas_terra_10_km,RF_data_factor_Ppds,_i/factor_Ppds,where=np.array(RF_data_factor_Ppds)>=_i/factor_Ppds, facecolor='dimgrey',interpolate=True, zorder=19)
