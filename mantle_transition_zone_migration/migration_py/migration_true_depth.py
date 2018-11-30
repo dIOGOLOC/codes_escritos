@@ -42,7 +42,7 @@ from parameters_py.mgconfig import (
 					PP_DIR,PP_SELEC_DIR,NUMBER_PP_PER_BIN,STA_DIR,MIN_AMP_PDS_PPDS,
 					LLCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLON_LARGE,URCRNRLAT_LARGE,LLCRNRLON_SMALL,
 					URCRNRLON_SMALL,LLCRNRLAT_SMALL,URCRNRLAT_SMALL,PROJECT_LAT,PROJECT_LON,GRID_PP_MULT,
-					BOUNDARY_1_SHP,BOUNDARY_1_SHP_NAME,BOUNDARY_2_SHP,BOUNDARY_2_SHP_NAME,					
+					BOUNDARY_1_SHP,BOUNDARY_2_SHP,					
 					PP_FIGURE,EXT_FIG,DPI_FIG,DIST_GRID_PP_MED,DIST_GRID_PP,NUMBER_STA_PER_BIN,
 					DEPTH_RANGE,BOOTSTRAP_INTERATOR,BOOTSTRAP_DEPTH_ESTIMATION,GAMMA,COLORMAP_STD,COLORMAP_VEL
 				   )
@@ -2177,7 +2177,7 @@ plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
 ax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 ax.gridlines(draw_labels=True)
 
-norm_410 = mpl.colors.Normalize(vmin=-100,vmax=100,clip=True)
+norm_410 = mpl.colors.Normalize(vmin=-50,vmax=50,clip=True)
 colors_410 = colormap(norm_410(difference_thickness_MTZ_model_Ppds))
 
 for i,j in enumerate(RF_lon):
@@ -2207,7 +2207,7 @@ plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
 ax2.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 ax2.gridlines(draw_labels=True)
 
-norm_660 = mpl.colors.Normalize(vmin=-100,vmax=100,clip=True)
+norm_660 = mpl.colors.Normalize(vmin=-50,vmax=50,clip=True)
 colors_660 = colormap(norm_660(difference_thickness_MTZ_model_Ppds))
 
 for i,j in enumerate(RF_lon):
@@ -2325,7 +2325,7 @@ fig.savefig(RESULTS_FOLDER+'STD_DIFFERENCE_BETWEEN_TRUE_THICKNESS_MODEL_MTZ.'+EX
 
 
 
-print('Plotting Figure: Difference between True MTZ Thickness and STD Difference between True MTZ Thickness')
+print('Plotting Figure: True MTZ Thickness and STD True MTZ Thickness')
 
 fig, axes = plt.subplots(nrows=1, ncols=2, subplot_kw={'projection': ccrs.Mercator(central_longitude=PROJECT_LON, globe=None)},figsize=(20,10),sharey=True)
 
@@ -2430,14 +2430,12 @@ fig.colorbar(sm_660,ax=ax2,orientation='horizontal',shrink=0.8)
 
 #plt.show()
 
-fig.savefig(RESULTS_FOLDER+'DIFFERENCE_BETWEEN_TRUE_THICKNESS_MODEL_MTZ_DIFFERENCE_BETWEEN_TRUE_THICKNESS_MODEL_MTZ_STD_s_'+str(NUMBER_STA_PER_BIN)+'_p_'+str(NUMBER_PP_PER_BIN)+'.'+EXT_FIG,dpi=DPI_FIG)
+fig.savefig(RESULTS_FOLDER+'TRUE_THICKNESS_MODEL_MTZ_TRUE_THICKNESS_MODEL_MTZ_STD_s_'+str(NUMBER_STA_PER_BIN)+'_p_'+str(NUMBER_PP_PER_BIN)+'.'+EXT_FIG,dpi=DPI_FIG)
 
 ###############################################################################################################################
 
 
-
-
-print('Plotting Figure: Difference between True MTZ Thickness')
+print('Plotting Figure: True MTZ Thickness')
 
 fig, ax = plt.subplots(nrows=1, ncols=1, subplot_kw={'projection': ccrs.Mercator(central_longitude=PROJECT_LON, globe=None)},figsize=(10,10),sharey=True)
 
@@ -2495,9 +2493,72 @@ fig.colorbar(sm_410,ax=ax,orientation='horizontal',shrink=0.8)
 
 #plt.show()
 
-fig.savefig(RESULTS_FOLDER+'DIFFERENCE_BETWEEN_TRUE_THICKNESS_MODEL_MTZ_'+str(NUMBER_STA_PER_BIN)+'_p_'+str(NUMBER_PP_PER_BIN)+'.'+EXT_FIG,dpi=DPI_FIG)
+fig.savefig(RESULTS_FOLDER+'TRUE_THICKNESS_MODEL_MTZ_'+str(NUMBER_STA_PER_BIN)+'_p_'+str(NUMBER_PP_PER_BIN)+'.'+EXT_FIG,dpi=DPI_FIG)
 
 ###############################################################################################################################
+
+
+print('Plotting Figure: Difference between MTZ True Thickness and Model')
+
+fig, ax = plt.subplots(nrows=1, ncols=1, subplot_kw={'projection': ccrs.Mercator(central_longitude=PROJECT_LON, globe=None)},figsize=(10,10),sharey=True)
+
+ax.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
+
+reader_1_SHP = Reader(BOUNDARY_1_SHP)
+shape_1_SHP = list(reader_1_SHP.geometries())
+plot_shape_1_SHP = cfeature.ShapelyFeature(shape_1_SHP, ccrs.PlateCarree())
+ax.add_feature(plot_shape_1_SHP, facecolor='none', edgecolor='k',linewidth=3)
+
+reader_2_SHP = Reader(BOUNDARY_2_SHP)
+shape_2_SHP = list(reader_2_SHP.geometries())
+plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
+ax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
+ax.gridlines(draw_labels=True)
+
+norm_410 = mpl.colors.Normalize(vmin=-50,vmax=50,clip=True)
+colors_410 = colormap(norm_410(difference_thickness_MTZ_model_Pds))
+
+for i,j in enumerate(RF_lon):
+	retangulo = Rectangle(xy=(RF_lon[i] - DIST_GRID_PP_MED/(GRID_PP_MULT/2), RF_lat[i] - DIST_GRID_PP_MED/(GRID_PP_MULT/2)),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),color='None', ec='k',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+	ax.add_patch(retangulo)
+
+for i,j in enumerate(RF_lon):
+	if math.isnan(difference_thickness_MTZ_model_Pds[i]) == False:
+		retangulo_410 = Rectangle(xy=(RF_lon[i] - DIST_GRID_PP_MED/(GRID_PP_MULT/2), RF_lat[i] - DIST_GRID_PP_MED/(GRID_PP_MULT/2)),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),color=colors_410[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=3)
+		ax.add_patch(retangulo_410)
+	else:
+		pass
+
+
+ax.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
+geodetic_transform = ccrs.Geodetic()._as_mpl_transform(ax)
+text_transform = mpl.transforms.offset_copy(geodetic_transform, units='dots', x=0)
+
+plt.text(-42, -0.5, 's = '+str(NUMBER_STA_PER_BIN),
+             verticalalignment='center', horizontalalignment='left',fontsize=20, fontweight='bold',
+             transform=text_transform,
+			 bbox=dict(facecolor='white', boxstyle="round",edgecolor='w'))
+
+plt.text(-42, -1.5,  'p = '+str(NUMBER_PP_PER_BIN),
+             verticalalignment='center', horizontalalignment='left',fontsize=20, fontweight='bold',
+             transform=text_transform,
+			 bbox=dict(facecolor='white', boxstyle="round",edgecolor='w'))
+
+
+#ax.set_title('Difference between MTZ True Thickness', y=1.08)
+#______________________________________________________________________
+
+sm_410 = plt.cm.ScalarMappable(cmap=colormap,norm=norm_410)
+sm_410._A = []
+fig.colorbar(sm_410,ax=ax,orientation='horizontal',shrink=0.8)
+
+#fig.suptitle('Difference between True MTZ Thickness and STD Difference between True MTZ Thickness')
+
+#plt.show()
+
+fig.savefig(RESULTS_FOLDER+'DIFFERENCE_TRUE_THICKNESS_MODEL_MTZ_'+str(NUMBER_STA_PER_BIN)+'_p_'+str(NUMBER_PP_PER_BIN)+'.'+EXT_FIG,dpi=DPI_FIG)
+
+########################################################################################################################################################################
 
 
 print('Saving Selected Piercing Points in JSON file')
@@ -2584,7 +2645,6 @@ for i,j in enumerate(RF_BOOTSTRAP_DATA_Pds):
 
 	SELECTED_BINNED_DATA_dic['difference_thickness_MTZ_model_Ppds'].append(float(difference_thickness_MTZ_model_Ppds[i]))
 	SELECTED_BINNED_DATA_dic['difference_thickness_MTZ_model_Ppds_std'].append(float(difference_thickness_MTZ_model_Ppds_std[i]))
-	difference_thickness_MTZ_model_Ppds
 
 
 with open(PP_SELEC_DIR+'SELECTED_BINNED_Ps.json', 'w') as fp:

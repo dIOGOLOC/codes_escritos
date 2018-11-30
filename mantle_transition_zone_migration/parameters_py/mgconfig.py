@@ -81,13 +81,10 @@ PP_SELEC_DIR = config.get('paths', 'PP_SELEC_DIR')
 
 # paths to shapefiles (boundaries, tectonic provinces and labels)
 BOUNDARY_1_SHP = config.get('maps', 'BOUNDARY_1_SHP')
-BOUNDARY_1_SHP_NAME = config.get('maps', 'BOUNDARY_1_SHP_NAME')
 
 BOUNDARY_2_SHP = config.get('maps', 'BOUNDARY_2_SHP')
-BOUNDARY_2_SHP_NAME = config.get('maps', 'BOUNDARY_2_SHP_NAME')
 
 TECTO_SHP = config.get('maps', 'TECTO_SHP')
-TECTO_SHP_name = config.get('maps', 'TECTO_SHP_name')
 
 # Lat and Lon of large maps and small maps
 # center (lat/lon) of the map

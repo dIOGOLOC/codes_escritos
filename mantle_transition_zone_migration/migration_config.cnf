@@ -80,13 +80,11 @@ PP_SELEC_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/Mantle_Tr
 
 
 BOUNDARY_1_SHP = /home/diogo/dados_doutorado/parnaiba_basin/SIG_dados/shapes/bacia_parnaiba/bacia_parnaiba.shp
-BOUNDARY_1_SHP_NAME = bacia
 
 BOUNDARY_2_SHP = /home/diogo/dados_doutorado/parnaiba_basin/SIG_dados/shapes/Estados/Brasil.shp
-BOUNDARY_2_SHP_NAME = estados
 
-TECTO_SHP = /home/diogo/dados_doutorado/parnaiba_basin/SIG_dados/shapes/Geologico_Simplificado/Litologia/geologicosimplificado_lito.shp
-TECTO_SHP_name = geologia
+TECTO_SHP = /home/diogo/dados_doutorado/parnaiba_basin/SIG_dados/shapes/mapas_interpretacoes/mocitaiba _2017.shp
+#TECTO_SHP = /home/diogo/dados_doutorado/parnaiba_basin/SIG_dados/shapes/F_Mosq_Sard/F_Sardinha_(CPRM).shp
 
 # Lat and Lon of large maps and small maps
 # center (lat/lon) of the map
@@ -109,8 +107,8 @@ URCRNRLON_SMALL=-40
 URCRNRLAT_SMALL=-2
 
 #figures extention and dpi
-EXT_FIG=jpg
-DPI_FIG=200
+EXT_FIG=pdf
+DPI_FIG=300
 
 #Date event initial  (exemple: 2008-01-01T00:00:00)
 INITIAL_DATE_EVENT = 2014-01-01T00:00:00
@@ -119,7 +117,7 @@ INITIAL_DATE_EVENT = 2014-01-01T00:00:00
 FINAL_DATE_EVENT = 2018-10-01T00:00:00
 
 #CROSS-SECTION AXIS DIRECTION ('x' or 'y'):
-CROSS_SECTION_AXIS  = y
+CROSS_SECTION_AXIS  = x
 
 #Colormap to velocity map (see https://matplotlib.org/examples/color/colormaps_reference.html)
 COLORMAP_VEL = bwr_r
@@ -186,7 +184,7 @@ BOOTSTRAP_INTERATOR = 200
 GAMMA = 2
 
 #Minimum amplitude of the 410 and 660 km (both Pds and Ppds ) to compute apparent and true depth
-MIN_AMP_PDS_PPDS = 0.001
+MIN_AMP_PDS_PPDS = 0.0
 
 #Depth range (+/-) that we will use to find the maximum amplitude
-DEPTH_RANGE = 40
+DEPTH_RANGE = 20

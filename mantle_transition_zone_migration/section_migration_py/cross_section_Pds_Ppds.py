@@ -39,7 +39,7 @@ from parameters_py.mgconfig import (
 					PP_DIR,PP_SELEC_DIR,NUMBER_PP_PER_BIN,STA_DIR,
 					LLCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLON_LARGE,URCRNRLAT_LARGE,LLCRNRLON_SMALL,
 					URCRNRLON_SMALL,LLCRNRLAT_SMALL,URCRNRLAT_SMALL,PROJECT_LAT,PROJECT_LON,GRID_PP_MULT,
-					BOUNDARY_1_SHP,BOUNDARY_1_SHP_NAME,BOUNDARY_2_SHP,BOUNDARY_2_SHP_NAME,					
+					BOUNDARY_1_SHP,BOUNDARY_2_SHP,TECTO_SHP,		
 					PP_FIGURE,EXT_FIG,DPI_FIG,DIST_GRID_PP_MED,DIST_GRID_PP,NUMBER_STA_PER_BIN,
 					DEPTH_RANGE,BOOTSTRAP_INTERATOR,BOOTSTRAP_DEPTH_ESTIMATION,GAMMA,CROSS_SECTION_AXIS
 				   )
@@ -425,6 +425,11 @@ for i,j in enumerate(RF_data_profile_Pds):
 	shape_2_SHP = list(reader_2_SHP.geometries())
 	plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
 	map_MTZ_thickness.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
+
+	reader_3_SHP = Reader(TECTO_SHP)
+	shape_3_SHP = list(reader_3_SHP.geometries())
+	plot_shape_3_SHP = cfeature.ShapelyFeature(shape_3_SHP, ccrs.PlateCarree())
+	map_MTZ_thickness.add_feature(plot_shape_3_SHP, facecolor='none', edgecolor='k',linewidth=2)
 
 	norm_map_MTZ_thickness = mpl.colors.Normalize(vmin=200,vmax=300,clip=True)
 	colors_map_MTZ_thickness = colormap(norm_map_MTZ_thickness(RF_DEPTH_true_thickness_MTZ_Pds))
