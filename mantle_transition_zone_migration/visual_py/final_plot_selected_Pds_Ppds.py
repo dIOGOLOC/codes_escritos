@@ -98,7 +98,6 @@ RF_DEPTH_mean_2_Ppds = SELECTED_BINNED_DATA_dic['mean_2_Ppds']
 RF_DEPTH_std_2_Ppds = SELECTED_BINNED_DATA_dic['std_2_Ppds']
 
 RF_DEPTH_mtz_thickness_Pds = SELECTED_BINNED_DATA_dic['mtz_thickness_Pds']
-
 RF_DEPTH_mtz_thickness_Ppds = SELECTED_BINNED_DATA_dic['mtz_thickness_Ppds']
 
 RF_DEPTH_true_thickness_MTZ_Pds = SELECTED_BINNED_DATA_dic['true_thickness_MTZ_Pds']
@@ -142,15 +141,114 @@ colormap_std = plt.get_cmap(COLORMAP_STD)
 
 #############################################################################################################################################################################################
 
-print('Plotting Figure: Depth of Pds phases (410 km and 660 km)')
-#Figure Depth of the Mantle Transition Zone for Pds phases for 410 and 660 km
+fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(10,20))
+
+majorLocatorY = MultipleLocator(20)
+minorLocatorY = MultipleLocator(5)
+
+	
+idx_Pds = np.argsort(RF_DEPTH_true_thickness_MTZ_Pds)
+
+norm_410 = mpl.colors.Normalize(vmin=200,vmax=300,clip=True)
+colors_410_Pds = colormap(norm_410(np.array(RF_DEPTH_true_thickness_MTZ_Pds,dtype='float64')))
+
+for j,i in enumerate(idx_Pds):
+	if math.isnan(RF_DEPTH_true_thickness_MTZ_Pds[i]) == False:
+		ax.errorbar(RF_DEPTH_mean_2_true_Pds[i],RF_DEPTH_mean_1_true_Pds[i], yerr=RF_DEPTH_std_1_true_Pds[i],xerr=RF_DEPTH_std_2_true_Pds[i], ecolor='k',elinewidth=1,capsize=2,capthick=1)
+		ax.scatter(RF_DEPTH_mean_2_true_Pds[i],RF_DEPTH_mean_1_true_Pds[i],color=colors_410_Pds[i],zorder=10)
+
+ax.yaxis.set_major_locator(majorLocatorY)
+ax.yaxis.set_minor_locator(minorLocatorY)
+ax.grid(True,which='major',color='gray',linewidth=1,linestyle='--')
+ax.yaxis.set_ticks_position('both')
+
+ax.set_ylim(360,460)
+ax.set_xlim(610,710)
+ax.set_ylabel('True Depth d410 (km)')
+ax.set_xlabel('True Depth d660 (km)')
+
+sm_410 = plt.cm.ScalarMappable(cmap=colormap,norm=norm_410)
+sm_410._A = []
+fig.colorbar(sm_410,ax=ax,orientation='horizontal',shrink=0.8,label='MTZ True Thickness Pds')
+
+plt.show()
+fig.savefig(RESULTS_FOLDER+'TRUE_DEPTH_PLOT.'+EXT_FIG,dpi=DPI_FIG)
+
+
+#############################################################################################################################################################################################
+
+fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(20,10),sharey=True)
+
+ax = axes[0]
+ax1 = axes[1]
+
+
+majorLocatorY = MultipleLocator(20)
+minorLocatorY = MultipleLocator(5)
+
+	
+idx_Pds = np.argsort(RF_DEPTH_mtz_thickness_Pds)
+idx_Ppds = np.argsort(RF_DEPTH_mtz_thickness_Ppds)
+
+norm_410 = mpl.colors.Normalize(vmin=200,vmax=300,clip=True)
+colors_410_Pds = colormap(norm_410(np.array(RF_DEPTH_mtz_thickness_Pds,dtype='float64')))
+colors_410_Ppds = colormap(norm_410(np.array(RF_DEPTH_mtz_thickness_Ppds,dtype='float64')))
+
+for j,i in enumerate(idx_Pds):
+	if math.isnan(RF_DEPTH_mtz_thickness_Pds[i]) == False:
+		ax.errorbar(RF_DEPTH_mean_2_Pds[i],RF_DEPTH_mean_1_Pds[i], yerr=RF_DEPTH_std_1_Pds[i],xerr=RF_DEPTH_std_2_Pds[i], ecolor='k',elinewidth=1,capsize=2,capthick=1)
+		ax.scatter(RF_DEPTH_mean_2_Pds[i],RF_DEPTH_mean_1_Pds[i],color=colors_410_Pds[i],zorder=10)
+
+ax.yaxis.set_major_locator(majorLocatorY)
+ax.yaxis.set_minor_locator(minorLocatorY)
+ax.grid(True,which='major',color='gray',linewidth=1,linestyle='--')
+ax.yaxis.set_ticks_position('both')
+
+ax.set_ylim(360,460)
+ax.set_xlim(610,710)
+ax.set_ylabel('Depth d410 (km)')
+ax.set_xlabel('Depth d660 (km)')
+ax.set_title('Pds Phases')
+
+
+for j,i in enumerate(idx_Ppds):
+	if math.isnan(RF_DEPTH_mtz_thickness_Ppds[i]) == False:
+		ax1.errorbar(RF_DEPTH_mean_2_Ppds[i],RF_DEPTH_mean_1_Ppds[i], yerr=RF_DEPTH_std_1_Ppds[i],xerr=RF_DEPTH_std_2_Ppds[i], ecolor='k',elinewidth=1,capsize=2,capthick=1)
+		ax1.scatter(RF_DEPTH_mean_2_Ppds[i],RF_DEPTH_mean_1_Ppds[i],color=colors_410_Ppds[i],zorder=10)
+
+ax1.yaxis.set_major_locator(majorLocatorY)
+ax1.yaxis.set_minor_locator(minorLocatorY)
+ax1.grid(True,which='major',color='gray',linewidth=1,linestyle='--')
+ax1.yaxis.set_ticks_position('both')
+
+ax1.tick_params(labelright=True,labelleft=False)
+ax1.yaxis.set_label_position("right")
+
+ax1.set_ylim(360,460)
+ax1.set_xlim(610,710)
+ax1.set_ylabel('Depth d410 (km)')
+ax1.set_xlabel('Depth d660 (km)')
+ax1.set_title('Ppds Phases')
+
+sm_410 = plt.cm.ScalarMappable(cmap=colormap,norm=norm_410)
+sm_410._A = []
+fig.colorbar(sm_410,ax=ax,orientation='horizontal',shrink=0.8,label='MTZ Thickness Pds')
+fig.colorbar(sm_410,ax=ax1,orientation='horizontal',shrink=0.8,label='MTZ Thickness Ppds')
+
+plt.show()
+fig.savefig(RESULTS_FOLDER+'APPARENT_DEPTH_PDS_PPDS_PLOT.'+EXT_FIG,dpi=DPI_FIG)
+
+
+#############################################################################################################################################################################################
+
+print('Plotting Figure: Apparent Depth of 410 km and 660 km (Pds phase)')
 
 fig, axes = plt.subplots(nrows=1, ncols=2, subplot_kw={'projection': ccrs.Mercator(central_longitude=PROJECT_LON, globe=None)},figsize=(20,10),sharey=True)
 
 ax = axes[0]
 ax2 = axes[1]
 
-#Figure Depth of the Mantle Transition Zone for Pds phase for 410 km
+#410 km
 
 ax.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
 
@@ -167,7 +265,6 @@ ax.gridlines(draw_labels=True)
 
 norm_410 = mpl.colors.Normalize(vmin=360,vmax=460,clip=True)
 colors_410 = colormap(norm_410(np.array(RF_DEPTH_mean_1_Pds,dtype='float64')))
-#colors_410 = colormap(norm_410(RF_DEPTH_mean_1_Pds))
 
 for i,j in enumerate(lons):
 	if math.isnan(RF_DEPTH_mean_1_Pds[i]) == False:
@@ -178,10 +275,10 @@ for i,j in enumerate(lons):
 
 ax.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
 
-#ax.set_title('410 km Pds', y=1.08)
+ax.set_title('410 km Pds', y=1.08)
 
 
-#Figure Depth of the Mantle Transition Zone for Pds phase for 660 km
+#660 km
 
 ax2.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
 
@@ -197,7 +294,6 @@ ax2.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 ax2.gridlines(draw_labels=True)
 
 norm_660 = mpl.colors.Normalize(vmin=560,vmax=760,clip=True)
-#colors_660 = colormap(norm_660(RF_DEPTH_mean_2_Pds))
 colors_660 = colormap(norm_660(np.array(RF_DEPTH_mean_2_Pds,dtype='float64')))
 
 
@@ -210,7 +306,7 @@ for i,j in enumerate(lons):
 
 ax2.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
 
-#ax2.set_title('660 km Pds', y=1.08)
+ax2.set_title('660 km Pds', y=1.08)
 
 #______________________________________________________________________
 
@@ -222,24 +318,18 @@ sm_660 = plt.cm.ScalarMappable(cmap=colormap,norm=norm_660)
 sm_660._A = []
 fig.colorbar(sm_660,ax=ax2,orientation='horizontal',shrink=0.8)
 
-#fig.suptitle('Apparent depth per bin')
-
-#plt.show()
-
 fig.savefig(RESULTS_FOLDER+'Apparent_depth_Pds.'+EXT_FIG,dpi=DPI_FIG)
 
 #############################################################################################################################################################################################
 
-print('Plotting Figure: Depth of Ppds phases (410 km and 660 km)')
-#Figure Depth of the Mantle Transition Zone for Ppds phases for 410 and 660 km
-
+print('Plotting Figure: Apparent Depth of 410 km and 660 km (Ppds phase)')
 
 fig, axes = plt.subplots(nrows=1, ncols=2, subplot_kw={'projection': ccrs.Mercator(central_longitude=PROJECT_LON, globe=None)},figsize=(20,10),sharey=True)
 
 ax = axes[0]
 ax2 = axes[1]
 
-#Figure Depth of the Mantle Transition Zone for Ppds phase for 410 km
+#410 km
 
 ax.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
 
@@ -255,7 +345,6 @@ ax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 ax.gridlines(draw_labels=True)
 
 norm_410 = mpl.colors.Normalize(vmin=360,vmax=460,clip=True)
-#colors_410 = colormap(norm_410(RF_DEPTH_mean_1_Ppds))
 colors_410 = colormap(norm_410(np.array(RF_DEPTH_mean_1_Ppds,dtype='float64')))
 for i,j in enumerate(lons):
 	if math.isnan(RF_DEPTH_mean_1_Ppds[i]) == False:
@@ -266,10 +355,10 @@ for i,j in enumerate(lons):
 
 ax.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
 
-#ax.set_title('410 km Ppds', y=1.08)
+ax.set_title('410 km Ppds', y=1.08)
 
 
-#Figure Depth of the Mantle Transition Zone for Ppds phase for 660 km
+#660 km
 
 ax2.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
 
@@ -285,7 +374,6 @@ ax2.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 ax2.gridlines(draw_labels=True)
 
 norm_660 = mpl.colors.Normalize(vmin=560,vmax=760,clip=True)
-#colors_660 = colormap(norm_660(RF_DEPTH_mean_2_Ppds))
 colors_660 = colormap(norm_660(np.array(RF_DEPTH_mean_2_Ppds,dtype='float64')))
 
 
@@ -298,7 +386,7 @@ for i,j in enumerate(lons):
 
 ax2.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
 
-#ax2.set_title('660 km Ppds', y=1.08)
+ax2.set_title('660 km Ppds', y=1.08)
 
 #______________________________________________________________________
 
@@ -310,16 +398,11 @@ sm_660 = plt.cm.ScalarMappable(cmap=colormap,norm=norm_660)
 sm_660._A = []
 fig.colorbar(sm_660,ax=ax2,orientation='horizontal',shrink=0.8)
 
-#fig.suptitle('Apparent depth per bin')
-
-#plt.show()
-
 fig.savefig(RESULTS_FOLDER+'Apparent_depth_Ppds.'+EXT_FIG,dpi=DPI_FIG)
 
 #############################################################################################################################################################################################
 
-print('Plotting Figure: True depth of the Mantle Transition Zone for Pds phases for 410 and 660 km ...')
-#Figure True depth of the Mantle Transition Zone for Pds phases for 410 and 660 km
+print('Plotting Figure: True Depth of 410 km and 660 km (Pds phases)')
 
 fig, axes = plt.subplots(nrows=1, ncols=2, subplot_kw={'projection': ccrs.Mercator(central_longitude=PROJECT_LON, globe=None)},figsize=(20,10),sharey=True)
 
@@ -327,7 +410,7 @@ ax = axes[0]
 ax2 = axes[1]
 
 
-#Figure Depth of the Mantle Transition Zone for Ppds phase for 410 km
+#410 km
 
 ax.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
 
@@ -343,7 +426,6 @@ ax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 ax.gridlines(draw_labels=True)
 
 norm_410 = mpl.colors.Normalize(vmin=360,vmax=460,clip=True)
-#colors_410 = colormap(norm_410(RF_DEPTH_mean_1_true_Pds))
 colors_410 = colormap(norm_410(np.array(RF_DEPTH_mean_1_true_Pds,dtype='float64')))
 
 for i,j in enumerate(lons):
@@ -356,10 +438,10 @@ for i,j in enumerate(lons):
 
 ax.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
 
-#ax.set_title('410 km Pds', y=1.08)
+ax.set_title('410 km Pds', y=1.08)
 
 
-#Figure Depth of the Mantle Transition Zone for Ppds phase for 660 km
+#660 km
 
 ax2.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
 
@@ -375,7 +457,6 @@ ax2.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 ax2.gridlines(draw_labels=True)
 
 norm_660 = mpl.colors.Normalize(vmin=560,vmax=760,clip=True)
-#colors_660 = colormap(norm_660(RF_DEPTH_mean_2_true_Pds))
 colors_660 = colormap(norm_660(np.array(RF_DEPTH_mean_2_true_Pds,dtype='float64')))
 
 
@@ -388,7 +469,7 @@ for i,j in enumerate(lons):
 
 ax2.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
 
-#ax2.set_title('660 km Pds', y=1.08)
+ax2.set_title('660 km Pds', y=1.08)
 
 #______________________________________________________________________
 
@@ -400,16 +481,10 @@ sm_660 = plt.cm.ScalarMappable(cmap=colormap,norm=norm_660)
 sm_660._A = []
 fig.colorbar(sm_660,ax=ax2,orientation='horizontal',shrink=0.8)
 
-#fig.suptitle('True depth per bin')
-
-#plt.show()
-
 fig.savefig(RESULTS_FOLDER+'TRUE_DEPTH_Pds.'+EXT_FIG,dpi=DPI_FIG)
 
 ###################################################################################################################
-
-print('Plotting Figure: True depth of the Mantle Transition Zone for Ppds phases for 410 and 660 km ...')
-#Figure True depth of the Mantle Transition Zone for Ppds  phases for 410 and 660 km
+print('Plotting Figure: True Depth of 410 km and 660 km (Ppds phases)')
 
 fig, axes = plt.subplots(nrows=1, ncols=2, subplot_kw={'projection': ccrs.Mercator(central_longitude=PROJECT_LON, globe=None)},figsize=(20,10),sharey=True)
 
@@ -417,7 +492,7 @@ ax = axes[0]
 ax2 = axes[1]
 
 
-#Figure Depth of the Mantle Transition Zone for Ppds phase for 410 km
+#410 km
 
 ax.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
 
@@ -433,7 +508,6 @@ ax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 ax.gridlines(draw_labels=True)
 
 norm_410 = mpl.colors.Normalize(vmin=360,vmax=460,clip=True)
-#colors_410 = colormap(norm_410(RF_DEPTH_mean_1_true_Ppds))
 colors_410 = colormap(norm_410(np.array(RF_DEPTH_mean_1_true_Ppds,dtype='float64')))
 
 for i,j in enumerate(lons):
@@ -448,10 +522,10 @@ for i,j in enumerate(lons):
 
 ax.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
 
-#ax.set_title('410 km Ppds', y=1.08)
+ax.set_title('410 km Ppds', y=1.08)
 
 
-#Figure Depth of the Mantle Transition Zone for Ppds phase for 660 km
+#660 km
 
 ax2.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
 
@@ -467,7 +541,6 @@ ax2.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 ax2.gridlines(draw_labels=True)
 
 norm_660 = mpl.colors.Normalize(vmin=560,vmax=760,clip=True)
-#colors_660 = colormap(norm_660(RF_DEPTH_mean_2_true_Ppds))
 colors_660 = colormap(norm_660(np.array(RF_DEPTH_mean_2_true_Ppds,dtype='float64')))
 
 
@@ -480,7 +553,7 @@ for i,j in enumerate(lons):
 
 ax2.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
 
-#ax2.set_title('660 km Ppds', y=1.08)
+ax2.set_title('660 km Ppds', y=1.08)
 
 #______________________________________________________________________
 
@@ -492,23 +565,17 @@ sm_660 = plt.cm.ScalarMappable(cmap=colormap,norm=norm_660)
 sm_660._A = []
 fig.colorbar(sm_660,ax=ax2,orientation='horizontal',shrink=0.8)
 
-#fig.suptitle('True depth per bin')
-
-#plt.show()
-
 fig.savefig(RESULTS_FOLDER+'TRUE_DEPTH_Ppds.'+EXT_FIG,dpi=DPI_FIG)
 
 ###################################################################################################################
-
-
-print('Plotting Figure: Std (bootstraping) for Pds phases (410 km and 660 km')
+print('Plotting Figure: Uncertainty (1 sigma) of 410 km and 660 km (Pds phases)')
 
 fig, axes = plt.subplots(nrows=1, ncols=2, subplot_kw={'projection': ccrs.Mercator(central_longitude=PROJECT_LON, globe=None)},figsize=(20,10),sharey=True)
 
 ax = axes[0]
 ax2 = axes[1]
 
-#Figure std Pds phase for 410 km
+#410 km
 
 ax.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
 
@@ -524,7 +591,7 @@ ax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 ax.gridlines(draw_labels=True)
 
 norm_410 = mpl.colors.Normalize(vmin=0,vmax=50,clip=True)
-colors_410 = colormap_std(norm_410(RF_DEPTH_std_1_Pds))
+colors_410 = colormap_std(norm_410(np.array(RF_DEPTH_std_1_Pds,dtype='float64')))
 
 for i,j in enumerate(lons):
 	if math.isnan(RF_DEPTH_std_1_Pds[i]) == False:
@@ -536,10 +603,10 @@ for i,j in enumerate(lons):
 
 ax.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
 
-#ax.set_title('Std 410 km Pds', y=1.08)
+ax.set_title(r'Uncertainty (1$\sigma$) of  410 km Pds', y=1.08)
 
 
-#Figure std Pds phase for 660 km
+#660 km
 
 ax2.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
 
@@ -555,7 +622,6 @@ ax2.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 ax2.gridlines(draw_labels=True)
 
 norm_660 = mpl.colors.Normalize(vmin=0,vmax=50,clip=True)
-#colors_660 = colormap_std(norm_660(RF_DEPTH_std_2_Pds))
 colors_660 = colormap_std(norm_660(np.array(RF_DEPTH_std_2_Pds,dtype='float64')))
 
 
@@ -568,7 +634,7 @@ for i,j in enumerate(lons):
 
 ax2.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
 
-#ax2.set_title('Std 660 km Pds', y=1.08)
+ax2.set_title(r'Uncertainty (1$\sigma$) of  660 km Pds', y=1.08)
 
 #______________________________________________________________________
 
@@ -580,22 +646,17 @@ sm_660 = plt.cm.ScalarMappable(cmap=colormap_std,norm=norm_660)
 sm_660._A = []
 fig.colorbar(sm_660,ax=ax2,orientation='horizontal',shrink=0.8)
 
-#fig.suptitle('STD depth per bin')
-
-#plt.show()
-
-fig.savefig(RESULTS_FOLDER+'STD_DEPTH_Pds.'+EXT_FIG,dpi=DPI_FIG)
+fig.savefig(RESULTS_FOLDER+'Uncertainty_DEPTH_Pds.'+EXT_FIG,dpi=DPI_FIG)
 
 #######################################################################################################################################
-
-print('Plotting Figure: Std (bootstraping) for Ppds phases (410 km and 660 km')
+print('Plotting Figure: Uncertainty (1 sigma) of 410 km and 660 km (Ppds phases)')
 
 fig, axes = plt.subplots(nrows=1, ncols=2, subplot_kw={'projection': ccrs.Mercator(central_longitude=PROJECT_LON, globe=None)},figsize=(20,10),sharey=True)
 
 ax = axes[0]
 ax2 = axes[1]
 
-#Figure std Pds phase for 410 km
+#410 km
 
 ax.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
 
@@ -611,9 +672,7 @@ ax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 ax.gridlines(draw_labels=True)
 
 norm_410 = mpl.colors.Normalize(vmin=0,vmax=50,clip=True)
-#colors_410 = colormap_std(norm_410(RF_DEPTH_std_1_Ppds))
-colors_410 = colormap_std(norm_410(np.array(RF_DEPTH_std_1_Ppds,dtype='float64')
-))
+colors_410 = colormap_std(norm_410(np.array(RF_DEPTH_std_1_Ppds,dtype='float64')))
 
 for i,j in enumerate(lons):
 	if math.isnan(RF_DEPTH_std_1_Ppds[i]) == False:
@@ -625,10 +684,10 @@ for i,j in enumerate(lons):
 
 ax.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
 
-#ax.set_title('Std 410 km Ppds', y=1.08)
+ax.set_title(r'Uncertainty (1$\sigma$) of  410 km Pds', y=1.08)
 
 
-#Figure std Pds phase for 660 km
+#660 km
 
 ax2.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
 
@@ -644,7 +703,6 @@ ax2.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 ax2.gridlines(draw_labels=True)
 
 norm_660 = mpl.colors.Normalize(vmin=0,vmax=50,clip=True)
-#colors_660 = colormap_std(norm_660(RF_DEPTH_std_2_Ppds))
 colors_660 = colormap_std(norm_660(np.array(RF_DEPTH_std_2_Ppds,dtype='float64')))
 
 
@@ -656,7 +714,7 @@ for i,j in enumerate(lons):
 		pass
 ax2.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
 
-#ax2.set_title('Std 660 km Pds', y=1.08)
+ax2.set_title(r'Uncertainty (1$\sigma$) of  660 km Pds', y=1.08)
 
 #______________________________________________________________________
 
@@ -668,15 +726,11 @@ sm_660 = plt.cm.ScalarMappable(cmap=colormap_std,norm=norm_660)
 sm_660._A = []
 fig.colorbar(sm_660,ax=ax2,orientation='horizontal',shrink=0.8)
 
-#fig.suptitle('Std depth per bin')
-
-#plt.show()
-
-fig.savefig(RESULTS_FOLDER+'STD_DEPTH_Ppds.'+EXT_FIG,dpi=DPI_FIG)
+fig.savefig(RESULTS_FOLDER+'Uncertainty_DEPTH_Ppds.'+EXT_FIG,dpi=DPI_FIG)
 
 #######################################################################################################################################
 
-print('Plotting Figure: Delta Vp of 410 km and 660 km ')
+print('Plotting Figure: Delta Vp (410 km/660 km) ')
 
 
 fig, axes = plt.subplots(nrows=1, ncols=2, subplot_kw={'projection': ccrs.Mercator(central_longitude=PROJECT_LON, globe=None)},figsize=(20,10),sharey=True)
@@ -698,7 +752,7 @@ ax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 ax.gridlines(draw_labels=True)
 
 norm_410 = mpl.colors.Normalize(vmin=-1,vmax=1,clip=True)
-colors_410 = colormap(norm_410(RF_delta_1_Vp_mean))
+colors_410 = colormap(norm_410(np.array(RF_delta_1_Vp_mean,dtype='float64')))
 
 for i,j in enumerate(lons):
 	if math.isnan(RF_delta_1_Vp_mean[i]) == False:
@@ -710,7 +764,7 @@ for i,j in enumerate(lons):
 
 ax.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
 
-#ax.set_title('Delta Vp - 410 km', y=1.08)
+ax.set_title('Delta Vp - 410 km', y=1.08)
 
 
 ax2.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
@@ -727,7 +781,7 @@ ax2.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 ax2.gridlines(draw_labels=True)
 
 norm_660 = mpl.colors.Normalize(vmin=-1,vmax=1,clip=True)
-colors_660 = colormap(norm_660(RF_delta_2_Vp_mean))
+colors_660 = colormap(norm_660(np.array(RF_delta_2_Vp_mean,dtype='float64')))
 
 
 for i,j in enumerate(lons):
@@ -739,7 +793,7 @@ for i,j in enumerate(lons):
 
 ax2.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
 
-#ax2.set_title('Delta Vp - 660 km', y=1.08)
+ax2.set_title('Delta Vp - 660 km', y=1.08)
 
 #______________________________________________________________________
 
@@ -751,23 +805,98 @@ sm_660 = plt.cm.ScalarMappable(cmap=colormap,norm=norm_660)
 sm_660._A = []
 fig.colorbar(sm_660,ax=ax2,orientation='horizontal',shrink=0.8)
 
-#fig.suptitle('Delta Vp per bin')
-
-#plt.show()
-
 fig.savefig(RESULTS_FOLDER+'DELTA_VP.'+EXT_FIG,dpi=DPI_FIG)
-
 
 #######################################################################################################################################
 
-print('Plotting Figure: Thickness of the Mantle Transition Zone')
+print('Plotting Figure: Delta Vs (410 km/660 km) ')
+
 
 fig, axes = plt.subplots(nrows=1, ncols=2, subplot_kw={'projection': ccrs.Mercator(central_longitude=PROJECT_LON, globe=None)},figsize=(20,10),sharey=True)
 
 ax = axes[0]
 ax2 = axes[1]
 
-#Figure Depth of the Mantle Transition Zone for Ppds phase for 410 km
+ax.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
+
+reader_1_SHP = Reader(BOUNDARY_1_SHP)
+shape_1_SHP = list(reader_1_SHP.geometries())
+plot_shape_1_SHP = cfeature.ShapelyFeature(shape_1_SHP, ccrs.PlateCarree())
+ax.add_feature(plot_shape_1_SHP, facecolor='none', edgecolor='k',linewidth=3)
+
+reader_2_SHP = Reader(BOUNDARY_2_SHP)
+shape_2_SHP = list(reader_2_SHP.geometries())
+plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
+ax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
+ax.gridlines(draw_labels=True)
+
+norm_410 = mpl.colors.Normalize(vmin=-1,vmax=1,clip=True)
+colors_410 = colormap(norm_410(np.array(RF_delta_1_Vs_mean,dtype='float64')))
+
+for i,j in enumerate(lons):
+	if math.isnan(RF_delta_1_Vs_mean[i]) == False:
+		retangulo_410 = Rectangle(xy=(lons[i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2, lats[i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),color=colors_410[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+		ax.add_patch(retangulo_410)
+	else: 
+		pass
+
+
+ax.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
+
+ax.set_title('Delta Vs - 410 km', y=1.08)
+
+
+ax2.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
+
+reader_1_SHP = Reader(BOUNDARY_1_SHP)
+shape_1_SHP = list(reader_1_SHP.geometries())
+plot_shape_1_SHP = cfeature.ShapelyFeature(shape_1_SHP, ccrs.PlateCarree())
+ax2.add_feature(plot_shape_1_SHP, facecolor='none', edgecolor='k',linewidth=3)
+
+reader_2_SHP = Reader(BOUNDARY_2_SHP)
+shape_2_SHP = list(reader_2_SHP.geometries())
+plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
+ax2.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
+ax2.gridlines(draw_labels=True)
+
+norm_660 = mpl.colors.Normalize(vmin=-1,vmax=1,clip=True)
+colors_660 = colormap(norm_660(np.array(RF_delta_2_Vs_mean,dtype='float64')))
+
+
+for i,j in enumerate(lons):
+	if math.isnan(RF_delta_2_Vs_mean[i]) == False:
+		retangulo_660 = Rectangle(xy=(lons[i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2, lats[i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),color=colors_660[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+		ax2.add_patch(retangulo_660)
+	else:
+		pass
+
+ax2.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
+
+ax2.set_title('Delta Vs - 660 km', y=1.08)
+
+#______________________________________________________________________
+
+sm_410 = plt.cm.ScalarMappable(cmap=colormap,norm=norm_410)
+sm_410._A = []
+fig.colorbar(sm_410,ax=ax,orientation='horizontal',shrink=0.8)
+
+sm_660 = plt.cm.ScalarMappable(cmap=colormap,norm=norm_660)
+sm_660._A = []
+fig.colorbar(sm_660,ax=ax2,orientation='horizontal',shrink=0.8)
+
+fig.savefig(RESULTS_FOLDER+'DELTA_VS.'+EXT_FIG,dpi=DPI_FIG)
+
+
+#######################################################################################################################################
+
+print('Plotting Figure: Thickness of the Mantle Transition Zone (Pds and Ppds Phases)')
+
+fig, axes = plt.subplots(nrows=1, ncols=2, subplot_kw={'projection': ccrs.Mercator(central_longitude=PROJECT_LON, globe=None)},figsize=(20,10),sharey=True)
+
+ax = axes[0]
+ax2 = axes[1]
+
+#Pds phase
 
 ax.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
 
@@ -795,10 +924,10 @@ for i,j in enumerate(lons):
 
 ax.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
 
-#ax.set_title('Thickness of MTZ (Pds)', y=1.08)
+ax.set_title('Thickness of MTZ (Pds)', y=1.08)
 
 
-#Figure Depth of the Mantle Transition Zone for Ppds phase for 660 km
+#Ppds phase
 
 ax2.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
 
@@ -814,7 +943,6 @@ ax2.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 ax2.gridlines(draw_labels=True)
 
 norm_660 = mpl.colors.Normalize(vmin=200,vmax=300,clip=True)
-#colors_660 = colormap(norm_660(thickness_MTZ_Ppds))
 colors_660 = colormap(norm_660(np.array(RF_DEPTH_mtz_thickness_Ppds,dtype='float64')))
 
 for i,j in enumerate(lons):
@@ -826,7 +954,7 @@ for i,j in enumerate(lons):
 
 ax2.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
 
-#ax2.set_title('Thickness of MTZ (Ppds)', y=1.08)
+ax2.set_title('Thickness of MTZ (Ppds)', y=1.08)
 
 #______________________________________________________________________
 
@@ -838,10 +966,6 @@ sm_660 = plt.cm.ScalarMappable(cmap=colormap,norm=norm_660)
 sm_660._A = []
 fig.colorbar(sm_660,ax=ax2,orientation='horizontal',shrink=0.8)
 
-#fig.suptitle('Thickness of the Mantle Transition Zone')
-
-#plt.show()
-
 fig.savefig(RESULTS_FOLDER+'THICKNESS_MTZ.'+EXT_FIG,dpi=DPI_FIG)
 
 ##############################################################################################
@@ -852,6 +976,8 @@ fig, axes = plt.subplots(nrows=1, ncols=2, subplot_kw={'projection': ccrs.Mercat
 
 ax = axes[0]
 ax2 = axes[1]
+
+#Pds Phase
 
 
 ax.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
@@ -880,9 +1006,9 @@ for i,j in enumerate(lons):
 
 ax.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
 
-#ax.set_title('True Thickness of MTZ (Pds)', y=1.08)
+ax.set_title('True Thickness of MTZ (Pds)', y=1.08)
 
-
+#Ppds Phase
 
 ax2.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
 
@@ -909,7 +1035,7 @@ for i,j in enumerate(lons):
 
 ax2.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
 
-#ax2.set_title('True Thickness of MTZ (Ppds)', y=1.08)
+ax2.set_title('True Thickness of MTZ (Ppds)', y=1.08)
 
 #______________________________________________________________________
 
@@ -920,10 +1046,6 @@ fig.colorbar(sm_410,ax=ax,orientation='horizontal',shrink=0.8)
 sm_660 = plt.cm.ScalarMappable(cmap=colormap,norm=norm_660)
 sm_660._A = []
 fig.colorbar(sm_660,ax=ax2,orientation='horizontal',shrink=0.8)
-
-#fig.suptitle('True Thickness of the Mantle Transition Zone')
-
-#plt.show()
 
 fig.savefig(RESULTS_FOLDER+'TRUE_THICKNESS_MTZ.'+EXT_FIG,dpi=DPI_FIG)
 

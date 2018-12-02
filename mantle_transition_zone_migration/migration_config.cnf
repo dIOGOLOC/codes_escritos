@@ -177,14 +177,12 @@ BOOTSTRAP_INTERATOR = 200
 
 #The gamma value is a function of temperature, rock composition, 
 #and degree of partial melting. This value is found to be in the 
-#range of 1.5–2.5 for most continental areas. A γ value of 2.0
-#is used to obtain the velocity anomalies and MTZ discontinuity
-#depths.
+#range of 1.5–2.5 for most continental areas.
 
-GAMMA = 2
+GAMMA = 20
 
 #Minimum amplitude of the 410 and 660 km (both Pds and Ppds ) to compute apparent and true depth
-MIN_AMP_PDS_PPDS = 0
+MIN_AMP_PDS_PPDS = 0.005
 
 #Depth range (+/-) that we will use to find the maximum amplitude
 DEPTH_RANGE = 30

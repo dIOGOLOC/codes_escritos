@@ -9,7 +9,6 @@ import copy
 import matplotlib
 from matplotlib.cm import get_cmap
 from mpl_toolkits.mplot3d import Axes3D
-from mpl_toolkits.basemap import Basemap
 import shapefile
 from fatiando import gridder, utils
 import scipy.io
@@ -32,35 +31,40 @@ import shapefile
 
 
 
+
 from parameters_py.mgconfig import (
-					RF_DIR,RF_EXT,MODEL_FILE_NPZ,MIN_DEPTH,MAX_DEPTH,INTER_DEPTH,PdS_DIR,
-					PP_DIR,PP_SELEC_DIR,NUMBER_PP_PER_BIN,STA_DIR,INITIAL_DATE_EVENT,FINAL_DATE_EVENT,
+					RF_DIR,RF_EXT,MODEL_FILE_NPZ,MIN_DEPTH,MAX_DEPTH,INTER_DEPTH,PdS_DIR,SHAPEFILE_GRID,FILTER_BY_SHAPEFILE,
+					PP_DIR,PP_SELEC_DIR,NUMBER_PP_PER_BIN,STA_DIR,MIN_AMP_PDS_PPDS,
 					LLCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLON_LARGE,URCRNRLAT_LARGE,LLCRNRLON_SMALL,
 					URCRNRLON_SMALL,LLCRNRLAT_SMALL,URCRNRLAT_SMALL,PROJECT_LAT,PROJECT_LON,GRID_PP_MULT,
-					BOUNDARY_1_SHP,BOUNDARY_1_SHP_NAME,BOUNDARY_2_SHP,BOUNDARY_2_SHP_NAME,					
-					RAY_PATH_FIGURE,PP_FIGURE,EXT_FIG,DPI_FIG,DIST_GRID_PP_MED,DIST_GRID_PP,
-					DEPTH_RANGE,BOOTSTRAP_INTERATOR,BOOTSTRAP_DEPTH_ESTIMATION,
-					GAMMA,ROTATE_GRID,ROTATE_ANGLE,FILTER_BY_SHAPEFILE,SHAPEFILE_GRID
+					BOUNDARY_1_SHP,BOUNDARY_2_SHP,
+					PP_FIGURE,EXT_FIG,DPI_FIG,DIST_GRID_PP_MED,DIST_GRID_PP,NUMBER_STA_PER_BIN,
+					DEPTH_RANGE,BOOTSTRAP_INTERATOR,BOOTSTRAP_DEPTH_ESTIMATION,GAMMA,COLORMAP_STD,COLORMAP_VEL
 				   )
-
-print('Starting Receiver Functions migration code to estimate the true depths of the Earth discontinuities')
-print('\n')
-
 
 print('Importing earth model from obspy.taup.TauPyModel')
 print('Importing earth model from : '+MODEL_FILE_NPZ)
 model_10_km = TauPyModel(model=MODEL_FILE_NPZ)
+print('\n')
+
 
 for i,j in enumerate(model_10_km.model.s_mod.v_mod.layers):
-	if j[0] == 410:
-		Vp_depth_1 = j[2]
-		Vs_depth_1 = j[4]
+	if j[1] == 410:
+		Vp_depth_1 = j[3]
+		Vs_depth_1 = j[5]
 		
 for i,j in enumerate(model_10_km.model.s_mod.v_mod.layers):
-	if j[0] == 660:
-		Vp_depth_2 = j[2]
-		Vs_depth_2 = j[4]
-		
+	if j[1] == 660:
+		Vp_depth_2 = j[3]
+		Vs_depth_2 = j[5]
+
+print('410 km earth model Vp : '+str(Vp_depth_1))
+print('410 km earth model Vs : '+str(Vs_depth_1))
+print('660 km earth model Vp : '+str(Vp_depth_2))
+print('660 km earth model Vs : '+str(Vs_depth_2))
+print('\n')
+
+
 print('Looking for Receiver Functions data in JSON file in '+STA_DIR)
 print('\n')
 filename_STA = STA_DIR+'sta_dic.json'
@@ -69,9 +73,8 @@ sta_dic = json.load(open(filename_STA))
 
 event_depth = sta_dic['event_depth']
 event_lat = sta_dic['event_lat']
-event_lon = sta_dic['event_long']
+event_long = sta_dic['event_long']
 event_dist = sta_dic['event_dist']
-event_mag = sta_dic['event_mag']
 event_gcarc = sta_dic['event_gcarc']
 event_sta = sta_dic['event_sta']
 event_ray = sta_dic['event_ray']
@@ -79,39 +82,6 @@ sta_lat = sta_dic['sta_lat']
 sta_long = sta_dic['sta_long']
 sta_data = sta_dic['sta_data']
 sta_time = sta_dic['sta_time']
-
-'''
-print('Get Event Parameters')
-print('\n')
-
-irisclient=Client("IRIS")
-
-starttime = UTCDateTime(INITIAL_DATE_EVENT)
-endtime = UTCDateTime(FINAL_DATE_EVENT)
-
-events = irisclient.get_events(starttime=starttime, endtime=endtime,minmagnitude=5)
-
-evla_0 = []
-evlo_0 = []
-mag_0 = []
-
-for i,j in enumerate(events):
-	evla_0.append(j['origins'][0]['latitude'])
-	evlo_0.append(j['origins'][0]['longitude'])
-	mag_0.append(j['magnitudes'][0]['mag'])
-'''
-
-filename_EVENT = STA_DIR+'EVENT_dic.json'
-
-event_dic = json.load(open(filename_EVENT))
-
-evla_0 = event_dic['evla']
-evlo_0 = event_dic['evlo']
-mag_0 = event_dic['mag']
-
-
-print('Number of Events: '+str(len(mag_0)))
-print('\n')
 
 print('Creating the Earth layered model')
 print('\n')
@@ -195,11 +165,13 @@ pp_1_long  = [[]]*len(PP_lon_1)
 
 
 for i,j in enumerate(PP_lon_1):
-    for k,l in enumerate(j):
-        if LLCRNRLON_LARGE<= l <= URCRNRLON_LARGE and PP_depth_1[i][k] == 410:
-                pp_1_lat[i] = PP_lat_1[i][k] 
-                pp_1_long[i] = l
+	for k,l in enumerate(j):
+		if LLCRNRLON_LARGE<= l <= URCRNRLON_LARGE and PP_depth_1[i][k] == 410:
+				pp_1_lat[i] = PP_lat_1[i][k]
+				pp_1_long[i] = l
 
+pp_1_lat = [i for i in pp_1_lat if type(i) == float ]
+pp_1_long = [i for i in pp_1_long if type(i) == float ]
 
 print('Pds Piercing Points - '+"{0:.0f}".format(DEPTH_MED))
 print('\n')
@@ -211,8 +183,11 @@ pp_med_long  = [[]]*len(PP_lon_med)
 for i,j in enumerate(PP_lon_med):
 	for k,l in enumerate(j):
 		if LLCRNRLON_LARGE <= l <= URCRNRLON_LARGE and PP_depth_med[i][k] == DEPTH_MED:
-			pp_med_lat[i] = PP_lat_med[i][k] 
-			pp_med_long[i] = l
+				pp_med_lat[i] = PP_lat_med[i][k]
+				pp_med_long[i] = l
+
+pp_med_lat = [i for i in pp_med_lat if type(i) == float ]
+pp_med_long = [i for i in pp_med_long if type(i) == float ]
 
 print('P660s Piercing Points')
 print('\n')
@@ -225,9 +200,12 @@ pp_2_long  = [[]]*len(PP_lon_2)
 for i,j in enumerate(PP_lon_2):
 	for k,l in enumerate(j):
 		if LLCRNRLON_LARGE <= l <= URCRNRLON_LARGE and PP_depth_2[i][k] == 660:
-			pp_2_lat[i] = PP_lat_2[i][k]
-			pp_2_long[i] = l
+			if PP_lon_2[i][k]  != [] and PP_lat_2[i][k] != []:
+				pp_2_lat[i] = PP_lat_2[i][k]
+				pp_2_long[i] = l
 
+pp_2_lat = [i for i in pp_2_lat if type(i) == float ]
+pp_2_long = [i for i in pp_2_long if type(i) == float ]
 
 print('Importing Ppds piercing points to each PHASE')
 print('\n')
@@ -309,11 +287,13 @@ pp_1_long_Ppds  = [[]]*len(PP_lon_1_Ppds)
 
 
 for i,j in enumerate(PP_lon_1_Ppds):
-    for k,l in enumerate(j):
-        if LLCRNRLON_LARGE<= l <= URCRNRLON_LARGE and PP_depth_1_Ppds[i][k] == 410:
-                pp_1_lat_Ppds[i] = PP_lat_1_Ppds[i][k] 
-                pp_1_long_Ppds[i] = l
+	for k,l in enumerate(j):
+		if LLCRNRLON_LARGE<= l <= URCRNRLON_LARGE and PP_depth_1_Ppds[i][k] == 410:
+				pp_1_lat_Ppds[i] = PP_lat_1_Ppds[i][k]
+				pp_1_long_Ppds[i] = l
 
+pp_1_lat_Ppds = [i for i in pp_1_lat_Ppds if type(i) == float ]
+pp_1_long_Ppds = [i for i in pp_1_long_Ppds if type(i) == float ]
 
 
 print('Ppds Piercing Points - '+"{0:.0f}".format(DEPTH_MED))
@@ -326,9 +306,11 @@ pp_med_long_Ppds  = [[]]*len(PP_lon_med_Ppds)
 for i,j in enumerate(PP_lon_med_Ppds):
 	for k,l in enumerate(j):
 		if LLCRNRLON_LARGE<= l <= URCRNRLON_LARGE and PP_depth_med_Ppds[i][k] == DEPTH_MED:
-			pp_med_lat_Ppds[i] = PP_lat_med_Ppds[i][k]
-			pp_med_long_Ppds[i] = l
+				pp_med_lat_Ppds[i] = PP_lat_med_Ppds[i][k]
+				pp_med_long_Ppds[i] = l
 
+pp_med_lat_Ppds = [i for i in pp_med_lat_Ppds if type(i) == float ]
+pp_med_long_Ppds = [i for i in pp_med_long_Ppds if type(i) == float ]
 
 print('PPv660s Piercing Points')
 print('\n')
@@ -336,46 +318,28 @@ print('\n')
 
 pp_2_lat_Ppds  = [[]]*len(PP_lon_2_Ppds)
 pp_2_long_Ppds  = [[]]*len(PP_lon_2_Ppds)
+pp_2_depth_Ppds  = [[]]*len(PP_lon_2_Ppds)
 
 
 for i,j in enumerate(PP_lon_2_Ppds):
-    for k,l in enumerate(j):
-        if LLCRNRLON_LARGE <= l <= URCRNRLON_LARGE and PP_depth_2_Ppds[i][k] == 660:
-                pp_2_lat_Ppds[i] = PP_lat_2_Ppds[i][k] 
-                pp_2_long_Ppds[i] = l
+	for k,l in enumerate(j):
+		if LLCRNRLON_LARGE <= l <= URCRNRLON_LARGE and PP_depth_2_Ppds[i][k] == 660:
+				pp_2_lat_Ppds[i] = PP_lat_2_Ppds[i][k]
+				pp_2_long_Ppds[i] = l
+
+pp_2_lat_Ppds = [i for i in pp_2_lat_Ppds if type(i) == float ]
+pp_2_long_Ppds = [i for i in pp_2_long_Ppds if type(i) == float ]
+
 
 
 print('Creating GRID POINTS')
 print('\n')
 
-area = (LLCRNRLON_LARGE,URCRNRLON_LARGE, LLCRNRLAT_LARGE, URCRNRLAT_LARGE)
+area = (LLCRNRLON_SMALL,URCRNRLON_SMALL, LLCRNRLAT_SMALL, URCRNRLAT_SMALL)
 
-shape = (abs(abs(URCRNRLON_LARGE) - abs(LLCRNRLON_LARGE))*GRID_PP_MULT, abs(abs(URCRNRLAT_LARGE) - abs(LLCRNRLAT_LARGE))*GRID_PP_MULT)
+shape = (abs(abs(URCRNRLON_SMALL) - abs(LLCRNRLON_SMALL))*GRID_PP_MULT, abs(abs(URCRNRLAT_SMALL) - abs(LLCRNRLAT_SMALL))*GRID_PP_MULT)
 
 grdx, grdy = gridder.regular(area, shape)
-
-if ROTATE_GRID == True:
-
-	radians = ROTATE_ANGLE*np.pi/180
-	grdx_rot = []
-	grdy_rot = []
-
-	for i,j in enumerate(grdx):
-
-		x = grdx[i]
-		y = grdy[i]
-
-		ox = URCRNRLON_LARGE
-		oy = URCRNRLAT_LARGE
-
-		qx = ox + np.cos(radians) * (x - ox) + np.sin(radians) * (y - oy)
-		qy = oy + -np.sin(radians) * (x - ox) + np.cos(radians) * (y - oy)
-
-		grdx_rot.append(float(qx))
-		grdy_rot.append(float(qy))
-
-	grdx = grdx_rot
-	grdy = grdy_rot
 
 if FILTER_BY_SHAPEFILE == True:
 	polygon = shapefile.Reader(SHAPEFILE_GRID) 
@@ -387,15 +351,14 @@ if FILTER_BY_SHAPEFILE == True:
 	poly = Polygon(polygon)
 	
 	pontos = [Point(grdx[i],grdy[i]) for i,j in enumerate(grdx)]
-
 	inside_points = np.array(MultiPoint(pontos).intersection(poly))
-
+	
 	grdx = []
 	grdy = []
 	for i,j in enumerate(inside_points):
 		grdx.append(j[0])
 		grdy.append(j[1])
-	
+
 
 print('Filtering GRID POINTS')
 print('\n')
@@ -412,6 +375,7 @@ for i,j in enumerate(grdx):
 dist_pp_grid_max = [[]]*len(grdx)
 for i,j in enumerate(grdx):
     dist_pp_grid_max[i] = [np.sqrt((j - pp_2_long_Ppds[k])**2 + (grdy[i] - l)**2) for k,l in enumerate(pp_2_lat_Ppds)]
+
 
 grid_sel_min = []
 grid_sel_min_data = []
@@ -473,53 +437,6 @@ grid_y_diff = []
 for i,j in enumerate(grid_xy_diff):
 	grid_x_diff.append(j[0])
 	grid_y_diff.append(j[1])
-
-
-###################################################################################################################
-grid_camadas_x = []
-grid_camadas_y = []
-grid_camadas_z = []
-for i,j in enumerate(camadas_terra_10_km):
-	for k,l in enumerate(grid_sel_x):
-		grid_camadas_x.append(grid_sel_x[k])
-		grid_camadas_y.append(grid_sel_y[k])
-		grid_camadas_z.append(-j)
-
-PP_410_lat_POINTS = []
-PP_410_lon_POINTS = []
-PP_410_depth_POINTS = []
-for i,j in enumerate(PP_depth_1):
-	for k,l in enumerate(j):
-		if LLCRNRLAT_SMALL <= PP_lat_1[i][k] <= URCRNRLAT_SMALL and LLCRNRLON_SMALL <= PP_lon_1[i][k] <= URCRNRLON_SMALL:
-			if l == 410:
-				PP_410_lat_POINTS.append(PP_lat_1[i][k])
-				PP_410_lon_POINTS.append(PP_lon_1[i][k])
-				PP_410_depth_POINTS.append(-PP_depth_1[i][k])
-
-PP_660_lat_POINTS = []
-PP_660_lon_POINTS = []
-PP_660_depth_POINTS = []
-for i,j in enumerate(PP_depth_2):
-	for k,l in enumerate(j):
-		if LLCRNRLAT_SMALL <= PP_lat_2[i][k] <= URCRNRLAT_SMALL and LLCRNRLON_SMALL <= PP_lon_2[i][k] <= URCRNRLON_SMALL:
-			if l == 660:
-				PP_660_lat_POINTS.append(PP_lat_2[i][k])
-				PP_660_lon_POINTS.append(PP_lon_2[i][k])
-				PP_660_depth_POINTS.append(-PP_depth_2[i][k])
-
-#Pds Middle Layer
-
-MED_PP_lat_POINTS = []
-MED_PP_lon_POINTS = []
-MED_PP_depth_POINTS = []
-for i,j in enumerate(PP_depth_2):
-	for k,l in enumerate(j):
-		if LLCRNRLAT_SMALL <= PP_lat_med[i][k] <= URCRNRLAT_SMALL and LLCRNRLON_SMALL <= PP_lon_med[i][k] <= URCRNRLON_SMALL:
-			if l == DEPTH_MED:
-				MED_PP_lat_POINTS.append(PP_lat_med[i][k])
-				MED_PP_lon_POINTS.append(PP_lon_med[i][k])
-				MED_PP_depth_POINTS.append(-PP_depth_med[i][k])
-
 
 ###################################################################################################################
 
@@ -660,7 +577,7 @@ ax.grid(True)
 ax.set_yticklabels(["{0:.0f}".format(time[i]) for i in np.arange(-100,len(time),100)])
 ax.set_xticklabels(["{0:.1f}".format(RP[i]*100) for i in np.arange(0,len(RP),100)])
 plt.show()
-
+'''
 ###################################################################################################################
 
 print('Plotting: Figure Distribution and usual statistics about events used in the study')
@@ -913,3 +830,4 @@ ax.set_zlabel('Depth (km)')
 fig.colorbar(m1,aspect=40,shrink=0.7)
 
 plt.show()
+'''
