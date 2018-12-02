@@ -98,7 +98,7 @@ RF_DEPTH_mtz_thickness_Pds = SELECTED_BINNED_DATA_dic['mtz_thickness_Pds']
 
 RF_DEPTH_mtz_thickness_Ppds = SELECTED_BINNED_DATA_dic['mtz_thickness_Ppds']
 
-RF_DEPTH_true_thickness_MTZ_Pds = SELECTED_BINNED_DATA_dic['true_thickness_MTZ_Pds']
+RF_DEPTH_true_thickness_MTZ_Pds = SELECTED_BINNED_DATA_dic['true_thickness_MTZ_Pds_std']
 RF_DEPTH_true_thickness_MTZ_Ppds = SELECTED_BINNED_DATA_dic['true_thickness_MTZ_Ppds']
 
 RF_DEPTH_mean_1_true_Pds = SELECTED_BINNED_DATA_dic['true_mean_1_Pds']
@@ -134,7 +134,7 @@ print('\n')
 
 #Color Maps
 
-colormap = plt.get_cmap(COLORMAP_VEL)
+colormap = plt.get_cmap(COLORMAP_STD)
 
 fig, ax = plt.subplots(nrows=1, ncols=1, subplot_kw={'projection': ccrs.Mercator(central_longitude=PROJECT_LON, globe=None)},figsize=(10,5))
 
@@ -158,19 +158,20 @@ shape_2_SHP = list(reader_2_SHP.geometries())
 plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
 ax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 
-norm_410 = mpl.colors.Normalize(vmin=200,vmax=300,clip=True)
+norm_410 = mpl.colors.Normalize(vmin=0,vmax=50,clip=True)
 colors_410 = colormap(norm_410(RF_DEPTH_true_thickness_MTZ_Pds))
-
-for i,j in enumerate(lons):
-	retangulo = Rectangle(xy=(lons[i] - DIST_GRID_PP_MED/(GRID_PP_MULT/2), lats[i] - DIST_GRID_PP_MED/(GRID_PP_MULT/2)),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),color='None', ec='k',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
-	ax.add_patch(retangulo)
 
 for i,j in enumerate(lons):
 	if math.isnan(RF_DEPTH_true_thickness_MTZ_Pds[i]) == False:
 		retangulo_410 = Rectangle(xy=(lons[i] - DIST_GRID_PP_MED/(GRID_PP_MULT/2), lats[i] - DIST_GRID_PP_MED/(GRID_PP_MULT/2)),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),color=colors_410[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=3)
 		ax.add_patch(retangulo_410)
+		# set the picker to True, so that pick events are registered
+		retangulo_410.pickable()
+		retangulo_410.set_picker(True)
 	else:
-		pass
+		retangulo = Rectangle(xy=(lons[i] - DIST_GRID_PP_MED/(GRID_PP_MULT/2), lats[i] - DIST_GRID_PP_MED/(GRID_PP_MULT/2)),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),color='None', ec='k',linewidth=0.5,transform=ccrs.Geodetic(),zorder=2)
+		ax.add_patch(retangulo)
+		# set the picker to True, so that pick events are registered
 
 ax.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
 
@@ -187,25 +188,27 @@ plt.title('Pick four points for bootstrapping cross-section and them close the w
 lon_click = []
 lat_click = []
 
-def onclick(event):
-	dist = []
+def onpick1(event):
+	if isinstance(event.artist,Rectangle):
+		patch = event.artist
+		patch_lon = float("%.4f" % round(patch.get_xy()[0],4))
+		patch_lat = float("%.4f" % round(patch.get_xy()[1],4))
 
-	for i,j in enumerate(lons):
-		latx,laty = ax.projection.transform_point(lons[i],lats[i],src_crs=ccrs.PlateCarree())
-		dist.append(np.sqrt((event.xdata-latx)**2+(event.ydata-laty)**2))
-	ind= np.argmin(dist)
-	print('Cross section lon and lat selected')
-	print('lon=%f, lat=%f' %(lons[ind],lats[ind]))
-	lon_click.append(lons[ind])
-	lat_click.append(lats[ind])
-	ax.plot(lons[ind],lats[ind],'Xr',ms=10, transform=ccrs.PlateCarree(),zorder=20)
+		print('Return lon/lat of the rectangle selected (left,bottom)')
+		print('lon='+str(patch_lon), 'lat='+str(patch_lat))
+
+		lon_click.append(patch_lon)
+		lat_click.append(patch_lat)
+		retangulo_PICK = Rectangle(xy=(patch_lon, patch_lat),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),color='k', ec='k',linewidth=1,transform=ccrs.Geodetic(),zorder=5)
+		ax.add_patch(retangulo_PICK)
 	plt.draw()
 	if len(lon_click) == 4:
 		fig.canvas.mpl_disconnect(cid)
 
 	return lon_click,lat_click
+    
 
-cid = fig.canvas.mpl_connect('button_press_event', onclick)
+cid = fig.canvas.mpl_connect('pick_event', onpick1)
 
 plt.show()
 
@@ -213,7 +216,7 @@ RESULTS_FOLDER = PP_FIGURE+'/'+'RESULTS_NUMBER_PP_PER_BIN_'+str(NUMBER_PP_PER_BI
 os.makedirs(RESULTS_FOLDER,exist_ok=True)
 fig.savefig(RESULTS_FOLDER+'SELECTED_BINNED_DATA_CROSS_SECTION_Pds_Ppds_bootstrap_points.'+EXT_FIG,dpi=DPI_FIG)
 
-print('Calculating the distance between selected points and selected grid')
+print('Allocating points')
 print('\n')
 
 RF_data_profile_Pds = []
@@ -265,7 +268,7 @@ RF_BOOTSTRAP_DEPTH_mean_2_Ppds_profile = []
 
 
 for i,j in enumerate(lon_click):
-		dist = [np.sqrt((j - lons[k])**2 + (lat_click[i] - l)**2)  for k,l in enumerate(lats)]
+		dist = [0 if (lon_click[i] + DIST_GRID_PP_MED/(GRID_PP_MULT/2),lat_click[i] + DIST_GRID_PP_MED/(GRID_PP_MULT/2)) ==  (lons[k],lats[k]) else 100 for k,l in enumerate(lats)]
 
 		RF_lat_profile.append(lats[dist.index(min(dist))])
 		RF_lon_profile.append(lons[dist.index(min(dist))])
@@ -321,7 +324,7 @@ print('Plotting the Final Figure')
 
 fig = plt.figure(figsize=(30, 15))
 
-fig.suptitle('Pds and Ppds Bootstrapping')
+fig.suptitle('Pds and Ppds Bootstrapping points')
 
 
 gs = gridspec.GridSpec(6, 8)
@@ -343,7 +346,7 @@ for _i, _j in enumerate(RF_data_profile_Pds):
 		factor_Pds = 1
 
 		majorLocatorY = MultipleLocator(50)
-		minorLocatorY = MultipleLocator(25)
+		minorLocatorY = MultipleLocator(10)
 
 	
 		x_data_Pds= []
@@ -354,9 +357,11 @@ for _i, _j in enumerate(RF_data_profile_Pds):
 
 		min_x = [min(a) for a in zip(*x_data_Pds)]
 		max_x = [max(a) for a in zip(*x_data_Pds)]
-		pds_grid.fill_betweenx(y=camadas_terra_10_km,x1=min_x, x2=max_x, facecolor='whitesmoke',alpha=0.8, interpolate=True, zorder=5)
+		pds_grid.fill_betweenx(y=camadas_terra_10_km,x1=min_x, x2=max_x, facecolor='whitesmoke',alpha=0.3, interpolate=True, zorder=5)
 
 		pds_grid.text(min(min_x),RF_DEPTH_mean_1_profile_Pds[_i],str(round(RF_DEPTH_mean_1_profile_Pds[_i]))+'±'+str(round(RF_DEPTH_std_1_profile_Pds[_i])),zorder=40, weight = 'bold',fontsize='x-small')
+
+		
 		pds_grid.text(min(min_x),RF_DEPTH_mean_2_profile_Pds[_i],str(round(RF_DEPTH_mean_2_profile_Pds[_i]))+'±'+str(round(RF_DEPTH_std_2_profile_Pds[_i])),zorder=41, weight = 'bold',fontsize='x-small')
 
 
@@ -365,10 +370,11 @@ for _i, _j in enumerate(RF_data_profile_Pds):
 
 		pds_grid.yaxis.set_ticks_position('both')
 		pds_grid.yaxis.set_major_locator(majorLocatorY)
+		pds_grid.yaxis.set_minor_locator(minorLocatorY)
 		pds_grid.grid(True,which='major',linestyle='--')
 
-		pds_grid.fill_betweenx(camadas_terra_10_km,RF_data_factor_Pds,_i/factor_Pds,where=np.array(RF_data_factor_Pds)>=_i/factor_Pds, facecolor='dimgrey',interpolate=True, zorder=19)
-		pds_grid.fill_betweenx(camadas_terra_10_km,RF_data_factor_Pds,_i/factor_Pds,where=np.array(RF_data_factor_Pds)<=_i/factor_Pds, facecolor='lightgrey', interpolate=True, zorder=20)
+		pds_grid.fill_betweenx(camadas_terra_10_km,RF_data_factor_Pds,_i/factor_Pds,where=np.array(RF_data_factor_Pds)>=_i/factor_Pds,alpha=0.3, facecolor='dimgrey',interpolate=True, zorder=19)
+		pds_grid.fill_betweenx(camadas_terra_10_km,RF_data_factor_Pds,_i/factor_Pds,where=np.array(RF_data_factor_Pds)<=_i/factor_Pds,alpha=0.3, facecolor='lightgrey', interpolate=True, zorder=20)
 		pds_grid.set_xticks([])
 
 	
@@ -394,19 +400,23 @@ for _i, _j in enumerate(RF_data_profile_Pds):
 
 		min_x = [min(a) for a in zip(*x_data_Ppds)]
 		max_x = [max(a) for a in zip(*x_data_Ppds)]
-		ppds_grid.fill_betweenx(y=camadas_terra_10_km,x1=min_x, x2=max_x, facecolor='whitesmoke',alpha=0.8, interpolate=True, zorder=5)
+		ppds_grid.fill_betweenx(y=camadas_terra_10_km,x1=min_x, x2=max_x, facecolor='whitesmoke',alpha=0.3, interpolate=True, zorder=5)
 
 		RF_data_factor_Ppds = [_i/factor_Ppds+l for k, l in enumerate(RF_data_profile_Ppds[_i])]
 		ppds_grid.plot(RF_data_factor_Ppds,camadas_terra_10_km,'k',linewidth=2, zorder=30)
 
 		ppds_grid.text(min(min_x),RF_DEPTH_mean_1_profile_Ppds[_i],str(round(RF_DEPTH_mean_1_profile_Ppds[_i]))+'±'+str(round(RF_DEPTH_std_1_profile_Ppds[_i])),zorder=40, weight = 'bold',fontsize='x-small')
+
+		
 		ppds_grid.text(min(min_x),RF_DEPTH_mean_2_profile_Ppds[_i],str(round(RF_DEPTH_mean_2_profile_Ppds[_i]))+'±'+str(round(RF_DEPTH_std_2_profile_Ppds[_i])),zorder=41, weight = 'bold',fontsize='x-small')
 
 
-		ppds_grid.fill_betweenx(camadas_terra_10_km,RF_data_factor_Ppds,_i/factor_Ppds,where=np.array(RF_data_factor_Ppds)>=_i/factor_Ppds, facecolor='dimgrey',interpolate=True, zorder=19)
-		ppds_grid.fill_betweenx(camadas_terra_10_km,RF_data_factor_Ppds,_i/factor_Ppds,where=np.array(RF_data_factor_Ppds)<=_i/factor_Ppds, facecolor='lightgrey',interpolate=True, zorder=20)
+		ppds_grid.fill_betweenx(camadas_terra_10_km,RF_data_factor_Ppds,_i/factor_Ppds,where=np.array(RF_data_factor_Ppds)>=_i/factor_Ppds,alpha=0.3, facecolor='dimgrey',interpolate=True, zorder=19)
+		ppds_grid.fill_betweenx(camadas_terra_10_km,RF_data_factor_Ppds,_i/factor_Ppds,where=np.array(RF_data_factor_Ppds)<=_i/factor_Ppds,alpha=0.3, facecolor='lightgrey',interpolate=True, zorder=20)
 		
 		ppds_grid.yaxis.set_major_locator(majorLocatorY)
+		ppds_grid.yaxis.set_minor_locator(minorLocatorY)
+
 		ppds_grid.grid(True,which='major',linestyle='--')
 
 		ppds_grid.yaxis.set_ticks_position('both')
@@ -433,7 +443,8 @@ for _i, _j in enumerate(RF_data_profile_Pds):
 
 		pds_grid_410_660.yaxis.set_ticks_position('both')
 		pds_grid_410_660.yaxis.set_ticks_position('both')
-		pds_grid_410_660.yaxis.set_major_locator(MultipleLocator(50))
+		pds_grid_410_660.yaxis.set_major_locator(majorLocatorY)
+		pds_grid_410_660.yaxis.set_minor_locator(minorLocatorY)
 		pds_grid_410_660.grid(True,which='major',linestyle='--')
 		pds_grid_410_660.set_xlim(0,100)
 		pds_grid_410_660.set_ylim(800,300)
@@ -459,7 +470,8 @@ for _i, _j in enumerate(RF_data_profile_Pds):
 		ppds_grid_410_660.yaxis.set_ticks_position('both')
 		ppds_grid_410_660.set_xlim(0,100)
 		ppds_grid_410_660.yaxis.set_ticks_position('both')
-		ppds_grid_410_660.yaxis.set_major_locator(MultipleLocator(50))
+		ppds_grid_410_660.yaxis.set_major_locator(majorLocatorY)
+		ppds_grid_410_660.yaxis.set_minor_locator(minorLocatorY)
 		ppds_grid_410_660.grid(True,which='major',linestyle='--')
 		ppds_grid_410_660.set_xlabel('Population')
 		ppds_grid_410_660.set_ylim(800,300)

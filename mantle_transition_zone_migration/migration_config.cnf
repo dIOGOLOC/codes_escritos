@@ -184,7 +184,7 @@ BOOTSTRAP_INTERATOR = 200
 GAMMA = 2
 
 #Minimum amplitude of the 410 and 660 km (both Pds and Ppds ) to compute apparent and true depth
-MIN_AMP_PDS_PPDS = 0.002
+MIN_AMP_PDS_PPDS = 0
 
 #Depth range (+/-) that we will use to find the maximum amplitude
 DEPTH_RANGE = 30
