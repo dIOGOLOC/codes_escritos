@@ -18,7 +18,7 @@ import cartopy.feature as cfeature
 from fatiando import gridder, utils
 import scipy.io
 import matplotlib.cm as cm
-from matplotlib.ticker import MultipleLocator, FormatStrFormatter
+from matplotlib.ticker import MultipleLocator, FormatStrFormatter, AutoMinorLocator
 import json
 import matplotlib.gridspec as gridspec
 from mpl_toolkits.axes_grid1 import make_axes_locatable
@@ -101,7 +101,10 @@ RF_DEPTH_mtz_thickness_Pds = SELECTED_BINNED_DATA_dic['mtz_thickness_Pds']
 RF_DEPTH_mtz_thickness_Ppds = SELECTED_BINNED_DATA_dic['mtz_thickness_Ppds']
 
 RF_DEPTH_true_thickness_MTZ_Pds = SELECTED_BINNED_DATA_dic['true_thickness_MTZ_Pds']
+RF_DEPTH_true_thickness_MTZ_Pds_std = SELECTED_BINNED_DATA_dic['true_thickness_MTZ_Pds_std']
+
 RF_DEPTH_true_thickness_MTZ_Ppds = SELECTED_BINNED_DATA_dic['true_thickness_MTZ_Ppds']
+RF_DEPTH_true_thickness_MTZ_Ppds_std = SELECTED_BINNED_DATA_dic['true_thickness_MTZ_Ppds_std']
 
 RF_DEPTH_mean_1_true_Pds = SELECTED_BINNED_DATA_dic['true_mean_1_Pds']
 RF_DEPTH_std_1_true_Pds = SELECTED_BINNED_DATA_dic['true_std_1_Pds']
@@ -125,9 +128,35 @@ RF_delta_2_Vp_std = SELECTED_BINNED_DATA_dic['delta_2_Vp_std']
 RF_delta_2_Vs_mean = SELECTED_BINNED_DATA_dic['delta_2_Vs_mean']
 RF_delta_2_Vs_std = SELECTED_BINNED_DATA_dic['delta_2_Vs_std']
 
+difference_thickness_MTZ_model = SELECTED_BINNED_DATA_dic['difference_thickness_MTZ_model_Pds']
+difference_thickness_MTZ_model_std = SELECTED_BINNED_DATA_dic['difference_thickness_MTZ_model_Pds_std']
+
+
 RESULTS_FOLDER = PP_FIGURE+'/'+'RESULTS_NUMBER_PP_PER_BIN_'+str(NUMBER_PP_PER_BIN)+'_NUMBER_STA_PER_BIN_'+str(NUMBER_STA_PER_BIN)+'/'
 os.makedirs(RESULTS_FOLDER,exist_ok=True)
 
+###################################################################################################################
+
+print('Total of bins: '+str(len(RF_DEPTH_mean_1_Pds)))
+print('\n')
+
+print('Pds Phases')
+print('Number of bins - 410 km depth: '+str(np.count_nonzero(~np.isnan(RF_DEPTH_mean_1_Pds))))
+print('Number of bins - 660 km depth: '+str(np.count_nonzero(~np.isnan(RF_DEPTH_mean_2_Pds))))
+print('Number of bins - MTZ Thickness: '+str(np.count_nonzero(~np.isnan(RF_DEPTH_mtz_thickness_Pds))))
+print('\n')
+
+print('Ppds Phases')
+print('Number of bins - 410 km depth: '+str(np.count_nonzero(~np.isnan(RF_DEPTH_mean_1_Ppds))))
+print('Number of bins - 660 km depth: '+str(np.count_nonzero(~np.isnan(RF_DEPTH_mean_2_Ppds))))
+print('Number of bins - MTZ Thickness: '+str(np.count_nonzero(~np.isnan(RF_DEPTH_mtz_thickness_Ppds))))
+print('\n')
+
+print('True Estimates')
+print('Number of bins - 410 km depth: '+str(np.count_nonzero(~np.isnan(RF_DEPTH_mean_1_true_Pds))))
+print('Number of bins - 660 km depth: '+str(np.count_nonzero(~np.isnan(RF_DEPTH_mean_2_true_Pds))))
+print('Number of bins - MTZ Thickness: '+str(np.count_nonzero(~np.isnan(RF_DEPTH_true_thickness_MTZ_Pds))))
+print('\n')
 
 ###################################################################################################################
 
@@ -141,51 +170,13 @@ colormap_std = plt.get_cmap(COLORMAP_STD)
 
 #############################################################################################################################################################################################
 
-fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(10,20))
+print('Plotting Figure: Apparent and True Depth estimates (Pds and Ppds phases)')
 
-majorLocatorY = MultipleLocator(20)
-minorLocatorY = MultipleLocator(5)
-
-	
-idx_Pds = np.argsort(RF_DEPTH_true_thickness_MTZ_Pds)
-
-norm_410 = mpl.colors.Normalize(vmin=200,vmax=300,clip=True)
-colors_410_Pds = colormap(norm_410(np.array(RF_DEPTH_true_thickness_MTZ_Pds,dtype='float64')))
-
-for j,i in enumerate(idx_Pds):
-	if math.isnan(RF_DEPTH_true_thickness_MTZ_Pds[i]) == False:
-		ax.errorbar(RF_DEPTH_mean_2_true_Pds[i],RF_DEPTH_mean_1_true_Pds[i], yerr=RF_DEPTH_std_1_true_Pds[i],xerr=RF_DEPTH_std_2_true_Pds[i], ecolor='k',elinewidth=1,capsize=2,capthick=1)
-		ax.scatter(RF_DEPTH_mean_2_true_Pds[i],RF_DEPTH_mean_1_true_Pds[i],color=colors_410_Pds[i],zorder=10)
-
-ax.yaxis.set_major_locator(majorLocatorY)
-ax.yaxis.set_minor_locator(minorLocatorY)
-ax.grid(True,which='major',color='gray',linewidth=1,linestyle='--')
-ax.yaxis.set_ticks_position('both')
-
-ax.set_ylim(360,460)
-ax.set_xlim(610,710)
-ax.set_ylabel('True Depth d410 (km)')
-ax.set_xlabel('True Depth d660 (km)')
-
-sm_410 = plt.cm.ScalarMappable(cmap=colormap,norm=norm_410)
-sm_410._A = []
-fig.colorbar(sm_410,ax=ax,orientation='horizontal',shrink=0.8,label='MTZ True Thickness Pds')
-
-plt.show()
-fig.savefig(RESULTS_FOLDER+'TRUE_DEPTH_PLOT.'+EXT_FIG,dpi=DPI_FIG)
-
-
-#############################################################################################################################################################################################
-
-fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(20,10),sharey=True)
+fig, axes = plt.subplots(nrows=1, ncols=3, figsize=(30,10),sharey=True)
 
 ax = axes[0]
 ax1 = axes[1]
-
-
-majorLocatorY = MultipleLocator(20)
-minorLocatorY = MultipleLocator(5)
-
+ax0 = axes[2]
 	
 idx_Pds = np.argsort(RF_DEPTH_mtz_thickness_Pds)
 idx_Ppds = np.argsort(RF_DEPTH_mtz_thickness_Ppds)
@@ -199,16 +190,20 @@ for j,i in enumerate(idx_Pds):
 		ax.errorbar(RF_DEPTH_mean_2_Pds[i],RF_DEPTH_mean_1_Pds[i], yerr=RF_DEPTH_std_1_Pds[i],xerr=RF_DEPTH_std_2_Pds[i], ecolor='k',elinewidth=1,capsize=2,capthick=1)
 		ax.scatter(RF_DEPTH_mean_2_Pds[i],RF_DEPTH_mean_1_Pds[i],color=colors_410_Pds[i],zorder=10)
 
-ax.yaxis.set_major_locator(majorLocatorY)
-ax.yaxis.set_minor_locator(minorLocatorY)
-ax.grid(True,which='major',color='gray',linewidth=1,linestyle='--')
+ax.text(612,456,'N = '+str(np.count_nonzero(~np.isnan(RF_DEPTH_mtz_thickness_Pds))),fontsize=12, fontweight='bold',bbox={'facecolor':'white','edgecolor':'none','pad':1})
+
+ax.yaxis.set_major_locator(MultipleLocator(20))
+ax.xaxis.set_major_locator(MultipleLocator(20))
+ax.xaxis.set_minor_locator(AutoMinorLocator(5))
+ax.yaxis.set_minor_locator(AutoMinorLocator(5))
+
 ax.yaxis.set_ticks_position('both')
+ax.xaxis.set_ticks_position('both')
 
 ax.set_ylim(360,460)
 ax.set_xlim(610,710)
 ax.set_ylabel('Depth d410 (km)')
 ax.set_xlabel('Depth d660 (km)')
-ax.set_title('Pds Phases')
 
 
 for j,i in enumerate(idx_Ppds):
@@ -216,27 +211,61 @@ for j,i in enumerate(idx_Ppds):
 		ax1.errorbar(RF_DEPTH_mean_2_Ppds[i],RF_DEPTH_mean_1_Ppds[i], yerr=RF_DEPTH_std_1_Ppds[i],xerr=RF_DEPTH_std_2_Ppds[i], ecolor='k',elinewidth=1,capsize=2,capthick=1)
 		ax1.scatter(RF_DEPTH_mean_2_Ppds[i],RF_DEPTH_mean_1_Ppds[i],color=colors_410_Ppds[i],zorder=10)
 
-ax1.yaxis.set_major_locator(majorLocatorY)
-ax1.yaxis.set_minor_locator(minorLocatorY)
-ax1.grid(True,which='major',color='gray',linewidth=1,linestyle='--')
-ax1.yaxis.set_ticks_position('both')
+ax1.text(612,456,'N = '+str(np.count_nonzero(~np.isnan(RF_DEPTH_mtz_thickness_Ppds))),fontsize=12, fontweight='bold',bbox={'facecolor':'white','edgecolor':'none','pad':1})
 
-ax1.tick_params(labelright=True,labelleft=False)
-ax1.yaxis.set_label_position("right")
+
+
+ax1.yaxis.set_ticks_position('both')
+ax1.xaxis.set_ticks_position('both')
+
+ax1.yaxis.set_major_locator(MultipleLocator(20))
+ax1.xaxis.set_major_locator(MultipleLocator(20))
+ax1.xaxis.set_minor_locator(AutoMinorLocator(5))
+ax1.yaxis.set_minor_locator(AutoMinorLocator(5))
 
 ax1.set_ylim(360,460)
 ax1.set_xlim(610,710)
-ax1.set_ylabel('Depth d410 (km)')
 ax1.set_xlabel('Depth d660 (km)')
-ax1.set_title('Ppds Phases')
+
+
+idx_true = np.argsort(RF_DEPTH_true_thickness_MTZ_Pds)
+
+colors_410_true = colormap(norm_410(np.array(RF_DEPTH_true_thickness_MTZ_Pds,dtype='float64')))
+
+for j,i in enumerate(idx_true):
+	if math.isnan(RF_DEPTH_true_thickness_MTZ_Pds[i]) == False:
+		ax0.errorbar(RF_DEPTH_mean_2_true_Pds[i],RF_DEPTH_mean_1_true_Pds[i], yerr=RF_DEPTH_std_1_true_Pds[i],xerr=RF_DEPTH_std_2_true_Pds[i], ecolor='k',elinewidth=1,capsize=2,capthick=1)
+		ax0.scatter(RF_DEPTH_mean_2_true_Pds[i],RF_DEPTH_mean_1_true_Pds[i],color=colors_410_true[i],zorder=10)
+
+ax0.text(612,456,'N = '+str(np.count_nonzero(~np.isnan(RF_DEPTH_true_thickness_MTZ_Pds))),fontsize=12, fontweight='bold',bbox={'facecolor':'white','edgecolor':'none','pad':1})
+
+ax0.yaxis.set_major_locator(MultipleLocator(20))
+ax0.xaxis.set_major_locator(MultipleLocator(20))
+ax0.xaxis.set_minor_locator(AutoMinorLocator(5))
+ax0.yaxis.set_minor_locator(AutoMinorLocator(5))
+
+ax0.yaxis.set_ticks_position('both')
+ax0.xaxis.set_ticks_position('both')
+
+ax0.tick_params(labelright=True,labelleft=False)
+ax0.yaxis.set_label_position("right")
+
+ax0.set_ylim(360,460)
+ax0.set_xlim(610,710)
+
+ax0.set_ylabel('True Depth d410 (km)')
+ax0.set_xlabel('True Depth d660 (km)')
 
 sm_410 = plt.cm.ScalarMappable(cmap=colormap,norm=norm_410)
 sm_410._A = []
+
+fig.colorbar(sm_410,ax=ax0,orientation='horizontal',shrink=0.8,label='MTZ True Thickness')
 fig.colorbar(sm_410,ax=ax,orientation='horizontal',shrink=0.8,label='MTZ Thickness Pds')
 fig.colorbar(sm_410,ax=ax1,orientation='horizontal',shrink=0.8,label='MTZ Thickness Ppds')
 
+
 plt.show()
-fig.savefig(RESULTS_FOLDER+'APPARENT_DEPTH_PDS_PPDS_PLOT.'+EXT_FIG,dpi=DPI_FIG)
+fig.savefig(RESULTS_FOLDER+'APPARENT_TRUE_DEPTH_PLOT.'+EXT_FIG,dpi=DPI_FIG)
 
 
 #############################################################################################################################################################################################
@@ -977,7 +1006,7 @@ fig, axes = plt.subplots(nrows=1, ncols=2, subplot_kw={'projection': ccrs.Mercat
 ax = axes[0]
 ax2 = axes[1]
 
-#Pds Phase
+#TRUE MTZ THICKNESS
 
 
 ax.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
@@ -1006,9 +1035,9 @@ for i,j in enumerate(lons):
 
 ax.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
 
-ax.set_title('True Thickness of MTZ (Pds)', y=1.08)
+ax.set_title('True Thickness of MTZ', y=1.08)
 
-#Ppds Phase
+#UNCERTAINTY TRUE MTZ THICKNESS
 
 ax2.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
 
@@ -1023,11 +1052,11 @@ plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
 ax2.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 ax2.gridlines(draw_labels=True)
 
-norm_660 = mpl.colors.Normalize(vmin=200,vmax=300,clip=True)
-colors_660 = colormap(norm_660(np.array(RF_DEPTH_true_thickness_MTZ_Ppds,dtype='float64')))
+norm_660 = mpl.colors.Normalize(vmin=0,vmax=50,clip=True)
+colors_660 = colormap_std(norm_660(np.array(RF_DEPTH_true_thickness_MTZ_Pds_std,dtype='float64')))
 
 for i,j in enumerate(lons):
-	if math.isnan(RF_DEPTH_true_thickness_MTZ_Ppds[i]) == False:
+	if math.isnan(RF_DEPTH_true_thickness_MTZ_Pds_std[i]) == False:
 		retangulo_660 = Rectangle(xy=(lons[i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2, lats[i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),color=colors_660[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
 		ax2.add_patch(retangulo_660)
 	else:
@@ -1035,7 +1064,7 @@ for i,j in enumerate(lons):
 
 ax2.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
 
-ax2.set_title('True Thickness of MTZ (Ppds)', y=1.08)
+ax2.set_title(r'Uncertainty (1$\sigma$) of True Thickness of MTZ', y=1.08)
 
 #______________________________________________________________________
 
@@ -1043,11 +1072,137 @@ sm_410 = plt.cm.ScalarMappable(cmap=colormap,norm=norm_410)
 sm_410._A = []
 fig.colorbar(sm_410,ax=ax,orientation='horizontal',shrink=0.8)
 
-sm_660 = plt.cm.ScalarMappable(cmap=colormap,norm=norm_660)
+sm_660 = plt.cm.ScalarMappable(cmap=colormap_std,norm=norm_660)
 sm_660._A = []
 fig.colorbar(sm_660,ax=ax2,orientation='horizontal',shrink=0.8)
 
 fig.savefig(RESULTS_FOLDER+'TRUE_THICKNESS_MTZ.'+EXT_FIG,dpi=DPI_FIG)
+
+########################################################################################################################################################################
+
+print('Plotting Figure: Difference True Thickness of the Mantle Transition Zone and Uncertainty')
+
+fig, axes = plt.subplots(nrows=1, ncols=2, subplot_kw={'projection': ccrs.Mercator(central_longitude=PROJECT_LON, globe=None)},figsize=(20,10),sharey=True)
+
+ax = axes[0]
+ax2 = axes[1]
+
+#TRUE MTZ THICKNESS
+
+
+ax.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
+
+reader_1_SHP = Reader(BOUNDARY_1_SHP)
+shape_1_SHP = list(reader_1_SHP.geometries())
+plot_shape_1_SHP = cfeature.ShapelyFeature(shape_1_SHP, ccrs.PlateCarree())
+ax.add_feature(plot_shape_1_SHP, facecolor='none', edgecolor='k',linewidth=3)
+
+reader_2_SHP = Reader(BOUNDARY_2_SHP)
+shape_2_SHP = list(reader_2_SHP.geometries())
+plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
+ax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
+ax.gridlines(draw_labels=True)
+
+norm_410 = mpl.colors.Normalize(vmin=-100,vmax=100,clip=True)
+colors_410 = colormap(norm_410(np.array(difference_thickness_MTZ_model,dtype='float64')))
+
+for i,j in enumerate(lons):
+	if math.isnan(difference_thickness_MTZ_model[i]) == False:
+		retangulo_410 = Rectangle(xy=(lons[i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2, lats[i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),color=colors_410[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+		ax.add_patch(retangulo_410)
+	else:
+		pass
+
+
+ax.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
+
+ax.set_title('Diifference True Thickness of MTZ', y=1.08)
+
+#UNCERTAINTY TRUE MTZ THICKNESS
+
+ax2.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
+
+reader_1_SHP = Reader(BOUNDARY_1_SHP)
+shape_1_SHP = list(reader_1_SHP.geometries())
+plot_shape_1_SHP = cfeature.ShapelyFeature(shape_1_SHP, ccrs.PlateCarree())
+ax2.add_feature(plot_shape_1_SHP, facecolor='none', edgecolor='k',linewidth=3)
+
+reader_2_SHP = Reader(BOUNDARY_2_SHP)
+shape_2_SHP = list(reader_2_SHP.geometries())
+plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
+ax2.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
+ax2.gridlines(draw_labels=True)
+
+norm_660 = mpl.colors.Normalize(vmin=0,vmax=50,clip=True)
+colors_660 = colormap_std(norm_660(np.array(difference_thickness_MTZ_model_std,dtype='float64')))
+
+for i,j in enumerate(lons):
+	if math.isnan(difference_thickness_MTZ_model_std[i]) == False:
+		retangulo_660 = Rectangle(xy=(lons[i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2, lats[i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),color=colors_660[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+		ax2.add_patch(retangulo_660)
+	else:
+		pass
+
+ax2.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
+
+ax2.set_title(r'Uncertainty (1$\sigma$) of  Difference True Thickness of MTZ', y=1.08)
+
+#______________________________________________________________________
+
+sm_410 = plt.cm.ScalarMappable(cmap=colormap,norm=norm_410)
+sm_410._A = []
+fig.colorbar(sm_410,ax=ax,orientation='horizontal',shrink=0.8)
+
+sm_660 = plt.cm.ScalarMappable(cmap=colormap_std,norm=norm_660)
+sm_660._A = []
+fig.colorbar(sm_660,ax=ax2,orientation='horizontal',shrink=0.8)
+
+fig.savefig(RESULTS_FOLDER+'DIFFERENCE_TRUE_THICKNESS_MTZ_UNCERTAINTY.'+EXT_FIG,dpi=DPI_FIG)
+
+########################################################################################################################################################################
+
+print('Plotting Figure: Diifference True Thickness of the Mantle Transition Zone')
+
+fig, ax = plt.subplots(nrows=1, ncols=1, subplot_kw={'projection': ccrs.Mercator(central_longitude=PROJECT_LON, globe=None)},figsize=(10,10),sharey=True)
+
+#TRUE MTZ THICKNESS
+
+
+ax.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
+
+reader_1_SHP = Reader(BOUNDARY_1_SHP)
+shape_1_SHP = list(reader_1_SHP.geometries())
+plot_shape_1_SHP = cfeature.ShapelyFeature(shape_1_SHP, ccrs.PlateCarree())
+ax.add_feature(plot_shape_1_SHP, facecolor='none', edgecolor='k',linewidth=3)
+
+reader_2_SHP = Reader(BOUNDARY_2_SHP)
+shape_2_SHP = list(reader_2_SHP.geometries())
+plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
+ax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
+ax.gridlines(draw_labels=True)
+
+norm_410 = mpl.colors.Normalize(vmin=-100,vmax=100,clip=True)
+colors_410 = colormap(norm_410(np.array(difference_thickness_MTZ_model,dtype='float64')))
+
+for i,j in enumerate(lons):
+	if math.isnan(difference_thickness_MTZ_model[i]) == False and abs(difference_thickness_MTZ_model[i]) > abs(difference_thickness_MTZ_model_std[i]):
+		retangulo_410 = Rectangle(xy=(lons[i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2, lats[i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),color=colors_410[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+		ax.add_patch(retangulo_410)
+	else:
+		pass
+
+
+ax.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
+
+ax.set_title('Diifference True Thickness of MTZ', y=1.08)
+#______________________________________________________________________
+
+sm_410 = plt.cm.ScalarMappable(cmap=colormap,norm=norm_410)
+sm_410._A = []
+fig.colorbar(sm_410,ax=ax,orientation='horizontal',shrink=0.8)
+
+fig.savefig(RESULTS_FOLDER+'DIFFERENCE_TRUE_THICKNESS_MTZ.'+EXT_FIG,dpi=DPI_FIG)
+
 
 ########################################################################################################################################################################
 

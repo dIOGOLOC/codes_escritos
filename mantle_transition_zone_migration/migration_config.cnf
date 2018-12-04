@@ -179,10 +179,10 @@ BOOTSTRAP_INTERATOR = 200
 #and degree of partial melting. This value is found to be in the 
 #range of 1.5–2.5 for most continental areas.
 
-GAMMA = 20
+GAMMA = 2
 
 #Minimum amplitude of the 410 and 660 km (both Pds and Ppds ) to compute apparent and true depth
-MIN_AMP_PDS_PPDS = 0.01
+MIN_AMP_PDS_PPDS = 0.015
 
 #Depth range (+/-) that we will use to find the maximum amplitude
-DEPTH_RANGE = 30
+DEPTH_RANGE = 20

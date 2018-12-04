@@ -23,7 +23,7 @@ import json
 import matplotlib.gridspec as gridspec
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from scipy import interpolate
-from shapely.geometry import Polygon, MultiPoint, Point, LinearRing
+from shapely.geometry import Polygon, MultiPoint, Point, LineString
 import shapefile
 from matplotlib.colors import Normalize
 from matplotlib.patches import Circle,Rectangle
@@ -39,7 +39,7 @@ from parameters_py.mgconfig import (
 					PP_DIR,PP_SELEC_DIR,NUMBER_PP_PER_BIN,STA_DIR,
 					LLCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLON_LARGE,URCRNRLAT_LARGE,LLCRNRLON_SMALL,
 					URCRNRLON_SMALL,LLCRNRLAT_SMALL,URCRNRLAT_SMALL,PROJECT_LAT,PROJECT_LON,GRID_PP_MULT,
-					BOUNDARY_1_SHP,BOUNDARY_2_SHP,TECTO_SHP,		
+					BOUNDARY_1_SHP,BOUNDARY_2_SHP,TECTO_SHP,COLORMAP_VEL,COLORMAP_STD,
 					PP_FIGURE,EXT_FIG,DPI_FIG,DIST_GRID_PP_MED,DIST_GRID_PP,NUMBER_STA_PER_BIN,
 					DEPTH_RANGE,BOOTSTRAP_INTERATOR,BOOTSTRAP_DEPTH_ESTIMATION,GAMMA,CROSS_SECTION_AXIS
 				   )
@@ -82,6 +82,7 @@ SELECTED_BINNED_DATA_dic = json.load(open(filename))
 
 lats = SELECTED_BINNED_DATA_dic['lat']
 lons = SELECTED_BINNED_DATA_dic['lon']
+
 RF_number = SELECTED_BINNED_DATA_dic['len_Pds']
 
 RF_stacking_Pds = SELECTED_BINNED_DATA_dic['data_Pds']
@@ -134,22 +135,45 @@ shape = (int(abs(abs(URCRNRLON_SMALL) - abs(LLCRNRLON_SMALL))*GRID_PP_MULT),int(
 
 grdx, grdy = gridder.regular(area, shape)
 
-poly = Polygon([(min(lons), min(lats)), (min(lons), max(lats)), (max(lons), max(lats)), (max(lons), min(lats))])
+#Creating a polygon with buffer to plot the sections:
+
+if min(lons) > 0:
+	min_lons = min(lons) + 1/GRID_PP_MULT
+else:
+	min_lons = min(lons) - 1/GRID_PP_MULT
+
+if min(lats) > 0:
+	min_lats = min(lats) + 1/GRID_PP_MULT
+else:
+	min_lats = min(lats) - 1/GRID_PP_MULT
+
+if max(lons) > 0:
+	max_lons = max(lons) - 1/GRID_PP_MULT
+else:
+	max_lons = max(lons) + 1/GRID_PP_MULT
+
+if max(lats) > 0:
+	max_lats = max(lats) - 1/GRID_PP_MULT
+else:
+	max_lats = max(lats) + 1/GRID_PP_MULT
+
+
+poly = Polygon([(min_lons, min_lats), (min_lons, max_lats), (max_lons, max_lats), (max_lons, min_lats)])
 
 pontos = [Point(grdx[i],grdy[i]) for i,j in enumerate(grdx)]
 
-inside_points = np.array(MultiPoint(pontos).intersection(poly))
 
-grdx = []
-grdy = []
-for i,j in enumerate(inside_points):
-	grdx.append(j[0])
-	grdy.append(j[1])
+grdx_poly = []
+grdy_poly = []
+for i,j in enumerate(grdx):
+	if poly.intersects(Point(grdx[i],grdy[i])):
+		grdx_poly.append(grdx[i])
+		grdy_poly.append(grdy[i])
 
-shape_new = (int(abs(abs(max(lons)) - abs(min(lons)))*GRID_PP_MULT)+1,int(abs(abs(max(lats)) - abs(min(lats)))*GRID_PP_MULT)+1)
+shape_new = (int(len(set(grdx_poly))),int(len(set(grdy_poly))))
 
-rows = np.array(grdx).reshape(shape_new)
-cols = np.array(grdy).reshape(shape_new)
+rows = np.array(grdx_poly).reshape(shape_new)
+cols = np.array(grdy_poly).reshape(shape_new)
 
 RESULTS_FOLDER = PP_FIGURE+'/'+'RESULTS_NUMBER_PP_PER_BIN_'+str(NUMBER_PP_PER_BIN)+'_NUMBER_STA_PER_BIN_'+str(NUMBER_STA_PER_BIN)+'/'
 os.makedirs(RESULTS_FOLDER,exist_ok=True)
@@ -209,10 +233,10 @@ if CROSS_SECTION_AXIS == 'x':
 
 	AB_lat = [[]]*len(rows[:,0])
 
-	for i,j in enumerate(rows[:,0][::-1]):
+	for i,j in enumerate(rows[:,0]):
 
 		lat_lon = [(lons[k],lats[k]) for k,l in enumerate(lats)]
-		grid_column = [(rows[i,:][k],cols[i,:][k]) for k,l in enumerate(rows[i,:])]
+		grid_column = [(float("%.4f" % round(rows[i,:][k],4)),float("%.4f" % round(cols[i,:][k],4))) for k,l in enumerate(rows[i,:])]
 
 		AB_lon[i] = [rows[i,:][k] for k,l in enumerate(rows[i,:])]
 
@@ -315,10 +339,10 @@ else:
 
 	AB_lat = [[]]*len(rows[0,:])
 
-	for i,j in enumerate(rows[0,:][::-1]):
+	for i,j in enumerate(rows[0,:]):
 		
 		lat_lon = [(lons[k],lats[k]) for k,l in enumerate(lats)]
-		grid_column = [(rows[:,i][k],cols[:,i][k]) for k,l in enumerate(rows[:,i])]
+		grid_column = [(float("%.4f" % round(rows[:,i][k],4)),float("%.4f" % round(cols[:,i][k],4))) for k,l in enumerate(rows[:,i])]
 
 		AB_lon[i] = [rows[:,i][k] for k,l in enumerate(rows[:,i])]
 
@@ -369,7 +393,6 @@ else:
 
 		RF_DEPTH_true_thickness_MTZ_profile_Ppds[i] = [RF_DEPTH_true_thickness_MTZ_Ppds[k] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
 
-
 print('Plotting cross-sections according to the '+CROSS_SECTION_AXIS+' direction')
 for i,j in enumerate(RF_data_profile_Pds):
 
@@ -384,7 +407,7 @@ for i,j in enumerate(RF_data_profile_Pds):
 
 	P_anomaly = fig.add_subplot(gs[0,1:])
 
-	MTZ_thickness = fig.add_subplot(gs[1,1:],sharex=P_anomaly)
+	S_anomaly = fig.add_subplot(gs[1,1:],sharex=P_anomaly)
 
 	pefil_pds = fig.add_subplot(gs[2:4,1:],sharex=P_anomaly)
 	pefil_ppds = fig.add_subplot(gs[4:6,1:],sharex=P_anomaly)
@@ -620,29 +643,28 @@ for i,j in enumerate(RF_data_profile_Pds):
 		#### Figure MTZ True and Apparent thickness  ####
 
 	for _i, _j in enumerate(RF_data_profile_Ppds[i]):
-		MTZ_thickness.axhline(y=250,linewidth=0.5, color='k')
+		#S_anomaly.axhline(y=0,linewidth=0.5, color='k')
 
-		MTZ_thickness.plot(_i/factor_Ppds,RF_DEPTH_mtz_thickness_profile_Pds[i][_i],marker='o',markerfacecolor='none',markeredgecolor='k')
-		MTZ_thickness.plot(_i/factor_Ppds,RF_DEPTH_true_thickness_MTZ_profile_Pds[i][_i],marker='s',markerfacecolor='none',markeredgecolor='gray')
+		S_anomaly.plot(_i/factor_Ppds,RF_delta_1_Vs_mean_profile[i][_i],marker='^',markerfacecolor='none',markeredgecolor='k')
+		S_anomaly.plot(_i/factor_Ppds,RF_delta_2_Vs_mean_profile[i][_i],marker='v',markerfacecolor='none',markeredgecolor='k')
 
-		MTZ_thickness.errorbar(_i/factor_Ppds,RF_DEPTH_mtz_thickness_profile_Pds[i][_i], yerr=RF_DEPTH_std_2_profile_Pds[i][_i], ecolor='k',elinewidth=1,capsize=2,capthick=1)
-		MTZ_thickness.errorbar(_i/factor_Ppds,RF_DEPTH_true_thickness_MTZ_profile_Pds[i][_i], yerr=RF_DEPTH_std_2_profile_Ppds[i][_i], ecolor='gray',elinewidth=1,capsize=2,capthick=1)
-		MTZ_thickness.set_ylim(300,200)
-		MTZ_thickness.set_ylabel('Depth (km)')
-		MTZ_thickness.yaxis.set_label_position("right")
-		MTZ_thickness.set_title('MTZ Apparent and True Thickness')
-		MTZ_thickness.yaxis.set_ticks_position('both')
-		MTZ_thickness.yaxis.set_major_locator(MultipleLocator(25))
-		MTZ_thickness.yaxis.set_minor_locator(MultipleLocator(10))
-		MTZ_thickness.grid(True,which='major',color='gray',linewidth=1,linestyle='--')
-		MTZ_thickness.tick_params(labelleft=True,labelright=True)
+		S_anomaly.errorbar(_i/factor_Ppds,RF_delta_1_Vs_mean_profile[i][_i], yerr=RF_delta_1_Vs_std_profile[i][_i], ecolor='k',elinewidth=1,capsize=2,capthick=1)
+		S_anomaly.errorbar(_i/factor_Ppds,RF_delta_2_Vs_mean_profile[i][_i], yerr=RF_delta_2_Vs_std_profile[i][_i], ecolor='k',elinewidth=1,capsize=2,capthick=1)
+		S_anomaly.set_ylim(-1,1)
+		S_anomaly.set_title('S-velocity anomaly (%)')
+		S_anomaly.yaxis.set_ticks_position('both')
+		S_anomaly.yaxis.set_major_locator(MultipleLocator(0.5))
+		S_anomaly.yaxis.set_minor_locator(MultipleLocator(0.1))
+		S_anomaly.grid(True,which='major',color='gray',linewidth=1,linestyle='--')
+		S_anomaly.tick_params(labelleft=True,labelright=True)
+		S_anomaly.set_xticks([])
 
 
 	#### Figure 410 km and 660 km P-velocity anomaly  ####
 
 
 	for _i, _j in enumerate(RF_data_profile_Ppds[i]):
-		P_anomaly.axhline(y=0,linewidth=0.5, color='k')
+		#P_anomaly.axhline(y=0,linewidth=0.5, color='k')
 
 		P_anomaly.plot(_i/factor_Ppds,RF_delta_1_Vp_mean_profile[i][_i],marker='^',markerfacecolor='none',markeredgecolor='k')
 		P_anomaly.plot(_i/factor_Ppds,RF_delta_2_Vp_mean_profile[i][_i],marker='v',markerfacecolor='none',markeredgecolor='k')
@@ -658,6 +680,6 @@ for i,j in enumerate(RF_data_profile_Pds):
 		P_anomaly.tick_params(labelleft=True,labelright=True)
 		P_anomaly.set_xticks([])
 	
-	fig.savefig(RESULTS_FOLDER+'SELECTED_BINNED_DATA_'+CROSS_SECTION_AXIS+'_CROSS_SECTION_Pds_Ppds_PROFILE_'+str(i+1)+'.'+EXT_FIG,dpi=DPI_FIG)
+	fig.savefig(RESULTS_FOLDER+'SELECTED_BINNED_DATA_'+CROSS_SECTION_AXIS+'_CROSS_SECTION_Pds_Ppds_PROFILE_VP_VS_'+str(i+1)+'.'+EXT_FIG,dpi=DPI_FIG)
 #plt.show()
 print('Ending the Cross section CODE')
