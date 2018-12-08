@@ -76,7 +76,8 @@ sta_time = sta_dic['sta_time']
 print('Importing selected binned data')
 print('\n')
 
-filename = PP_SELEC_DIR+'SELECTED_BINNED_Ps.json'
+RESULTS_FOLDER_BINS = PP_SELEC_DIR+'/'+'RESULTS_NUMBER_PP_PER_BIN_'+str(NUMBER_PP_PER_BIN)+'_NUMBER_STA_PER_BIN_'+str(NUMBER_STA_PER_BIN)+'/'
+filename = RESULTS_FOLDER_BINS+'SELECTED_BINNED.json'
 
 SELECTED_BINNED_DATA_dic = json.load(open(filename))
 

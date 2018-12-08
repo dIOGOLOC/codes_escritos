@@ -76,7 +76,8 @@ sta_time = sta_dic['sta_time']
 print('Importing selected binned data')
 print('\n')
 
-filename = PP_SELEC_DIR+'SELECTED_BINNED_Ps.json'
+RESULTS_FOLDER_BINS = PP_SELEC_DIR+'/'+'RESULTS_NUMBER_PP_PER_BIN_'+str(NUMBER_PP_PER_BIN)+'_NUMBER_STA_PER_BIN_'+str(NUMBER_STA_PER_BIN)+'/'
+filename = RESULTS_FOLDER_BINS+'SELECTED_BINNED.json'
 
 SELECTED_BINNED_DATA_dic = json.load(open(filename))
 
@@ -98,7 +99,10 @@ RF_DEPTH_mean_2_Ppds = SELECTED_BINNED_DATA_dic['mean_2_Ppds']
 RF_DEPTH_std_2_Ppds = SELECTED_BINNED_DATA_dic['std_2_Ppds']
 
 RF_DEPTH_mtz_thickness_Pds = SELECTED_BINNED_DATA_dic['mtz_thickness_Pds']
+RF_DEPTH_mtz_thickness_Pds_std = SELECTED_BINNED_DATA_dic['mtz_thickness_Pds_std']
+
 RF_DEPTH_mtz_thickness_Ppds = SELECTED_BINNED_DATA_dic['mtz_thickness_Ppds']
+RF_DEPTH_mtz_thickness_Ppds_std = SELECTED_BINNED_DATA_dic['mtz_thickness_Ppds_std']
 
 RF_DEPTH_true_thickness_MTZ_Pds = SELECTED_BINNED_DATA_dic['true_thickness_MTZ_Pds']
 RF_DEPTH_true_thickness_MTZ_Pds_std = SELECTED_BINNED_DATA_dic['true_thickness_MTZ_Pds_std']
@@ -142,20 +146,35 @@ print('\n')
 
 print('Pds Phases')
 print('Number of bins - 410 km depth: '+str(np.count_nonzero(~np.isnan(RF_DEPTH_mean_1_Pds))))
+print(r'Bins - 410 km depth: '+str(np.nanmean(RF_DEPTH_mean_1_Pds))+' ± '+str(np.nanstd(RF_DEPTH_mean_1_Pds)))
+
 print('Number of bins - 660 km depth: '+str(np.count_nonzero(~np.isnan(RF_DEPTH_mean_2_Pds))))
+print(r'Bins - 660 km depth: '+str(np.nanmean(RF_DEPTH_mean_2_Pds))+' ± '+str(np.nanstd(RF_DEPTH_mean_2_Pds)))
+
 print('Number of bins - MTZ Thickness: '+str(np.count_nonzero(~np.isnan(RF_DEPTH_mtz_thickness_Pds))))
+print(r'Bins - MTZ Thickness: '+str(np.nanmean(RF_DEPTH_mtz_thickness_Pds))+' ± '+str(np.nanstd(RF_DEPTH_mtz_thickness_Pds)))
 print('\n')
 
 print('Ppds Phases')
 print('Number of bins - 410 km depth: '+str(np.count_nonzero(~np.isnan(RF_DEPTH_mean_1_Ppds))))
+print(r'Bins - 410 km depth: '+str(np.nanmean(RF_DEPTH_mean_1_Ppds))+' ± '+str(np.nanstd(RF_DEPTH_mean_1_Ppds)))
+
 print('Number of bins - 660 km depth: '+str(np.count_nonzero(~np.isnan(RF_DEPTH_mean_2_Ppds))))
+print(r'Bins - 660 km depth: '+str(np.nanmean(RF_DEPTH_mean_2_Ppds))+' ± '+str(np.nanstd(RF_DEPTH_mean_2_Ppds)))
+
 print('Number of bins - MTZ Thickness: '+str(np.count_nonzero(~np.isnan(RF_DEPTH_mtz_thickness_Ppds))))
+print(r'Bins - MTZ Thickness: '+str(np.nanmean(RF_DEPTH_mtz_thickness_Ppds))+' ± '+str(np.nanstd(RF_DEPTH_mtz_thickness_Ppds)))
 print('\n')
 
 print('True Estimates')
 print('Number of bins - 410 km depth: '+str(np.count_nonzero(~np.isnan(RF_DEPTH_mean_1_true_Pds))))
+print(r'Bins - 410 km depth: '+str(np.nanmean(RF_DEPTH_mean_1_true_Pds))+' ± '+str(np.nanstd(RF_DEPTH_mean_1_true_Pds)))
+
 print('Number of bins - 660 km depth: '+str(np.count_nonzero(~np.isnan(RF_DEPTH_mean_2_true_Pds))))
+print(r'Bins - 660 km depth: '+str(np.nanmean(RF_DEPTH_mean_2_true_Pds))+' ± '+str(np.nanstd(RF_DEPTH_mean_2_true_Pds)))
+
 print('Number of bins - MTZ Thickness: '+str(np.count_nonzero(~np.isnan(RF_DEPTH_true_thickness_MTZ_Pds))))
+print(r'Bins - MTZ Thickness: '+str(np.nanmean(RF_DEPTH_true_thickness_MTZ_Pds))+' ± '+str(np.nanstd(RF_DEPTH_true_thickness_MTZ_Pds)))
 print('\n')
 
 ###################################################################################################################
@@ -264,7 +283,7 @@ fig.colorbar(sm_410,ax=ax,orientation='horizontal',shrink=0.8,label='MTZ Thickne
 fig.colorbar(sm_410,ax=ax1,orientation='horizontal',shrink=0.8,label='MTZ Thickness Ppds')
 
 
-plt.show()
+#plt.show()
 fig.savefig(RESULTS_FOLDER+'APPARENT_TRUE_DEPTH_PLOT.'+EXT_FIG,dpi=DPI_FIG)
 
 
@@ -428,6 +447,90 @@ sm_660._A = []
 fig.colorbar(sm_660,ax=ax2,orientation='horizontal',shrink=0.8)
 
 fig.savefig(RESULTS_FOLDER+'Apparent_depth_Ppds.'+EXT_FIG,dpi=DPI_FIG)
+
+#############################################################################################################################################################################################
+
+print('Plotting Figure: True Depth of 410 km and 660 km')
+
+fig, axes = plt.subplots(nrows=1, ncols=2, subplot_kw={'projection': ccrs.Mercator(central_longitude=PROJECT_LON, globe=None)},figsize=(20,10),sharey=True)
+
+ax = axes[0]
+ax2 = axes[1]
+
+
+#410 km
+
+ax.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
+
+reader_1_SHP = Reader(BOUNDARY_1_SHP)
+shape_1_SHP = list(reader_1_SHP.geometries())
+plot_shape_1_SHP = cfeature.ShapelyFeature(shape_1_SHP, ccrs.PlateCarree())
+ax.add_feature(plot_shape_1_SHP, facecolor='none', edgecolor='k',linewidth=3)
+
+reader_2_SHP = Reader(BOUNDARY_2_SHP)
+shape_2_SHP = list(reader_2_SHP.geometries())
+plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
+ax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
+ax.gridlines(draw_labels=True)
+
+norm_410 = mpl.colors.Normalize(vmin=360,vmax=460,clip=True)
+colors_410 = colormap(norm_410(np.array(RF_DEPTH_mean_1_true_Pds,dtype='float64')))
+
+for i,j in enumerate(lons):
+	if math.isnan(RF_DEPTH_mean_1_true_Pds[i]) == False:
+		retangulo_410 = Rectangle(xy=(lons[i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2, lats[i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),color=colors_410[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+		ax.add_patch(retangulo_410)
+	else:
+		pass
+
+
+ax.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
+
+ax.set_title('True depth 410 km', y=1.08)
+
+
+#660 km
+
+ax2.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
+
+reader_1_SHP = Reader(BOUNDARY_1_SHP)
+shape_1_SHP = list(reader_1_SHP.geometries())
+plot_shape_1_SHP = cfeature.ShapelyFeature(shape_1_SHP, ccrs.PlateCarree())
+ax2.add_feature(plot_shape_1_SHP, facecolor='none', edgecolor='k',linewidth=3)
+
+reader_2_SHP = Reader(BOUNDARY_2_SHP)
+shape_2_SHP = list(reader_2_SHP.geometries())
+plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
+ax2.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
+ax2.gridlines(draw_labels=True)
+
+norm_660 = mpl.colors.Normalize(vmin=560,vmax=760,clip=True)
+colors_660 = colormap(norm_660(np.array(RF_DEPTH_mean_2_true_Pds,dtype='float64')))
+
+
+for i,j in enumerate(lons):
+	if math.isnan(RF_DEPTH_mean_2_true_Pds[i]) == False:
+		retangulo_660 = Rectangle(xy=(lons[i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2, lats[i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),color=colors_660[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+		ax2.add_patch(retangulo_660)
+	else:
+		pass
+
+ax2.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
+
+ax2.set_title('True depth 660 km ', y=1.08)
+
+#______________________________________________________________________
+
+sm_410 = plt.cm.ScalarMappable(cmap=colormap,norm=norm_410)
+sm_410._A = []
+fig.colorbar(sm_410,ax=ax,orientation='horizontal',shrink=0.8)
+
+sm_660 = plt.cm.ScalarMappable(cmap=colormap,norm=norm_660)
+sm_660._A = []
+fig.colorbar(sm_660,ax=ax2,orientation='horizontal',shrink=0.8)
+
+fig.savefig(RESULTS_FOLDER+'TRUE_DEPTH_410_660.'+EXT_FIG,dpi=DPI_FIG)
+
 
 #############################################################################################################################################################################################
 
@@ -678,6 +781,90 @@ fig.colorbar(sm_660,ax=ax2,orientation='horizontal',shrink=0.8)
 fig.savefig(RESULTS_FOLDER+'Uncertainty_DEPTH_Pds.'+EXT_FIG,dpi=DPI_FIG)
 
 #######################################################################################################################################
+###################################################################################################################
+print('Plotting Figure: Uncertainty (1 sigma) of 410 km and 660 km (True Depth)')
+
+fig, axes = plt.subplots(nrows=1, ncols=2, subplot_kw={'projection': ccrs.Mercator(central_longitude=PROJECT_LON, globe=None)},figsize=(20,10),sharey=True)
+
+ax = axes[0]
+ax2 = axes[1]
+
+#410 km
+
+ax.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
+
+reader_1_SHP = Reader(BOUNDARY_1_SHP)
+shape_1_SHP = list(reader_1_SHP.geometries())
+plot_shape_1_SHP = cfeature.ShapelyFeature(shape_1_SHP, ccrs.PlateCarree())
+ax.add_feature(plot_shape_1_SHP, facecolor='none', edgecolor='k',linewidth=3)
+
+reader_2_SHP = Reader(BOUNDARY_2_SHP)
+shape_2_SHP = list(reader_2_SHP.geometries())
+plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
+ax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
+ax.gridlines(draw_labels=True)
+
+norm_410 = mpl.colors.Normalize(vmin=0,vmax=50,clip=True)
+colors_410 = colormap_std(norm_410(np.array(RF_DEPTH_std_1_true_Pds,dtype='float64')))
+
+for i,j in enumerate(lons):
+	if math.isnan(RF_DEPTH_std_1_true_Pds[i]) == False:
+		retangulo_410 = Rectangle(xy=(lons[i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2, lats[i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),color=colors_410[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+		ax.add_patch(retangulo_410)
+	else:
+		pass
+
+
+ax.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
+
+ax.set_title(r'Uncertainty (1$\sigma$) of True 410 km', y=1.08)
+
+
+#660 km
+
+ax2.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
+
+reader_1_SHP = Reader(BOUNDARY_1_SHP)
+shape_1_SHP = list(reader_1_SHP.geometries())
+plot_shape_1_SHP = cfeature.ShapelyFeature(shape_1_SHP, ccrs.PlateCarree())
+ax2.add_feature(plot_shape_1_SHP, facecolor='none', edgecolor='k',linewidth=3)
+
+reader_2_SHP = Reader(BOUNDARY_2_SHP)
+shape_2_SHP = list(reader_2_SHP.geometries())
+plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
+ax2.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
+ax2.gridlines(draw_labels=True)
+
+norm_660 = mpl.colors.Normalize(vmin=0,vmax=50,clip=True)
+colors_660 = colormap_std(norm_660(np.array(RF_DEPTH_std_2_true_Pds,dtype='float64')))
+
+
+for i,j in enumerate(lons):
+	if math.isnan(RF_DEPTH_std_2_true_Pds[i]) == False:
+		retangulo_660 = Rectangle(xy=(lons[i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2, lats[i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),color=colors_660[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+		ax2.add_patch(retangulo_660)
+	else: 
+		pass
+
+ax2.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
+
+ax2.set_title(r'Uncertainty (1$\sigma$) of True 660 km', y=1.08)
+
+#______________________________________________________________________
+
+sm_410 = plt.cm.ScalarMappable(cmap=colormap_std,norm=norm_410)
+sm_410._A = []
+fig.colorbar(sm_410,ax=ax,orientation='horizontal',shrink=0.8)
+
+sm_660 = plt.cm.ScalarMappable(cmap=colormap_std,norm=norm_660)
+sm_660._A = []
+fig.colorbar(sm_660,ax=ax2,orientation='horizontal',shrink=0.8)
+
+fig.savefig(RESULTS_FOLDER+'Uncertainty_TRUE_DEPTH.'+EXT_FIG,dpi=DPI_FIG)
+
+#######################################################################################################################################
+
+
 print('Plotting Figure: Uncertainty (1 sigma) of 410 km and 660 km (Ppds phases)')
 
 fig, axes = plt.subplots(nrows=1, ncols=2, subplot_kw={'projection': ccrs.Mercator(central_longitude=PROJECT_LON, globe=None)},figsize=(20,10),sharey=True)
@@ -713,7 +900,7 @@ for i,j in enumerate(lons):
 
 ax.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
 
-ax.set_title(r'Uncertainty (1$\sigma$) of  410 km Pds', y=1.08)
+ax.set_title(r'Uncertainty (1$\sigma$) of  410 km Ppds', y=1.08)
 
 
 #660 km
@@ -743,7 +930,7 @@ for i,j in enumerate(lons):
 		pass
 ax2.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
 
-ax2.set_title(r'Uncertainty (1$\sigma$) of  660 km Pds', y=1.08)
+ax2.set_title(r'Uncertainty (1$\sigma$) of  660 km Ppds', y=1.08)
 
 #______________________________________________________________________
 
@@ -756,6 +943,86 @@ sm_660._A = []
 fig.colorbar(sm_660,ax=ax2,orientation='horizontal',shrink=0.8)
 
 fig.savefig(RESULTS_FOLDER+'Uncertainty_DEPTH_Ppds.'+EXT_FIG,dpi=DPI_FIG)
+
+#######################################################################################################################################
+print('Plotting Figure: Uncertainty (1 sigma) of MTZ Thickness (Pds and Ppds phases)')
+
+fig, axes = plt.subplots(nrows=1, ncols=2, subplot_kw={'projection': ccrs.Mercator(central_longitude=PROJECT_LON, globe=None)},figsize=(20,10),sharey=True)
+
+ax = axes[0]
+ax2 = axes[1]
+
+#410 km
+
+ax.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
+
+reader_1_SHP = Reader(BOUNDARY_1_SHP)
+shape_1_SHP = list(reader_1_SHP.geometries())
+plot_shape_1_SHP = cfeature.ShapelyFeature(shape_1_SHP, ccrs.PlateCarree())
+ax.add_feature(plot_shape_1_SHP, facecolor='none', edgecolor='k',linewidth=3)
+
+reader_2_SHP = Reader(BOUNDARY_2_SHP)
+shape_2_SHP = list(reader_2_SHP.geometries())
+plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
+ax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
+ax.gridlines(draw_labels=True)
+
+norm_410 = mpl.colors.Normalize(vmin=0,vmax=50,clip=True)
+colors_410 = colormap_std(norm_410(np.array(RF_DEPTH_mtz_thickness_Pds_std,dtype='float64')))
+
+for i,j in enumerate(lons):
+	if math.isnan(RF_DEPTH_mtz_thickness_Pds_std[i]) == False:
+		retangulo_410 = Rectangle(xy=(lons[i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2, lats[i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),color=colors_410[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+		ax.add_patch(retangulo_410)
+	else:
+		pass
+
+
+ax.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
+
+ax.set_title(r'Uncertainty (1$\sigma$) of  MTZ Thickness Pds', y=1.08)
+
+
+#660 km
+
+ax2.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
+
+reader_1_SHP = Reader(BOUNDARY_1_SHP)
+shape_1_SHP = list(reader_1_SHP.geometries())
+plot_shape_1_SHP = cfeature.ShapelyFeature(shape_1_SHP, ccrs.PlateCarree())
+ax2.add_feature(plot_shape_1_SHP, facecolor='none', edgecolor='k',linewidth=3)
+
+reader_2_SHP = Reader(BOUNDARY_2_SHP)
+shape_2_SHP = list(reader_2_SHP.geometries())
+plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
+ax2.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
+ax2.gridlines(draw_labels=True)
+
+norm_660 = mpl.colors.Normalize(vmin=0,vmax=50,clip=True)
+colors_660 = colormap_std(norm_660(np.array(RF_DEPTH_mtz_thickness_Ppds_std,dtype='float64')))
+
+
+for i,j in enumerate(lons):
+	if math.isnan(RF_DEPTH_mtz_thickness_Ppds_std[i]) == False:
+		retangulo_660 = Rectangle(xy=(lons[i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2, lats[i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),color=colors_660[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+		ax2.add_patch(retangulo_660)
+	else:
+		pass
+ax2.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
+
+ax2.set_title(r'Uncertainty (1$\sigma$) of  MTZ Thickness Ppds', y=1.08)
+
+#______________________________________________________________________
+
+sm_410 = plt.cm.ScalarMappable(cmap=colormap_std,norm=norm_410)
+sm_410._A = []
+fig.colorbar(sm_410,ax=ax,orientation='horizontal',shrink=0.8)
+
+sm_660 = plt.cm.ScalarMappable(cmap=colormap_std,norm=norm_660)
+sm_660._A = []
+fig.colorbar(sm_660,ax=ax2,orientation='horizontal',shrink=0.8)
+
+fig.savefig(RESULTS_FOLDER+'Uncertainty_MTZ_Pds_Ppds.'+EXT_FIG,dpi=DPI_FIG)
 
 #######################################################################################################################################
 

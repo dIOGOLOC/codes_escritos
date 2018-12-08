@@ -24,6 +24,8 @@ from obspy.taup import TauPyModel
 from obspy.geodetics import kilometer2degrees
 import json
 from multiprocessing import Pool
+import glob
+import time
 
 
 # =====================================
@@ -41,7 +43,7 @@ from parameters_py.mgconfig import (
 					PP_DIR,PP_SELEC_DIR,NUMBER_PP_PER_BIN,
 					LLCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLON_LARGE,URCRNRLAT_LARGE,LLCRNRLON_SMALL,STA_DIR,
 					URCRNRLON_SMALL,LLCRNRLAT_SMALL,URCRNRLAT_SMALL,PROJECT_LAT,PROJECT_LON,
-					BOUNDARY_1_SHP,BOUNDARY_1_SHP_NAME,BOUNDARY_2_SHP,BOUNDARY_2_SHP_NAME,					
+					BOUNDARY_1_SHP,BOUNDARY_2_SHP,					
 					PP_FIGURE,EXT_FIG,DPI_FIG,MP_PROCESSES
 				   )
 
@@ -51,27 +53,14 @@ from parameters_py.mgconfig import (
 # ======================================
 
 def parallel_travel_times_Pds(number,ev_depth,ev_lat,ev_long,st_lat,st_long):
-	TT_dic_Pds = {'dist':[],'depth':[],'time':[],'number':[]}
-	travel_time_calculation_Pds_lst = travel_time_calculation_Pds(ev_depth=ev_depth,ev_lat=ev_lat,ev_long=ev_long,st_lat=st_lat,st_long=st_long)
-	TT_dic_Pds['time'].append(travel_time_calculation_Pds_lst[0])
-	TT_dic_Pds['depth'].append(travel_time_calculation_Pds_lst[1])
-	TT_dic_Pds['dist'].append(travel_time_calculation_Pds_lst[2])
-	print('Number = '+str(number))
-	TT_dic_Pds['number'].append(number)
-
-	return TT_dic_Pds
+	travel_time_calculation_Pds(number=number,ev_depth=ev_depth,ev_lat=ev_lat,ev_long=ev_long,st_lat=st_lat,st_long=st_long,JSON_FOLDER=travel_times_pds)
+	print('Saving travel times Pds number = '+str(number)+' of '+str(len(event_depth)))
+	print('\n')
 
 def parallel_travel_times_Ppds(number,ev_depth,ev_lat,ev_long,st_lat,st_long):
-	TT_dic_Ppds = {'dist':[],'depth':[],'time':[],'number':[]}
-	travel_time_calculation_Ppds_lst = travel_time_calculation_Ppds(ev_depth=ev_depth,ev_lat=ev_lat,ev_long=ev_long,st_lat=st_lat,st_long=st_long)
-	TT_dic_Ppds['time'].append(travel_time_calculation_Ppds_lst[0])
-	TT_dic_Ppds['depth'].append(travel_time_calculation_Ppds_lst[1])
-	TT_dic_Ppds['dist'].append(travel_time_calculation_Ppds_lst[2])
-	print('Number = '+str(number))
-	TT_dic_Ppds['number'].append(number)
-
-	return TT_dic_Ppds
-
+	travel_time_calculation_Ppds(number=number,ev_depth=ev_depth,ev_lat=ev_lat,ev_long=ev_long,st_lat=st_lat,st_long=st_long,JSON_FOLDER=travel_times_ppds)
+	print('Saving travel times Ppds number = '+str(number)+' of '+str(len(event_depth)))
+	print('\n')
 
 # ============================================
 # Importing station dictionary from JSON file 
@@ -105,6 +94,25 @@ print('Importing earth model from obspy.taup.TauPyModel')
 print('\n')
 model_THICKNESS_km = TauPyModel(model=MODEL_FILE_NPZ)
 
+# ========================
+# Creating output Folder
+# ========================
+
+print('Creating output folders')
+
+travel_times_pds = PdS_DIR+'travel_times_pds/'
+os.makedirs(travel_times_pds,exist_ok=True)
+print('travel_times_pds = '+travel_times_pds)
+
+travel_times_ppds = PdS_DIR+'travel_times_ppds/'
+print('travel_times_ppds = '+travel_times_ppds)
+os.makedirs(travel_times_ppds,exist_ok=True)
+
+os.makedirs(PdS_DIR,exist_ok=True)
+print('travel_times_dic = '+PdS_DIR)
+
+print('\n')
+
 # =========================
 # Creating Pds Input lists
 # ========================
@@ -112,8 +120,7 @@ model_THICKNESS_km = TauPyModel(model=MODEL_FILE_NPZ)
 print('Creating Input list')
 print('\n')
 
-
-input_list = [[i,event_depth[i],event_lat[i],event_long[i],sta_lat[i],sta_long[i]] for i,j in enumerate(event_depth)]
+input_list = [[i+1,event_depth[i],event_lat[i],event_long[i],sta_lat[i],sta_long[i]] for i,j in enumerate(event_depth)]
 
 # =============================
 # Calculating Pds Travel Times
@@ -122,18 +129,38 @@ input_list = [[i,event_depth[i],event_lat[i],event_long[i],sta_lat[i],sta_long[i
 print('Calculating Pds Travel Times')
 print('\n')
 
+start_time = time.time()
 pool_Pds = Pool(MP_PROCESSES)
-TT_dic_Pds = pool_Pds.starmap(parallel_travel_times_Pds, input_list)
+pool_Pds.starmap(parallel_travel_times_Pds, input_list)
 pool_Pds.close()
-#Saving Piercing Points in JSON file
-print('Saving in JSON file')
-os.makedirs(PdS_DIR,exist_ok=True)
-with open(PdS_DIR+'Pds_dic.json', 'w') as fp:
-	json.dump(TT_dic_Pds, fp)
+print("--- %.2f execution time (min) ---" % ((time.time() - start_time)/60))
 
 print('Pds Travel Times estimated!')
 print('\n')
 
+# =============================
+# Saving Pds Travel Times
+# =============================
+
+# Importing STATION-EVENT Pds dictionary from JSON file 
+
+filename_pds_json = glob.glob(travel_times_pds+'*')
+
+arrivals = [json.load(open(i))['arrivals'] for i in filename_pds_json]
+
+TT_dic_Pds = {'time':[],'depth':[],'rayparam':[]}
+for i,j in enumerate(arrivals):
+	TT_dic_Pds['time'].append([arrivals[i][k]['time']-arrivals[i][0]['time'] for k,l in enumerate(j) if arrivals[i][k]['time']-arrivals[i][0]['time'] > 1])
+	TT_dic_Pds['depth'].append([arrivals[i][k]['phase'][1:-1] for k,l in enumerate(j) if arrivals[i][k]['time']-arrivals[i][0]['time'] > 1])
+	TT_dic_Pds['rayparam'].append([arrivals[i][k]['rayparam'] for k,l in enumerate(j) if arrivals[i][k]['time']-arrivals[i][0]['time'] > 1]) 
+
+
+#Saving Piercing Points in JSON file
+print('Saving Pds Travel Times in JSON file')
+print('\n')
+
+with open(PdS_DIR+'Pds_dic.json', 'w') as fp:
+	json.dump(TT_dic_Pds, fp)
 
 # =============================
 # Calculating Ppds Travel Times
@@ -142,15 +169,34 @@ print('\n')
 print('Calculating Ppds Travel Times')
 print('\n')
 
+start_time = time.time()
 pool_Ppds = Pool(MP_PROCESSES)
-TT_dic_Ppds = pool_Ppds.starmap(parallel_travel_times_Ppds, input_list)
+pool_Ppds.starmap(parallel_travel_times_Ppds, input_list)
 pool_Ppds.close()
-
-#Saving Piercing Points in JSON file
-print('Saving in JSON file')
-os.makedirs(PdS_DIR,exist_ok=True)
-with open(PdS_DIR+'PPvs_dic.json', 'w') as fp:
-	json.dump(TT_dic_Ppds, fp)
+print("--- %.2f execution time (min) ---" % ((time.time() - start_time)/60))
 
 print('Ppds Travel Times estimated!')
 print('\n')
+
+# =============================
+# Saving Ppds Travel Times
+# =============================
+
+# Importing STATION-EVENT Pds dictionary from JSON file 
+
+filename_ppds_json = glob.glob(travel_times_ppds+'*')
+
+arrivals = [json.load(open(i))['arrivals'] for i in filename_ppds_json]
+
+TT_dic_Ppds = {'time':[],'depth':[],'rayparam':[]}
+for i,j in enumerate(arrivals):
+	TT_dic_Ppds['time'].append([arrivals[i][k]['time']-arrivals[i][0]['time'] for k,l in enumerate(j)  if arrivals[i][k]['time']-arrivals[i][0]['time'] > 1])
+	TT_dic_Ppds['depth'].append([arrivals[i][k]['phase'][3:-1] for k,l in enumerate(j) if arrivals[i][k]['time']-arrivals[i][0]['time'] > 1])
+	TT_dic_Ppds['rayparam'].append([arrivals[i][k]['rayparam'] for k,l in enumerate(j)  if arrivals[i][k]['time']-arrivals[i][0]['time'] > 1]) 
+
+#Saving Piercing Points in JSON file
+print('Saving Ppds Travel Times in JSON file')
+print('\n')
+
+with open(PdS_DIR+'PPvs_dic.json', 'w') as fp:
+	json.dump(TT_dic_Ppds, fp)

@@ -41,8 +41,9 @@ RF_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/Mantle_Transiti
 # extension of receiver functions
 RF_EXT = .eqr
 
-#Directory of the model of IASP91 models
+#Directory of the earth models
 MODEL_FILE_NPZ = /home/diogo/diogo_git/codes_escritos/mantle_transition_zone_migration/velocity_model/iasp91_10.npz
+MODEL_FILE_TAUP = /home/diogo/diogo_git/codes_escritos/mantle_transition_zone_migration/velocity_model/iasp91_10.taup
 
 # dir of the stations data
 STA_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/Mantle_Transition_Migration_NO_PP/OUTPUT/Stations/
@@ -60,9 +61,9 @@ PP_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/Mantle_Transiti
 PP_FIGURE = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/Mantle_Transition_Migration_NO_PP/OUTPUT/Figures/
 #PP_FIGURE = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/Mantle_Transition_Migration_YES_PP/OUTPUT/Figures/
 
-# dir of selected piercing points
-PP_SELEC_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/Mantle_Transition_Migration_NO_PP/OUTPUT/Piercing_points/selected/
-#PP_SELEC_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/Mantle_Transition_Migration_YES_PP/OUTPUT/Piercing_points/selected/
+# dir of selected bins
+PP_SELEC_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/Mantle_Transition_Migration_NO_PP/OUTPUT/Selected_bins/
+#PP_SELEC_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/Mantle_Transition_Migration_YES_PP/OUTPUT/Selected_bins/
 
 
 #=====
@@ -120,17 +121,17 @@ FINAL_DATE_EVENT = 2018-10-01T00:00:00
 CROSS_SECTION_AXIS  = y
 
 #Colormap to velocity map (see https://matplotlib.org/examples/color/colormaps_reference.html)
-COLORMAP_VEL = bwr_r
+COLORMAP_VEL = RdBu
 
 #Colormap to standard deviation map (see https://matplotlib.org/examples/color/colormaps_reference.html)
-COLORMAP_STD = viridis
+COLORMAP_STD = Greys
 
 #==================
 [time]
 #==================
 
 # how many concurrent processes at the multiprocessing?
-MP_PROCESSES = 8
+MP_PROCESSES = 4
 
 #minimum depth of the migration
 MIN_DEPTH = 300
@@ -152,7 +153,7 @@ FILTER_BY_SHAPEFILE = True
 SHAPEFILE_GRID = /home/diogo/dados_doutorado/parnaiba_basin/SIG_dados/shapes/bacia_parnaiba/bacia_parnaiba.shp
 
 #GRID POINTS multiplyer
-GRID_PP_MULT = 4
+GRID_PP_MULT = 3
 
 # distance between grid points and piercing points for each depth (degree)
 DIST_GRID_PP = 1
@@ -182,7 +183,7 @@ BOOTSTRAP_INTERATOR = 200
 GAMMA = 2
 
 #Minimum amplitude of the 410 and 660 km (both Pds and Ppds ) to compute apparent and true depth
-MIN_AMP_PDS_PPDS = 0.015
+MIN_AMP_PDS_PPDS = 0
 
 #Depth range (+/-) that we will use to find the maximum amplitude
-DEPTH_RANGE = 20
+DEPTH_RANGE = 30

@@ -66,5 +66,6 @@ for i, j in enumerate(sta_data):
 	plt.text(50,max(RF_stack_data),'N = '+str(len(sta_data)))
 	plt.title('Receiver Functions')
 	plt.xlim(0,100)
+	#plt.ylim(-	0.1,0.1)
 plt.show()
 

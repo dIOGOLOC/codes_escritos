@@ -57,8 +57,9 @@ RF_DIR = config.get('paths', 'RF_DIR')
 # extension of receiver functions
 RF_EXT = config.get('paths', 'RF_EXT') 
 
-#Directory of the model of IASP91 model of 10 km thick
+#Directory of the earth model 
 MODEL_FILE_NPZ = config.get('paths', 'MODEL_FILE_NPZ')
+MODEL_FILE_TAUP = config.get('paths', 'MODEL_FILE_TAUP')
 
 # dir of the stations data
 STA_DIR = config.get('paths', 'STA_DIR')
