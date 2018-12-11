@@ -35,12 +35,11 @@ import math
 
 
 from parameters_py.mgconfig import (
-					RF_DIR,RF_EXT,MODEL_FILE_NPZ,MIN_DEPTH,MAX_DEPTH,INTER_DEPTH,PdS_DIR,SHAPEFILE_GRID,FILTER_BY_SHAPEFILE,
-					PP_DIR,PP_SELEC_DIR,NUMBER_PP_PER_BIN,STA_DIR,
+					RF_DIR,RF_EXT,MODEL_FILE_NPZ,MIN_DEPTH,MAX_DEPTH,INTER_DEPTH,SHAPEFILE_GRID,FILTER_BY_SHAPEFILE,
 					LLCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLON_LARGE,URCRNRLAT_LARGE,LLCRNRLON_SMALL,
 					URCRNRLON_SMALL,LLCRNRLAT_SMALL,URCRNRLAT_SMALL,PROJECT_LAT,PROJECT_LON,GRID_PP_MULT,
-					BOUNDARY_1_SHP,BOUNDARY_2_SHP,TECTO_SHP,COLORMAP_VEL,COLORMAP_STD,
-					PP_FIGURE,EXT_FIG,DPI_FIG,DIST_GRID_PP_MED,DIST_GRID_PP,NUMBER_STA_PER_BIN,
+					BOUNDARY_1_SHP,BOUNDARY_2_SHP,TECTO_SHP,COLORMAP_VEL,COLORMAP_STD,OUTPUT_DIR,
+					EXT_FIG,DPI_FIG,DIST_GRID_PP_MED,DIST_GRID_PP,NUMBER_STA_PER_BIN,NUMBER_PP_PER_BIN,
 					DEPTH_RANGE,BOOTSTRAP_INTERATOR,BOOTSTRAP_DEPTH_ESTIMATION,GAMMA,CROSS_SECTION_AXIS
 				   )
 
@@ -53,6 +52,7 @@ print('\n')
 
 camadas_terra_10_km = np.arange(MIN_DEPTH,MAX_DEPTH+INTER_DEPTH,INTER_DEPTH)
 
+STA_DIR = OUTPUT_DIR+'MODEL_INTER_DEPTH_'+str(INTER_DEPTH)+'/'+'Stations'+'/'
 
 print('Looking for receiver functions data in JSON file in '+STA_DIR)
 print('\n')
@@ -75,6 +75,9 @@ sta_time = sta_dic['sta_time']
 
 print('Importing selected binned data')
 print('\n')
+
+PP_SELEC_DIR = OUTPUT_DIR+'MODEL_INTER_DEPTH_'+str(INTER_DEPTH)+'/'+'SELECTED_BINNED_DATA'+'/'
+
 
 RESULTS_FOLDER_BINS = PP_SELEC_DIR+'/'+'RESULTS_NUMBER_PP_PER_BIN_'+str(NUMBER_PP_PER_BIN)+'_NUMBER_STA_PER_BIN_'+str(NUMBER_STA_PER_BIN)+'/'
 filename = RESULTS_FOLDER_BINS+'SELECTED_BINNED.json'
@@ -176,6 +179,7 @@ shape_new = (int(len(set(grdx_poly))),int(len(set(grdy_poly))))
 rows = np.array(grdx_poly).reshape(shape_new)
 cols = np.array(grdy_poly).reshape(shape_new)
 
+PP_FIGURE = OUTPUT_DIR+'MODEL_INTER_DEPTH_'+str(INTER_DEPTH)+'/'+'Figures'+'/'
 RESULTS_FOLDER = PP_FIGURE+'/'+'RESULTS_NUMBER_PP_PER_BIN_'+str(NUMBER_PP_PER_BIN)+'_NUMBER_STA_PER_BIN_'+str(NUMBER_STA_PER_BIN)+'/'
 os.makedirs(RESULTS_FOLDER,exist_ok=True)
 
@@ -488,7 +492,7 @@ for i,j in enumerate(RF_data_profile_Pds):
 	
 	for _i, _j in enumerate(RF_data_profile_Pds[i]):
 		RF_data_factor_Pds = [_i/factor_Pds+l for k, l in enumerate(_j)]
-		pefil_pds.plot(RF_data_factor_Pds,camadas_terra_10_km,'k',linewidth=0.5)
+		pefil_pds.plot(RF_data_factor_Pds,camadas_terra_10_km,'k',linewidth=1)
 		pefil_pds.yaxis.set_major_locator(majorLocatorY)
 		pefil_pds.yaxis.set_minor_locator(minorLocatorY)
 		pefil_pds.grid(True,which='major',color='gray',linewidth=1,linestyle='--')
@@ -518,7 +522,7 @@ for i,j in enumerate(RF_data_profile_Pds):
 
 	for _i, _j in enumerate(RF_data_profile_Ppds[i]):
 		RF_data_factor_Ppds = [_i/factor_Ppds+l for k, l in enumerate(_j)]
-		pefil_ppds.plot(RF_data_factor_Ppds,camadas_terra_10_km,'k',linewidth=0.5)
+		pefil_ppds.plot(RF_data_factor_Ppds,camadas_terra_10_km,'k',linewidth=1)
 		pefil_ppds.yaxis.set_major_locator(majorLocatorY)
 		pefil_ppds.yaxis.set_minor_locator(minorLocatorY)
 		pefil_ppds.grid(True,which='major',color='gray',linewidth=1,linestyle='--')

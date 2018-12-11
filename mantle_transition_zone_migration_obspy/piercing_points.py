@@ -31,19 +31,17 @@ import glob
 # Importing piercing points scritp_py 
 # =====================================
 
-from piercing_points_py.piercing_points import arrivals_calculation
+from piercing_points_py.piercing_points_phase import arrivals_calculation
 
 # ==================================================
 # Importing some parameters from configuration file 
 # ==================================================
 
 from parameters_py.mgconfig import (
-					RF_DIR,RF_EXT,MODEL_FILE_NPZ,MIN_DEPTH,MAX_DEPTH,INTER_DEPTH,PdS_DIR,
-					PP_DIR,PP_SELEC_DIR,NUMBER_PP_PER_BIN,
-					LLCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLON_LARGE,URCRNRLAT_LARGE,LLCRNRLON_SMALL,STA_DIR,
+					RF_DIR,RF_EXT,MODEL_FILE_NPZ,MIN_DEPTH,MAX_DEPTH,INTER_DEPTH,NUMBER_PP_PER_BIN,
+					LLCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLON_LARGE,URCRNRLAT_LARGE,LLCRNRLON_SMALL,
 					URCRNRLON_SMALL,LLCRNRLAT_SMALL,URCRNRLAT_SMALL,PROJECT_LAT,PROJECT_LON,
-					BOUNDARY_1_SHP,BOUNDARY_2_SHP,					
-					PP_FIGURE,EXT_FIG,DPI_FIG,MP_PROCESSES
+					BOUNDARY_1_SHP,BOUNDARY_2_SHP,EXT_FIG,DPI_FIG,MP_PROCESSES,OUTPUT_DIR
 				   )
 # =====================================
 # Function to estimate piercing points  
@@ -57,6 +55,8 @@ def parallel_piercing_points(number,PHASE,ev_depth,ev_lat,ev_long,st_lat,st_long
 # ============================================
 # Importing station dictionary from JSON file 
 # ============================================
+
+STA_DIR = OUTPUT_DIR+'MODEL_INTER_DEPTH_'+str(INTER_DEPTH)+'/'+'Stations'+'/'
 
 print('\n')
 print('Looking for receiver functions data in JSON file in '+STA_DIR)
@@ -111,6 +111,8 @@ PHASES = 'P410s','P530s','P660s'
 
 print('Creating output folders')
 
+PP_DIR = OUTPUT_DIR+'MODEL_INTER_DEPTH_'+str(INTER_DEPTH)+'/'+'Piercing_Points'+'/'
+
 Phase_P410s_folder = PP_DIR+'P410s/'
 os.makedirs(Phase_P410s_folder,exist_ok=True)
 print('Phase_P410s_folder = '+Phase_P410s_folder)
@@ -164,15 +166,18 @@ print('\n')
 # Saving Piercing Points P410s
 # =============================
 
-filename_pds_json_P410s = glob.glob(Phase_P410s_folder+'*')
+filename_pds_json_P410s = sorted(glob.glob(Phase_P410s_folder+'*'))
+
+PP_dic_P410s_files = [json.load(open(i)) for i in filename_pds_json_P410s]
 
 PP_dic_P410s = {'depth':[],'time':[],'lat':[],'lon':[]}
 
-for i,j in enumerate(filename_pds_json_P410s):
-	PP_dic_P410s['time'].append(np.genfromtxt(j,skip_header=1,usecols=[2]).tolist())
-	PP_dic_P410s['depth'].append(np.genfromtxt(j,skip_header=1,usecols=[1]).tolist())
-	PP_dic_P410s['lat'].append(np.genfromtxt(j,skip_header=1,usecols=[3]).tolist())
-	PP_dic_P410s['lon'].append(np.genfromtxt(j,skip_header=1,usecols=[4]).tolist())
+for i,j in enumerate(PP_dic_P410s_files):
+	PP_dic_P410s['time'].append(j['time'])
+	PP_dic_P410s['depth'].append(j['depth'])
+	PP_dic_P410s['lat'].append(j['lat']) 
+	PP_dic_P410s['lon'].append(j['lon']) 
+
 
 print('Saving Piercing Points in JSON file')
 
@@ -198,17 +203,20 @@ print('\n')
 # Saving Piercing Points P530s
 # =============================
 
-filename_pds_json_P530s = glob.glob(Phase_P530s_folder+'*')
+filename_pds_json_P530s = sorted(glob.glob(Phase_P530s_folder+'*'))
+
+PP_dic_P530s_files = [json.load(open(i)) for i in filename_pds_json_P530s]
 
 PP_dic_P530s = {'depth':[],'time':[],'lat':[],'lon':[]}
 
-for i,j in enumerate(filename_pds_json_P530s):
-	PP_dic_P530s['time'].append(np.genfromtxt(j,skip_header=1,usecols=[2]).tolist())
-	PP_dic_P530s['depth'].append(np.genfromtxt(j,skip_header=1,usecols=[1]).tolist())
-	PP_dic_P530s['lat'].append(np.genfromtxt(j,skip_header=1,usecols=[3]).tolist())
-	PP_dic_P530s['lon'].append(np.genfromtxt(j,skip_header=1,usecols=[4]).tolist())
+for i,j in enumerate(PP_dic_P530s_files):
+	PP_dic_P530s['time'].append(j['time'])
+	PP_dic_P530s['depth'].append(j['depth'])
+	PP_dic_P530s['lat'].append(j['lat']) 
+	PP_dic_P530s['lon'].append(j['lon']) 
 
-print('Saving P530s Piercing Points in JSON file')
+
+print('Saving Piercing Points in JSON file')
 
 with open(PP_DIR+'PP_'+PHASES[1]+'_dic.json', 'w') as fp:
 	json.dump(PP_dic_P530s, fp)
@@ -232,17 +240,20 @@ print('\n')
 # Saving Piercing Points P660s
 # =============================
 
-filename_pds_json_P660s = glob.glob(Phase_P660s_folder+'*')
+filename_pds_json_P660s = sorted(glob.glob(Phase_P660s_folder+'*'))
+
+PP_dic_P660s_files = [json.load(open(i)) for i in filename_pds_json_P660s]
 
 PP_dic_P660s = {'depth':[],'time':[],'lat':[],'lon':[]}
 
-for i,j in enumerate(filename_pds_json_P660s):
-	PP_dic_P660s['time'].append(np.genfromtxt(j,skip_header=1,usecols=[2]).tolist())
-	PP_dic_P660s['depth'].append(np.genfromtxt(j,skip_header=1,usecols=[1]).tolist())
-	PP_dic_P660s['lat'].append(np.genfromtxt(j,skip_header=1,usecols=[3]).tolist())
-	PP_dic_P660s['lon'].append(np.genfromtxt(j,skip_header=1,usecols=[4]).tolist())
+for i,j in enumerate(PP_dic_P660s_files):
+	PP_dic_P660s['time'].append(j['time'])
+	PP_dic_P660s['depth'].append(j['depth'])
+	PP_dic_P660s['lat'].append(j['lat']) 
+	PP_dic_P660s['lon'].append(j['lon']) 
 
-print('Saving P530s Piercing Points in JSON file')
+
+print('Saving Piercing Points in JSON file')
 
 with open(PP_DIR+'PP_'+PHASES[2]+'_dic.json', 'w') as fp:
 	json.dump(PP_dic_P660s, fp)
@@ -315,22 +326,23 @@ print('\n')
 # Saving Piercing Points PPv410s
 # ===============================
 
-filename_pds_json_PPv410s = glob.glob(Phase_PPv410s_folder+'*')
+filename_pds_json_PPv410s = sorted(glob.glob(Phase_PPv410s_folder+'*'))
+
+PP_dic_PPv410s_files = [json.load(open(i)) for i in filename_pds_json_PPv410s]
 
 PP_dic_PPv410s = {'depth':[],'time':[],'lat':[],'lon':[]}
 
-for i,j in enumerate(filename_pds_json_PPv410s):
-	PP_dic_PPv410s['time'].append(np.genfromtxt(j,skip_header=1,usecols=[2]).tolist())
-	PP_dic_PPv410s['depth'].append(np.genfromtxt(j,skip_header=1,usecols=[1]).tolist())
-	PP_dic_PPv410s['lat'].append(np.genfromtxt(j,skip_header=1,usecols=[3]).tolist())
-	PP_dic_PPv410s['lon'].append(np.genfromtxt(j,skip_header=1,usecols=[4]).tolist())
+for i,j in enumerate(PP_dic_PPv410s_files):
+	PP_dic_PPv410s['time'].append(j['time'])
+	PP_dic_PPv410s['depth'].append(j['depth'])
+	PP_dic_PPv410s['lat'].append(j['lat']) 
+	PP_dic_PPv410s['lon'].append(j['lon']) 
 
-#Saving Piercing Points in JSON file
-print('Saving PPv410s Piercing Points in JSON file')
+
+print('Saving Piercing Points in JSON file')
 
 with open(PP_DIR+'PP_'+PHASES_Ppds[0]+'_dic.json', 'w') as fp:
 	json.dump(PP_dic_PPv410s, fp)
-
 
 # ===================================
 # Calculating PPv530s Piercing Points
@@ -351,17 +363,20 @@ print('\n')
 # Saving Piercing Points PPv530s
 # ===============================
 
-filename_pds_json_PPv530s = glob.glob(Phase_PPv530s_folder+'*')
+filename_pds_json_PPv530s = sorted(glob.glob(Phase_PPv530s_folder+'*'))
+
+PP_dic_PPv530s_files = [json.load(open(i)) for i in filename_pds_json_PPv530s]
 
 PP_dic_PPv530s = {'depth':[],'time':[],'lat':[],'lon':[]}
 
-for i,j in enumerate(filename_pds_json_PPv530s):
-	PP_dic_PPv530s['time'].append(np.genfromtxt(j,skip_header=1,usecols=[2]).tolist())
-	PP_dic_PPv530s['depth'].append(np.genfromtxt(j,skip_header=1,usecols=[1]).tolist())
-	PP_dic_PPv530s['lat'].append(np.genfromtxt(j,skip_header=1,usecols=[3]).tolist())
-	PP_dic_PPv530s['lon'].append(np.genfromtxt(j,skip_header=1,usecols=[4]).tolist())
+for i,j in enumerate(PP_dic_PPv530s_files):
+	PP_dic_PPv530s['time'].append(j['time'])
+	PP_dic_PPv530s['depth'].append(j['depth'])
+	PP_dic_PPv530s['lat'].append(j['lat']) 
+	PP_dic_PPv530s['lon'].append(j['lon']) 
 
-print('Saving PPv530s Piercing Points in JSON file')
+
+print('Saving Piercing Points in JSON file')
 
 with open(PP_DIR+'PP_'+PHASES_Ppds[1]+'_dic.json', 'w') as fp:
 	json.dump(PP_dic_PPv530s, fp)
@@ -389,19 +404,22 @@ print('\n')
 # Saving Piercing Points PPv600s
 # ===============================
 
-filename_pds_json_PPv600s = glob.glob(Phase_PPv660s_folder+'*')
+filename_pds_json_PPv600s = sorted(glob.glob(Phase_PPv660s_folder+'*'))
+
+PP_dic_PPv600s_files = [json.load(open(i)) for i in filename_pds_json_PPv600s]
 
 PP_dic_PPv600s = {'depth':[],'time':[],'lat':[],'lon':[]}
 
-for i,j in enumerate(filename_pds_json_PPv600s):
-	PP_dic_PPv600s['time'].append(np.genfromtxt(j,skip_header=1,usecols=[2]).tolist())
-	PP_dic_PPv600s['depth'].append(np.genfromtxt(j,skip_header=1,usecols=[1]).tolist())
-	PP_dic_PPv600s['lat'].append(np.genfromtxt(j,skip_header=1,usecols=[3]).tolist())
-	PP_dic_PPv600s['lon'].append(np.genfromtxt(j,skip_header=1,usecols=[4]).tolist())
+for i,j in enumerate(PP_dic_PPv600s_files):
+	PP_dic_PPv600s['time'].append(j['time'])
+	PP_dic_PPv600s['depth'].append(j['depth'])
+	PP_dic_PPv600s['lat'].append(j['lat']) 
+	PP_dic_PPv600s['lon'].append(j['lon']) 
 
-print('Saving PPv600s Piercing Points in JSON file')
+
+print('Saving Piercing Points in JSON file')
 
 with open(PP_DIR+'PP_'+PHASES_Ppds[2]+'_dic.json', 'w') as fp:
 	json.dump(PP_dic_PPv600s, fp)
-
+	
 # ============================================================================================================================

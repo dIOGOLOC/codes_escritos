@@ -1,20 +1,5 @@
 #!/usr/bin/python -u
-"""
-This script reads receiver function data from a set of stations, and
-calculates the ray path between all pairs station-event. The data MUST be 
-located in some root folder (RF_DIR). The station-event informations 
-(coordinates) MUST be in the header of the files. In the current version 
-of the program, files should be organized inside their directory as you prefer, 
-but they need to finish with some extension name (RF_EXT), e.g.:
-*.mseed, *.sac, *.itr, *.eqr
-The implemented algorithm follows the lines of Gao and Liu (2014),
-"Imaging mantle discontinuities using multiply-reflected P-to-S
-conversions", Earth and Planetary Science Letters 402 (2014) 99–106.
-Here we utilize both the P-to-S converted phase (Pds) and the multiply reflected 
-and converted phase (Ppds) at the discontinuities to simultaneously determine the 
-depth of mantle discontinuities and velocity anomalies in the overlying layer. 
-Note that all the parameters are defined in the configuration file.
-"""
+
 from parameters_py import mgconfig,get_header_data_RF
 import warnings
 import numpy as np
@@ -39,12 +24,10 @@ from time_py.time_P_Pds_Ppds import travel_time_calculation_Pds,travel_time_calc
 # ==================================================
 
 from parameters_py.mgconfig import (
-					RF_DIR,RF_EXT,MODEL_FILE_NPZ,MIN_DEPTH,MAX_DEPTH,INTER_DEPTH,PdS_DIR,
-					PP_DIR,PP_SELEC_DIR,NUMBER_PP_PER_BIN,
-					LLCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLON_LARGE,URCRNRLAT_LARGE,LLCRNRLON_SMALL,STA_DIR,
+					RF_DIR,RF_EXT,MODEL_FILE_NPZ,MIN_DEPTH,MAX_DEPTH,INTER_DEPTH,NUMBER_PP_PER_BIN,
+					LLCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLON_LARGE,URCRNRLAT_LARGE,LLCRNRLON_SMALL,
 					URCRNRLON_SMALL,LLCRNRLAT_SMALL,URCRNRLAT_SMALL,PROJECT_LAT,PROJECT_LON,
-					BOUNDARY_1_SHP,BOUNDARY_2_SHP,					
-					PP_FIGURE,EXT_FIG,DPI_FIG,MP_PROCESSES
+					BOUNDARY_1_SHP,BOUNDARY_2_SHP,EXT_FIG,DPI_FIG,MP_PROCESSES,OUTPUT_DIR
 				   )
 
 
@@ -66,9 +49,12 @@ def parallel_travel_times_Ppds(number,ev_depth,ev_lat,ev_long,st_lat,st_long):
 # Importing station dictionary from JSON file 
 # ============================================
 
+STA_DIR = OUTPUT_DIR+'MODEL_INTER_DEPTH_'+str(INTER_DEPTH)+'/'+'Stations'+'/'
+
 print('\n')
 print('Looking for receiver functions data in JSON file in '+STA_DIR)
 print('\n')
+
 
 filename_STA = STA_DIR+'sta_dic.json'
 
@@ -98,18 +84,19 @@ model_THICKNESS_km = TauPyModel(model=MODEL_FILE_NPZ)
 # Creating output Folder
 # ========================
 
-print('Creating output folders')
+print('Creating travel times output folders')
 
-travel_times_pds = PdS_DIR+'travel_times_pds/'
+Travel_times_folder = OUTPUT_DIR+'MODEL_INTER_DEPTH_'+str(INTER_DEPTH)+'/'+'Phases'+'/'
+os.makedirs(Travel_times_folder,exist_ok=True)
+print('travel_times_dic = '+Travel_times_folder)
+
+travel_times_pds = Travel_times_folder+'travel_times_pds/'
 os.makedirs(travel_times_pds,exist_ok=True)
 print('travel_times_pds = '+travel_times_pds)
 
-travel_times_ppds = PdS_DIR+'travel_times_ppds/'
+travel_times_ppds =  Travel_times_folder+'travel_times_ppds/'
 print('travel_times_ppds = '+travel_times_ppds)
 os.makedirs(travel_times_ppds,exist_ok=True)
-
-os.makedirs(PdS_DIR,exist_ok=True)
-print('travel_times_dic = '+PdS_DIR)
 
 print('\n')
 
@@ -145,21 +132,26 @@ print('\n')
 # Importing STATION-EVENT Pds dictionary from JSON file 
 
 filename_pds_json = sorted(glob.glob(travel_times_pds+'*'))
+filename_pds_json_raw_float = [float(i.split('.')[0].split('Pds_dic_')[1]) for i in filename_pds_json]  
+idx = np.argsort(filename_pds_json_raw_float) 	
+arrivals = [json.load(open(filename_pds_json[i]))['arrivals'] for i in idx]
 
-arrivals = [json.load(open(i))['arrivals'] for i in filename_pds_json]
-
-TT_dic_Pds = {'time':[],'depth':[],'rayparam':[]}
+TT_dic_Pds = {'time':[],'depth':[],'rayparam':[],'ev_lat': [],'ev_long': [],'st_lat': [],'st_long': []}
 for i,j in enumerate(arrivals):
 	TT_dic_Pds['time'].append([arrivals[i][k]['time']-arrivals[i][0]['time'] for k,l in enumerate(j) if arrivals[i][k]['time']-arrivals[i][0]['time'] > 1])
 	TT_dic_Pds['depth'].append([arrivals[i][k]['phase'][1:-1] for k,l in enumerate(j) if arrivals[i][k]['time']-arrivals[i][0]['time'] > 1])
 	TT_dic_Pds['rayparam'].append([arrivals[i][k]['rayparam'] for k,l in enumerate(j) if arrivals[i][k]['time']-arrivals[i][0]['time'] > 1]) 
+	TT_dic_Pds['ev_lat'].append([arrivals[i][k]['ev_lat'] for k,l in enumerate(j) if arrivals[i][k]['time']-arrivals[i][0]['time'] > 1]) 
+	TT_dic_Pds['ev_long'].append([arrivals[i][k]['ev_long'] for k,l in enumerate(j) if arrivals[i][k]['time']-arrivals[i][0]['time'] > 1]) 
+	TT_dic_Pds['st_lat'].append([arrivals[i][k]['st_lat'] for k,l in enumerate(j) if arrivals[i][k]['time']-arrivals[i][0]['time'] > 1]) 
+	TT_dic_Pds['st_long'].append([arrivals[i][k]['st_long'] for k,l in enumerate(j) if arrivals[i][k]['time']-arrivals[i][0]['time'] > 1]) 
 
 
 #Saving Piercing Points in JSON file
 print('Saving Pds Travel Times in JSON file')
 print('\n')
 
-with open(PdS_DIR+'Pds_dic.json', 'w') as fp:
+with open(Travel_times_folder+'Pds_dic.json', 'w') as fp:
 	json.dump(TT_dic_Pds, fp)
 
 # =============================
@@ -185,18 +177,24 @@ print('\n')
 # Importing STATION-EVENT Pds dictionary from JSON file 
 
 filename_ppds_json = sorted(glob.glob(travel_times_ppds+'*'))
+filename_ppds_json_raw_float = [float(i.split('.')[0].split('PPvs_dic_')[1]) for i in filename_ppds_json]  
+idx_ppds = np.argsort(filename_ppds_json_raw_float) 	
+arrivals = [json.load(open(filename_ppds_json[i]))['arrivals'] for i in idx_ppds]
 
-arrivals = [json.load(open(i))['arrivals'] for i in filename_ppds_json]
+TT_dic_Ppds = {'time':[],'depth':[],'rayparam':[],'ev_lat': [],'ev_long': [],'st_lat': [],'st_long': []}
 
-TT_dic_Ppds = {'time':[],'depth':[],'rayparam':[]}
 for i,j in enumerate(arrivals):
 	TT_dic_Ppds['time'].append([arrivals[i][k]['time']-arrivals[i][0]['time'] for k,l in enumerate(j)  if arrivals[i][k]['time']-arrivals[i][0]['time'] > 1])
 	TT_dic_Ppds['depth'].append([arrivals[i][k]['phase'][3:-1] for k,l in enumerate(j) if arrivals[i][k]['time']-arrivals[i][0]['time'] > 1])
 	TT_dic_Ppds['rayparam'].append([arrivals[i][k]['rayparam'] for k,l in enumerate(j)  if arrivals[i][k]['time']-arrivals[i][0]['time'] > 1]) 
+	TT_dic_Ppds['ev_lat'].append([arrivals[i][k]['ev_lat'] for k,l in enumerate(j) if arrivals[i][k]['time']-arrivals[i][0]['time'] > 1]) 
+	TT_dic_Ppds['ev_long'].append([arrivals[i][k]['ev_long'] for k,l in enumerate(j) if arrivals[i][k]['time']-arrivals[i][0]['time'] > 1]) 
+	TT_dic_Ppds['st_lat'].append([arrivals[i][k]['st_lat'] for k,l in enumerate(j) if arrivals[i][k]['time']-arrivals[i][0]['time'] > 1]) 
+	TT_dic_Ppds['st_long'].append([arrivals[i][k]['st_long'] for k,l in enumerate(j) if arrivals[i][k]['time']-arrivals[i][0]['time'] > 1]) 
 
 #Saving Piercing Points in JSON file
 print('Saving Ppds Travel Times in JSON file')
 print('\n')
 
-with open(PdS_DIR+'PPvs_dic.json', 'w') as fp:
+with open(Travel_times_folder+'PPvs_dic.json', 'w') as fp:
 	json.dump(TT_dic_Ppds, fp)

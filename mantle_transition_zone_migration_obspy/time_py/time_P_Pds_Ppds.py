@@ -7,12 +7,10 @@ import json
 
 
 from parameters_py.mgconfig import (
-					RF_DIR,RF_EXT,MODEL_FILE_NPZ,MIN_DEPTH,MAX_DEPTH,INTER_DEPTH,PdS_DIR,
-					PP_DIR,PP_SELEC_DIR,NUMBER_PP_PER_BIN,STA_DIR,MODEL_FILE_TAUP,
+					RF_DIR,RF_EXT,MODEL_FILE_NPZ,MIN_DEPTH,MAX_DEPTH,INTER_DEPTH,NUMBER_PP_PER_BIN,MODEL_FILE_TAUP,
 					LLCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLON_LARGE,URCRNRLAT_LARGE,LLCRNRLON_SMALL,
 					URCRNRLON_SMALL,LLCRNRLAT_SMALL,URCRNRLAT_SMALL,PROJECT_LAT,PROJECT_LON,
-					BOUNDARY_1_SHP,BOUNDARY_2_SHP,					
-					PP_FIGURE,EXT_FIG,DPI_FIG
+					BOUNDARY_1_SHP,BOUNDARY_2_SHP,EXT_FIG,DPI_FIG,OUTPUT_DIR
 				   )
 
 
@@ -66,11 +64,10 @@ def travel_time_calculation_Pds(number,ev_depth,ev_lat,ev_long,st_lat,st_long,JS
 	print('receiver_longitude_in_deg = '+str(st_long))
 
 	Pds_dic = {"arrivals": []}
-	for i, j in enumerate(arrivals):
-		phase_dic = {"phase": j.name,"time": j.time, "rayparam": j.ray_param}
+	for j in arrivals:
+		phase_dic = {"phase": j.name,"time": j.time, "rayparam": j.ray_param,'ev_lat': ev_lat,'ev_long': ev_long,'st_lat': st_lat,'st_long': st_long}
 		Pds_dic["arrivals"].append(phase_dic)
 	
-	#Saving Piercing Points in JSON file
 	print('Saving Pds Travel Times in JSON file')
 	print('\n')
 
@@ -94,7 +91,7 @@ print('\n')
 
 def travel_time_calculation_Ppds(number,ev_depth,ev_lat,ev_long,st_lat,st_long,JSON_FOLDER):
 
-	arrivals = model_THICKNESS_km.get_travel_times_geo(source_depth_in_km=ev_depth, 
+	arrivals_Ppds = model_THICKNESS_km.get_travel_times_geo(source_depth_in_km=ev_depth, 
 														source_latitude_in_deg=ev_lat, 
 														source_longitude_in_deg=ev_long, 
 														receiver_latitude_in_deg=st_lat, 
@@ -107,14 +104,13 @@ def travel_time_calculation_Ppds(number,ev_depth,ev_lat,ev_long,st_lat,st_long,J
 	print('receiver_latitude_in_deg = '+str(st_lat))
 	print('receiver_longitude_in_deg = '+str(st_long))
 
-	Pds_dic = {"arrivals": []}
-	for i, j in enumerate(arrivals):
-		phase_dic = {"phase": j.name,"time": j.time, "rayparam": j.ray_param}
-		Pds_dic["arrivals"].append(phase_dic)
-	
-	#Saving Piercing Points in JSON file
-	print('Saving Pds Travel Times in JSON file')
+	Ppds_dic = {"arrivals": []}
+	for j in arrivals_Ppds:
+		phase_ppds_dic = {"phase": j.name,"time": j.time, "rayparam": j.ray_param,'ev_lat': ev_lat,'ev_long': ev_long,'st_lat': st_lat,'st_long': st_long}
+		Ppds_dic["arrivals"].append(phase_ppds_dic)
+
+	print('Saving Ppds Travel Times in JSON file')
 	print('\n')
 
-	with open(JSON_FOLDER+'Pds_dic_'+str(number)+'.json', 'w') as fp:
-		json.dump(Pds_dic, fp)
+	with open(JSON_FOLDER+'PPvs_dic_'+str(number)+'.json', 'w') as fp:
+		json.dump(Ppds_dic, fp)

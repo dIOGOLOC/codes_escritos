@@ -38,12 +38,12 @@ import math
 
 
 from parameters_py.mgconfig import (
-					RF_DIR,RF_EXT,MODEL_FILE_NPZ,MIN_DEPTH,MAX_DEPTH,INTER_DEPTH,PdS_DIR,SHAPEFILE_GRID,FILTER_BY_SHAPEFILE,
-					PP_DIR,PP_SELEC_DIR,NUMBER_PP_PER_BIN,STA_DIR,MIN_AMP_PDS_PPDS,
-					LLCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLON_LARGE,URCRNRLAT_LARGE,LLCRNRLON_SMALL,
-					URCRNRLON_SMALL,LLCRNRLAT_SMALL,URCRNRLAT_SMALL,PROJECT_LAT,PROJECT_LON,GRID_PP_MULT,
-					BOUNDARY_1_SHP,BOUNDARY_2_SHP,
-					PP_FIGURE,EXT_FIG,DPI_FIG,DIST_GRID_PP_MED,DIST_GRID_PP,NUMBER_STA_PER_BIN,
+					RF_DIR,RF_EXT,MODEL_FILE_NPZ,MIN_DEPTH,MAX_DEPTH,INTER_DEPTH,SHAPEFILE_GRID,FILTER_BY_SHAPEFILE,
+					NUMBER_PP_PER_BIN,MIN_AMP_PDS_PPDS,
+					LLCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLON_LARGE,URCRNRLAT_LARGE,
+					LLCRNRLON_SMALL,URCRNRLON_SMALL,LLCRNRLAT_SMALL,URCRNRLAT_SMALL,
+					PROJECT_LAT,PROJECT_LON,GRID_PP_MULT,BOUNDARY_1_SHP,BOUNDARY_2_SHP,
+					EXT_FIG,DPI_FIG,DIST_GRID_PP_MED,DIST_GRID_PP,NUMBER_STA_PER_BIN,OUTPUT_DIR,
 					DEPTH_RANGE,BOOTSTRAP_INTERATOR,BOOTSTRAP_DEPTH_ESTIMATION,GAMMA,COLORMAP_STD,COLORMAP_VEL
 				   )
 
@@ -75,6 +75,7 @@ print('660 km earth model Vp : '+str(Vp_depth_2))
 print('660 km earth model Vs : '+str(Vs_depth_2))
 print('\n')
 
+STA_DIR = OUTPUT_DIR+'MODEL_INTER_DEPTH_'+str(INTER_DEPTH)+'/'+'Stations'+'/'
 
 print('Looking for Receiver Functions data in JSON file in '+STA_DIR)
 print('\n')
@@ -99,15 +100,16 @@ print('\n')
 
 camadas_terra_10_km = np.arange(MIN_DEPTH,MAX_DEPTH+INTER_DEPTH,INTER_DEPTH)
 
-DEPTH_MED = 530
-
 print('Importing Pds piercing points to each PHASE')
 print('\n')
 
-PHASES = 'P410s','P'+"{0:.0f}".format(DEPTH_MED)+'s','P660s'
+PHASES = 'P410s','P530s','P660s'
 
 print('Importing Pds Piercing Points for '+PHASES[0])
 print('\n')
+
+PP_DIR = OUTPUT_DIR+'MODEL_INTER_DEPTH_'+str(INTER_DEPTH)+'/'+'Piercing_Points'+'/'
+
 
 filename_1 = PP_DIR+'PP_'+PHASES[0]+'_dic.json'
 
@@ -161,7 +163,7 @@ for i,j in enumerate(PP_lon_1):
 pp_1_lat = [i for i in pp_1_lat if type(i) == float ]
 pp_1_long = [i for i in pp_1_long if type(i) == float ]
 
-print('Pds Piercing Points - '+"{0:.0f}".format(DEPTH_MED))
+print('P530s Piercing Points')
 print('\n')
 
 pp_med_lat  = [[]]*len(PP_lon_med)
@@ -170,7 +172,7 @@ pp_med_long  = [[]]*len(PP_lon_med)
 
 for i,j in enumerate(PP_lon_med):
 	for k,l in enumerate(j):
-		if LLCRNRLON_LARGE <= l <= URCRNRLON_LARGE and PP_depth_med[i][k] == DEPTH_MED:
+		if LLCRNRLON_LARGE <= l <= URCRNRLON_LARGE and PP_depth_med[i][k] == 530:
 				pp_med_lat[i] = PP_lat_med[i][k]
 				pp_med_long[i] = l
 
@@ -253,7 +255,7 @@ pp_1_lat_Ppds = [i for i in pp_1_lat_Ppds if type(i) == float ]
 pp_1_long_Ppds = [i for i in pp_1_long_Ppds if type(i) == float ]
 
 
-print('Ppds Piercing Points - '+"{0:.0f}".format(DEPTH_MED))
+print('PPv530s Piercing Points')
 print('\n')
 
 pp_med_lat_Ppds  = [[]]*len(PP_lon_med_Ppds)
@@ -262,7 +264,7 @@ pp_med_long_Ppds  = [[]]*len(PP_lon_med_Ppds)
 
 for i,j in enumerate(PP_lon_med_Ppds):
 	for k,l in enumerate(j):
-		if LLCRNRLON_LARGE<= l <= URCRNRLON_LARGE and PP_depth_med_Ppds[i][k] == DEPTH_MED:
+		if LLCRNRLON_LARGE<= l <= URCRNRLON_LARGE and PP_depth_med_Ppds[i][k] == 530:
 				pp_med_lat_Ppds[i] = PP_lat_med_Ppds[i][k]
 				pp_med_long_Ppds[i] = l
 
@@ -414,7 +416,7 @@ for i,j in enumerate(grdx):
 	retangulo = Rectangle(xy=(grdx[i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2, grdy[i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),color='None', ec='k',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
 	ax.add_patch(retangulo)
 ax.set_title('Pds Piercing Points',ha='center',va='top',y=1.08)
-ax.legend([l1,l2,l3,l4,retangulo],['Stations','Piercing Points 410 km','Piercing Points '+"{0:.0f}".format(DEPTH_MED)+' km','Piercing Points 660 km','Selected Grid'],scatterpoints=1, frameon=True,labelspacing=1, loc='lower right',facecolor='w',fontsize='smaller')
+ax.legend([l1,l2,l3,l4,retangulo],['Stations','Piercing Points 410 km','Piercing Points 530 km','Piercing Points 660 km','Selected Grid'],scatterpoints=1, frameon=True,labelspacing=1, loc='lower right',facecolor='w',fontsize='smaller')
 
 reader_1_SHP = Reader(BOUNDARY_1_SHP)
 shape_1_SHP = list(reader_1_SHP.geometries())
@@ -439,7 +441,7 @@ for i,j in enumerate(grdx):
 	retangulo = Rectangle(xy=(grdx[i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2, grdy[i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),color='None', ec='k',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
 	ax1.add_patch(retangulo)
 ax1.set_title('Ppds Piercing Points',ha='center',va='top',y=1.08)
-ax1.legend([l1,l2,l3,l4,retangulo],['Stations','Piercing Points 410 km','Piercing Points '+"{0:.0f}".format(DEPTH_MED)+' km','Piercing Points 660 km','Selected Grid'],scatterpoints=1, frameon=True,labelspacing=1, loc='lower right',facecolor='w',fontsize='smaller')
+ax1.legend([l1,l2,l3,l4,retangulo],['Stations','Piercing Points 410 km','Piercing Points 530 km','Piercing Points 660 km','Selected Grid'],scatterpoints=1, frameon=True,labelspacing=1, loc='lower right',facecolor='w',fontsize='smaller')
 
 reader_1_SHP = Reader(BOUNDARY_1_SHP)
 shape_1_SHP = list(reader_1_SHP.geometries())
@@ -454,6 +456,9 @@ ax1.gridlines(draw_labels=True)
 
 
 #plt.show()
+
+PP_FIGURE = OUTPUT_DIR+'MODEL_INTER_DEPTH_'+str(INTER_DEPTH)+'/'+'Figures'+'/'
+
 RESULTS_FOLDER = PP_FIGURE+'RESULTS_NUMBER_PP_PER_BIN_'+str(NUMBER_PP_PER_BIN)+'_NUMBER_STA_PER_BIN_'+str(NUMBER_STA_PER_BIN)+'/'
 os.makedirs(RESULTS_FOLDER,exist_ok=True)
 
@@ -462,6 +467,7 @@ print(RESULTS_FOLDER)
 print('\n')
 
 fig_PP_Pds_Ppds.savefig(RESULTS_FOLDER+'PP_Pds_Ppds.'+EXT_FIG,dpi=DPI_FIG)
+
 ###################################################################################################################
 
 print('Plotting: Figure Pds Average Piercing Points')
@@ -494,7 +500,7 @@ plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
 ax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 
 ax.set_title('Pds Piercing Points',ha='center',va='top',y=1.08)
-ax.legend([l1,l3,retangulo,circulo],['Stations','Piercing Points '+"{0:.0f}".format(DEPTH_MED)+' km','Selected Grid','Piercing Points Fresnel Zone'],scatterpoints=1, frameon=True,labelspacing=1, loc='lower right',facecolor='w',fontsize='smaller')
+ax.legend([l1,l3,retangulo,circulo],['Stations','Piercing Points 530 km','Selected Grid','Piercing Points Fresnel Zone'],scatterpoints=1, frameon=True,labelspacing=1, loc='lower right',facecolor='w',fontsize='smaller')
 ax.gridlines(draw_labels=True)
 
 #plt.show()
@@ -531,7 +537,7 @@ ax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 ax.gridlines(draw_labels=True)
 
 ax.set_title('Ppds Piercing Points',ha='center',va='top',y=1.08)
-ax.legend([l1,l3,retangulo,circulo],['Stations','Piercing Points '+"{0:.0f}".format(DEPTH_MED)+' km','Selected Grid','Piercing Points Fresnel Zone'],scatterpoints=1, frameon=True,labelspacing=1, loc='lower right',facecolor='w',fontsize='smaller')
+ax.legend([l1,l3,retangulo,circulo],['Stations','Piercing Points 530 km','Selected Grid','Piercing Points First Fresnel Zone'],scatterpoints=1, frameon=True,labelspacing=1, loc='lower right',facecolor='w',fontsize='smaller')
 
 #plt.show()
 
@@ -542,6 +548,8 @@ fig_PP.savefig(RESULTS_FOLDER+'PP_MED_Ppds.'+EXT_FIG,dpi=DPI_FIG)
 print('Importing depths and times of Pds conversion  dataset')
 print('\n')
 
+PdS_DIR = OUTPUT_DIR+'MODEL_INTER_DEPTH_'+str(INTER_DEPTH)+'/'+'Phases'+'/'
+
 filename_Pds = PdS_DIR+'Pds_dic.json'
 
 PdS_Dic = json.load(open(filename_Pds))
@@ -551,6 +559,10 @@ for i,j in enumerate(PdS_Dic['depth']):
 	depth_str_to_float_Pds.append([float(l) for l in j])
 
 Pds_time = PdS_Dic['time']
+Pds_st_lat = PdS_Dic['st_lat']
+Pds_st_lon = PdS_Dic['st_long']
+Pds_ev_lat = PdS_Dic['ev_lat']
+Pds_ev_lon = PdS_Dic['ev_long']
 Pds_depth = depth_str_to_float_Pds
 
 print('Importing depths and times of Ppds conversion  dataset')
@@ -565,7 +577,12 @@ for i,j in enumerate(Ppds_Dic['depth']):
 	depth_str_to_float_Ppds.append([float(l) for l in j])
 
 Ppds_time = Ppds_Dic['time']
+Ppds_st_lat = Ppds_Dic['st_lat']
+Ppds_st_lon = Ppds_Dic['st_long']
+Ppds_ev_lat = Ppds_Dic['ev_lat']
+Ppds_ev_lon = Ppds_Dic['ev_long']
 Ppds_depth = depth_str_to_float_Ppds
+
 
 ###################################################################################################################
 
@@ -607,12 +624,9 @@ for i,j in enumerate(RF_amplitude_time_Ppds):
     RF_t_Ppds = [round(l,1) for k,l in enumerate(j)]
     RF_amplitude_Ppds[i] = [sta_data[i][sta_t_Ppds.index(l)] if l != -1 else 0 for k,l in enumerate(RF_t_Ppds)]
 
+##################################################################################################################
 
-
-
-###################################################################################################################
-
-print('Selecting the migrated data per grid data')
+print('Filtering migrated data per grid data')
 print('\n')
 
 dados_grid_lat = pp_med_lat_Ppds
@@ -1123,7 +1137,6 @@ for i,j in enumerate(RF_data_raw_Pds):
 			delta_1_Vs_mean.append(np.nanmean(flat_delta_1_Vs_mean))
 			delta_1_Vs_std.append(np.nanstd(flat_delta_1_Vs_mean))
 
-
 			flat_mean_1_true_Pds = [float(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['true_410_mean']) for _k in range(BOOTSTRAP_INTERATOR)]
 			RF_DEPTH_mean_1_true_Pds.append(np.nanmean(flat_mean_1_true_Pds))
 			RF_DEPTH_std_1_true_Pds.append(np.nanstd(flat_mean_1_true_Pds))
@@ -1140,7 +1153,6 @@ for i,j in enumerate(RF_data_raw_Pds):
 			delta_2_Vs_mean.append(np.nanmean(flat_delta_2_Vs))
 			delta_2_Vs_std.append(np.nanstd(flat_delta_2_Vs))
 
-
 			flat_mean_2_true_Pds = [float(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['true_660_mean']) for _k in range(BOOTSTRAP_INTERATOR)]
 			RF_DEPTH_mean_2_true_Pds.append(np.nanmean(flat_mean_2_true_Pds))
 			RF_DEPTH_std_2_true_Pds.append(np.nanstd(flat_mean_2_true_Pds))
@@ -1148,7 +1160,6 @@ for i,j in enumerate(RF_data_raw_Pds):
 			flat_mean_2_true_Ppds = [float(RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['true_660_mean']) for _k in range(BOOTSTRAP_INTERATOR)]
 			RF_DEPTH_mean_2_true_Ppds.append(np.nanmean(flat_mean_2_true_Ppds))
 			RF_DEPTH_std_2_true_Ppds.append(np.nanstd(flat_mean_2_true_Ppds))
-
 
 			flat_true_thickness_MTZ_Pds = [float(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['true_thickness_MTZ_mean']) for _k in range(BOOTSTRAP_INTERATOR)]
 			true_thickness_MTZ_Pds.append(np.nanmean(flat_true_thickness_MTZ_Pds))
@@ -1213,7 +1224,6 @@ for i,j in enumerate(RF_data_raw_Pds):
 
 #############################################################################################################################################################################################
 
-
 print('Plotting: Figure Final Grid and Ppds Average Piercing Points')
 print('\n')
 
@@ -1243,39 +1253,44 @@ ax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 ax.gridlines(draw_labels=True)
 
 #ax.set_title('Figure: Final Grid and Ppds Average Piercing Points',ha='center',va='top',y=1.08)
-ax.legend([l1,l3,retangulo,circulo],['Stations','Piercing Points '+"{0:.0f}".format(DEPTH_MED)+' km','Selected Grid','Piercing Points Fresnel Zone'],scatterpoints=1, frameon=True,labelspacing=1, loc='lower right',facecolor='w',fontsize='smaller')
+ax.legend([l1,l3,retangulo,circulo],['Stations','Piercing Points 530 km','Selected Grid','Piercing Points Fresnel Zone'],scatterpoints=1, frameon=True,labelspacing=1, loc='lower right',facecolor='w',fontsize='smaller')
 
 #plt.show()
 
 fig_PP.savefig(RESULTS_FOLDER+'PP_FINAL_GRID.'+EXT_FIG,dpi=DPI_FIG)
 
-
 #############################################################################################################################################################################################
-
 
 print('Saving Selected Piercing Points in JSON file')
 print('\n')
+
+PP_SELEC_DIR = OUTPUT_DIR+'MODEL_INTER_DEPTH_'+str(INTER_DEPTH)+'/'+'SELECTED_BINNED_DATA'+'/'
 
 os.makedirs(PP_SELEC_DIR,exist_ok=True)
 
 SELECTED_BINNED_DATA_dic = {
 	'lat':[],'lon':[],
-	'len_Pds':[],
-	'len_Ppds':[],
-	'true_mean_1_Pds':[],'true_std_1_Pds':[],'true_mean_2_Pds':[],'true_std_2_Pds':[],
-	'true_mean_1_Ppds':[],'true_std_1_Ppds':[],'true_mean_2_Ppds':[],'true_std_2_Ppds':[],
-	'mean_1_Pds':[],'std_1_Pds':[],'mean_2_Pds':[],'std_2_Pds':[],
-	'mean_1_Ppds':[],'std_1_Ppds':[],'mean_2_Ppds':[],'std_2_Ppds':[],
-	'delta_1_Vp_mean':[],'delta_1_Vp_std':[],'delta_2_Vp_mean':[],'delta_2_Vp_std':[],
-	'delta_1_Vs_mean':[],'delta_1_Vs_std':[],'delta_2_Vs_mean':[],'delta_2_Vs_std':[],
-	'mtz_thickness_Pds':[],'mtz_thickness_Pds_std':[],'true_thickness_MTZ_Pds':[],'true_thickness_MTZ_Pds_std':[],
-	'true_thickness_MTZ_Ppds':[],'true_thickness_MTZ_Ppds_std':[],'mtz_thickness_Ppds':[],'mtz_thickness_Ppds_std':[],
+	'len_Pds':[],'len_Ppds':[],
+	'true_mean_1_Pds':[],'true_std_1_Pds':[],
+	'true_mean_2_Pds':[],'true_std_2_Pds':[],
+	'true_mean_1_Ppds':[],'true_std_1_Ppds':[],
+	'true_mean_2_Ppds':[],'true_std_2_Ppds':[],
+	'mean_1_Pds':[],'std_1_Pds':[],
+	'mean_2_Pds':[],'std_2_Pds':[],
+	'mean_1_Ppds':[],'std_1_Ppds':[],
+	'mean_2_Ppds':[],'std_2_Ppds':[],
+	'delta_1_Vp_mean':[],'delta_1_Vp_std':[],
+	'delta_2_Vp_mean':[],'delta_2_Vp_std':[],
+	'delta_1_Vs_mean':[],'delta_1_Vs_std':[],
+	'delta_2_Vs_mean':[],'delta_2_Vs_std':[],
+	'mtz_thickness_Pds':[],'mtz_thickness_Pds_std':[],
+	'mtz_thickness_Ppds':[],'mtz_thickness_Ppds_std':[],
+	'true_thickness_MTZ_Pds':[],'true_thickness_MTZ_Pds_std':[],
+	'true_thickness_MTZ_Ppds':[],'true_thickness_MTZ_Ppds_std':[],
 	'difference_thickness_MTZ_Pds':[],'difference_thickness_MTZ_Pds_std':[],
 	'difference_thickness_MTZ_Ppds':[],'difference_thickness_MTZ_Ppds_std':[],
-	'data_Pds':[],
-	'data_Ppds':[],
-	'data_BOOTSTRAP_Pds':[],
-	'data_BOOTSTRAP_Ppds':[],
+	'data_Pds':[],'data_Ppds':[],
+	'data_BOOTSTRAP_Pds':[],'data_BOOTSTRAP_Ppds':[],
 	'RF_BOOTSTRAP_DEPTH_mean_1_Pds':[],'RF_BOOTSTRAP_DEPTH_mean_1_Ppds':[],
 	'RF_BOOTSTRAP_DEPTH_mean_2_Pds':[],'RF_BOOTSTRAP_DEPTH_mean_2_Ppds':[],
 	'difference_thickness_MTZ_model_Pds':[],'difference_thickness_MTZ_model_Pds_std':[],

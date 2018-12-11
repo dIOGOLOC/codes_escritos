@@ -61,20 +61,8 @@ RF_EXT = config.get('paths', 'RF_EXT')
 MODEL_FILE_NPZ = config.get('paths', 'MODEL_FILE_NPZ')
 MODEL_FILE_TAUP = config.get('paths', 'MODEL_FILE_TAUP')
 
-# dir of the stations data
-STA_DIR = config.get('paths', 'STA_DIR')
-
-# dir of the Pds results
-PdS_DIR = config.get('paths', 'PdS_DIR')
-
-# dir of the piercing points results
-PP_DIR = config.get('paths', 'PP_DIR')
-
-# dir of Figures
-PP_FIGURE = config.get('paths', 'PP_FIGURE')
-
-# dir of selected piercing points txt
-PP_SELEC_DIR = config.get('paths', 'PP_SELEC_DIR')
+# dir of OUTPUTs
+OUTPUT_DIR = config.get('paths', 'OUTPUT_DIR')
 
 # ---------------
 # maps parameters

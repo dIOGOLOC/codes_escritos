@@ -35,36 +35,18 @@
 
 
 # dir of receiver functions
-RF_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/Mantle_Transition_Migration_NO_PP/MTZ_data/0.5/
-#RF_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/Mantle_Transition_Migration_YES_PP/MTZ_data/0.5/
+RF_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/data_MTZ_NO_PP/MTZ_data/0.5/
+#RF_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/data_MTZ_YES_PP/MTZ_data/0.5/
 
 # extension of receiver functions
 RF_EXT = .eqr
 
 #Directory of the earth models
-MODEL_FILE_NPZ = /home/diogo/diogo_git/codes_escritos/mantle_transition_zone_migration_obspy/velocity_model/iasp91_5.npz
-MODEL_FILE_TAUP = /home/diogo/diogo_git/codes_escritos/mantle_transition_zone_migration_obspy/velocity_model/iasp91_5.taup
+MODEL_FILE_NPZ = /home/diogo/diogo_git/codes_escritos/mantle_transition_zone_migration_obspy/velocity_model/iasp91_10.npz
+MODEL_FILE_TAUP = /home/diogo/diogo_git/codes_escritos/mantle_transition_zone_migration_obspy/velocity_model/iasp91_10.taup
 
-# dir of the stations data
-STA_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/Mantle_Transition_Migration_NO_PP/OUTPUT/Stations/
-#STA_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/Mantle_Transition_Migration_YES_PP/OUTPUT/Stations/
-
-# dir of the Pds results
-PdS_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/Mantle_Transition_Migration_NO_PP/OUTPUT/Phases/
-#PdS_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/Mantle_Transition_Migration_YES_PP/OUTPUT/Phases/
-
-# dir of the piercing points results
-PP_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/Mantle_Transition_Migration_NO_PP/OUTPUT/Piercing_points/
-#PP_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/Mantle_Transition_Migration_YES_PP/OUTPUT/Piercing_points/
-
-# dir of figures
-PP_FIGURE = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/Mantle_Transition_Migration_NO_PP/OUTPUT/Figures/
-#PP_FIGURE = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/Mantle_Transition_Migration_YES_PP/OUTPUT/Figures/
-
-# dir of selected bins
-PP_SELEC_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/Mantle_Transition_Migration_NO_PP/OUTPUT/Selected_bins/
-#PP_SELEC_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/Mantle_Transition_Migration_YES_PP/OUTPUT/Selected_bins/
-
+# dir of OUTPUTs
+OUTPUT_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/Mantle_Transition_Migration_NO_PP_obspy/
 
 #=====
 [maps]
@@ -140,7 +122,7 @@ MIN_DEPTH = 300
 MAX_DEPTH = 800
 
 #depth interval of the migration
-INTER_DEPTH = 2
+INTER_DEPTH = 10
 
 # ==========
 [migration]
@@ -153,7 +135,7 @@ FILTER_BY_SHAPEFILE = True
 SHAPEFILE_GRID = /home/diogo/dados_doutorado/parnaiba_basin/SIG_dados/shapes/bacia_parnaiba/bacia_parnaiba.shp
 
 #GRID POINTS multiplyer
-GRID_PP_MULT = 5
+GRID_PP_MULT = 10
 
 # distance between grid points and piercing points for each depth (degree)
 DIST_GRID_PP = 1
@@ -162,7 +144,7 @@ DIST_GRID_PP = 1
 DIST_GRID_PP_MED = 0.5
 
 #number of piercing points per bin
-NUMBER_PP_PER_BIN = 10
+NUMBER_PP_PER_BIN = 15
 
 #number of stations RF per bin
 NUMBER_STA_PER_BIN = 3
@@ -183,7 +165,7 @@ BOOTSTRAP_INTERATOR = 200
 GAMMA = 2
 
 #Minimum amplitude of the 410 and 660 km (both Pds and Ppds ) to compute apparent and true depth
-MIN_AMP_PDS_PPDS = 0.015
+MIN_AMP_PDS_PPDS = 0
 
 #Depth range (+/-) that we will use to find the maximum amplitude
-DEPTH_RANGE = 30
+DEPTH_RANGE = 20
