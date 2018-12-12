@@ -38,18 +38,20 @@ from matplotlib.transforms import offset_copy
 
 
 from parameters_py.mgconfig import (
-					RF_DIR,RF_EXT,MODEL_FILE_NPZ,MIN_DEPTH,MAX_DEPTH,INTER_DEPTH,PdS_DIR,SHAPEFILE_GRID,FILTER_BY_SHAPEFILE,
-					PP_DIR,PP_SELEC_DIR,NUMBER_PP_PER_BIN,STA_DIR,MIN_AMP_PDS_PPDS,
-					LLCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLON_LARGE,URCRNRLAT_LARGE,LLCRNRLON_SMALL,
+					RF_DIR,RF_EXT,MODEL_FILE_NPZ,MIN_DEPTH,MAX_DEPTH,INTER_DEPTH,SHAPEFILE_GRID,FILTER_BY_SHAPEFILE,
+					NUMBER_PP_PER_BIN,MIN_AMP_PDS_PPDS,LLCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLON_LARGE,URCRNRLAT_LARGE,LLCRNRLON_SMALL,
 					URCRNRLON_SMALL,LLCRNRLAT_SMALL,URCRNRLAT_SMALL,PROJECT_LAT,PROJECT_LON,GRID_PP_MULT,
-					BOUNDARY_1_SHP,BOUNDARY_2_SHP,
-					PP_FIGURE,EXT_FIG,DPI_FIG,DIST_GRID_PP_MED,DIST_GRID_PP,NUMBER_STA_PER_BIN,
+					BOUNDARY_1_SHP,BOUNDARY_2_SHP,OUTPUT_DIR,
+					EXT_FIG,DPI_FIG,DIST_GRID_PP_MED,DIST_GRID_PP,NUMBER_STA_PER_BIN,
 					DEPTH_RANGE,BOOTSTRAP_INTERATOR,BOOTSTRAP_DEPTH_ESTIMATION,GAMMA,COLORMAP_STD,COLORMAP_VEL
 				   )
 
 
 print('Starting Check resolution criteria CODE')
 print('\n')
+
+STA_DIR = OUTPUT_DIR+'MODEL_INTER_DEPTH_'+str(INTER_DEPTH)+'/'+'Stations'+'/'
+
 
 print('Looking for receiver functions data in JSON file in '+STA_DIR)
 print('\n')
@@ -72,6 +74,9 @@ sta_time = sta_dic['sta_time']
 
 print('Looking for selected binned data')
 print('\n')
+
+PP_SELEC_DIR = OUTPUT_DIR+'MODEL_INTER_DEPTH_'+str(INTER_DEPTH)+'/'+'SELECTED_BINNED_DATA'+'/'
+
 
 lst_json_file = []
 for root, dirs, files in os.walk(PP_SELEC_DIR):
@@ -150,8 +155,9 @@ for i,j in enumerate(sort_lst_json):
 
 	RF_DEPTH_mean_2_true_Ppds.append(SELECTED_BINNED_DATA_dic['true_mean_2_Ppds'])
 
+PP_FIGURE = OUTPUT_DIR+'MODEL_INTER_DEPTH_'+str(INTER_DEPTH)+'/'+'Figures'+'/'
 
-RESULTS_FOLDER = PP_FIGURE+'/'+'RESULTS_NUMBER_PP_PER_BIN_'+str(NUMBER_PP_PER_BIN)+'_NUMBER_STA_PER_BIN_'+str(NUMBER_STA_PER_BIN)+'/'
+RESULTS_FOLDER = PP_FIGURE
 os.makedirs(RESULTS_FOLDER,exist_ok=True)
 
 ###################################################################################################################
@@ -167,23 +173,26 @@ colormap_std = plt.get_cmap(COLORMAP_STD)
 #############################################################################################################################################################################################
 
 
-mosaic_lst_MTZ = [RF_DEPTH_mtz_thickness_Pds,RF_DEPTH_mtz_thickness_Ppds,RF_DEPTH_true_thickness_MTZ_Pds,RF_DEPTH_true_thickness_MTZ_Ppds]
-mosaic_lst_MTZ_name = ['RF_DEPTH_mtz_thickness_Pds','RF_DEPTH_mtz_thickness_Ppds','RF_DEPTH_true_thickness_MTZ_Pds','RF_DEPTH_true_thickness_MTZ_Ppds']
+mosaic_lst_MTZ = [RF_DEPTH_mtz_thickness_Pds,RF_DEPTH_mtz_thickness_Ppds,RF_DEPTH_true_thickness_MTZ_Pds]
+mosaic_lst_MTZ_name = ['MTZ_thickness_Pds','MTZ_thickness_Ppds','MTZ_true_thickness']
+mosaic_lst_MTZ_label = ['MTZ thickness Pds (km)','MTZ thickness Ppds (km)','MTZ True thickness (km)']
 
-mosaic_lst_660 = [RF_DEPTH_mean_2_Pds,RF_DEPTH_mean_2_Ppds,RF_DEPTH_mean_2_true_Pds,RF_DEPTH_mean_2_true_Ppds]
-mosaic_lst_660_name = ['RF_DEPTH_mean_2_Pds','RF_DEPTH_mean_2_Ppds','RF_DEPTH_mean_2_true_Pds','RF_DEPTH_mean_2_true_Ppds']
+mosaic_lst_660 = [RF_DEPTH_mean_2_Pds,RF_DEPTH_mean_2_Ppds,RF_DEPTH_mean_2_true_Pds]
+mosaic_lst_660_name = ['DEPTH_660_Pds','DEPTH_660_Ppds','True_DEPTH_660']
+mosaic_lst_660_label = ['660 depth Pds (km)','660 depth Ppds (km)','660 true depth Pds (km)']
 
-mosaic_lst_410 = [RF_DEPTH_mean_1_Pds,RF_DEPTH_mean_1_Ppds,RF_DEPTH_mean_1_true_Pds,RF_DEPTH_mean_1_true_Ppds]
-mosaic_lst_410_name = ['RF_DEPTH_mean_1_Pds','RF_DEPTH_mean_1_Ppds','RF_DEPTH_mean_1_true_Pds','RF_DEPTH_mean_1_true_Ppds']
+mosaic_lst_410 = [RF_DEPTH_mean_1_Pds,RF_DEPTH_mean_1_Ppds,RF_DEPTH_mean_1_true_Pds]
+mosaic_lst_410_name = ['DEPTH_410_Pds','DEPTH_410_Ppds','True_DEPTH_410']
+mosaic_lst_410_label = ['410 depth Pds (km)','410 depth Ppds (km)','410 true depth Pds (km)']
 
 
 #############################################################################################################################################################################################
 
-def plot_mosaic_MTZ(mosaic_lst,mosaic_lst_name):
+def plot_mosaic_MTZ(mosaic_lst,mosaic_lst_name,mosaic_lst_label):
 	for x,c in enumerate(mosaic_lst):
 
-		fig, axes = plt.subplots(nrows=5, ncols=3, subplot_kw={'projection': ccrs.Mercator(central_longitude=PROJECT_LON, globe=None)},figsize=(5,8),sharex='col', sharey='row')
-		fig.subplots_adjust(hspace=0.01,wspace=0.01)
+		fig, axes = plt.subplots(nrows=len(set(lst_json_file_PP)), ncols=len(set(lst_json_file_STA)), subplot_kw={'projection': ccrs.Mercator(central_longitude=PROJECT_LON, globe=None)},figsize=(1+len(set(lst_json_file_PP))*2,len(set(lst_json_file_STA))*2),sharex='col', sharey='row')
+		fig.subplots_adjust(hspace=0.0,wspace=0.0)
 
 		for k,ax in zip(range(len(c)), axes.flat):
 
@@ -226,14 +235,16 @@ def plot_mosaic_MTZ(mosaic_lst,mosaic_lst_name):
 		sm_660 = plt.cm.ScalarMappable(cmap=colormap,norm=norm_660)
 		sm_660._A = []
 
-		fig.savefig(RESULTS_FOLDER+mosaic_lst_name[x]+'_mosaic.'+EXT_FIG,dpi=100)
+		fig.colorbar(sm_660,  ax=axes.ravel().tolist(), orientation='horizontal',shrink=0.5,label=mosaic_lst_label[x])
+
+		fig.savefig(RESULTS_FOLDER+mosaic_lst_name[x]+'_mosaic.'+EXT_FIG,dpi=DPI_FIG)
 
 
-def plot_mosaic_660(mosaic_lst,mosaic_lst_name):
+def plot_mosaic_660(mosaic_lst,mosaic_lst_name,mosaic_lst_label):
 	for x,c in enumerate(mosaic_lst):
 
-		fig, axes = plt.subplots(nrows=5, ncols=3, subplot_kw={'projection': ccrs.Mercator(central_longitude=PROJECT_LON, globe=None)},figsize=(5,8),sharex='col', sharey='row')
-		fig.subplots_adjust(hspace=0.01,wspace=0.01)
+		fig, axes = plt.subplots(nrows=len(set(lst_json_file_PP)), ncols=len(set(lst_json_file_STA)), subplot_kw={'projection': ccrs.Mercator(central_longitude=PROJECT_LON, globe=None)},figsize=(1+len(set(lst_json_file_PP))*2,len(set(lst_json_file_STA))*2),sharex='col', sharey='row')
+		fig.subplots_adjust(hspace=0.0,wspace=0.0)
 
 		for k,ax in zip(range(len(c)), axes.flat):
 
@@ -275,15 +286,18 @@ def plot_mosaic_660(mosaic_lst,mosaic_lst_name):
 
 		sm_660 = plt.cm.ScalarMappable(cmap=colormap,norm=norm_660)
 		sm_660._A = []
+		
+		fig.colorbar(sm_660,  ax=axes.ravel().tolist(), orientation='horizontal',shrink=0.5,label=mosaic_lst_label[x])
 
-		fig.savefig(RESULTS_FOLDER+mosaic_lst_name[x]+'_mosaic.'+EXT_FIG,dpi=100)
+
+		fig.savefig(RESULTS_FOLDER+mosaic_lst_name[x]+'_mosaic.'+EXT_FIG,dpi=DPI_FIG)
 
 
-def plot_mosaic_410(mosaic_lst,mosaic_lst_name):
+def plot_mosaic_410(mosaic_lst,mosaic_lst_name,mosaic_lst_label):
 	for x,c in enumerate(mosaic_lst):
 
-		fig, axes = plt.subplots(nrows=5, ncols=3, subplot_kw={'projection': ccrs.Mercator(central_longitude=PROJECT_LON, globe=None)},figsize=(5,8),sharex='col', sharey='row')
-		fig.subplots_adjust(hspace=0.01,wspace=0.01)
+		fig, axes = plt.subplots(nrows=len(set(lst_json_file_PP)), ncols=len(set(lst_json_file_STA)), subplot_kw={'projection': ccrs.Mercator(central_longitude=PROJECT_LON, globe=None)},figsize=(1+len(set(lst_json_file_PP))*2,len(set(lst_json_file_STA))*2),sharex='col', sharey='row')
+		fig.subplots_adjust(hspace=0.0,wspace=0.0)
 
 		for k,ax in zip(range(len(c)), axes.flat):
 
@@ -326,13 +340,16 @@ def plot_mosaic_410(mosaic_lst,mosaic_lst_name):
 		sm_660 = plt.cm.ScalarMappable(cmap=colormap,norm=norm_660)
 		sm_660._A = []
 
-		fig.savefig(RESULTS_FOLDER+mosaic_lst_name[x]+'_mosaic.'+EXT_FIG,dpi=100)
+		fig.colorbar(sm_660,  ax=axes.ravel().tolist(), orientation='horizontal',shrink=0.5,label=mosaic_lst_label[x])
+
+
+		fig.savefig(RESULTS_FOLDER+mosaic_lst_name[x]+'_mosaic.'+EXT_FIG,dpi=DPI_FIG)
 
 ########################################################################################################################################################################
 print('Plotting Figure: Mosaic of each estimates')
 
-plot_mosaic_MTZ(mosaic_lst_MTZ,mosaic_lst_MTZ_name)
-plot_mosaic_660(mosaic_lst_660,mosaic_lst_660_name)
-plot_mosaic_410(mosaic_lst_410,mosaic_lst_410_name)
+plot_mosaic_MTZ(mosaic_lst_MTZ,mosaic_lst_MTZ_name,mosaic_lst_MTZ_label)
+plot_mosaic_660(mosaic_lst_660,mosaic_lst_660_name,mosaic_lst_660_label)
+plot_mosaic_410(mosaic_lst_410,mosaic_lst_410_name,mosaic_lst_410_label)
 
 print('Ending Final Plot CODE')

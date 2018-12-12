@@ -135,7 +135,7 @@ FILTER_BY_SHAPEFILE = True
 SHAPEFILE_GRID = /home/diogo/dados_doutorado/parnaiba_basin/SIG_dados/shapes/bacia_parnaiba/bacia_parnaiba.shp
 
 #GRID POINTS multiplyer
-GRID_PP_MULT = 10
+GRID_PP_MULT = 4
 
 # distance between grid points and piercing points for each depth (degree)
 DIST_GRID_PP = 1
@@ -165,7 +165,7 @@ BOOTSTRAP_INTERATOR = 200
 GAMMA = 2
 
 #Minimum amplitude of the 410 and 660 km (both Pds and Ppds ) to compute apparent and true depth
-MIN_AMP_PDS_PPDS = 0
+MIN_AMP_PDS_PPDS = 0.0
 
 #Depth range (+/-) that we will use to find the maximum amplitude
 DEPTH_RANGE = 20
