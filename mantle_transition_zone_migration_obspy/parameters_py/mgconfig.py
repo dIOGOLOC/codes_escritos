@@ -140,10 +140,10 @@ SHAPEFILE_GRID = config.get('migration', 'SHAPEFILE_GRID')
 GRID_PP_MULT = config.getfloat('migration', 'GRID_PP_MULT') 
 
 # distance between grid points and piercing points for each depth (degree)
-DIST_GRID_PP = config.getfloat('migration', 'DIST_GRID_PP') 
+DIST_GRID_PP = config.getfloat('migration', 'DIST_GRID_PP')
 
-# mean distance between grid points and piercing points (degree)
-DIST_GRID_PP_MED = config.getfloat('migration', 'DIST_GRID_PP_MED') 
+# Fresnel Zone Radius (degree)
+FRESNEL_ZONE_RADIUS = config.getfloat('migration', 'FRESNEL_ZONE_RADIUS') 
 
 # number of piercing points per bin 
 NUMBER_PP_PER_BIN = config.getint('migration', 'NUMBER_PP_PER_BIN')  

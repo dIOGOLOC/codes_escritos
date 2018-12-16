@@ -40,7 +40,7 @@ from parameters_py.mgconfig import (
 					LLCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLON_LARGE,URCRNRLAT_LARGE,LLCRNRLON_SMALL,
 					URCRNRLON_SMALL,LLCRNRLAT_SMALL,URCRNRLAT_SMALL,PROJECT_LAT,PROJECT_LON,GRID_PP_MULT,
 					BOUNDARY_1_SHP,BOUNDARY_2_SHP,
-					EXT_FIG,DPI_FIG,DIST_GRID_PP_MED,DIST_GRID_PP,NUMBER_STA_PER_BIN,
+					EXT_FIG,DPI_FIG,FRESNEL_ZONE_RADIUS,DIST_GRID_PP,NUMBER_STA_PER_BIN,
 					DEPTH_RANGE,BOOTSTRAP_INTERATOR,BOOTSTRAP_DEPTH_ESTIMATION,GAMMA,COLORMAP_STD,COLORMAP_VEL
 				   )
 
@@ -86,6 +86,9 @@ SELECTED_BINNED_DATA_dic = json.load(open(filename))
 
 lats = SELECTED_BINNED_DATA_dic['lat']
 lons = SELECTED_BINNED_DATA_dic['lon']
+
+lat_true = SELECTED_BINNED_DATA_dic['lat_true']
+lon_true = SELECTED_BINNED_DATA_dic['lon_true']
 
 RF_number = SELECTED_BINNED_DATA_dic['len_Pds']
 
@@ -317,12 +320,11 @@ ax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 ax.gridlines(draw_labels=True)
 
 norm_410 = mpl.colors.Normalize(vmin=360,vmax=460,clip=True)
-colors_410 = colormap(norm_410(np.array(RF_DEPTH_mean_1_Pds,dtype='float64')))
 
 for i,j in enumerate(lons):
 	if math.isnan(RF_DEPTH_mean_1_Pds[i]) == False:
-		retangulo_410 = Rectangle(xy=(lons[i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2, lats[i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),color=colors_410[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
-		ax.add_patch(retangulo_410)
+		circulo_410 = Circle(radius=DIST_GRID_PP,xy=(lons[i], lats[i]),color=colormap(norm_410(RF_DEPTH_mean_1_Pds[i])), ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+		ax.add_patch(circulo_410)
 	else:
 		pass
 
@@ -347,13 +349,11 @@ ax2.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 ax2.gridlines(draw_labels=True)
 
 norm_660 = mpl.colors.Normalize(vmin=560,vmax=760,clip=True)
-colors_660 = colormap(norm_660(np.array(RF_DEPTH_mean_2_Pds,dtype='float64')))
-
 
 for i,j in enumerate(lons):
 	if math.isnan(RF_DEPTH_mean_2_Pds[i]) == False:
-		retangulo_660 = Rectangle(xy=(lons[i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2, lats[i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),color=colors_660[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
-		ax2.add_patch(retangulo_660)
+		circulo_660 = Circle(radius=DIST_GRID_PP,xy=(lons[i], lats[i]),color=colormap(norm_660(RF_DEPTH_mean_2_Pds[i])), ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+		ax2.add_patch(circulo_660)
 	else: 
 		pass
 
@@ -398,11 +398,11 @@ ax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 ax.gridlines(draw_labels=True)
 
 norm_410 = mpl.colors.Normalize(vmin=360,vmax=460,clip=True)
-colors_410 = colormap(norm_410(np.array(RF_DEPTH_mean_1_Ppds,dtype='float64')))
+
 for i,j in enumerate(lons):
 	if math.isnan(RF_DEPTH_mean_1_Ppds[i]) == False:
-		retangulo_410 = Rectangle(xy=(lons[i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2, lats[i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),color=colors_410[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
-		ax.add_patch(retangulo_410)
+		circulo_410 = Circle(radius=DIST_GRID_PP,xy=(lons[i], lats[i]),color=colormap(norm_410(RF_DEPTH_mean_1_Ppds[i])), ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+		ax.add_patch(circulo_410)
 	else:
 		pass
 
@@ -427,13 +427,11 @@ ax2.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 ax2.gridlines(draw_labels=True)
 
 norm_660 = mpl.colors.Normalize(vmin=560,vmax=760,clip=True)
-colors_660 = colormap(norm_660(np.array(RF_DEPTH_mean_2_Ppds,dtype='float64')))
-
 
 for i,j in enumerate(lons):
 	if math.isnan(RF_DEPTH_mean_2_Ppds[i]) == False:
-		retangulo_660 = Rectangle(xy=(lons[i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2, lats[i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),color=colors_660[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
-		ax2.add_patch(retangulo_660)
+		circulo_660 = Circle(radius=DIST_GRID_PP,xy=(lons[i], lats[i]),color=colormap(norm_660(RF_DEPTH_mean_2_Ppds[i])), ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+		ax2.add_patch(circulo_660)
 	else:
 		pass
 
@@ -479,12 +477,11 @@ ax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 ax.gridlines(draw_labels=True)
 
 norm_410 = mpl.colors.Normalize(vmin=360,vmax=460,clip=True)
-colors_410 = colormap(norm_410(np.array(RF_DEPTH_mean_1_true_Pds,dtype='float64')))
 
 for i,j in enumerate(lons):
 	if math.isnan(RF_DEPTH_mean_1_true_Pds[i]) == False:
-		retangulo_410 = Rectangle(xy=(lons[i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2, lats[i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),color=colors_410[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
-		ax.add_patch(retangulo_410)
+		circulo_410 = Circle(radius=DIST_GRID_PP,xy=(lons[i], lats[i]),color=colormap(norm_410(RF_DEPTH_mean_1_true_Pds[i])), ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+		ax.add_patch(circulo_410)
 	else:
 		pass
 
@@ -510,13 +507,11 @@ ax2.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 ax2.gridlines(draw_labels=True)
 
 norm_660 = mpl.colors.Normalize(vmin=560,vmax=760,clip=True)
-colors_660 = colormap(norm_660(np.array(RF_DEPTH_mean_2_true_Pds,dtype='float64')))
-
 
 for i,j in enumerate(lons):
 	if math.isnan(RF_DEPTH_mean_2_true_Pds[i]) == False:
-		retangulo_660 = Rectangle(xy=(lons[i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2, lats[i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),color=colors_660[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
-		ax2.add_patch(retangulo_660)
+		circulo_660 = Circle(radius=DIST_GRID_PP,xy=(lons[i], lats[i]),color=colormap(norm_660(RF_DEPTH_mean_2_true_Pds[i])), ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+		ax2.add_patch(circulo_660)
 	else:
 		pass
 
@@ -537,174 +532,6 @@ fig.colorbar(sm_660,ax=ax2,orientation='horizontal',shrink=0.8)
 fig.savefig(RESULTS_FOLDER+'TRUE_DEPTH_410_660.'+EXT_FIG,dpi=DPI_FIG)
 
 
-#############################################################################################################################################################################################
-
-print('Plotting Figure: True Depth of 410 km and 660 km (Pds phases)')
-
-fig, axes = plt.subplots(nrows=1, ncols=2, subplot_kw={'projection': ccrs.Mercator(central_longitude=PROJECT_LON, globe=None)},figsize=(20,10),sharey=True)
-
-ax = axes[0]
-ax2 = axes[1]
-
-
-#410 km
-
-ax.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
-
-reader_1_SHP = Reader(BOUNDARY_1_SHP)
-shape_1_SHP = list(reader_1_SHP.geometries())
-plot_shape_1_SHP = cfeature.ShapelyFeature(shape_1_SHP, ccrs.PlateCarree())
-ax.add_feature(plot_shape_1_SHP, facecolor='none', edgecolor='k',linewidth=3)
-
-reader_2_SHP = Reader(BOUNDARY_2_SHP)
-shape_2_SHP = list(reader_2_SHP.geometries())
-plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
-ax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
-ax.gridlines(draw_labels=True)
-
-norm_410 = mpl.colors.Normalize(vmin=360,vmax=460,clip=True)
-colors_410 = colormap(norm_410(np.array(RF_DEPTH_mean_1_true_Pds,dtype='float64')))
-
-for i,j in enumerate(lons):
-	if math.isnan(RF_DEPTH_mean_1_true_Pds[i]) == False:
-		retangulo_410 = Rectangle(xy=(lons[i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2, lats[i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),color=colors_410[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
-		ax.add_patch(retangulo_410)
-	else:
-		pass
-
-
-ax.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
-
-ax.set_title('410 km Pds', y=1.08)
-
-
-#660 km
-
-ax2.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
-
-reader_1_SHP = Reader(BOUNDARY_1_SHP)
-shape_1_SHP = list(reader_1_SHP.geometries())
-plot_shape_1_SHP = cfeature.ShapelyFeature(shape_1_SHP, ccrs.PlateCarree())
-ax2.add_feature(plot_shape_1_SHP, facecolor='none', edgecolor='k',linewidth=3)
-
-reader_2_SHP = Reader(BOUNDARY_2_SHP)
-shape_2_SHP = list(reader_2_SHP.geometries())
-plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
-ax2.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
-ax2.gridlines(draw_labels=True)
-
-norm_660 = mpl.colors.Normalize(vmin=560,vmax=760,clip=True)
-colors_660 = colormap(norm_660(np.array(RF_DEPTH_mean_2_true_Pds,dtype='float64')))
-
-
-for i,j in enumerate(lons):
-	if math.isnan(RF_DEPTH_mean_2_true_Pds[i]) == False:
-		retangulo_660 = Rectangle(xy=(lons[i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2, lats[i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),color=colors_660[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
-		ax2.add_patch(retangulo_660)
-	else:
-		pass
-
-ax2.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
-
-ax2.set_title('660 km Pds', y=1.08)
-
-#______________________________________________________________________
-
-sm_410 = plt.cm.ScalarMappable(cmap=colormap,norm=norm_410)
-sm_410._A = []
-fig.colorbar(sm_410,ax=ax,orientation='horizontal',shrink=0.8)
-
-sm_660 = plt.cm.ScalarMappable(cmap=colormap,norm=norm_660)
-sm_660._A = []
-fig.colorbar(sm_660,ax=ax2,orientation='horizontal',shrink=0.8)
-
-fig.savefig(RESULTS_FOLDER+'TRUE_DEPTH_Pds.'+EXT_FIG,dpi=DPI_FIG)
-
-###################################################################################################################
-print('Plotting Figure: True Depth of 410 km and 660 km (Ppds phases)')
-
-fig, axes = plt.subplots(nrows=1, ncols=2, subplot_kw={'projection': ccrs.Mercator(central_longitude=PROJECT_LON, globe=None)},figsize=(20,10),sharey=True)
-
-ax = axes[0]
-ax2 = axes[1]
-
-
-#410 km
-
-ax.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
-
-reader_1_SHP = Reader(BOUNDARY_1_SHP)
-shape_1_SHP = list(reader_1_SHP.geometries())
-plot_shape_1_SHP = cfeature.ShapelyFeature(shape_1_SHP, ccrs.PlateCarree())
-ax.add_feature(plot_shape_1_SHP, facecolor='none', edgecolor='k',linewidth=3)
-
-reader_2_SHP = Reader(BOUNDARY_2_SHP)
-shape_2_SHP = list(reader_2_SHP.geometries())
-plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
-ax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
-ax.gridlines(draw_labels=True)
-
-norm_410 = mpl.colors.Normalize(vmin=360,vmax=460,clip=True)
-colors_410 = colormap(norm_410(np.array(RF_DEPTH_mean_1_true_Ppds,dtype='float64')))
-
-for i,j in enumerate(lons):
-	if math.isnan(RF_DEPTH_mean_1_true_Ppds[i]) == False:
-
-		retangulo_410 = Rectangle(xy=(lons[i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2, lats[i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),color=colors_410[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
-		ax.add_patch(retangulo_410)
-
-	else:
-		pass
-
-
-ax.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
-
-ax.set_title('410 km Ppds', y=1.08)
-
-
-#660 km
-
-ax2.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
-
-reader_1_SHP = Reader(BOUNDARY_1_SHP)
-shape_1_SHP = list(reader_1_SHP.geometries())
-plot_shape_1_SHP = cfeature.ShapelyFeature(shape_1_SHP, ccrs.PlateCarree())
-ax2.add_feature(plot_shape_1_SHP, facecolor='none', edgecolor='k',linewidth=3)
-
-reader_2_SHP = Reader(BOUNDARY_2_SHP)
-shape_2_SHP = list(reader_2_SHP.geometries())
-plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
-ax2.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
-ax2.gridlines(draw_labels=True)
-
-norm_660 = mpl.colors.Normalize(vmin=560,vmax=760,clip=True)
-colors_660 = colormap(norm_660(np.array(RF_DEPTH_mean_2_true_Ppds,dtype='float64')))
-
-
-for i,j in enumerate(lons):
-	if math.isnan(RF_DEPTH_mean_1_true_Ppds[i]) == False:
-		retangulo_660 = Rectangle(xy=(lons[i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2, lats[i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),color=colors_660[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
-		ax2.add_patch(retangulo_660)
-	else:
-		pass
-
-ax2.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
-
-ax2.set_title('660 km Ppds', y=1.08)
-
-#______________________________________________________________________
-
-sm_410 = plt.cm.ScalarMappable(cmap=colormap,norm=norm_410)
-sm_410._A = []
-fig.colorbar(sm_410,ax=ax,orientation='horizontal',shrink=0.8)
-
-sm_660 = plt.cm.ScalarMappable(cmap=colormap,norm=norm_660)
-sm_660._A = []
-fig.colorbar(sm_660,ax=ax2,orientation='horizontal',shrink=0.8)
-
-fig.savefig(RESULTS_FOLDER+'TRUE_DEPTH_Ppds.'+EXT_FIG,dpi=DPI_FIG)
-
-###################################################################################################################
 print('Plotting Figure: Uncertainty (1 sigma) of 410 km and 660 km (Pds phases)')
 
 fig, axes = plt.subplots(nrows=1, ncols=2, subplot_kw={'projection': ccrs.Mercator(central_longitude=PROJECT_LON, globe=None)},figsize=(20,10),sharey=True)
@@ -728,12 +555,11 @@ ax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 ax.gridlines(draw_labels=True)
 
 norm_410 = mpl.colors.Normalize(vmin=0,vmax=50,clip=True)
-colors_410 = colormap_std(norm_410(np.array(RF_DEPTH_std_1_Pds,dtype='float64')))
 
 for i,j in enumerate(lons):
 	if math.isnan(RF_DEPTH_std_1_Pds[i]) == False:
-		retangulo_410 = Rectangle(xy=(lons[i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2, lats[i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),color=colors_410[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
-		ax.add_patch(retangulo_410)
+		circulo_410 = Circle(radius=DIST_GRID_PP,xy=(lons[i], lats[i]),color=colormap_std(norm_410(RF_DEPTH_std_1_Pds[i])), ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+		ax.add_patch(circulo_410)
 	else:
 		pass
 
@@ -759,13 +585,11 @@ ax2.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 ax2.gridlines(draw_labels=True)
 
 norm_660 = mpl.colors.Normalize(vmin=0,vmax=50,clip=True)
-colors_660 = colormap_std(norm_660(np.array(RF_DEPTH_std_2_Pds,dtype='float64')))
-
 
 for i,j in enumerate(lons):
 	if math.isnan(RF_DEPTH_std_2_Pds[i]) == False:
-		retangulo_660 = Rectangle(xy=(lons[i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2, lats[i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),color=colors_660[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
-		ax2.add_patch(retangulo_660)
+		circulo_660 = Circle(radius=DIST_GRID_PP,xy=(lons[i], lats[i]),color=colormap_std(norm_660(RF_DEPTH_std_2_Pds[i])), ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+		ax2.add_patch(circulo_660)
 	else: 
 		pass
 
@@ -786,7 +610,7 @@ fig.colorbar(sm_660,ax=ax2,orientation='horizontal',shrink=0.8)
 fig.savefig(RESULTS_FOLDER+'Uncertainty_DEPTH_Pds.'+EXT_FIG,dpi=DPI_FIG)
 
 #######################################################################################################################################
-###################################################################################################################
+
 print('Plotting Figure: Uncertainty (1 sigma) of 410 km and 660 km (True Depth)')
 
 fig, axes = plt.subplots(nrows=1, ncols=2, subplot_kw={'projection': ccrs.Mercator(central_longitude=PROJECT_LON, globe=None)},figsize=(20,10),sharey=True)
@@ -810,12 +634,11 @@ ax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 ax.gridlines(draw_labels=True)
 
 norm_410 = mpl.colors.Normalize(vmin=0,vmax=50,clip=True)
-colors_410 = colormap_std(norm_410(np.array(RF_DEPTH_std_1_true_Pds,dtype='float64')))
 
 for i,j in enumerate(lons):
 	if math.isnan(RF_DEPTH_std_1_true_Pds[i]) == False:
-		retangulo_410 = Rectangle(xy=(lons[i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2, lats[i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),color=colors_410[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
-		ax.add_patch(retangulo_410)
+		circulo_410 = Circle(radius=DIST_GRID_PP,xy=(lons[i], lats[i]),color=colormap_std(norm_410(RF_DEPTH_std_1_true_Pds[i])), ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+		ax.add_patch(circulo_410)
 	else:
 		pass
 
@@ -841,13 +664,11 @@ ax2.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 ax2.gridlines(draw_labels=True)
 
 norm_660 = mpl.colors.Normalize(vmin=0,vmax=50,clip=True)
-colors_660 = colormap_std(norm_660(np.array(RF_DEPTH_std_2_true_Pds,dtype='float64')))
-
 
 for i,j in enumerate(lons):
 	if math.isnan(RF_DEPTH_std_2_true_Pds[i]) == False:
-		retangulo_660 = Rectangle(xy=(lons[i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2, lats[i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),color=colors_660[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
-		ax2.add_patch(retangulo_660)
+		circulo_660 = Circle(radius=DIST_GRID_PP,xy=(lons[i], lats[i]),color=colormap_std(norm_660(RF_DEPTH_std_2_true_Pds[i])), ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+		ax2.add_patch(circulo_660)
 	else: 
 		pass
 
@@ -893,12 +714,11 @@ ax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 ax.gridlines(draw_labels=True)
 
 norm_410 = mpl.colors.Normalize(vmin=0,vmax=50,clip=True)
-colors_410 = colormap_std(norm_410(np.array(RF_DEPTH_std_1_Ppds,dtype='float64')))
 
 for i,j in enumerate(lons):
 	if math.isnan(RF_DEPTH_std_1_Ppds[i]) == False:
-		retangulo_410 = Rectangle(xy=(lons[i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2, lats[i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),color=colors_410[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
-		ax.add_patch(retangulo_410)
+		circulo_410 = Circle(radius=DIST_GRID_PP,xy=(lons[i], lats[i]),color=colormap_std(norm_410(RF_DEPTH_std_1_Ppds[i])), ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+		ax.add_patch(circulo_410)
 	else:
 		pass
 
@@ -924,13 +744,11 @@ ax2.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 ax2.gridlines(draw_labels=True)
 
 norm_660 = mpl.colors.Normalize(vmin=0,vmax=50,clip=True)
-colors_660 = colormap_std(norm_660(np.array(RF_DEPTH_std_2_Ppds,dtype='float64')))
-
 
 for i,j in enumerate(lons):
 	if math.isnan(RF_DEPTH_std_2_Ppds[i]) == False:
-		retangulo_660 = Rectangle(xy=(lons[i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2, lats[i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),color=colors_660[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
-		ax2.add_patch(retangulo_660)
+		circulo_660 = Circle(radius=DIST_GRID_PP,xy=(lons[i], lats[i]),color=colormap_std(norm_660(RF_DEPTH_std_2_Ppds[i])), ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+		ax2.add_patch(circulo_660)
 	else:
 		pass
 ax2.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
@@ -950,6 +768,7 @@ fig.colorbar(sm_660,ax=ax2,orientation='horizontal',shrink=0.8)
 fig.savefig(RESULTS_FOLDER+'Uncertainty_DEPTH_Ppds.'+EXT_FIG,dpi=DPI_FIG)
 
 #######################################################################################################################################
+
 print('Plotting Figure: Uncertainty (1 sigma) of MTZ Thickness (Pds and Ppds phases)')
 
 fig, axes = plt.subplots(nrows=1, ncols=2, subplot_kw={'projection': ccrs.Mercator(central_longitude=PROJECT_LON, globe=None)},figsize=(20,10),sharey=True)
@@ -973,12 +792,11 @@ ax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 ax.gridlines(draw_labels=True)
 
 norm_410 = mpl.colors.Normalize(vmin=0,vmax=50,clip=True)
-colors_410 = colormap_std(norm_410(np.array(RF_DEPTH_mtz_thickness_Pds_std,dtype='float64')))
 
 for i,j in enumerate(lons):
 	if math.isnan(RF_DEPTH_mtz_thickness_Pds_std[i]) == False:
-		retangulo_410 = Rectangle(xy=(lons[i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2, lats[i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),color=colors_410[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
-		ax.add_patch(retangulo_410)
+		circulo_410 = Circle(radius=DIST_GRID_PP,xy=(lons[i], lats[i]),color=colormap_std(norm_410(RF_DEPTH_mtz_thickness_Pds_std[i])), ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+		ax.add_patch(circulo_410)
 	else:
 		pass
 
@@ -1004,19 +822,17 @@ ax2.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 ax2.gridlines(draw_labels=True)
 
 norm_660 = mpl.colors.Normalize(vmin=0,vmax=50,clip=True)
-colors_660 = colormap_std(norm_660(np.array(RF_DEPTH_mtz_thickness_Ppds_std,dtype='float64')))
-
 
 for i,j in enumerate(lons):
 	if math.isnan(RF_DEPTH_mtz_thickness_Ppds_std[i]) == False:
-		retangulo_660 = Rectangle(xy=(lons[i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2, lats[i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),color=colors_660[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
-		ax2.add_patch(retangulo_660)
+		circulo_660 = Circle(radius=DIST_GRID_PP,xy=(lons[i], lats[i]),color=colormap_std(norm_660(RF_DEPTH_mtz_thickness_Ppds_std[i])), ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+		ax2.add_patch(circulo_660)
 	else:
 		pass
+
 ax2.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
 
 ax2.set_title(r'Uncertainty (1$\sigma$) of  MTZ Thickness Ppds', y=1.08)
-
 #______________________________________________________________________
 
 sm_410 = plt.cm.ScalarMappable(cmap=colormap_std,norm=norm_410)
@@ -1053,12 +869,11 @@ ax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 ax.gridlines(draw_labels=True)
 
 norm_410 = mpl.colors.Normalize(vmin=-1,vmax=1,clip=True)
-colors_410 = colormap(norm_410(np.array(RF_delta_1_Vp_mean,dtype='float64')))
 
-for i,j in enumerate(lons):
+for i,j in enumerate(lon_true):
 	if math.isnan(RF_delta_1_Vp_mean[i]) == False:
-		retangulo_410 = Rectangle(xy=(lons[i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2, lats[i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),color=colors_410[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
-		ax.add_patch(retangulo_410)
+		circulo_410 = Circle(radius=DIST_GRID_PP,xy=(lon_true[i], lat_true[i]),color=colormap(norm_410(RF_delta_1_Vp_mean[i])), ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+		ax.add_patch(circulo_410)
 	else: 
 		pass
 
@@ -1082,13 +897,11 @@ ax2.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 ax2.gridlines(draw_labels=True)
 
 norm_660 = mpl.colors.Normalize(vmin=-1,vmax=1,clip=True)
-colors_660 = colormap(norm_660(np.array(RF_delta_2_Vp_mean,dtype='float64')))
 
-
-for i,j in enumerate(lons):
+for i,j in enumerate(lon_true):
 	if math.isnan(RF_delta_2_Vp_mean[i]) == False:
-		retangulo_660 = Rectangle(xy=(lons[i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2, lats[i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),color=colors_660[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
-		ax2.add_patch(retangulo_660)
+		circulo_660 = Circle(radius=DIST_GRID_PP,xy=(lon_true[i], lat_true[i]),color=colormap(norm_660(RF_delta_2_Vp_mean[i])), ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+		ax2.add_patch(circulo_660)
 	else:
 		pass
 
@@ -1107,88 +920,6 @@ sm_660._A = []
 fig.colorbar(sm_660,ax=ax2,orientation='horizontal',shrink=0.8)
 
 fig.savefig(RESULTS_FOLDER+'DELTA_VP.'+EXT_FIG,dpi=DPI_FIG)
-
-#######################################################################################################################################
-
-print('Plotting Figure: Delta Vs (410 km/660 km) ')
-
-
-fig, axes = plt.subplots(nrows=1, ncols=2, subplot_kw={'projection': ccrs.Mercator(central_longitude=PROJECT_LON, globe=None)},figsize=(20,10),sharey=True)
-
-ax = axes[0]
-ax2 = axes[1]
-
-ax.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
-
-reader_1_SHP = Reader(BOUNDARY_1_SHP)
-shape_1_SHP = list(reader_1_SHP.geometries())
-plot_shape_1_SHP = cfeature.ShapelyFeature(shape_1_SHP, ccrs.PlateCarree())
-ax.add_feature(plot_shape_1_SHP, facecolor='none', edgecolor='k',linewidth=3)
-
-reader_2_SHP = Reader(BOUNDARY_2_SHP)
-shape_2_SHP = list(reader_2_SHP.geometries())
-plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
-ax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
-ax.gridlines(draw_labels=True)
-
-norm_410 = mpl.colors.Normalize(vmin=-1,vmax=1,clip=True)
-colors_410 = colormap(norm_410(np.array(RF_delta_1_Vs_mean,dtype='float64')))
-
-for i,j in enumerate(lons):
-	if math.isnan(RF_delta_1_Vs_mean[i]) == False:
-		retangulo_410 = Rectangle(xy=(lons[i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2, lats[i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),color=colors_410[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
-		ax.add_patch(retangulo_410)
-	else: 
-		pass
-
-
-ax.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
-
-ax.set_title('Delta Vs - 410 km', y=1.08)
-
-
-ax2.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
-
-reader_1_SHP = Reader(BOUNDARY_1_SHP)
-shape_1_SHP = list(reader_1_SHP.geometries())
-plot_shape_1_SHP = cfeature.ShapelyFeature(shape_1_SHP, ccrs.PlateCarree())
-ax2.add_feature(plot_shape_1_SHP, facecolor='none', edgecolor='k',linewidth=3)
-
-reader_2_SHP = Reader(BOUNDARY_2_SHP)
-shape_2_SHP = list(reader_2_SHP.geometries())
-plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
-ax2.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
-ax2.gridlines(draw_labels=True)
-
-norm_660 = mpl.colors.Normalize(vmin=-1,vmax=1,clip=True)
-colors_660 = colormap(norm_660(np.array(RF_delta_2_Vs_mean,dtype='float64')))
-
-
-for i,j in enumerate(lons):
-	if math.isnan(RF_delta_2_Vs_mean[i]) == False:
-		retangulo_660 = Rectangle(xy=(lons[i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2, lats[i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),color=colors_660[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
-		ax2.add_patch(retangulo_660)
-	else:
-		pass
-
-ax2.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
-
-ax2.set_title('Delta Vs - 660 km', y=1.08)
-
-#______________________________________________________________________
-
-sm_410 = plt.cm.ScalarMappable(cmap=colormap,norm=norm_410)
-sm_410._A = []
-fig.colorbar(sm_410,ax=ax,orientation='horizontal',shrink=0.8)
-
-sm_660 = plt.cm.ScalarMappable(cmap=colormap,norm=norm_660)
-sm_660._A = []
-fig.colorbar(sm_660,ax=ax2,orientation='horizontal',shrink=0.8)
-
-fig.savefig(RESULTS_FOLDER+'DELTA_VS.'+EXT_FIG,dpi=DPI_FIG)
-
-
-#######################################################################################################################################
 
 print('Plotting Figure: Thickness of the Mantle Transition Zone (Pds and Ppds Phases)')
 
@@ -1213,12 +944,11 @@ ax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 ax.gridlines(draw_labels=True)
 
 norm_410 = mpl.colors.Normalize(vmin=200,vmax=300,clip=True)
-colors_410 = colormap(norm_410(np.array(RF_DEPTH_mtz_thickness_Pds,dtype='float64')))
 
 for i,j in enumerate(lons):
 	if math.isnan(RF_DEPTH_mtz_thickness_Pds[i]) == False:
-		retangulo_410 = Rectangle(xy=(lons[i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2, lats[i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),color=colors_410[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
-		ax.add_patch(retangulo_410)
+		circulo_410 = Circle(radius=DIST_GRID_PP,xy=(lons[i], lats[i]),color=colormap(norm_410(RF_DEPTH_mtz_thickness_Pds[i])), ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+		ax.add_patch(circulo_410)
 	else:
 		pass
 
@@ -1244,12 +974,11 @@ ax2.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 ax2.gridlines(draw_labels=True)
 
 norm_660 = mpl.colors.Normalize(vmin=200,vmax=300,clip=True)
-colors_660 = colormap(norm_660(np.array(RF_DEPTH_mtz_thickness_Ppds,dtype='float64')))
 
 for i,j in enumerate(lons):
 	if math.isnan(RF_DEPTH_mtz_thickness_Ppds[i]) == False:
-		retangulo_660 = Rectangle(xy=(lons[i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2, lats[i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),color=colors_660[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
-		ax2.add_patch(retangulo_660)
+		circulo_660 = Circle(radius=DIST_GRID_PP,xy=(lons[i], lats[i]),color=colormap(norm_660(RF_DEPTH_mtz_thickness_Ppds[i])), ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+		ax2.add_patch(circulo_660)
 	else:
 		pass
 
@@ -1295,12 +1024,11 @@ ax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 ax.gridlines(draw_labels=True)
 
 norm_410 = mpl.colors.Normalize(vmin=200,vmax=300,clip=True)
-colors_410 = colormap(norm_410(np.array(RF_DEPTH_true_thickness_MTZ_Pds,dtype='float64')))
 
-for i,j in enumerate(lons):
+for i,j in enumerate(lon_true):
 	if math.isnan(RF_DEPTH_true_thickness_MTZ_Pds[i]) == False:
-		retangulo_410 = Rectangle(xy=(lons[i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2, lats[i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),color=colors_410[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
-		ax.add_patch(retangulo_410)
+		circulo_410 = Circle(radius=DIST_GRID_PP,xy=(lon_true[i], lat_true[i]),color=colormap(norm_410(RF_DEPTH_true_thickness_MTZ_Pds[i])), ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+		ax.add_patch(circulo_410)
 	else:
 		pass
 
@@ -1325,12 +1053,11 @@ ax2.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 ax2.gridlines(draw_labels=True)
 
 norm_660 = mpl.colors.Normalize(vmin=0,vmax=50,clip=True)
-colors_660 = colormap_std(norm_660(np.array(RF_DEPTH_true_thickness_MTZ_Pds_std,dtype='float64')))
 
-for i,j in enumerate(lons):
+for i,j in enumerate(lon_true):
 	if math.isnan(RF_DEPTH_true_thickness_MTZ_Pds_std[i]) == False:
-		retangulo_660 = Rectangle(xy=(lons[i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2, lats[i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),color=colors_660[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
-		ax2.add_patch(retangulo_660)
+		circulo_660 = Circle(radius=DIST_GRID_PP,xy=(lon_true[i], lat_true[i]),color=colormap_std(norm_660(RF_DEPTH_true_thickness_MTZ_Pds_std[i])), ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+		ax2.add_patch(circulo_660)
 	else:
 		pass
 
@@ -1351,7 +1078,7 @@ fig.colorbar(sm_660,ax=ax2,orientation='horizontal',shrink=0.8)
 fig.savefig(RESULTS_FOLDER+'TRUE_THICKNESS_MTZ.'+EXT_FIG,dpi=DPI_FIG)
 
 ########################################################################################################################################################################
-
+'''
 print('Plotting Figure: Difference True Thickness of the Mantle Transition Zone and Uncertainty')
 
 fig, axes = plt.subplots(nrows=1, ncols=2, subplot_kw={'projection': ccrs.Mercator(central_longitude=PROJECT_LON, globe=None)},figsize=(20,10),sharey=True)
@@ -1376,12 +1103,11 @@ ax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 ax.gridlines(draw_labels=True)
 
 norm_410 = mpl.colors.Normalize(vmin=-100,vmax=100,clip=True)
-colors_410 = colormap(norm_410(np.array(difference_thickness_MTZ_model,dtype='float64')))
 
 for i,j in enumerate(lons):
 	if math.isnan(difference_thickness_MTZ_model[i]) == False:
-		retangulo_410 = Rectangle(xy=(lons[i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2, lats[i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),color=colors_410[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
-		ax.add_patch(retangulo_410)
+		circulo_410 = Circle(radius=DIST_GRID_PP,xy=(lons[i], lats[i]),color=colormap(norm_410(difference_thickness_MTZ_model[i])), ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+		ax.add_patch(circulo_410)
 	else:
 		pass
 
@@ -1406,12 +1132,11 @@ ax2.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 ax2.gridlines(draw_labels=True)
 
 norm_660 = mpl.colors.Normalize(vmin=0,vmax=50,clip=True)
-colors_660 = colormap_std(norm_660(np.array(difference_thickness_MTZ_model_std,dtype='float64')))
 
 for i,j in enumerate(lons):
 	if math.isnan(difference_thickness_MTZ_model_std[i]) == False:
-		retangulo_660 = Rectangle(xy=(lons[i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2, lats[i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),color=colors_660[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
-		ax2.add_patch(retangulo_660)
+		circulo_660 = Circle(radius=DIST_GRID_PP,xy=(lons[i], lats[i]),color=colormap_std(norm_660(difference_thickness_MTZ_model_std[i])), ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+		ax2.add_patch(circulo_660)
 	else:
 		pass
 
@@ -1454,12 +1179,11 @@ ax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 ax.gridlines(draw_labels=True)
 
 norm_410 = mpl.colors.Normalize(vmin=-100,vmax=100,clip=True)
-colors_410 = colormap(norm_410(np.array(difference_thickness_MTZ_model,dtype='float64')))
 
 for i,j in enumerate(lons):
 	if math.isnan(difference_thickness_MTZ_model[i]) == False and abs(difference_thickness_MTZ_model[i]) > abs(difference_thickness_MTZ_model_std[i]):
-		retangulo_410 = Rectangle(xy=(lons[i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2, lats[i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),color=colors_410[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
-		ax.add_patch(retangulo_410)
+		circulo_410 = Circle(radius=DIST_GRID_PP,xy=(lons[i], lats[i]),color=colormap(norm_410(difference_thickness_MTZ_model[i])), ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+		ax.add_patch(circulo_410)
 	else:
 		pass
 
@@ -1475,7 +1199,7 @@ fig.colorbar(sm_410,ax=ax,orientation='horizontal',shrink=0.8)
 
 fig.savefig(RESULTS_FOLDER+'DIFFERENCE_TRUE_THICKNESS_MTZ.'+EXT_FIG,dpi=DPI_FIG)
 
-
+'''
 ########################################################################################################################################################################
 
 print('Ending Final Plot CODE')

@@ -42,8 +42,8 @@ RF_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/data_MTZ_NO_PP/
 RF_EXT = .eqr
 
 #Directory of the earth models
-MODEL_FILE_NPZ = /home/diogo/diogo_git/codes_escritos/mantle_transition_zone_migration_obspy/velocity_model/iasp91_10.npz
-MODEL_FILE_TAUP = /home/diogo/diogo_git/codes_escritos/mantle_transition_zone_migration_obspy/velocity_model/iasp91_10.taup
+MODEL_FILE_NPZ = /home/diogo/diogo_git/codes_escritos/mantle_transition_zone_migration_obspy/velocity_model/iasp91_5.npz
+MODEL_FILE_TAUP = /home/diogo/diogo_git/codes_escritos/mantle_transition_zone_migration_obspy/velocity_model/iasp91_5.taup
 
 # dir of OUTPUTs
 OUTPUT_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/Mantle_Transition_Migration_NO_PP_obspy/
@@ -85,9 +85,9 @@ URCRNRLAT_LARGE=0
 #lower and upper corner (lat/lon) of the small map
 
 LLCRNRLON_SMALL=-50
-LLCRNRLAT_SMALL=-10
+LLCRNRLAT_SMALL=-11
 URCRNRLON_SMALL=-40
-URCRNRLAT_SMALL=-2
+URCRNRLAT_SMALL=-1
 
 #figures extention and dpi
 EXT_FIG=pdf
@@ -122,32 +122,32 @@ MIN_DEPTH = 300
 MAX_DEPTH = 800
 
 #depth interval of the migration
-INTER_DEPTH = 10
+INTER_DEPTH = 5
 
 # ==========
 [migration]
 # ==========
 
 #Filter by shapefile the grid?
-FILTER_BY_SHAPEFILE = True
+FILTER_BY_SHAPEFILE = False
 
 #Shapefile containing lines or polygons representing grid boundary
 SHAPEFILE_GRID = /home/diogo/dados_doutorado/parnaiba_basin/SIG_dados/shapes/bacia_parnaiba/bacia_parnaiba.shp
 
-#GRID POINTS multiplyer
-GRID_PP_MULT = 4
+# grid bin per degree
+GRID_PP_MULT = 1
 
-# distance between grid points and piercing points for each depth (degree)
+# grid bin radius (degree)
 DIST_GRID_PP = 1
 
-# mean distance between grid points and piercing points (degree)
-DIST_GRID_PP_MED = 0.5
+# Fresnel Zone Radius (degree)
+FRESNEL_ZONE_RADIUS = 1.2
 
 #number of piercing points per bin
-NUMBER_PP_PER_BIN = 15
+NUMBER_PP_PER_BIN = 30
 
 #number of stations RF per bin
-NUMBER_STA_PER_BIN = 3
+NUMBER_STA_PER_BIN = 4
 
 #False or True for depth estimation
 DEPTH_ESTIMATION = True 

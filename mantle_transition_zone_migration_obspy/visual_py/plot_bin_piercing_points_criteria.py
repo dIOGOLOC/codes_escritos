@@ -42,7 +42,7 @@ from parameters_py.mgconfig import (
 					NUMBER_PP_PER_BIN,MIN_AMP_PDS_PPDS,LLCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLON_LARGE,URCRNRLAT_LARGE,LLCRNRLON_SMALL,
 					URCRNRLON_SMALL,LLCRNRLAT_SMALL,URCRNRLAT_SMALL,PROJECT_LAT,PROJECT_LON,GRID_PP_MULT,
 					BOUNDARY_1_SHP,BOUNDARY_2_SHP,OUTPUT_DIR,
-					EXT_FIG,DPI_FIG,DIST_GRID_PP_MED,DIST_GRID_PP,NUMBER_STA_PER_BIN,
+					EXT_FIG,DPI_FIG,FRESNEL_ZONE_RADIUS,DIST_GRID_PP,NUMBER_STA_PER_BIN,
 					DEPTH_RANGE,BOOTSTRAP_INTERATOR,BOOTSTRAP_DEPTH_ESTIMATION,GAMMA,COLORMAP_STD,COLORMAP_VEL
 				   )
 
@@ -192,7 +192,6 @@ def plot_mosaic_MTZ(mosaic_lst,mosaic_lst_name,mosaic_lst_label):
 	for x,c in enumerate(mosaic_lst):
 
 		fig, axes = plt.subplots(nrows=len(set(lst_json_file_PP)), ncols=len(set(lst_json_file_STA)), subplot_kw={'projection': ccrs.Mercator(central_longitude=PROJECT_LON, globe=None)},figsize=(1+len(set(lst_json_file_PP))*2,len(set(lst_json_file_STA))*2),sharex='col', sharey='row')
-		fig.subplots_adjust(hspace=0.0,wspace=0.0)
 
 		for k,ax in zip(range(len(c)), axes.flat):
 
@@ -222,11 +221,10 @@ def plot_mosaic_MTZ(mosaic_lst,mosaic_lst_name,mosaic_lst_label):
 
 
 			norm_660 = mpl.colors.Normalize(vmin=200,vmax=300,clip=True)
-			colors_660 = colormap(norm_660(np.array(c[k],dtype='float64')))
 
 			for i,j in enumerate(lons[k]):
 				if math.isnan(c[k][i]) == False:
-					retangulo_660 = Rectangle(xy=(lons[k][i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2, lats[k][i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),color=colors_660[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+					retangulo_660 = Circle(radius=FRESNEL_ZONE_RADIUS,xy=(lons[k][i], lats[k][i]),color=colormap(norm_660(c[k][i])), ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
 					ax.add_patch(retangulo_660)
 				else: 
 					pass
@@ -244,7 +242,6 @@ def plot_mosaic_660(mosaic_lst,mosaic_lst_name,mosaic_lst_label):
 	for x,c in enumerate(mosaic_lst):
 
 		fig, axes = plt.subplots(nrows=len(set(lst_json_file_PP)), ncols=len(set(lst_json_file_STA)), subplot_kw={'projection': ccrs.Mercator(central_longitude=PROJECT_LON, globe=None)},figsize=(1+len(set(lst_json_file_PP))*2,len(set(lst_json_file_STA))*2),sharex='col', sharey='row')
-		fig.subplots_adjust(hspace=0.0,wspace=0.0)
 
 		for k,ax in zip(range(len(c)), axes.flat):
 
@@ -278,7 +275,7 @@ def plot_mosaic_660(mosaic_lst,mosaic_lst_name,mosaic_lst_label):
 
 			for i,j in enumerate(lons[k]):
 				if math.isnan(c[k][i]) == False:
-					retangulo_660 = Rectangle(xy=(lons[k][i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2, lats[k][i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),color=colors_660[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+					retangulo_660 = Circle(radius=FRESNEL_ZONE_RADIUS,xy=(lons[k][i],lats[k][i]),color=colormap(norm_660(c[k][i])), ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
 					ax.add_patch(retangulo_660)
 				else: 
 					pass
@@ -289,7 +286,6 @@ def plot_mosaic_660(mosaic_lst,mosaic_lst_name,mosaic_lst_label):
 		
 		fig.colorbar(sm_660,  ax=axes.ravel().tolist(), orientation='horizontal',shrink=0.5,label=mosaic_lst_label[x])
 
-
 		fig.savefig(RESULTS_FOLDER+mosaic_lst_name[x]+'_mosaic.'+EXT_FIG,dpi=DPI_FIG)
 
 
@@ -297,7 +293,6 @@ def plot_mosaic_410(mosaic_lst,mosaic_lst_name,mosaic_lst_label):
 	for x,c in enumerate(mosaic_lst):
 
 		fig, axes = plt.subplots(nrows=len(set(lst_json_file_PP)), ncols=len(set(lst_json_file_STA)), subplot_kw={'projection': ccrs.Mercator(central_longitude=PROJECT_LON, globe=None)},figsize=(1+len(set(lst_json_file_PP))*2,len(set(lst_json_file_STA))*2),sharex='col', sharey='row')
-		fig.subplots_adjust(hspace=0.0,wspace=0.0)
 
 		for k,ax in zip(range(len(c)), axes.flat):
 
@@ -331,7 +326,7 @@ def plot_mosaic_410(mosaic_lst,mosaic_lst_name,mosaic_lst_label):
 
 			for i,j in enumerate(lons[k]):
 				if math.isnan(c[k][i]) == False:
-					retangulo_660 = Rectangle(xy=(lons[k][i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2, lats[k][i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),color=colors_660[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+					retangulo_660 = Circle(radius=FRESNEL_ZONE_RADIUS,xy=(lons[k][i], lats[k][i]),color=colormap(norm_660(c[k][i])), ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
 					ax.add_patch(retangulo_660)
 				else: 
 					pass
@@ -341,7 +336,6 @@ def plot_mosaic_410(mosaic_lst,mosaic_lst_name,mosaic_lst_label):
 		sm_660._A = []
 
 		fig.colorbar(sm_660,  ax=axes.ravel().tolist(), orientation='horizontal',shrink=0.5,label=mosaic_lst_label[x])
-
 
 		fig.savefig(RESULTS_FOLDER+mosaic_lst_name[x]+'_mosaic.'+EXT_FIG,dpi=DPI_FIG)
 

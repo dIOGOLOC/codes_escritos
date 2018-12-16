@@ -43,7 +43,7 @@ from parameters_py.mgconfig import (
 					LLCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLON_LARGE,URCRNRLAT_LARGE,
 					LLCRNRLON_SMALL,URCRNRLON_SMALL,LLCRNRLAT_SMALL,URCRNRLAT_SMALL,
 					PROJECT_LAT,PROJECT_LON,GRID_PP_MULT,BOUNDARY_1_SHP,BOUNDARY_2_SHP,
-					EXT_FIG,DPI_FIG,DIST_GRID_PP_MED,DIST_GRID_PP,NUMBER_STA_PER_BIN,OUTPUT_DIR,
+					EXT_FIG,DPI_FIG,FRESNEL_ZONE_RADIUS,DIST_GRID_PP,NUMBER_STA_PER_BIN,OUTPUT_DIR,
 					DEPTH_RANGE,BOOTSTRAP_INTERATOR,BOOTSTRAP_DEPTH_ESTIMATION,GAMMA,COLORMAP_STD,COLORMAP_VEL
 				   )
 
@@ -340,7 +340,7 @@ grid_sel_min_data = []
 for i,j in enumerate(dist_pp_grid_min):
     vect_j = np.array(j) 
     indices = vect_j.argsort()
-    if vect_j[indices[NUMBER_PP_PER_BIN]] < DIST_GRID_PP:
+    if vect_j[indices[NUMBER_PP_PER_BIN]] < FRESNEL_ZONE_RADIUS:
         grid_sel_min.append((grdx[i],grdy[i]))
 
 
@@ -349,7 +349,7 @@ grid_sel_med_data = []
 for i,j in enumerate(dist_pp_grid_med):
     vect_j = np.array(j) 
     indices = vect_j.argsort()
-    if vect_j[indices[NUMBER_PP_PER_BIN]] < DIST_GRID_PP:
+    if vect_j[indices[NUMBER_PP_PER_BIN]] < FRESNEL_ZONE_RADIUS:
         grid_sel_med.append((grdx[i],grdy[i]))
 
         
@@ -359,7 +359,7 @@ grid_sel_min_data = []
 for i,j in enumerate(dist_pp_grid_max):
     vect_j = np.array(j) 
     indices = vect_j.argsort()
-    if vect_j[indices[NUMBER_PP_PER_BIN]] < DIST_GRID_PP:
+    if vect_j[indices[NUMBER_PP_PER_BIN]] < FRESNEL_ZONE_RADIUS:
         grid_sel_max.append((grdx[i],grdy[i]))
 
 
@@ -413,10 +413,10 @@ l3, = ax.plot(pp_med_long,pp_med_lat, '.',markersize=5,markeredgecolor='k',marke
 l4, = ax.plot(pp_2_long,pp_2_lat, '.',markersize=5,markeredgecolor='k',markerfacecolor='r',transform=ccrs.Geodetic())
 
 for i,j in enumerate(grdx):
-	retangulo = Rectangle(xy=(grdx[i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2, grdy[i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),color='None', ec='k',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
-	ax.add_patch(retangulo)
+	circulo = Circle(radius=DIST_GRID_PP,xy=(grdx[i], grdy[i]),color='None', ec='k',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+	ax.add_patch(circulo)
 ax.set_title('Pds Piercing Points',ha='center',va='top',y=1.08)
-ax.legend([l1,l2,l3,l4,retangulo],['Stations','Piercing Points 410 km','Piercing Points 530 km','Piercing Points 660 km','Selected Grid'],scatterpoints=1, frameon=True,labelspacing=1, loc='lower right',facecolor='w',fontsize='smaller')
+ax.legend([l1,l2,l3,l4,circulo],['Stations','Piercing Points 410 km','Piercing Points 530 km','Piercing Points 660 km','Selected Grid'],scatterpoints=1, frameon=True,labelspacing=1, loc='lower right',facecolor='w',fontsize='smaller')
 
 reader_1_SHP = Reader(BOUNDARY_1_SHP)
 shape_1_SHP = list(reader_1_SHP.geometries())
@@ -438,10 +438,10 @@ l2, = ax1.plot(pp_1_long_Ppds,pp_1_lat_Ppds, '.',markersize=5,markeredgecolor='k
 l3, = ax1.plot(pp_med_long_Ppds,pp_med_lat_Ppds, '.',markersize=5,markeredgecolor='k',markerfacecolor='g',transform=ccrs.Geodetic())
 l4, = ax1.plot(pp_2_long_Ppds,pp_2_lat_Ppds, '.',markersize=5,markeredgecolor='k',markerfacecolor='r',transform=ccrs.Geodetic())
 for i,j in enumerate(grdx):
-	retangulo = Rectangle(xy=(grdx[i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2, grdy[i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),color='None', ec='k',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
-	ax1.add_patch(retangulo)
+	circulo = Circle(radius=DIST_GRID_PP,xy=(grdx[i], grdy[i]),color='None', ec='k',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+	ax1.add_patch(circulo)
 ax1.set_title('Ppds Piercing Points',ha='center',va='top',y=1.08)
-ax1.legend([l1,l2,l3,l4,retangulo],['Stations','Piercing Points 410 km','Piercing Points 530 km','Piercing Points 660 km','Selected Grid'],scatterpoints=1, frameon=True,labelspacing=1, loc='lower right',facecolor='w',fontsize='smaller')
+ax1.legend([l1,l2,l3,l4,circulo],['Stations','Piercing Points 410 km','Piercing Points 530 km','Piercing Points 660 km','Selected Grid'],scatterpoints=1, frameon=True,labelspacing=1, loc='lower right',facecolor='w',fontsize='smaller')
 
 reader_1_SHP = Reader(BOUNDARY_1_SHP)
 shape_1_SHP = list(reader_1_SHP.geometries())
@@ -454,8 +454,8 @@ plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
 ax1.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 ax1.gridlines(draw_labels=True)
 
-
-#plt.show()
+print('GRID Check!')
+plt.show()
 
 PP_FIGURE = OUTPUT_DIR+'MODEL_INTER_DEPTH_'+str(INTER_DEPTH)+'/'+'Figures'+'/'
 
@@ -467,6 +467,7 @@ print(RESULTS_FOLDER)
 print('\n')
 
 fig_PP_Pds_Ppds.savefig(RESULTS_FOLDER+'PP_Pds_Ppds.'+EXT_FIG,dpi=DPI_FIG)
+
 
 ###################################################################################################################
 
@@ -483,11 +484,11 @@ l1, = ax.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerface
 l3, = ax.plot(pp_med_long_Ppds,pp_med_lat_Ppds, 'X',markersize=5,markeredgecolor='k',markerfacecolor='k',alpha=0.5,transform=ccrs.Geodetic())
 
 for i,j in enumerate(grdx):
-	retangulo = Rectangle(xy=(grdx[i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2, grdy[i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),color='None', ec='k',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
-	ax.add_patch(retangulo)
-for i,j in enumerate(pp_med_long_Ppds):
-	circulo = Circle(radius=DIST_GRID_PP_MED, xy=(pp_med_long_Ppds[i],pp_med_lat_Ppds[i]), color='gray',linewidth=0,alpha=0.2,transform=ccrs.Geodetic(),zorder=1)
+	circulo = Circle(radius=DIST_GRID_PP,xy=(grdx[i], grdy[i]),color='None', ec='k',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
 	ax.add_patch(circulo)
+for i,j in enumerate(pp_med_long_Ppds):
+	circulo_fresnel = Circle(radius=FRESNEL_ZONE_RADIUS, xy=(pp_med_long_Ppds[i],pp_med_lat_Ppds[i]), color='gray',linewidth=0,alpha=0.2,transform=ccrs.Geodetic(),zorder=1)
+	ax.add_patch(circulo_fresnel)
 
 reader_1_SHP = Reader(BOUNDARY_1_SHP)
 shape_1_SHP = list(reader_1_SHP.geometries())
@@ -500,7 +501,7 @@ plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
 ax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 
 ax.set_title('Pds Piercing Points',ha='center',va='top',y=1.08)
-ax.legend([l1,l3,retangulo,circulo],['Stations','Piercing Points 530 km','Selected Grid','Piercing Points Fresnel Zone'],scatterpoints=1, frameon=True,labelspacing=1, loc='lower right',facecolor='w',fontsize='smaller')
+ax.legend([l1,l3,circulo,circulo_fresnel],['Stations','Piercing Points 530 km','Selected Grid','Piercing Points Fresnel Zone'],scatterpoints=1, frameon=True,labelspacing=1, loc='lower right',facecolor='w',fontsize='smaller')
 ax.gridlines(draw_labels=True)
 
 #plt.show()
@@ -519,11 +520,11 @@ ax.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
 l1, = ax.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.Geodetic())
 l3, = ax.plot(pp_med_long_Ppds,pp_med_lat_Ppds, 'X',markersize=5,markeredgecolor='k',markerfacecolor='k',alpha=0.5,transform=ccrs.Geodetic())
 for i,j in enumerate(grdx):
-	retangulo = Rectangle(xy=(grdx[i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2, grdy[i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),color='None', ec='k',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
-	ax.add_patch(retangulo)
-for i,j in enumerate(pp_med_long_Ppds):
-	circulo = Circle(radius=DIST_GRID_PP_MED, xy=(pp_med_long_Ppds[i],pp_med_lat_Ppds[i]), color='gray',linewidth=0,alpha=0.2,transform=ccrs.Geodetic(),zorder=1)
+	circulo = Circle(radius=DIST_GRID_PP,xy=(grdx[i], grdy[i]),color='None', ec='k',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
 	ax.add_patch(circulo)
+for i,j in enumerate(pp_med_long_Ppds):
+	circulo_fresnel = Circle(radius=FRESNEL_ZONE_RADIUS, xy=(pp_med_long_Ppds[i],pp_med_lat_Ppds[i]), color='gray',linewidth=0,alpha=0.2,transform=ccrs.Geodetic(),zorder=1)
+	ax.add_patch(circulo_fresnel)
 
 reader_1_SHP = Reader(BOUNDARY_1_SHP)
 shape_1_SHP = list(reader_1_SHP.geometries())
@@ -537,7 +538,7 @@ ax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 ax.gridlines(draw_labels=True)
 
 ax.set_title('Ppds Piercing Points',ha='center',va='top',y=1.08)
-ax.legend([l1,l3,retangulo,circulo],['Stations','Piercing Points 530 km','Selected Grid','Piercing Points First Fresnel Zone'],scatterpoints=1, frameon=True,labelspacing=1, loc='lower right',facecolor='w',fontsize='smaller')
+ax.legend([l1,l3,circulo,circulo_fresnel],['Stations','Piercing Points 530 km','Selected Grid','Piercing Points Fresnel Zone'],scatterpoints=1, frameon=True,labelspacing=1, loc='lower right',facecolor='w',fontsize='smaller')
 
 #plt.show()
 
@@ -641,13 +642,13 @@ RF_amplitude_depth_raw_Ppds = [[]]*len(grid_sel_x)
 RF_STA_number_raw = [[]]*len(grid_sel_x)
 
 for i,j in enumerate(grid_sel_x):
-	RF_data_raw_Pds[i] = [RF_amplitude_Pds[k] for k,l in enumerate(dados_grid_lat) if np.sqrt((j - dados_grid_lon[k])**2 + (grid_sel_y[i] - l)**2) < DIST_GRID_PP_MED]
-	RF_amplitude_depth_raw_Pds[i] = [RF_amplitude_depth_Pds[k] for k,l in enumerate(dados_grid_lat) if np.sqrt((j - dados_grid_lon[k])**2 + (grid_sel_y[i] - l)**2) < DIST_GRID_PP_MED]
+	RF_data_raw_Pds[i] = [RF_amplitude_Pds[k] for k,l in enumerate(dados_grid_lat) if np.sqrt((j - dados_grid_lon[k])**2 + (grid_sel_y[i] - l)**2) <= FRESNEL_ZONE_RADIUS]
+	RF_amplitude_depth_raw_Pds[i] = [RF_amplitude_depth_Pds[k] for k,l in enumerate(dados_grid_lat) if np.sqrt((j - dados_grid_lon[k])**2 + (grid_sel_y[i] - l)**2) <= FRESNEL_ZONE_RADIUS]
 
-	RF_data_raw_Ppds[i] = [RF_amplitude_Ppds[k] for k,l in enumerate(dados_grid_lat) if np.sqrt((j - dados_grid_lon[k])**2 + (grid_sel_y[i] - l)**2) < DIST_GRID_PP_MED]
-	RF_amplitude_depth_raw_Ppds[i] = [RF_amplitude_depth_Ppds[k] for k,l in enumerate(dados_grid_lat) if np.sqrt((j - dados_grid_lon[k])**2 + (grid_sel_y[i] - l)**2) < DIST_GRID_PP_MED]
+	RF_data_raw_Ppds[i] = [RF_amplitude_Ppds[k] for k,l in enumerate(dados_grid_lat) if np.sqrt((j - dados_grid_lon[k])**2 + (grid_sel_y[i] - l)**2) <= FRESNEL_ZONE_RADIUS]
+	RF_amplitude_depth_raw_Ppds[i] = [RF_amplitude_depth_Ppds[k] for k,l in enumerate(dados_grid_lat) if np.sqrt((j - dados_grid_lon[k])**2 + (grid_sel_y[i] - l)**2) <= FRESNEL_ZONE_RADIUS]
 
-	RF_STA_number_raw[i] = len(set([(sta_long[k],sta_lat[k]) for k,l in enumerate(dados_grid_lat) if np.sqrt((j - dados_grid_lon[k])**2 + (grid_sel_y[i] - l)**2) < DIST_GRID_PP_MED]))
+	RF_STA_number_raw[i] = len(set([(sta_long[k],sta_lat[k]) for k,l in enumerate(dados_grid_lat) if np.sqrt((j - dados_grid_lon[k])**2 + (grid_sel_y[i] - l)**2) <= FRESNEL_ZONE_RADIUS]))
 
 ###################################################################################################################
 
@@ -922,6 +923,9 @@ print('Allocating results and Stacking Pds and Ppds data')
 RF_lat = []
 RF_lon = []
 
+RF_lat_true = []
+RF_lon_true = []
+
 RF_DEPTH_mean_1_Pds = []
 RF_DEPTH_std_1_Pds = []
 RF_DEPTH_mean_1_Ppds = []
@@ -1001,8 +1005,8 @@ for i,j in enumerate(RF_data_raw_Pds):
 		RF_stacking_Ppds.append(stacking_Ppds_data)
 		len_RF_stacking_Ppds.append(len(RF_data_raw_Ppds[i]))
 
-		RF_lat.append(RF_BOOTSTRAP_ESTIMATION_Pds[0][i]['lat'])
-		RF_lon.append(RF_BOOTSTRAP_ESTIMATION_Pds[0][i]['lon'])
+		RF_lat.append(grid_sel_y[i])
+		RF_lon.append(grid_sel_x[i])
 
 		flat_DATA_list_Pds = [RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['RF_DATA'] for _k in range(BOOTSTRAP_INTERATOR)]
 		flat_DATA_list_Ppds = [RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['RF_DATA'] for _k in range(BOOTSTRAP_INTERATOR)]
@@ -1128,7 +1132,9 @@ for i,j in enumerate(RF_data_raw_Pds):
 
 
 		if amp_d410Pds >= MIN_AMP_PDS_PPDS and amp_d660Pds >= MIN_AMP_PDS_PPDS and amp_d410Ppds >= MIN_AMP_PDS_PPDS and amp_d660Ppds >= MIN_AMP_PDS_PPDS:
-			
+			RF_lat_true.append(grid_sel_y[i])
+			RF_lon_true.append(grid_sel_x[i])
+
 			flat_delta_1_Vp_mean = [float(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['delta_Vp_410_mean']) for _k in range(BOOTSTRAP_INTERATOR)]
 			delta_1_Vp_mean.append(np.nanmean(flat_delta_1_Vp_mean))
 			delta_1_Vp_std.append(np.nanstd(flat_delta_1_Vp_mean))
@@ -1187,6 +1193,9 @@ for i,j in enumerate(RF_data_raw_Pds):
 			
 		else: 
 
+			RF_lat_true.append(np.nan)
+			RF_lon_true.append(np.nan)
+
 			delta_1_Vp_mean.append(np.nan)
 			delta_1_Vp_std.append(np.nan)
 			delta_1_Vs_mean.append(np.nan)
@@ -1235,11 +1244,11 @@ ax.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
 l1, = ax.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.Geodetic())
 l3, = ax.plot(pp_med_long_Ppds,pp_med_lat_Ppds, 'X',markersize=5,markeredgecolor='k',markerfacecolor='k',alpha=0.5,transform=ccrs.Geodetic())
 for i,j in enumerate(RF_lon):
-	retangulo = Rectangle(xy=(RF_lon[i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2, RF_lat[i]-(DIST_GRID_PP_MED/(GRID_PP_MULT/2))/2),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),color='None', ec='k',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
-	ax.add_patch(retangulo)
-for i,j in enumerate(pp_med_long_Ppds):
-	circulo = Circle(radius=DIST_GRID_PP_MED, xy=(pp_med_long_Ppds[i],pp_med_lat_Ppds[i]), color='gray',linewidth=0,alpha=0.2,transform=ccrs.Geodetic(),zorder=1)
+	circulo = Circle(radius=DIST_GRID_PP,xy=(RF_lon[i], RF_lat[i]),color='None', ec='k',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
 	ax.add_patch(circulo)
+for i,j in enumerate(pp_med_long_Ppds):
+	circulo_fresnel = Circle(radius=FRESNEL_ZONE_RADIUS, xy=(pp_med_long_Ppds[i],pp_med_lat_Ppds[i]), color='gray',linewidth=0,alpha=0.2,transform=ccrs.Geodetic(),zorder=1)
+	ax.add_patch(circulo_fresnel)
 
 reader_1_SHP = Reader(BOUNDARY_1_SHP)
 shape_1_SHP = list(reader_1_SHP.geometries())
@@ -1253,7 +1262,7 @@ ax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 ax.gridlines(draw_labels=True)
 
 #ax.set_title('Figure: Final Grid and Ppds Average Piercing Points',ha='center',va='top',y=1.08)
-ax.legend([l1,l3,retangulo,circulo],['Stations','Piercing Points 530 km','Selected Grid','Piercing Points Fresnel Zone'],scatterpoints=1, frameon=True,labelspacing=1, loc='lower right',facecolor='w',fontsize='smaller')
+ax.legend([l1,l3,circulo,circulo_fresnel],['Stations','Piercing Points 530 km','Selected Grid','Piercing Points Fresnel Zone'],scatterpoints=1, frameon=True,labelspacing=1, loc='lower right',facecolor='w',fontsize='smaller')
 
 #plt.show()
 
@@ -1270,6 +1279,7 @@ os.makedirs(PP_SELEC_DIR,exist_ok=True)
 
 SELECTED_BINNED_DATA_dic = {
 	'lat':[],'lon':[],
+	'lat_true':[],'lon_true':[],
 	'len_Pds':[],'len_Ppds':[],
 	'true_mean_1_Pds':[],'true_std_1_Pds':[],
 	'true_mean_2_Pds':[],'true_std_2_Pds':[],
@@ -1311,6 +1321,9 @@ for i,j in enumerate(RF_BOOTSTRAP_DATA_Pds):
 
 	SELECTED_BINNED_DATA_dic['lat'].append(float("%.4f" % round(RF_lat[i],4)))
 	SELECTED_BINNED_DATA_dic['lon'].append(float("%.4f" % round(RF_lon[i],4)))
+
+	SELECTED_BINNED_DATA_dic['lat_true'].append(float("%.4f" % round(RF_lat_true[i],4)))
+	SELECTED_BINNED_DATA_dic['lon_true'].append(float("%.4f" % round(RF_lon_true[i],4)))
 
 	SELECTED_BINNED_DATA_dic['len_Pds'].append(len_RF_stacking_Pds[i])
 	SELECTED_BINNED_DATA_dic['len_Ppds'].append(len_RF_stacking_Ppds[i])

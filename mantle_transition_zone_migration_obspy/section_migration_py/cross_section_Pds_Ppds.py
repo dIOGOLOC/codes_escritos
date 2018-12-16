@@ -39,7 +39,7 @@ from parameters_py.mgconfig import (
 					LLCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLON_LARGE,URCRNRLAT_LARGE,LLCRNRLON_SMALL,
 					URCRNRLON_SMALL,LLCRNRLAT_SMALL,URCRNRLAT_SMALL,PROJECT_LAT,PROJECT_LON,GRID_PP_MULT,
 					BOUNDARY_1_SHP,BOUNDARY_2_SHP,TECTO_SHP,COLORMAP_VEL,COLORMAP_STD,OUTPUT_DIR,
-					EXT_FIG,DPI_FIG,DIST_GRID_PP_MED,DIST_GRID_PP,NUMBER_STA_PER_BIN,NUMBER_PP_PER_BIN,
+					EXT_FIG,DPI_FIG,FRESNEL_ZONE_RADIUS,DIST_GRID_PP,NUMBER_STA_PER_BIN,NUMBER_PP_PER_BIN,
 					DEPTH_RANGE,BOOTSTRAP_INTERATOR,BOOTSTRAP_DEPTH_ESTIMATION,GAMMA,CROSS_SECTION_AXIS
 				   )
 
@@ -84,53 +84,68 @@ filename = RESULTS_FOLDER_BINS+'SELECTED_BINNED.json'
 
 SELECTED_BINNED_DATA_dic = json.load(open(filename))
 
+#Lat/Lon lists:
+
 lats = SELECTED_BINNED_DATA_dic['lat']
 lons = SELECTED_BINNED_DATA_dic['lon']
+
+lats_true = SELECTED_BINNED_DATA_dic['lat_true']
+lons_true = SELECTED_BINNED_DATA_dic['lon_true']
+
+#Receiver Functions:
 
 RF_number = SELECTED_BINNED_DATA_dic['len_Pds']
 
 RF_stacking_Pds = SELECTED_BINNED_DATA_dic['data_Pds']
 RF_stacking_Ppds = SELECTED_BINNED_DATA_dic['data_Ppds']
 
+#Estimates P410s:
+
 RF_DEPTH_mean_1_Pds = SELECTED_BINNED_DATA_dic['mean_1_Pds']
 RF_DEPTH_std_1_Pds = SELECTED_BINNED_DATA_dic['std_1_Pds']
+
+#Estimates P660s:
+
 RF_DEPTH_mean_2_Pds = SELECTED_BINNED_DATA_dic['mean_2_Pds']
 RF_DEPTH_std_2_Pds = SELECTED_BINNED_DATA_dic['std_2_Pds']
 
+#Estimates Pp410s:
+
 RF_DEPTH_mean_1_Ppds = SELECTED_BINNED_DATA_dic['mean_1_Ppds']
 RF_DEPTH_std_1_Ppds = SELECTED_BINNED_DATA_dic['std_1_Ppds']
+
+#Estimates Pp660s:
+
 RF_DEPTH_mean_2_Ppds = SELECTED_BINNED_DATA_dic['mean_2_Ppds']
 RF_DEPTH_std_2_Ppds = SELECTED_BINNED_DATA_dic['std_2_Ppds']
 
+#Estimates MTZ Pds:
+
 RF_DEPTH_mtz_thickness_Pds = SELECTED_BINNED_DATA_dic['mtz_thickness_Pds']
+RF_DEPTH_mtz_thickness_Pds_std = SELECTED_BINNED_DATA_dic['mtz_thickness_Pds_std']
+
+#Estimates MTZ Ppds:
 
 RF_DEPTH_mtz_thickness_Ppds = SELECTED_BINNED_DATA_dic['mtz_thickness_Ppds']
+RF_DEPTH_mtz_thickness_Ppds_std = SELECTED_BINNED_DATA_dic['mtz_thickness_Ppds_std']
 
-RF_DEPTH_true_thickness_MTZ_Pds = SELECTED_BINNED_DATA_dic['true_thickness_MTZ_Pds']
-RF_DEPTH_true_thickness_MTZ_Ppds = SELECTED_BINNED_DATA_dic['true_thickness_MTZ_Ppds']
+#Estimates True MTZ:
 
-RF_DEPTH_mean_1_true_Pds = SELECTED_BINNED_DATA_dic['true_mean_1_Pds']
-RF_DEPTH_std_1_true_Pds = SELECTED_BINNED_DATA_dic['true_std_1_Pds']
+RF_DEPTH_true_thickness_MTZ = SELECTED_BINNED_DATA_dic['true_thickness_MTZ_Pds']
+RF_DEPTH_true_thickness_MTZ_std = SELECTED_BINNED_DATA_dic['true_thickness_MTZ_Pds_std']
 
-RF_DEPTH_mean_2_true_Pds = SELECTED_BINNED_DATA_dic['true_mean_2_Pds']
-RF_DEPTH_std_2_true_Pds = SELECTED_BINNED_DATA_dic['true_std_2_Pds']
+#Estimates True Depth 410:
+
+RF_DEPTH_mean_1_true = SELECTED_BINNED_DATA_dic['true_mean_1_Pds']
+RF_DEPTH_std_1_true = SELECTED_BINNED_DATA_dic['true_std_1_Pds']
+
+#Estimates True Depth 660:
+
+RF_DEPTH_mean_2_true = SELECTED_BINNED_DATA_dic['true_mean_2_Pds']
+RF_DEPTH_std_2_true = SELECTED_BINNED_DATA_dic['true_std_2_Pds']
 
 
-RF_DEPTH_mean_1_true_Ppds = SELECTED_BINNED_DATA_dic['true_mean_1_Ppds']
-RF_DEPTH_std_1_true_Ppds = SELECTED_BINNED_DATA_dic['true_std_1_Ppds']
-
-RF_DEPTH_mean_2_true_Ppds = SELECTED_BINNED_DATA_dic['true_mean_2_Ppds']
-RF_DEPTH_std_2_true_Ppds = SELECTED_BINNED_DATA_dic['true_std_2_Ppds']
-
-RF_delta_1_Vp_mean = SELECTED_BINNED_DATA_dic['delta_1_Vp_mean']
-RF_delta_1_Vp_std = SELECTED_BINNED_DATA_dic['delta_1_Vp_std']
-RF_delta_1_Vs_mean = SELECTED_BINNED_DATA_dic['delta_1_Vs_mean']
-RF_delta_1_Vs_std = SELECTED_BINNED_DATA_dic['delta_1_Vs_std']
-
-RF_delta_2_Vp_mean = SELECTED_BINNED_DATA_dic['delta_2_Vp_mean']
-RF_delta_2_Vp_std = SELECTED_BINNED_DATA_dic['delta_2_Vp_std']
-RF_delta_2_Vs_mean = SELECTED_BINNED_DATA_dic['delta_2_Vs_mean']
-RF_delta_2_Vs_std = SELECTED_BINNED_DATA_dic['delta_2_Vs_std']
+#############################################################################################################################3
 
 
 area = (LLCRNRLON_SMALL,URCRNRLON_SMALL, LLCRNRLAT_SMALL, URCRNRLAT_SMALL)
@@ -139,266 +154,261 @@ shape = (int(abs(abs(URCRNRLON_SMALL) - abs(LLCRNRLON_SMALL))*GRID_PP_MULT),int(
 
 grdx, grdy = gridder.regular(area, shape)
 
-#Creating a polygon with buffer to plot the sections:
+shape_new = (int(len(set(grdx))),int(len(set(grdy))))
 
-if min(lons) > 0:
-	min_lons = min(lons) + 1/GRID_PP_MULT
-else:
-	min_lons = min(lons) - 1/GRID_PP_MULT
-
-if min(lats) > 0:
-	min_lats = min(lats) + 1/GRID_PP_MULT
-else:
-	min_lats = min(lats) - 1/GRID_PP_MULT
-
-if max(lons) > 0:
-	max_lons = max(lons) - 1/GRID_PP_MULT
-else:
-	max_lons = max(lons) + 1/GRID_PP_MULT
-
-if max(lats) > 0:
-	max_lats = max(lats) - 1/GRID_PP_MULT
-else:
-	max_lats = max(lats) + 1/GRID_PP_MULT
-
-
-poly = Polygon([(min_lons, min_lats), (min_lons, max_lats), (max_lons, max_lats), (max_lons, min_lats)])
-
-pontos = [Point(grdx[i],grdy[i]) for i,j in enumerate(grdx)]
-
-
-grdx_poly = []
-grdy_poly = []
-for i,j in enumerate(grdx):
-	if poly.intersects(Point(grdx[i],grdy[i])):
-		grdx_poly.append(grdx[i])
-		grdy_poly.append(grdy[i])
-
-shape_new = (int(len(set(grdx_poly))),int(len(set(grdy_poly))))
-
-rows = np.array(grdx_poly).reshape(shape_new)
-cols = np.array(grdy_poly).reshape(shape_new)
+rows = np.array(grdx).reshape(shape_new)
+cols = np.array(grdy).reshape(shape_new)
 
 PP_FIGURE = OUTPUT_DIR+'MODEL_INTER_DEPTH_'+str(INTER_DEPTH)+'/'+'Figures'+'/'
 RESULTS_FOLDER = PP_FIGURE+'/'+'RESULTS_NUMBER_PP_PER_BIN_'+str(NUMBER_PP_PER_BIN)+'_NUMBER_STA_PER_BIN_'+str(NUMBER_STA_PER_BIN)+'/'
 os.makedirs(RESULTS_FOLDER,exist_ok=True)
+
 
 print('Allocating cross-section data')
 print('\n')
 
 if CROSS_SECTION_AXIS == 'x':
 
+	#Profile lat/lon
+
+	AB_lon = [[]]*len(rows[:,0])
+	AB_lat = [[]]*len(rows[:,0])
+
+	#Receiver Functions:
+
 	RF_data_profile_Pds = [[]]*len(rows[:,0])
+	RF_data_profile_Ppds = [[]]*len(rows[:,0])
+
+	#Estimates P410s:
 
 	RF_DEPTH_mean_1_profile_Pds = [[]]*len(rows[:,0])
 	RF_DEPTH_std_1_profile_Pds = [[]]*len(rows[:,0])
 
+	#Estimates P660s:
+
 	RF_DEPTH_mean_2_profile_Pds = [[]]*len(rows[:,0])
 	RF_DEPTH_std_2_profile_Pds = [[]]*len(rows[:,0])
 
-	RF_DEPTH_mean_1_true_profile_Pds = [[]]*len(rows[:,0])
-	RF_DEPTH_std_1_true_profile_Pds = [[]]*len(rows[:,0])
-
-	RF_DEPTH_mean_2_true_profile_Pds = [[]]*len(rows[:,0])
-	RF_DEPTH_std_2_true_profile_Pds = [[]]*len(rows[:,0])
-
-	RF_DEPTH_mtz_thickness_profile_Pds = [[]]*len(rows[:,0]) 
-
-	RF_DEPTH_true_thickness_MTZ_profile_Pds = [[]]*len(rows[:,0]) 
-
-	RF_delta_1_Vp_mean_profile = [[]]*len(rows[:,0])
-	RF_delta_1_Vp_std_profile = [[]]*len(rows[:,0])
-
-	RF_delta_1_Vs_mean_profile = [[]]*len(rows[:,0])
-	RF_delta_1_Vs_std_profile = [[]]*len(rows[:,0])
-
-	RF_delta_2_Vp_mean_profile = [[]]*len(rows[:,0])
-	RF_delta_2_Vp_std_profile = [[]]*len(rows[:,0])
-
-	RF_delta_2_Vs_mean_profile = [[]]*len(rows[:,0])
-	RF_delta_2_Vs_std_profile = [[]]*len(rows[:,0])
-
-
-	RF_data_profile_Ppds = [[]]*len(rows[:,0])
+	#Estimates Pp410s:
 
 	RF_DEPTH_mean_1_profile_Ppds = [[]]*len(rows[:,0])
 	RF_DEPTH_std_1_profile_Ppds = [[]]*len(rows[:,0])
 
+	#Estimates Pp660s:
+
 	RF_DEPTH_mean_2_profile_Ppds = [[]]*len(rows[:,0])
 	RF_DEPTH_std_2_profile_Ppds = [[]]*len(rows[:,0])
 
-	RF_DEPTH_mean_1_true_profile_Ppds = [[]]*len(rows[:,0])
-	RF_DEPTH_mean_2_true_profile_Ppds = [[]]*len(rows[:,0])
+
+	#Estimates MTZ Pds:
+
+	RF_DEPTH_mtz_thickness_profile_Pds = [[]]*len(rows[:,0]) 
+	RF_DEPTH_mtz_thickness_profile_Pds_std = [[]]*len(rows[:,0]) 
+
+	#Estimates MTZ Ppds:
 
 	RF_DEPTH_mtz_thickness_profile_Ppds = [[]]*len(rows[:,0])
+	RF_DEPTH_mtz_thickness_profile_Ppds_std = [[]]*len(rows[:,0])
 
-	RF_DEPTH_true_thickness_MTZ_profile_Ppds = [[]]*len(rows[:,0])
+	#Estimates True Depth 410:
 
-	AB_lon = [[]]*len(rows[:,0])
+	RF_DEPTH_mean_1_true_profile = [[]]*len(rows[:,0])
+	RF_DEPTH_std_1_true_profile = [[]]*len(rows[:,0])
 
-	AB_lat = [[]]*len(rows[:,0])
+	#Estimates True Depth 660:
+
+	RF_DEPTH_mean_2_true_profile = [[]]*len(rows[:,0])
+	RF_DEPTH_std_2_true_profile = [[]]*len(rows[:,0])
+
+	#Estimates True MTZ:
+
+	RF_DEPTH_true_thickness_MTZ_profile = [[]]*len(rows[:,0]) 
+	RF_DEPTH_true_thickness_MTZ_profile_std = [[]]*len(rows[:,0]) 
 
 	for i,j in enumerate(rows[:,0]):
 
 		lat_lon = [(lons[k],lats[k]) for k,l in enumerate(lats)]
+		lat_lon_true = [(lons_true[k],lats_true[k]) for k,l in enumerate(lat_true)]
 		grid_column = [(float("%.4f" % round(rows[i,:][k],4)),float("%.4f" % round(cols[i,:][k],4))) for k,l in enumerate(rows[i,:])]
 
-		AB_lon[i] = [rows[i,:][k] for k,l in enumerate(rows[i,:])]
+		#Profile lat/lon
 
+		AB_lon[i] = [rows[i,:][k] for k,l in enumerate(rows[i,:])]
 		AB_lat[i] = [cols[i,:][k] for k,l in enumerate(rows[i,:])]
 
-		RF_data_profile_Pds[i] = [RF_stacking_Pds[k] if l in lat_lon else np.zeros_like(RF_stacking_Pds[k]) for k,l in enumerate(grid_column)]
 
-		RF_DEPTH_mean_1_profile_Pds[i] = [RF_DEPTH_mean_1_Pds[k] if l in lat_lon else 0 for k,l in enumerate(grid_column)]
-		RF_DEPTH_std_1_profile_Pds[i] = [RF_DEPTH_std_1_Pds[k]  if l in lat_lon else 0 for k,l in enumerate(grid_column)]
+		#Receiver Functions:
 
-		RF_DEPTH_mean_2_profile_Pds[i] = [RF_DEPTH_mean_2_Pds[k] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
-		RF_DEPTH_std_2_profile_Pds[i] = [RF_DEPTH_std_2_Pds[k] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
+		RF_data_profile_Pds[i] = [RF_stacking_Pds[lat_lon.index(l)] if l in lat_lon else np.zeros_like(RF_stacking_Pds[k]) for k,l in enumerate(grid_column)]
+		RF_data_profile_Ppds[i] = [RF_stacking_Ppds[lat_lon.index(l)] if l in lat_lon else np.zeros_like(RF_stacking_Ppds[k]) for k,l in enumerate(grid_column)]
 
-		RF_DEPTH_mean_1_true_profile_Pds[i] = [RF_DEPTH_mean_1_true_Pds[k] if l in lat_lon else 0 for k,l in enumerate(grid_column)]
-		RF_DEPTH_std_1_true_profile_Pds[i] = [RF_DEPTH_std_1_true_Pds[k] if l in lat_lon else 0 for k,l in enumerate(grid_column)]
+		#Estimates P410s:
 
-		RF_DEPTH_mean_2_true_profile_Pds[i] = [RF_DEPTH_mean_2_true_Pds[k] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
-		RF_DEPTH_std_2_true_profile_Pds[i] = [RF_DEPTH_std_2_true_Pds[k] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
+		RF_DEPTH_mean_1_profile_Pds[i] = [RF_DEPTH_mean_1_Pds[lat_lon.index(l)] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
+		RF_DEPTH_std_1_profile_Pds[i] = [RF_DEPTH_std_1_Pds[lat_lon.index(l)] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
 
-		RF_DEPTH_mtz_thickness_profile_Pds[i] = [RF_DEPTH_mtz_thickness_Pds[k] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
+		#Estimates P660s:
 
-		RF_DEPTH_true_thickness_MTZ_profile_Pds[i] = [RF_DEPTH_true_thickness_MTZ_Pds[k] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
+		RF_DEPTH_mean_2_profile_Pds[i] = [RF_DEPTH_mean_2_Pds[lat_lon.index(l)] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
+		RF_DEPTH_std_2_profile_Pds[i] = [RF_DEPTH_std_2_Pds[lat_lon.index(l)] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
 
-		RF_delta_1_Vp_mean_profile[i] = [RF_delta_1_Vp_mean[k] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
-		RF_delta_1_Vp_std_profile[i] = [RF_delta_1_Vp_std[k] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
+		#Estimates Pp410s:
 
-		RF_delta_1_Vs_mean_profile[i] = [RF_delta_1_Vs_mean[k] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
-		RF_delta_1_Vs_std_profile[i] = [RF_delta_1_Vs_std[k] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
+		RF_DEPTH_mean_1_profile_Ppds[i] = [RF_DEPTH_mean_1_Ppds[lat_lon.index(l)] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
+		RF_DEPTH_std_1_profile_Ppds[i] = [RF_DEPTH_std_1_Ppds[lat_lon.index(l)] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
 
-		RF_delta_2_Vp_mean_profile[i] = [RF_delta_2_Vp_mean[k] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
-		RF_delta_2_Vp_std_profile[i] = [RF_delta_2_Vp_std[k] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
+		#Estimates Pp660s:
 
-		RF_delta_2_Vs_mean_profile[i] = [RF_delta_2_Vs_mean[k] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
-		RF_delta_2_Vs_std_profile[i] = [RF_delta_2_Vs_std[k]  if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
+		RF_DEPTH_mean_2_profile_Ppds[i] = [RF_DEPTH_mean_2_Ppds[lat_lon.index(l)] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
+		RF_DEPTH_std_2_profile_Ppds[i] = [RF_DEPTH_std_2_Ppds[lat_lon.index(l)] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
 
-		RF_data_profile_Ppds[i] = [RF_stacking_Ppds[k] if l in lat_lon else np.zeros_like(RF_stacking_Ppds[k]) for k,l in enumerate(grid_column)]
+		#Estimates MTZ Pds:
 
-		RF_DEPTH_mean_1_profile_Ppds[i] = [RF_DEPTH_mean_1_Ppds[k] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
-		RF_DEPTH_std_1_profile_Ppds[i] = [RF_DEPTH_std_1_Ppds[k] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
+		RF_DEPTH_mtz_thickness_profile_Pds[i] = [RF_DEPTH_mtz_thickness_Pds[lat_lon.index(l)] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
+		RF_DEPTH_mtz_thickness_profile_Pds_std[i] = [RF_DEPTH_mtz_thickness_Pds_std[lat_lon.index(l)] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
 
-		RF_DEPTH_mean_2_profile_Ppds[i] = [RF_DEPTH_mean_2_Ppds[k] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
-		RF_DEPTH_std_2_profile_Ppds[i] = [RF_DEPTH_std_2_Ppds[k] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
+		#Estimates MTZ Ppds:
 
-		RF_DEPTH_mean_1_true_profile_Ppds[i] = [RF_DEPTH_mean_1_true_Ppds[k] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
-		RF_DEPTH_mean_2_true_profile_Ppds[i] = [RF_DEPTH_mean_2_true_Ppds[k] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
+		RF_DEPTH_mtz_thickness_profile_Ppds[i] = [RF_DEPTH_mtz_thickness_Ppds[lat_lon.index(l)] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
+		RF_DEPTH_mtz_thickness_profile_Ppds_std[i] = [RF_DEPTH_mtz_thickness_Ppds_std[lat_lon.index(l)] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
 
-		RF_DEPTH_mtz_thickness_profile_Ppds[i] = [RF_DEPTH_mtz_thickness_Ppds[k] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
+		#Estimates True Depth 410:
 
-		RF_DEPTH_true_thickness_MTZ_profile_Ppds[i] = [RF_DEPTH_true_thickness_MTZ_Ppds[k] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
+		RF_DEPTH_mean_1_true_profile[i] = [RF_DEPTH_mean_1_true[lat_lon.index(l)] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
+		RF_DEPTH_std_1_true_profile[i] = [RF_DEPTH_std_1_true[lat_lon.index(l)] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
+
+		#Estimates True Depth 660:
+
+		RF_DEPTH_mean_2_true_profile[i] = [RF_DEPTH_mean_2_true[lat_lon.index(l)] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
+		RF_DEPTH_std_2_true_profile[i] = [RF_DEPTH_std_2_true[lat_lon.index(l)] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
+
+		#Estimates True MTZ:
+
+		RF_DEPTH_true_thickness_MTZ_profile[i] = [RF_DEPTH_true_thickness_MTZ[lat_lon.index(l)] if l in lat_lon_true else np.nan for k,l in enumerate(grid_column)]
+		RF_DEPTH_true_thickness_MTZ_profile_std[i] = [RF_DEPTH_true_thickness_MTZ_std[lat_lon.index(l)] if l in lat_lon_true else np.nan for k,l in enumerate(grid_column)]
+
 
 else:
 
+	#Profile lat/lon
+
+	AB_lon = [[]]*len(rows[0,:])
+	AB_lat = [[]]*len(rows[0,:])
+
+
+	#Receiver Functions:
+
 	RF_data_profile_Pds = [[]]*len(rows[0,:])
+	RF_data_profile_Ppds = [[]]*len(rows[0,:])
+
+	#Estimates P410s:
 
 	RF_DEPTH_mean_1_profile_Pds = [[]]*len(rows[0,:])
 	RF_DEPTH_std_1_profile_Pds = [[]]*len(rows[0,:])
 
+	#Estimates P660s:
+
 	RF_DEPTH_mean_2_profile_Pds = [[]]*len(rows[0,:])
 	RF_DEPTH_std_2_profile_Pds = [[]]*len(rows[0,:])
 
-	RF_DEPTH_mean_1_true_profile_Pds = [[]]*len(rows[0,:])
-	RF_DEPTH_std_1_true_profile_Pds = [[]]*len(rows[0,:])
-
-	RF_DEPTH_mean_2_true_profile_Pds = [[]]*len(rows[0,:])
-	RF_DEPTH_std_2_true_profile_Pds = [[]]*len(rows[0,:])
-
-	RF_DEPTH_mtz_thickness_profile_Pds = [[]]*len(rows[0,:]) 
-
-	RF_DEPTH_true_thickness_MTZ_profile_Pds = [[]]*len(rows[0,:]) 
-
-	RF_delta_1_Vp_mean_profile = [[]]*len(rows[0,:])
-	RF_delta_1_Vp_std_profile = [[]]*len(rows[0,:])
-
-	RF_delta_1_Vs_mean_profile = [[]]*len(rows[0,:])
-	RF_delta_1_Vs_std_profile = [[]]*len(rows[0,:])
-
-	RF_delta_2_Vp_mean_profile = [[]]*len(rows[0,:])
-	RF_delta_2_Vp_std_profile = [[]]*len(rows[0,:])
-
-	RF_delta_2_Vs_mean_profile = [[]]*len(rows[0,:])
-	RF_delta_2_Vs_std_profile = [[]]*len(rows[0,:])
-
-
-	RF_data_profile_Ppds = [[]]*len(rows[0,:])
+	#Estimates Pp410s:
 
 	RF_DEPTH_mean_1_profile_Ppds = [[]]*len(rows[0,:])
 	RF_DEPTH_std_1_profile_Ppds = [[]]*len(rows[0,:])
 
+	#Estimates Pp660s:
+
 	RF_DEPTH_mean_2_profile_Ppds = [[]]*len(rows[0,:])
 	RF_DEPTH_std_2_profile_Ppds = [[]]*len(rows[0,:])
 
-	RF_DEPTH_mean_1_true_profile_Ppds = [[]]*len(rows[0,:])
-	RF_DEPTH_mean_2_true_profile_Ppds = [[]]*len(rows[0,:])
+
+	#Estimates MTZ Pds:
+
+	RF_DEPTH_mtz_thickness_profile_Pds = [[]]*len(rows[0,:])
+	RF_DEPTH_mtz_thickness_profile_Pds_std = [[]]*len(rows[0,:])
+
+	#Estimates MTZ Ppds:
 
 	RF_DEPTH_mtz_thickness_profile_Ppds = [[]]*len(rows[0,:])
+	RF_DEPTH_mtz_thickness_profile_Ppds_std = [[]]*len(rows[0,:])
 
-	RF_DEPTH_true_thickness_MTZ_profile_Ppds = [[]]*len(rows[0,:])
+	#Estimates True Depth 410:
 
-	AB_lon = [[]]*len(rows[0,:])
+	RF_DEPTH_mean_1_true_profile = [[]]*len(rows[0,:])
+	RF_DEPTH_std_1_true_profile = [[]]*len(rows[0,:])
 
-	AB_lat = [[]]*len(rows[0,:])
+	#Estimates True Depth 660:
+
+	RF_DEPTH_mean_2_true_profile = [[]]*len(rows[0,:])
+	RF_DEPTH_std_2_true_profile = [[]]*len(rows[0,:])
+
+	#Estimates True MTZ:
+
+	RF_DEPTH_true_thickness_MTZ_profile = [[]]*len(rows[0,:])
+	RF_DEPTH_true_thickness_MTZ_profile_std = [[]]*len(rows[0,:])
 
 	for i,j in enumerate(rows[0,:]):
 		
 		lat_lon = [(lons[k],lats[k]) for k,l in enumerate(lats)]
 		grid_column = [(float("%.4f" % round(rows[:,i][k],4)),float("%.4f" % round(cols[:,i][k],4))) for k,l in enumerate(rows[:,i])]
 
-		AB_lon[i] = [rows[:,i][k] for k,l in enumerate(rows[:,i])]
+		#Profile lat/lon
 
+		AB_lon[i] = [rows[:,i][k] for k,l in enumerate(rows[:,i])]
 		AB_lat[i] = [cols[:,i][k] for k,l in enumerate(rows[:,i])]
 
-		RF_data_profile_Pds[i] = [RF_stacking_Pds[k] if l in lat_lon else np.zeros_like(RF_stacking_Pds[k]) for k,l in enumerate(grid_column)]
+		#Receiver Functions:
 
-		RF_DEPTH_mean_1_profile_Pds[i] = [RF_DEPTH_mean_1_Pds[k] if l in lat_lon else 0 for k,l in enumerate(grid_column)]
-		RF_DEPTH_std_1_profile_Pds[i] = [RF_DEPTH_std_1_Pds[k]  if l in lat_lon else 0 for k,l in enumerate(grid_column)]
+		RF_data_profile_Pds[i] = [RF_stacking_Pds[lat_lon.index(l)] if l in lat_lon else np.zeros_like(RF_stacking_Pds[k]) for k,l in enumerate(grid_column)]
+		RF_data_profile_Ppds[i] = [RF_stacking_Ppds[lat_lon.index(l)] if l in lat_lon else np.zeros_like(RF_stacking_Ppds[k]) for k,l in enumerate(grid_column)]
 
-		RF_DEPTH_mean_2_profile_Pds[i] = [RF_DEPTH_mean_2_Pds[k] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
-		RF_DEPTH_std_2_profile_Pds[i] = [RF_DEPTH_std_2_Pds[k] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
+		#Estimates P410s:
 
-		RF_DEPTH_mean_1_true_profile_Pds[i] = [RF_DEPTH_mean_1_true_Pds[k] if l in lat_lon else 0 for k,l in enumerate(grid_column)]
-		RF_DEPTH_std_1_true_profile_Pds[i] = [RF_DEPTH_std_1_true_Pds[k] if l in lat_lon else 0 for k,l in enumerate(grid_column)]
+		RF_DEPTH_mean_1_profile_Pds[i] = [RF_DEPTH_mean_1_Pds[lat_lon.index(l)] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
+		RF_DEPTH_std_1_profile_Pds[i] = [RF_DEPTH_std_1_Pds[lat_lon.index(l)]  if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
 
-		RF_DEPTH_mean_2_true_profile_Pds[i] = [RF_DEPTH_mean_2_true_Pds[k] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
-		RF_DEPTH_std_2_true_profile_Pds[i] = [RF_DEPTH_std_2_true_Pds[k] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
+		#Estimates P660s:
 
-		RF_DEPTH_mtz_thickness_profile_Pds[i] = [RF_DEPTH_mtz_thickness_Pds[k] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
+		RF_DEPTH_mean_2_profile_Pds[i] = [RF_DEPTH_mean_2_Pds[lat_lon.index(l)] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
+		RF_DEPTH_std_2_profile_Pds[i] = [RF_DEPTH_std_2_Pds[lat_lon.index(l)] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
 
-		RF_DEPTH_true_thickness_MTZ_profile_Pds[i] = [RF_DEPTH_true_thickness_MTZ_Pds[k] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
+		#Estimates Pp410s:
 
-		RF_delta_1_Vp_mean_profile[i] = [RF_delta_1_Vp_mean[k] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
-		RF_delta_1_Vp_std_profile[i] = [RF_delta_1_Vp_std[k] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
+		RF_DEPTH_mean_1_profile_Ppds[i] = [RF_DEPTH_mean_1_Ppds[lat_lon.index(l)] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
+		RF_DEPTH_std_1_profile_Ppds[i] = [RF_DEPTH_std_1_Ppds[lat_lon.index(l)] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
 
-		RF_delta_1_Vs_mean_profile[i] = [RF_delta_1_Vs_mean[k] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
-		RF_delta_1_Vs_std_profile[i] = [RF_delta_1_Vs_std[k] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
+		#Estimates Pp660s:
 
-		RF_delta_2_Vp_mean_profile[i] = [RF_delta_2_Vp_mean[k] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
-		RF_delta_2_Vp_std_profile[i] = [RF_delta_2_Vp_std[k] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
+		RF_DEPTH_mean_2_profile_Ppds[i] = [RF_DEPTH_mean_2_Ppds[lat_lon.index(l)] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
+		RF_DEPTH_std_2_profile_Ppds[i] = [RF_DEPTH_std_2_Ppds[lat_lon.index(l)] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
 
-		RF_delta_2_Vs_mean_profile[i] = [RF_delta_2_Vs_mean[k] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
-		RF_delta_2_Vs_std_profile[i] = [RF_delta_2_Vs_std[k]  if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
+		#Estimates MTZ Pds:
 
-		RF_data_profile_Ppds[i] = [RF_stacking_Ppds[k] if l in lat_lon else np.zeros_like(RF_stacking_Ppds[k]) for k,l in enumerate(grid_column)]
+		RF_DEPTH_mtz_thickness_profile_Pds[i] = [RF_DEPTH_mtz_thickness_Pds[lat_lon.index(l)] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
+		RF_DEPTH_mtz_thickness_profile_Pds_std[i] = [RF_DEPTH_mtz_thickness_Pds_std[lat_lon.index(l)] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
 
-		RF_DEPTH_mean_1_profile_Ppds[i] = [RF_DEPTH_mean_1_Ppds[k] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
-		RF_DEPTH_std_1_profile_Ppds[i] = [RF_DEPTH_std_1_Ppds[k] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
+		#Estimates MTZ Ppds:
 
-		RF_DEPTH_mean_2_profile_Ppds[i] = [RF_DEPTH_mean_2_Ppds[k] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
-		RF_DEPTH_std_2_profile_Ppds[i] = [RF_DEPTH_std_2_Ppds[k] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
-
-		RF_DEPTH_mean_1_true_profile_Ppds[i] = [RF_DEPTH_mean_1_true_Ppds[k] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
-		RF_DEPTH_mean_2_true_profile_Ppds[i] = [RF_DEPTH_mean_2_true_Ppds[k] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
-
-		RF_DEPTH_mtz_thickness_profile_Ppds[i] = [RF_DEPTH_mtz_thickness_Ppds[k] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
-
-		RF_DEPTH_true_thickness_MTZ_profile_Ppds[i] = [RF_DEPTH_true_thickness_MTZ_Ppds[k] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
+		RF_DEPTH_mtz_thickness_profile_Ppds[i] = [RF_DEPTH_mtz_thickness_Ppds[lat_lon.index(l)] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
+		RF_DEPTH_mtz_thickness_profile_Ppds_std[i] = [RF_DEPTH_mtz_thickness_Ppds_std[lat_lon.index(l)] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
 
 
+		#Estimates True Depth 410:
+
+		RF_DEPTH_mean_1_true_profile[i] = [RF_DEPTH_mean_1_true[lat_lon.index(l)] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
+		RF_DEPTH_std_1_true_profile[i] = [RF_DEPTH_std_1_true[lat_lon.index(l)] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
+
+		#Estimates True Depth 660:
+
+		RF_DEPTH_mean_2_true_profile[i] = [RF_DEPTH_mean_2_true[lat_lon.index(l)] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
+		RF_DEPTH_std_2_true_profile[i] = [RF_DEPTH_std_2_true[lat_lon.index(l)] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
+
+		#Estimates True MTZ:
+
+		RF_DEPTH_true_thickness_MTZ_profile[i] = [RF_DEPTH_true_thickness_MTZ[lat_lon.index(l)] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
+		RF_DEPTH_true_thickness_MTZ_profile_std[i] = [RF_DEPTH_true_thickness_MTZ_std[lat_lon.index(l)] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
+
+	
 print('Plotting cross-sections according to the '+CROSS_SECTION_AXIS+' direction')
 for i,j in enumerate(RF_data_profile_Pds):
 
@@ -429,6 +439,7 @@ for i,j in enumerate(RF_data_profile_Pds):
 	map_MTZ_thickness =  fig.add_subplot(gs[0:2,0], projection=ccrs.PlateCarree())
 
 	#######################################################################
+
 	colormap = plt.get_cmap(COLORMAP_VEL)
 
 	colormap_std = plt.get_cmap(COLORMAP_STD)
@@ -441,8 +452,6 @@ for i,j in enumerate(RF_data_profile_Pds):
 	map_MTZ_thickness.set_xticks(np.arange(LLCRNRLON_LARGE,URCRNRLON_LARGE,4), crs=ccrs.PlateCarree())
 	map_MTZ_thickness.set_yticks(np.arange(LLCRNRLAT_LARGE,URCRNRLAT_LARGE,4), crs=ccrs.PlateCarree())
 	map_MTZ_thickness.tick_params(labelbottom=False,labeltop=True,labelleft=True,labelright=True)
-
-
 
 	map_MTZ_thickness.grid(True,which='major',color='gray',linewidth=1,linestyle='--')
 
@@ -462,18 +471,17 @@ for i,j in enumerate(RF_data_profile_Pds):
 	map_MTZ_thickness.add_feature(plot_shape_3_SHP, facecolor='none', edgecolor='k',linewidth=2)
 
 	norm_map_MTZ_thickness = mpl.colors.Normalize(vmin=200,vmax=300,clip=True)
-	colors_map_MTZ_thickness = colormap(norm_map_MTZ_thickness(RF_DEPTH_true_thickness_MTZ_Pds))
 
-	for t,y in enumerate(lons):
-		if math.isnan(RF_DEPTH_true_thickness_MTZ_Pds[t]) == False:
-			retangulo_410 = Rectangle(xy=(lons[t] - DIST_GRID_PP_MED/(GRID_PP_MULT/2), lats[t] - DIST_GRID_PP_MED/(GRID_PP_MULT/2)),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),fc=colors_map_MTZ_thickness[t], ec='None',transform=ccrs.Geodetic(),zorder=2)
-			map_MTZ_thickness.add_patch(retangulo_410)
+	for t,y in enumerate(lons_true):
+		if math.isnan(RF_DEPTH_true_thickness_MTZ[t]) == False:
+			circulo_410 = Circle(radius=DIST_GRID_PP,xy=(lons_true[t], lats_true[t]),color=colormap(norm_map_MTZ_thickness(RF_DEPTH_true_thickness_MTZ[t])), ec='None',transform=ccrs.Geodetic(),zorder=2)
+			map_MTZ_thickness.add_patch(circulo_410)
 		else:
 			pass
 
 	for x,c in enumerate(AB_lon[i]):
-		ret_profile = Rectangle(xy=(AB_lon[i][x] - DIST_GRID_PP_MED/(GRID_PP_MULT/2), AB_lat[i][x] - DIST_GRID_PP_MED/(GRID_PP_MULT/2)),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),fc='k',alpha=0.5,ec='None',transform=ccrs.Geodetic(),zorder=10)
-		map_MTZ_thickness.add_patch(ret_profile)
+		circulo_410_profile = Circle(radius=DIST_GRID_PP,xy=(AB_lon[i][x], AB_lat[i][x]),fc='k',alpha=0.5,ec='None',transform=ccrs.Geodetic(),zorder=10)
+		map_MTZ_thickness.add_patch(circulo_410_profile)
 
 	map_MTZ_thickness.set_title('MTZ True Thickness', y=1.1)
 
@@ -545,10 +553,10 @@ for i,j in enumerate(RF_data_profile_Pds):
 		pefil_ppds.tick_params(labelleft=True,labelright=True)
 		pefil_ppds.set_ylim(MAX_DEPTH,MIN_DEPTH)
 		if CROSS_SECTION_AXIS == 'y':
-			pefil_ppds.text(_i/factor_Ppds*0.95,820,"{0:.1f}".format(AB_lon[i][_i]),rotation=-45,fontsize=10)
+			pefil_ppds.text(_i/factor_Ppds,820,"{0:.1f}".format(AB_lon[i][_i]),rotation=-45,fontsize=10)
 			pefil_ppds.set_xlabel('Longitude ($^\circ$)',labelpad=30)
 		else:
-			pefil_ppds.text(_i/factor_Ppds*0.95,820,"{0:.1f}".format(AB_lat[i][_i]),rotation=-45,fontsize=10)
+			pefil_ppds.text(_i/factor_Ppds,820,"{0:.1f}".format(AB_lat[i][_i]),rotation=-45,fontsize=10)
 			pefil_ppds.set_xlabel('Latitude ($^\circ$)',labelpad=30)
 
 
@@ -557,10 +565,10 @@ for i,j in enumerate(RF_data_profile_Pds):
 
 	for _i, _j in enumerate(RF_data_profile_Ppds[i]):
 		apparent_410.plot(_i/factor_Ppds,RF_DEPTH_mean_1_profile_Pds[i][_i],marker='o',markerfacecolor='none',markeredgecolor='dimgray')
-		apparent_410.plot(_i/factor_Ppds,RF_DEPTH_mean_1_true_profile_Pds[i][_i],marker='s',markerfacecolor='none',markeredgecolor='k')
+		apparent_410.plot(_i/factor_Ppds,RF_DEPTH_mean_1_true_profile[i][_i],marker='s',markerfacecolor='none',markeredgecolor='k')
 
 		apparent_410.errorbar(_i/factor_Ppds,RF_DEPTH_mean_1_profile_Pds[i][_i], yerr=RF_DEPTH_std_1_profile_Pds[i][_i], ecolor='dimgray',elinewidth=1,capsize=2,capthick=1)
-		apparent_410.errorbar(_i/factor_Ppds,RF_DEPTH_mean_1_true_profile_Pds[i][_i], yerr=RF_DEPTH_std_1_true_profile_Pds[i][_i], ecolor='k',elinewidth=1,capsize=2,capthick=1)
+		apparent_410.errorbar(_i/factor_Ppds,RF_DEPTH_mean_1_true_profile[i][_i], yerr=RF_DEPTH_std_1_true_profile[i][_i], ecolor='k',elinewidth=1,capsize=2,capthick=1)
 
 		apparent_410.set_title('410 km Pds')
 		apparent_410.set_ylabel('Depth (km)')
@@ -576,12 +584,12 @@ for i,j in enumerate(RF_data_profile_Pds):
 	#### Figure True and Apparent  660 km Pds  ####
 
 
-	for _i, _j in enumerate(RF_data_profile_Ppds[i]):
+	for _i, _j in enumerate(RF_DEPTH_mean_2_profile_Pds[i]):
 		apparent_660.plot(_i/factor_Ppds,RF_DEPTH_mean_2_profile_Pds[i][_i],marker='o',markerfacecolor='none',markeredgecolor='dimgray')
-		apparent_660.plot(_i/factor_Ppds,RF_DEPTH_mean_2_true_profile_Pds[i][_i],marker='s',markerfacecolor='none',markeredgecolor='k')
+		apparent_660.plot(_i/factor_Ppds,RF_DEPTH_mean_2_true_profile[i][_i],marker='s',markerfacecolor='none',markeredgecolor='k')
 
 		apparent_660.errorbar(_i/factor_Ppds,RF_DEPTH_mean_2_profile_Pds[i][_i], yerr=RF_DEPTH_std_2_profile_Pds[i][_i], ecolor='dimgray',elinewidth=1,capsize=2,capthick=1)
-		apparent_660.errorbar(_i/factor_Ppds,RF_DEPTH_mean_2_true_profile_Pds[i][_i], yerr=RF_DEPTH_std_2_true_profile_Pds[i][_i], ecolor='k',elinewidth=1,capsize=2,capthick=1)
+		apparent_660.errorbar(_i/factor_Ppds,RF_DEPTH_mean_2_true_profile[i][_i], yerr=RF_DEPTH_std_2_true_profile[i][_i], ecolor='k',elinewidth=1,capsize=2,capthick=1)
 
 		apparent_660.set_title('660 km Pds')
 		apparent_660.set_ylim(800,600)
@@ -596,12 +604,12 @@ for i,j in enumerate(RF_data_profile_Pds):
 	#### Figure True and Apparent  410 km Ppds  ####
 
 
-	for _i, _j in enumerate(RF_data_profile_Ppds[i]):
+	for _i, _j in enumerate(RF_DEPTH_mean_2_profile_Pds[i]):
 		apparent_410_ppds.plot(_i/factor_Ppds,RF_DEPTH_mean_1_profile_Ppds[i][_i],marker='p',markerfacecolor='none',markeredgecolor='dimgray')
-		apparent_410_ppds.plot(_i/factor_Ppds,RF_DEPTH_mean_1_true_profile_Pds[i][_i],marker='s',markerfacecolor='none',markeredgecolor='k')
+		apparent_410_ppds.plot(_i/factor_Ppds,RF_DEPTH_mean_1_true_profile[i][_i],marker='s',markerfacecolor='none',markeredgecolor='k')
 
 		apparent_410_ppds.errorbar(_i/factor_Ppds,RF_DEPTH_mean_1_profile_Ppds[i][_i], yerr=RF_DEPTH_std_1_profile_Ppds[i][_i], ecolor='dimgray',elinewidth=1,capsize=2,capthick=1)
-		apparent_410_ppds.errorbar(_i/factor_Ppds,RF_DEPTH_mean_1_true_profile_Pds[i][_i], yerr=RF_DEPTH_std_1_true_profile_Pds[i][_i], ecolor='k',elinewidth=1,capsize=2,capthick=1)
+		apparent_410_ppds.errorbar(_i/factor_Ppds,RF_DEPTH_mean_1_true_profile[i][_i], yerr=RF_DEPTH_std_1_true_profile[i][_i], ecolor='k',elinewidth=1,capsize=2,capthick=1)
 
 		apparent_410_ppds.set_title('410 km Ppds')
 		apparent_410_ppds.set_ylim(500,300)
@@ -617,12 +625,12 @@ for i,j in enumerate(RF_data_profile_Pds):
 	#### Figure True and Apparent  660 km Ppds  ####
 
 
-	for _i, _j in enumerate(RF_data_profile_Ppds[i]):
+	for _i, _j in enumerate(RF_DEPTH_mean_2_profile_Pds[i]):
 		apparent_660_ppds.plot(_i/factor_Ppds,RF_DEPTH_mean_2_profile_Ppds[i][_i],marker='p',markerfacecolor='none',markeredgecolor='dimgray')
-		apparent_660_ppds.plot(_i/factor_Ppds,RF_DEPTH_mean_2_true_profile_Pds[i][_i],marker='s',markerfacecolor='none',markeredgecolor='k')
+		apparent_660_ppds.plot(_i/factor_Ppds,RF_DEPTH_mean_2_true_profile[i][_i],marker='s',markerfacecolor='none',markeredgecolor='k')
 
 		apparent_660_ppds.errorbar(_i/factor_Ppds,RF_DEPTH_mean_2_profile_Ppds[i][_i], yerr=RF_DEPTH_std_2_profile_Ppds[i][_i], ecolor='dimgray',elinewidth=1,capsize=2,capthick=1)
-		apparent_660_ppds.errorbar(_i/factor_Ppds,RF_DEPTH_mean_2_true_profile_Pds[i][_i], yerr=RF_DEPTH_std_2_true_profile_Pds[i][_i], ecolor='k',elinewidth=1,capsize=2,capthick=1)
+		apparent_660_ppds.errorbar(_i/factor_Ppds,RF_DEPTH_mean_2_true_profile[i][_i], yerr=RF_DEPTH_std_2_true_profile[i][_i], ecolor='k',elinewidth=1,capsize=2,capthick=1)
 
 		apparent_660_ppds.set_title('660 km Ppds')
 		apparent_660_ppds.set_ylim(800,600)
@@ -634,34 +642,42 @@ for i,j in enumerate(RF_data_profile_Pds):
 		apparent_660_ppds.tick_params(labelleft=True,labelright=False)
 		apparent_660_ppds.set_xticks([])
 		if CROSS_SECTION_AXIS == 'y':
-			apparent_660_ppds.text(_i/factor_Ppds*0.95,820,"{0:.1f}".format(AB_lon[i][_i]),rotation=-45,fontsize=10)
+			apparent_660_ppds.text(_i/factor_Ppds,820,"{0:.1f}".format(AB_lon[i][_i]),rotation=-45,fontsize=10)
 			apparent_660_ppds.set_xlabel('Longitude ($^\circ$)',labelpad=30)
 		else:
-			apparent_660_ppds.text(_i/factor_Ppds*0.95,820,"{0:.1f}".format(AB_lat[i][_i]),rotation=-45,fontsize=10)
+			apparent_660_ppds.text(_i/factor_Ppds,820,"{0:.1f}".format(AB_lat[i][_i]),rotation=-45,fontsize=10)
 			apparent_660_ppds.set_xlabel('Latitude ($^\circ$)',labelpad=30)
 
 
 		#### Figure MTZ True and Apparent thickness  ####
 
-	for _i, _j in enumerate(RF_data_profile_Ppds[i]):
-		#MTZ_thickness.axhline(y=250,linewidth=0.5, color='k')
-
+	for _i, _j in enumerate(RF_DEPTH_mtz_thickness_profile_Pds[i]):
 		MTZ_thickness.plot(_i/factor_Ppds,RF_DEPTH_mtz_thickness_profile_Pds[i][_i],marker='o',markerfacecolor='none',markeredgecolor='gray')
+	for _i, _j in enumerate(RF_DEPTH_mtz_thickness_profile_Ppds[i]):
 		MTZ_thickness.plot(_i/factor_Ppds,RF_DEPTH_mtz_thickness_profile_Ppds[i][_i],marker='p',markerfacecolor='none',markeredgecolor='dimgray')
-		MTZ_thickness.plot(_i/factor_Ppds,RF_DEPTH_true_thickness_MTZ_profile_Pds[i][_i],marker='s',markerfacecolor='none',markeredgecolor='k')
 
-		MTZ_thickness.errorbar(_i/factor_Ppds,RF_DEPTH_mtz_thickness_profile_Pds[i][_i], yerr=RF_DEPTH_std_2_profile_Pds[i][_i], ecolor='gray',elinewidth=1,capsize=2,capthick=1)
-		MTZ_thickness.errorbar(_i/factor_Ppds,RF_DEPTH_mtz_thickness_profile_Ppds[i][_i], yerr=RF_DEPTH_std_2_profile_Ppds[i][_i], ecolor='dimgray',elinewidth=1,capsize=2,capthick=1)
-		MTZ_thickness.errorbar(_i/factor_Ppds,RF_DEPTH_true_thickness_MTZ_profile_Pds[i][_i], yerr=RF_DEPTH_std_2_profile_Ppds[i][_i], ecolor='k',elinewidth=1,capsize=2,capthick=1)
-		MTZ_thickness.set_ylim(300,200)
-		MTZ_thickness.set_ylabel('Depth (km)')
-		MTZ_thickness.yaxis.set_label_position("right")
-		MTZ_thickness.set_title('MTZ Apparent and True Thickness')
-		MTZ_thickness.yaxis.set_ticks_position('both')
-		MTZ_thickness.yaxis.set_major_locator(MultipleLocator(20))
-		MTZ_thickness.yaxis.set_minor_locator(MultipleLocator(10))
-		MTZ_thickness.grid(True,which='major',color='gray',linewidth=1,linestyle='--')
-		MTZ_thickness.tick_params(labelleft=True,labelright=True)
+	for _i, _j in enumerate(RF_DEPTH_true_thickness_MTZ_profile[i]):
+		MTZ_thickness.plot(_i/factor_Ppds,RF_DEPTH_true_thickness_MTZ_profile[i][_i],marker='s',markerfacecolor='none',markeredgecolor='k')
+
+	for _i, _j in enumerate(RF_DEPTH_mtz_thickness_profile_Pds[i]):
+		MTZ_thickness.errorbar(_i/factor_Ppds,RF_DEPTH_mtz_thickness_profile_Pds[i][_i], yerr=RF_DEPTH_mtz_thickness_profile_Pds_std[i][_i], ecolor='gray',elinewidth=1,capsize=2,capthick=1)
+
+	for _i, _j in enumerate(RF_DEPTH_mtz_thickness_profile_Ppds[i]):
+		MTZ_thickness.errorbar(_i/factor_Ppds,RF_DEPTH_mtz_thickness_profile_Ppds[i][_i], yerr=RF_DEPTH_mtz_thickness_profile_Ppds_std[i][_i], ecolor='dimgray',elinewidth=1,capsize=2,capthick=1)
+
+	for _i, _j in enumerate(RF_DEPTH_true_thickness_MTZ_profile[i]):
+		MTZ_thickness.errorbar(_i/factor_Ppds,RF_DEPTH_true_thickness_MTZ_profile[i][_i], yerr=RF_DEPTH_true_thickness_MTZ_profile_std[i][_i], ecolor='k',elinewidth=1,capsize=2,capthick=1)
+	
+	MTZ_thickness.axhline(y=250,linewidth=0.25,linestyle='--', color='gray')
+	MTZ_thickness.set_ylim(300,200)
+	MTZ_thickness.set_ylabel('Depth (km)')
+	MTZ_thickness.yaxis.set_label_position("right")
+	MTZ_thickness.set_title('MTZ Apparent and True Thickness')
+	MTZ_thickness.yaxis.set_ticks_position('both')
+	MTZ_thickness.yaxis.set_major_locator(MultipleLocator(20))
+	MTZ_thickness.yaxis.set_minor_locator(MultipleLocator(10))
+	MTZ_thickness.grid(True,which='major',color='gray',linewidth=1,linestyle='--')
+	MTZ_thickness.tick_params(labelleft=True,labelright=True)
 
 	fig.savefig(RESULTS_FOLDER+'SELECTED_BINNED_DATA_'+CROSS_SECTION_AXIS+'_CROSS_SECTION_Pds_Ppds_PROFILE_'+str(i+1)+'.'+EXT_FIG,dpi=DPI_FIG)
 print('Ending the Cross-section CODE')
