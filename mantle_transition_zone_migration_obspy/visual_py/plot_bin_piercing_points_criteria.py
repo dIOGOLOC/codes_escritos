@@ -101,28 +101,33 @@ lats = []
 lons =  []
 
 RF_DEPTH_mean_1_Pds =  []
+RF_DEPTH_std_1_Pds =  []
 
 RF_DEPTH_mean_2_Pds =  []
+RF_DEPTH_std_2_Pds =  []
 
 RF_DEPTH_mean_1_Ppds =  []
+RF_DEPTH_std_1_Ppds =  []
 	
 RF_DEPTH_mean_2_Ppds =  []
+RF_DEPTH_std_2_Ppds =  []
 
 RF_DEPTH_mtz_thickness_Pds =  []
+RF_DEPTH_mtz_thickness_Pds_std =  []
 
 RF_DEPTH_mtz_thickness_Ppds =  []
+RF_DEPTH_mtz_thickness_Ppds_std =  []
 
-RF_DEPTH_true_thickness_MTZ_Pds =  []
+RF_DEPTH_true_thickness_MTZ =  []
+RF_DEPTH_true_thickness_MTZ_std =  []
 
-RF_DEPTH_true_thickness_MTZ_Ppds =  []
 
-RF_DEPTH_mean_1_true_Pds = []
+RF_DEPTH_mean_1_true = []
+RF_DEPTH_std_1_true = []
 
-RF_DEPTH_mean_2_true_Pds = []
+RF_DEPTH_mean_2_true = []
+RF_DEPTH_std_2_true = []
 
-RF_DEPTH_mean_1_true_Ppds = []
-
-RF_DEPTH_mean_2_true_Ppds = []
 
 for i,j in enumerate(sort_lst_json):
 
@@ -132,28 +137,32 @@ for i,j in enumerate(sort_lst_json):
 	lons.append(SELECTED_BINNED_DATA_dic['lon'])
 
 	RF_DEPTH_mean_1_Pds.append(SELECTED_BINNED_DATA_dic['mean_1_Pds'])
+	RF_DEPTH_std_1_Pds.append(SELECTED_BINNED_DATA_dic['std_1_Pds'])
 
 	RF_DEPTH_mean_2_Pds.append(SELECTED_BINNED_DATA_dic['mean_2_Pds'])
+	RF_DEPTH_std_2_Pds.append(SELECTED_BINNED_DATA_dic['std_2_Pds'])
 
 	RF_DEPTH_mean_1_Ppds.append(SELECTED_BINNED_DATA_dic['mean_1_Ppds'])
+	RF_DEPTH_std_1_Ppds.append(SELECTED_BINNED_DATA_dic['std_1_Ppds'])
 	
 	RF_DEPTH_mean_2_Ppds.append(SELECTED_BINNED_DATA_dic['mean_2_Ppds'])
+	RF_DEPTH_std_2_Ppds.append(SELECTED_BINNED_DATA_dic['std_2_Ppds'])
 
 	RF_DEPTH_mtz_thickness_Pds.append(SELECTED_BINNED_DATA_dic['mtz_thickness_Pds'])
+	RF_DEPTH_mtz_thickness_Pds_std.append(SELECTED_BINNED_DATA_dic['mtz_thickness_Pds_std'])
 
 	RF_DEPTH_mtz_thickness_Ppds.append(SELECTED_BINNED_DATA_dic['mtz_thickness_Ppds'])
+	RF_DEPTH_mtz_thickness_Ppds_std.append(SELECTED_BINNED_DATA_dic['mtz_thickness_Ppds_std'])
 
-	RF_DEPTH_true_thickness_MTZ_Pds.append(SELECTED_BINNED_DATA_dic['true_thickness_MTZ_Pds'])
+	RF_DEPTH_true_thickness_MTZ.append(SELECTED_BINNED_DATA_dic['true_thickness_MTZ_Pds'])
+	RF_DEPTH_true_thickness_MTZ_std.append(SELECTED_BINNED_DATA_dic['true_thickness_MTZ_Pds_std'])
 
-	RF_DEPTH_true_thickness_MTZ_Ppds.append(SELECTED_BINNED_DATA_dic['true_thickness_MTZ_Ppds'])
+	RF_DEPTH_mean_1_true.append(SELECTED_BINNED_DATA_dic['true_mean_1_Pds'])
+	RF_DEPTH_std_1_true.append(SELECTED_BINNED_DATA_dic['true_std_1_Pds'])
 
-	RF_DEPTH_mean_1_true_Pds.append(SELECTED_BINNED_DATA_dic['true_mean_1_Pds'])
+	RF_DEPTH_mean_2_true.append(SELECTED_BINNED_DATA_dic['true_mean_2_Pds'])
+	RF_DEPTH_std_2_true.append(SELECTED_BINNED_DATA_dic['true_std_2_Pds'])
 
-	RF_DEPTH_mean_2_true_Pds.append(SELECTED_BINNED_DATA_dic['true_mean_2_Pds'])
-
-	RF_DEPTH_mean_1_true_Ppds.append(SELECTED_BINNED_DATA_dic['true_mean_1_Ppds'])
-
-	RF_DEPTH_mean_2_true_Ppds.append(SELECTED_BINNED_DATA_dic['true_mean_2_Ppds'])
 
 PP_FIGURE = OUTPUT_DIR+'MODEL_INTER_DEPTH_'+str(INTER_DEPTH)+'/'+'Figures'+'/'
 
@@ -173,25 +182,28 @@ colormap_std = plt.get_cmap(COLORMAP_STD)
 #############################################################################################################################################################################################
 
 
-mosaic_lst_MTZ = [RF_DEPTH_mtz_thickness_Pds,RF_DEPTH_mtz_thickness_Ppds,RF_DEPTH_true_thickness_MTZ_Pds]
+mosaic_lst_MTZ = [RF_DEPTH_mtz_thickness_Pds,RF_DEPTH_mtz_thickness_Ppds,RF_DEPTH_true_thickness_MTZ]
+mosaic_lst_MTZ_std = [RF_DEPTH_mtz_thickness_Pds_std,RF_DEPTH_mtz_thickness_Ppds_std,RF_DEPTH_true_thickness_MTZ_std]
 mosaic_lst_MTZ_name = ['MTZ_thickness_Pds','MTZ_thickness_Ppds','MTZ_true_thickness']
 mosaic_lst_MTZ_label = ['MTZ thickness Pds (km)','MTZ thickness Ppds (km)','MTZ True thickness (km)']
 
-mosaic_lst_660 = [RF_DEPTH_mean_2_Pds,RF_DEPTH_mean_2_Ppds,RF_DEPTH_mean_2_true_Pds]
+mosaic_lst_660 = [RF_DEPTH_mean_2_Pds,RF_DEPTH_mean_2_Ppds,RF_DEPTH_mean_2_true]
+mosaic_lst_660_std = [RF_DEPTH_std_2_Pds,RF_DEPTH_std_2_Ppds,RF_DEPTH_std_2_true]
 mosaic_lst_660_name = ['DEPTH_660_Pds','DEPTH_660_Ppds','True_DEPTH_660']
 mosaic_lst_660_label = ['660 depth Pds (km)','660 depth Ppds (km)','660 true depth Pds (km)']
 
-mosaic_lst_410 = [RF_DEPTH_mean_1_Pds,RF_DEPTH_mean_1_Ppds,RF_DEPTH_mean_1_true_Pds]
+mosaic_lst_410 = [RF_DEPTH_mean_1_Pds,RF_DEPTH_mean_1_Ppds,RF_DEPTH_mean_1_true]
+mosaic_lst_410_std = [RF_DEPTH_std_1_Pds,RF_DEPTH_std_1_Ppds,RF_DEPTH_std_1_true]
 mosaic_lst_410_name = ['DEPTH_410_Pds','DEPTH_410_Ppds','True_DEPTH_410']
 mosaic_lst_410_label = ['410 depth Pds (km)','410 depth Ppds (km)','410 true depth Pds (km)']
 
 
 #############################################################################################################################################################################################
 
-def plot_mosaic_MTZ(mosaic_lst,mosaic_lst_name,mosaic_lst_label):
+def plot_mosaic_MTZ(mosaic_lst,mosaic_lst_name,mosaic_lst_label,mosaic_lst_std):
 	for x,c in enumerate(mosaic_lst):
 
-		fig, axes = plt.subplots(nrows=len(set(lst_json_file_PP)), ncols=len(set(lst_json_file_STA)), subplot_kw={'projection': ccrs.Mercator(central_longitude=PROJECT_LON, globe=None)},figsize=(1+len(set(lst_json_file_PP))*2,len(set(lst_json_file_STA))*2),sharex='col', sharey='row')
+		fig, axes = plt.subplots(nrows=len(set(lst_json_file_PP)), ncols=len(set(lst_json_file_STA)), subplot_kw={'projection': ccrs.Mercator(central_longitude=PROJECT_LON, globe=None)},figsize=(1+len(set(lst_json_file_PP))*4,len(set(lst_json_file_STA))*4),sharex='col', sharey='row')
 
 		for k,ax in zip(range(len(c)), axes.flat):
 
@@ -224,7 +236,7 @@ def plot_mosaic_MTZ(mosaic_lst,mosaic_lst_name,mosaic_lst_label):
 
 			for i,j in enumerate(lons[k]):
 				if math.isnan(c[k][i]) == False:
-					retangulo_660 = Circle(radius=FRESNEL_ZONE_RADIUS,xy=(lons[k][i], lats[k][i]),color=colormap(norm_660(c[k][i])), ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+					retangulo_660 = Circle(radius=DIST_GRID_PP*(1-(mosaic_lst_std[x][k][i]/50)),xy=(lons[k][i], lats[k][i]),color=colormap(norm_660(c[k][i])), ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
 					ax.add_patch(retangulo_660)
 				else: 
 					pass
@@ -238,10 +250,10 @@ def plot_mosaic_MTZ(mosaic_lst,mosaic_lst_name,mosaic_lst_label):
 		fig.savefig(RESULTS_FOLDER+mosaic_lst_name[x]+'_mosaic.'+EXT_FIG,dpi=DPI_FIG)
 
 
-def plot_mosaic_660(mosaic_lst,mosaic_lst_name,mosaic_lst_label):
+def plot_mosaic_660(mosaic_lst,mosaic_lst_name,mosaic_lst_label,mosaic_lst_std):
 	for x,c in enumerate(mosaic_lst):
 
-		fig, axes = plt.subplots(nrows=len(set(lst_json_file_PP)), ncols=len(set(lst_json_file_STA)), subplot_kw={'projection': ccrs.Mercator(central_longitude=PROJECT_LON, globe=None)},figsize=(1+len(set(lst_json_file_PP))*2,len(set(lst_json_file_STA))*2),sharex='col', sharey='row')
+		fig, axes = plt.subplots(nrows=len(set(lst_json_file_PP)), ncols=len(set(lst_json_file_STA)), subplot_kw={'projection': ccrs.Mercator(central_longitude=PROJECT_LON, globe=None)},figsize=(1+len(set(lst_json_file_PP))*4,len(set(lst_json_file_STA))*4),sharex='col', sharey='row')
 
 		for k,ax in zip(range(len(c)), axes.flat):
 
@@ -275,7 +287,7 @@ def plot_mosaic_660(mosaic_lst,mosaic_lst_name,mosaic_lst_label):
 
 			for i,j in enumerate(lons[k]):
 				if math.isnan(c[k][i]) == False:
-					retangulo_660 = Circle(radius=FRESNEL_ZONE_RADIUS,xy=(lons[k][i],lats[k][i]),color=colormap(norm_660(c[k][i])), ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+					retangulo_660 = Circle(radius=DIST_GRID_PP*(1-(mosaic_lst_std[x][k][i]/50)),xy=(lons[k][i],lats[k][i]),color=colormap(norm_660(c[k][i])), ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
 					ax.add_patch(retangulo_660)
 				else: 
 					pass
@@ -289,10 +301,10 @@ def plot_mosaic_660(mosaic_lst,mosaic_lst_name,mosaic_lst_label):
 		fig.savefig(RESULTS_FOLDER+mosaic_lst_name[x]+'_mosaic.'+EXT_FIG,dpi=DPI_FIG)
 
 
-def plot_mosaic_410(mosaic_lst,mosaic_lst_name,mosaic_lst_label):
+def plot_mosaic_410(mosaic_lst,mosaic_lst_name,mosaic_lst_label,mosaic_lst_std):
 	for x,c in enumerate(mosaic_lst):
 
-		fig, axes = plt.subplots(nrows=len(set(lst_json_file_PP)), ncols=len(set(lst_json_file_STA)), subplot_kw={'projection': ccrs.Mercator(central_longitude=PROJECT_LON, globe=None)},figsize=(1+len(set(lst_json_file_PP))*2,len(set(lst_json_file_STA))*2),sharex='col', sharey='row')
+		fig, axes = plt.subplots(nrows=len(set(lst_json_file_PP)), ncols=len(set(lst_json_file_STA)), subplot_kw={'projection': ccrs.Mercator(central_longitude=PROJECT_LON, globe=None)},figsize=(1+len(set(lst_json_file_PP))*4,len(set(lst_json_file_STA))*4),sharex='col', sharey='row')
 
 		for k,ax in zip(range(len(c)), axes.flat):
 
@@ -326,7 +338,7 @@ def plot_mosaic_410(mosaic_lst,mosaic_lst_name,mosaic_lst_label):
 
 			for i,j in enumerate(lons[k]):
 				if math.isnan(c[k][i]) == False:
-					retangulo_660 = Circle(radius=FRESNEL_ZONE_RADIUS,xy=(lons[k][i], lats[k][i]),color=colormap(norm_660(c[k][i])), ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+					retangulo_660 = Circle(radius=DIST_GRID_PP*(1-(mosaic_lst_std[x][k][i]/50)),xy=(lons[k][i], lats[k][i]),color=colormap(norm_660(c[k][i])), ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
 					ax.add_patch(retangulo_660)
 				else: 
 					pass
@@ -342,8 +354,8 @@ def plot_mosaic_410(mosaic_lst,mosaic_lst_name,mosaic_lst_label):
 ########################################################################################################################################################################
 print('Plotting Figure: Mosaic of each estimates')
 
-plot_mosaic_MTZ(mosaic_lst_MTZ,mosaic_lst_MTZ_name,mosaic_lst_MTZ_label)
-plot_mosaic_660(mosaic_lst_660,mosaic_lst_660_name,mosaic_lst_660_label)
-plot_mosaic_410(mosaic_lst_410,mosaic_lst_410_name,mosaic_lst_410_label)
+plot_mosaic_MTZ(mosaic_lst_MTZ,mosaic_lst_MTZ_name,mosaic_lst_MTZ_label,mosaic_lst_MTZ_std)
+plot_mosaic_660(mosaic_lst_660,mosaic_lst_660_name,mosaic_lst_660_label,mosaic_lst_660_std)
+plot_mosaic_410(mosaic_lst_410,mosaic_lst_410_name,mosaic_lst_410_label,mosaic_lst_410_std)
 
 print('Ending Final Plot CODE')

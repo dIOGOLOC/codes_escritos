@@ -147,6 +147,7 @@ PP_FIGURE = OUTPUT_DIR+'MODEL_INTER_DEPTH_'+str(INTER_DEPTH)+'/'+'Figures'+'/'
 RESULTS_FOLDER = PP_FIGURE+'/'+'RESULTS_NUMBER_PP_PER_BIN_'+str(NUMBER_PP_PER_BIN)+'_NUMBER_STA_PER_BIN_'+str(NUMBER_STA_PER_BIN)+'/'
 os.makedirs(RESULTS_FOLDER,exist_ok=True)
 
+
 ###################################################################################################################
 
 print('Total of bins: '+str(len(RF_DEPTH_mean_1_Pds)))
@@ -323,7 +324,7 @@ norm_410 = mpl.colors.Normalize(vmin=360,vmax=460,clip=True)
 
 for i,j in enumerate(lons):
 	if math.isnan(RF_DEPTH_mean_1_Pds[i]) == False:
-		circulo_410 = Circle(radius=DIST_GRID_PP,xy=(lons[i], lats[i]),color=colormap(norm_410(RF_DEPTH_mean_1_Pds[i])), ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+		circulo_410 = Circle(radius=DIST_GRID_PP/(1-(RF_DEPTH_std_1_Pds[i]/50)),xy=(lons[i], lats[i]),color=colormap(norm_410(RF_DEPTH_mean_1_Pds[i])), ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
 		ax.add_patch(circulo_410)
 	else:
 		pass
@@ -352,7 +353,7 @@ norm_660 = mpl.colors.Normalize(vmin=560,vmax=760,clip=True)
 
 for i,j in enumerate(lons):
 	if math.isnan(RF_DEPTH_mean_2_Pds[i]) == False:
-		circulo_660 = Circle(radius=DIST_GRID_PP,xy=(lons[i], lats[i]),color=colormap(norm_660(RF_DEPTH_mean_2_Pds[i])), ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+		circulo_660 = Circle(radius=DIST_GRID_PP*(1-(RF_DEPTH_std_2_Pds[i]/50)),xy=(lons[i], lats[i]),color=colormap(norm_660(RF_DEPTH_mean_2_Pds[i])), ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
 		ax2.add_patch(circulo_660)
 	else: 
 		pass
@@ -401,7 +402,7 @@ norm_410 = mpl.colors.Normalize(vmin=360,vmax=460,clip=True)
 
 for i,j in enumerate(lons):
 	if math.isnan(RF_DEPTH_mean_1_Ppds[i]) == False:
-		circulo_410 = Circle(radius=DIST_GRID_PP,xy=(lons[i], lats[i]),color=colormap(norm_410(RF_DEPTH_mean_1_Ppds[i])), ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+		circulo_410 = Circle(radius=DIST_GRID_PP*(1-(RF_DEPTH_std_1_Ppds[i]/50)),xy=(lons[i], lats[i]),color=colormap(norm_410(RF_DEPTH_mean_1_Ppds[i])), ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
 		ax.add_patch(circulo_410)
 	else:
 		pass
@@ -430,7 +431,7 @@ norm_660 = mpl.colors.Normalize(vmin=560,vmax=760,clip=True)
 
 for i,j in enumerate(lons):
 	if math.isnan(RF_DEPTH_mean_2_Ppds[i]) == False:
-		circulo_660 = Circle(radius=DIST_GRID_PP,xy=(lons[i], lats[i]),color=colormap(norm_660(RF_DEPTH_mean_2_Ppds[i])), ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+		circulo_660 = Circle(radius=DIST_GRID_PP*(1-(RF_DEPTH_std_2_Ppds[i]/50)),xy=(lons[i], lats[i]),color=colormap(norm_660(RF_DEPTH_mean_2_Ppds[i])), ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
 		ax2.add_patch(circulo_660)
 	else:
 		pass
@@ -480,7 +481,7 @@ norm_410 = mpl.colors.Normalize(vmin=360,vmax=460,clip=True)
 
 for i,j in enumerate(lons):
 	if math.isnan(RF_DEPTH_mean_1_true_Pds[i]) == False:
-		circulo_410 = Circle(radius=DIST_GRID_PP,xy=(lons[i], lats[i]),color=colormap(norm_410(RF_DEPTH_mean_1_true_Pds[i])), ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+		circulo_410 = Circle(radius=DIST_GRID_PP*(1-(RF_DEPTH_std_1_true_Pds[i]/50)),xy=(lons[i], lats[i]),color=colormap(norm_410(RF_DEPTH_mean_1_true_Pds[i])), ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
 		ax.add_patch(circulo_410)
 	else:
 		pass
@@ -510,7 +511,7 @@ norm_660 = mpl.colors.Normalize(vmin=560,vmax=760,clip=True)
 
 for i,j in enumerate(lons):
 	if math.isnan(RF_DEPTH_mean_2_true_Pds[i]) == False:
-		circulo_660 = Circle(radius=DIST_GRID_PP,xy=(lons[i], lats[i]),color=colormap(norm_660(RF_DEPTH_mean_2_true_Pds[i])), ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+		circulo_660 = Circle(radius=DIST_GRID_PP*(1-(RF_DEPTH_std_2_true_Pds[i]/50)),xy=(lons[i], lats[i]),color=colormap(norm_660(RF_DEPTH_mean_2_true_Pds[i])), ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
 		ax2.add_patch(circulo_660)
 	else:
 		pass
@@ -531,7 +532,7 @@ fig.colorbar(sm_660,ax=ax2,orientation='horizontal',shrink=0.8)
 
 fig.savefig(RESULTS_FOLDER+'TRUE_DEPTH_410_660.'+EXT_FIG,dpi=DPI_FIG)
 
-
+'''
 print('Plotting Figure: Uncertainty (1 sigma) of 410 km and 660 km (Pds phases)')
 
 fig, axes = plt.subplots(nrows=1, ncols=2, subplot_kw={'projection': ccrs.Mercator(central_longitude=PROJECT_LON, globe=None)},figsize=(20,10),sharey=True)
@@ -846,7 +847,7 @@ fig.colorbar(sm_660,ax=ax2,orientation='horizontal',shrink=0.8)
 fig.savefig(RESULTS_FOLDER+'Uncertainty_MTZ_Pds_Ppds.'+EXT_FIG,dpi=DPI_FIG)
 
 #######################################################################################################################################
-
+'''
 print('Plotting Figure: Delta Vp (410 km/660 km) ')
 
 
@@ -921,6 +922,9 @@ fig.colorbar(sm_660,ax=ax2,orientation='horizontal',shrink=0.8)
 
 fig.savefig(RESULTS_FOLDER+'DELTA_VP.'+EXT_FIG,dpi=DPI_FIG)
 
+
+###########################################################################################################
+
 print('Plotting Figure: Thickness of the Mantle Transition Zone (Pds and Ppds Phases)')
 
 fig, axes = plt.subplots(nrows=1, ncols=2, subplot_kw={'projection': ccrs.Mercator(central_longitude=PROJECT_LON, globe=None)},figsize=(20,10),sharey=True)
@@ -947,7 +951,7 @@ norm_410 = mpl.colors.Normalize(vmin=200,vmax=300,clip=True)
 
 for i,j in enumerate(lons):
 	if math.isnan(RF_DEPTH_mtz_thickness_Pds[i]) == False:
-		circulo_410 = Circle(radius=DIST_GRID_PP,xy=(lons[i], lats[i]),color=colormap(norm_410(RF_DEPTH_mtz_thickness_Pds[i])), ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+		circulo_410 = Circle(radius=DIST_GRID_PP*(1-(RF_DEPTH_mtz_thickness_Pds_std[i]/50)),xy=(lons[i], lats[i]),color=colormap(norm_410(RF_DEPTH_mtz_thickness_Pds[i])), ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
 		ax.add_patch(circulo_410)
 	else:
 		pass
@@ -977,7 +981,7 @@ norm_660 = mpl.colors.Normalize(vmin=200,vmax=300,clip=True)
 
 for i,j in enumerate(lons):
 	if math.isnan(RF_DEPTH_mtz_thickness_Ppds[i]) == False:
-		circulo_660 = Circle(radius=DIST_GRID_PP,xy=(lons[i], lats[i]),color=colormap(norm_660(RF_DEPTH_mtz_thickness_Ppds[i])), ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+		circulo_660 = Circle(radius=DIST_GRID_PP*(1-(RF_DEPTH_mtz_thickness_Ppds_std[i]/50)),xy=(lons[i], lats[i]),color=colormap(norm_660(RF_DEPTH_mtz_thickness_Ppds[i])), ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
 		ax2.add_patch(circulo_660)
 	else:
 		pass
@@ -1027,7 +1031,7 @@ norm_410 = mpl.colors.Normalize(vmin=200,vmax=300,clip=True)
 
 for i,j in enumerate(lon_true):
 	if math.isnan(RF_DEPTH_true_thickness_MTZ_Pds[i]) == False:
-		circulo_410 = Circle(radius=DIST_GRID_PP,xy=(lon_true[i], lat_true[i]),color=colormap(norm_410(RF_DEPTH_true_thickness_MTZ_Pds[i])), ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+		circulo_410 = Circle(radius=DIST_GRID_PP*(1-(RF_DEPTH_true_thickness_MTZ_Pds_std[i]/50)),xy=(lon_true[i], lat_true[i]),color=colormap(norm_410(RF_DEPTH_true_thickness_MTZ_Pds[i])), ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
 		ax.add_patch(circulo_410)
 	else:
 		pass
@@ -1056,7 +1060,7 @@ norm_660 = mpl.colors.Normalize(vmin=0,vmax=50,clip=True)
 
 for i,j in enumerate(lon_true):
 	if math.isnan(RF_DEPTH_true_thickness_MTZ_Pds_std[i]) == False:
-		circulo_660 = Circle(radius=DIST_GRID_PP,xy=(lon_true[i], lat_true[i]),color=colormap_std(norm_660(RF_DEPTH_true_thickness_MTZ_Pds_std[i])), ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+		circulo_660 = Circle(radius=DIST_GRID_PP*(1-(RF_DEPTH_true_thickness_MTZ_Pds_std[i]/50)),xy=(lon_true[i], lat_true[i]),color=colormap_std(norm_660(RF_DEPTH_true_thickness_MTZ_Pds_std[i])), ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
 		ax2.add_patch(circulo_660)
 	else:
 		pass
@@ -1079,6 +1083,7 @@ fig.savefig(RESULTS_FOLDER+'TRUE_THICKNESS_MTZ.'+EXT_FIG,dpi=DPI_FIG)
 
 ########################################################################################################################################################################
 '''
+
 print('Plotting Figure: Difference True Thickness of the Mantle Transition Zone and Uncertainty')
 
 fig, axes = plt.subplots(nrows=1, ncols=2, subplot_kw={'projection': ccrs.Mercator(central_longitude=PROJECT_LON, globe=None)},figsize=(20,10),sharey=True)

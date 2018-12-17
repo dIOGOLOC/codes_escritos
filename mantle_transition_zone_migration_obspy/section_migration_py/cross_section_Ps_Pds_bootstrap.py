@@ -32,7 +32,7 @@ from parameters_py.mgconfig import (
 					LLCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLON_LARGE,URCRNRLAT_LARGE,LLCRNRLON_SMALL,
 					URCRNRLON_SMALL,LLCRNRLAT_SMALL,URCRNRLAT_SMALL,PROJECT_LAT,PROJECT_LON,
 					BOUNDARY_1_SHP,BOUNDARY_2_SHP,OUTPUT_DIR,		
-					EXT_FIG,DPI_FIG,DIST_GRID_PP_MED,DIST_GRID_PP,DEPTH_RANGE,COLORMAP_VEL,
+					EXT_FIG,DPI_FIG,FRESNEL_ZONE_RADIUS,DIST_GRID_PP,DEPTH_RANGE,COLORMAP_VEL,
 					NUMBER_PP_PER_BIN,NUMBER_STA_PER_BIN
 				   )
 
@@ -143,7 +143,7 @@ print('\n')
 
 #Color Maps
 
-colormap = plt.get_cmap(COLORMAP_STD)
+colormap = plt.get_cmap(COLORMAP_VEL)
 
 fig, ax = plt.subplots(nrows=1, ncols=1, subplot_kw={'projection': ccrs.Mercator(central_longitude=PROJECT_LON, globe=None)},figsize=(10,5))
 
@@ -167,18 +167,17 @@ shape_2_SHP = list(reader_2_SHP.geometries())
 plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
 ax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 
-norm_410 = mpl.colors.Normalize(vmin=0,vmax=50,clip=True)
-colors_410 = colormap(norm_410(RF_DEPTH_true_thickness_MTZ_Pds_std))
+norm_410 = mpl.colors.Normalize(vmin=200,vmax=300,clip=True)
 
 for i,j in enumerate(lons):
-	if math.isnan(RF_DEPTH_true_thickness_MTZ_Pds_std[i]) == False:
-		retangulo_410 = Rectangle(xy=(lons[i] - DIST_GRID_PP_MED/(GRID_PP_MULT/2), lats[i] - DIST_GRID_PP_MED/(GRID_PP_MULT/2)),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),color=colors_410[i], ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=3)
-		ax.add_patch(retangulo_410)
-		retangulo_410.pickable()
-		retangulo_410.set_picker(True)
-	else:
-		retangulo = Rectangle(xy=(lons[i] - DIST_GRID_PP_MED/(GRID_PP_MULT/2), lats[i] - DIST_GRID_PP_MED/(GRID_PP_MULT/2)),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),color='None', ec='k',linewidth=0.5,transform=ccrs.Geodetic(),zorder=2)
-		ax.add_patch(retangulo)
+	if math.isnan(RF_DEPTH_true_thickness_MTZ_Pds[i]) == False:
+		circulo_410 = Circle(radius=DIST_GRID_PP*(1-(RF_DEPTH_true_thickness_MTZ_Pds_std[i]/50)),xy=(lons[i],lats[i]),color=colormap(norm_410(RF_DEPTH_true_thickness_MTZ_Pds[i])), ec='None',transform=ccrs.Geodetic(),zorder=3)
+		ax.add_patch(circulo_410)
+		circulo_410.pickable()
+		circulo_410.set_picker(True)
+	#else:
+		#circulo = Circle(radius=DIST_GRID_PP/2,xy=(lons[i],lats[i]),color='None', ec='k',linewidth=0.5,transform=ccrs.Geodetic(),zorder=2)
+		#ax.add_patch(circulo)
 
 ax.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
 
@@ -188,7 +187,6 @@ sm_410 = plt.cm.ScalarMappable(cmap=colormap,norm=norm_410)
 sm_410._A = []
 fig.colorbar(sm_410,ax=ax,orientation='horizontal',shrink=0.8)
 
-
 plt.title('Pick four points for bootstrapping cross-section and them close the windows', y=1.08)
 
 
@@ -196,17 +194,18 @@ lon_click = []
 lat_click = []
 
 def onpick1(event):
-	if isinstance(event.artist,Rectangle):
+	if isinstance(event.artist,Circle):
 		patch = event.artist
-		patch_lon = float("%.4f" % round(patch.get_xy()[0],4))
-		patch_lat = float("%.4f" % round(patch.get_xy()[1],4))
+
+		patch_lon = float("%.4f" % round(patch.center[0],4))
+		patch_lat = float("%.4f" % round(patch.center[1],4))
 
 		print('Return lon/lat of the rectangle selected (left,bottom)')
 		print('lon='+str(patch_lon), 'lat='+str(patch_lat))
 
 		lon_click.append(patch_lon)
 		lat_click.append(patch_lat)
-		retangulo_PICK = Rectangle(xy=(patch_lon, patch_lat),width=DIST_GRID_PP_MED/(GRID_PP_MULT/2), height=DIST_GRID_PP_MED/(GRID_PP_MULT/2),color='k', ec='k',linewidth=1,transform=ccrs.Geodetic(),zorder=5)
+		retangulo_PICK = Circle(radius=DIST_GRID_PP,xy=(patch_lon, patch_lat),color='k', ec='k',linewidth=1,transform=ccrs.Geodetic(),zorder=5)
 		ax.add_patch(retangulo_PICK)
 	plt.draw()
 	if len(lon_click) == 4:
@@ -228,117 +227,165 @@ fig.savefig(RESULTS_FOLDER+'SELECTED_BINNED_DATA_CROSS_SECTION_Pds_Ppds_bootstra
 print('Allocating points')
 print('\n')
 
-RF_data_profile_Pds = []
-RF_DEPTH_mean_1_profile_Pds = []
-RF_DEPTH_std_1_profile_Pds = []
-RF_DEPTH_mean_2_profile_Pds = []
-RF_DEPTH_std_2_profile_Pds = []
-RF_DEPTH_mean_1_true_profile_Pds = []
-RF_DEPTH_std_1_true_profile_Pds = []
-RF_DEPTH_mean_2_true_profile_Pds = []
-RF_DEPTH_std_2_true_profile_Pds = []
-RF_DEPTH_mtz_thickness_profile_Pds = [] 
-RF_DEPTH_true_thickness_MTZ_profile_Pds = [] 
-
-RF_delta_1_Vp_mean_profile = []
-RF_delta_1_Vp_std_profile = []
-RF_delta_1_Vs_mean_profile = []
-RF_delta_1_Vs_std_profile = []
-
-RF_delta_2_Vp_mean_profile = []
-RF_delta_2_Vp_std_profile = []
-RF_delta_2_Vs_mean_profile = []
-RF_delta_2_Vs_std_profile = []
-
-
-RF_data_profile_Ppds = []
-RF_DEPTH_mean_1_profile_Ppds = []
-RF_DEPTH_std_1_profile_Ppds = []
-RF_DEPTH_mean_2_profile_Ppds = []
-RF_DEPTH_std_2_profile_Ppds = []
-RF_DEPTH_mean_1_true_profile_Ppds = []
-RF_DEPTH_std_1_true_profile_Ppds = []
-RF_DEPTH_mean_2_true_profile_Ppds = []
-RF_DEPTH_std_2_true_profile_Ppds = []
-RF_DEPTH_mtz_thickness_profile_Ppds = [] 
-RF_DEPTH_true_thickness_MTZ_profile_Ppds = [] 
-
-RF_stacking_Pds_BOOTSTRAP_profile = []
-RF_stacking_Ppds_BOOTSTRAP_profile = []
+#Profile lat/lon
 
 RF_lat_profile = []
 RF_lon_profile = []
 
+#Profile Data
+
+RF_data_profile_Pds = []
+RF_data_profile_Ppds = []
+
+#P410s
+
+RF_DEPTH_mean_1_profile_Pds = []
+RF_DEPTH_std_1_profile_Pds = []
+
+#Pp410s
+
+RF_DEPTH_mean_1_profile_Ppds = []
+RF_DEPTH_std_1_profile_Ppds = []
+
+#P660s
+
+RF_DEPTH_mean_2_profile_Pds = []
+RF_DEPTH_std_2_profile_Pds = []
+
+#Pp660s
+
+RF_DEPTH_mean_2_profile_Ppds = []
+RF_DEPTH_std_2_profile_Ppds = []
+
+#MTZ Pds
+
+RF_DEPTH_mtz_thickness_profile_Pds = [] 
+RF_DEPTH_mtz_thickness_profile_Pds_std = []
+
+#MTZ Ppds
+
+RF_DEPTH_mtz_thickness_profile_Ppds = [] 
+RF_DEPTH_mtz_thickness_profile_Ppds_std = []
+
+# True 410 km
+
+RF_DEPTH_mean_1_true_profile = []
+RF_DEPTH_std_1_true_profile = []
+
+# True 660 km
+
+RF_DEPTH_mean_2_true_profile = []
+RF_DEPTH_std_2_true_profile = []
+
+# True MTZ
+
+RF_DEPTH_true_thickness_MTZ_profile = [] 
+RF_DEPTH_true_thickness_MTZ_profile_std = []
+
+#Bootstrap Data Receiver Functions Pds and Ppds
+
+RF_stacking_Pds_BOOTSTRAP_profile = []
+RF_stacking_Ppds_BOOTSTRAP_profile = []
+
+#Bootstrap Data Mean P410s
+
 RF_BOOTSTRAP_DEPTH_mean_1_Pds_profile = []
+
+#Bootstrap Data Mean Pp410s
+
 RF_BOOTSTRAP_DEPTH_mean_1_Ppds_profile = []
 
+#Bootstrap Data Mean P660s
+
 RF_BOOTSTRAP_DEPTH_mean_2_Pds_profile = []
+
+#Bootstrap Data Mean P660s
+
 RF_BOOTSTRAP_DEPTH_mean_2_Ppds_profile = []
 
-RF_DEPTH_mtz_thickness_profile_Pds_std = []
-RF_DEPTH_mtz_thickness_profile_Ppds_std = []
-RF_DEPTH_true_thickness_MTZ_profile_Pds_std = []
+
+lat_lon =  [(lons[k],lats[k]) for k,l in enumerate(lats)]
 
 for i,j in enumerate(lon_click):
-		dist = [0 if (lon_click[i] + DIST_GRID_PP_MED/(GRID_PP_MULT/2),lat_click[i] + DIST_GRID_PP_MED/(GRID_PP_MULT/2)) ==  (lons[k],lats[k]) else 100 for k,l in enumerate(lats)]
 
-		RF_lat_profile.append(lats[dist.index(min(dist))])
-		RF_lon_profile.append(lons[dist.index(min(dist))])
-				
-		RF_BOOTSTRAP_DEPTH_mean_1_Pds_profile.append(RF_BOOTSTRAP_DEPTH_mean_1_Pds[dist.index(min(dist))])
-		RF_BOOTSTRAP_DEPTH_mean_1_Ppds_profile.append(RF_BOOTSTRAP_DEPTH_mean_1_Ppds[dist.index(min(dist))])
+	idx = lat_lon.index((lon_click[i],lat_click[i]))
 
-		RF_BOOTSTRAP_DEPTH_mean_2_Pds_profile.append(RF_BOOTSTRAP_DEPTH_mean_2_Pds[dist.index(min(dist))])
-		RF_BOOTSTRAP_DEPTH_mean_2_Ppds_profile.append(RF_BOOTSTRAP_DEPTH_mean_2_Ppds[dist.index(min(dist))])
+	#Profile lat/lon
 
-		RF_data_profile_Pds.append(RF_stacking_Pds[dist.index(min(dist))])
-		RF_DEPTH_mean_1_profile_Pds.append(RF_DEPTH_mean_1_Pds[dist.index(min(dist))])
-		RF_DEPTH_std_1_profile_Pds.append(RF_DEPTH_std_1_Pds[dist.index(min(dist))])
+	RF_lat_profile.append(lats[idx])
+	RF_lon_profile.append(lons[idx])
 
-		RF_DEPTH_mean_2_profile_Pds.append(RF_DEPTH_mean_2_Pds[dist.index(min(dist))])
-		RF_DEPTH_std_2_profile_Pds.append(RF_DEPTH_std_2_Pds[dist.index(min(dist))])
+	#Profile Data
 
-		RF_DEPTH_mean_1_true_profile_Pds.append(RF_DEPTH_mean_1_true_Pds[dist.index(min(dist))])
-		RF_DEPTH_std_1_true_profile_Pds.append(RF_DEPTH_std_1_true_Pds[dist.index(min(dist))])
+	RF_data_profile_Pds.append(RF_stacking_Pds[idx])
+	RF_data_profile_Ppds.append(RF_stacking_Ppds[idx])
 
-		RF_DEPTH_mean_2_true_profile_Pds.append(RF_DEPTH_mean_2_true_Pds[dist.index(min(dist))])
-		RF_DEPTH_std_2_true_profile_Pds.append(RF_DEPTH_std_2_true_Pds[dist.index(min(dist))])
+	#P410s
+	
+	RF_DEPTH_mean_1_profile_Pds.append(RF_DEPTH_mean_1_Pds[idx])
+	RF_DEPTH_std_1_profile_Pds.append(RF_DEPTH_std_1_Pds[idx])
 
-		RF_DEPTH_mtz_thickness_profile_Pds.append(RF_DEPTH_mtz_thickness_Pds[dist.index(min(dist))])
-		RF_DEPTH_mtz_thickness_profile_Pds_std.append(RF_DEPTH_mtz_thickness_Pds_std[dist.index(min(dist))])
+	#Pp410s
+	
+	RF_DEPTH_mean_1_profile_Ppds.append(RF_DEPTH_mean_1_Ppds[idx])
+	RF_DEPTH_std_1_profile_Ppds.append(RF_DEPTH_std_1_Ppds[idx])
 
-		RF_DEPTH_mtz_thickness_profile_Ppds.append(RF_DEPTH_mtz_thickness_Ppds[dist.index(min(dist))])
-		RF_DEPTH_mtz_thickness_profile_Ppds_std.append(RF_DEPTH_mtz_thickness_Ppds_std[dist.index(min(dist))])
+	#P660s
+	
+	RF_DEPTH_mean_2_profile_Pds.append(RF_DEPTH_mean_2_Pds[idx])
+	RF_DEPTH_std_2_profile_Pds.append(RF_DEPTH_std_2_Pds[idx])
 
-		RF_DEPTH_true_thickness_MTZ_profile_Pds.append(RF_DEPTH_true_thickness_MTZ_Pds[dist.index(min(dist))]) 
-		RF_DEPTH_true_thickness_MTZ_profile_Pds_std.append(RF_DEPTH_true_thickness_MTZ_Pds_std[dist.index(min(dist))]) 
+	#Pp660s
+	
+	RF_DEPTH_mean_2_profile_Ppds.append(RF_DEPTH_mean_2_Ppds[idx])
+	RF_DEPTH_std_2_profile_Ppds.append(RF_DEPTH_std_2_Ppds[idx])
+	
+	#MTZ Pds
 
-		RF_delta_1_Vp_mean_profile.append(RF_delta_1_Vp_mean[dist.index(min(dist))])
-		RF_delta_1_Vp_std_profile.append(RF_delta_1_Vp_std[dist.index(min(dist))])
-		RF_delta_1_Vs_mean_profile.append(RF_delta_1_Vs_mean[dist.index(min(dist))])
-		RF_delta_1_Vs_std_profile.append(RF_delta_1_Vs_std[dist.index(min(dist))])
+	RF_DEPTH_mtz_thickness_profile_Pds.append(RF_DEPTH_mtz_thickness_Pds[idx])
+	RF_DEPTH_mtz_thickness_profile_Pds_std.append(RF_DEPTH_mtz_thickness_Pds_std[idx])
 
-		RF_delta_2_Vp_mean_profile.append(RF_delta_2_Vp_mean[dist.index(min(dist))])
-		RF_delta_2_Vp_std_profile.append(RF_delta_2_Vp_std[dist.index(min(dist))])
-		RF_delta_2_Vs_mean_profile.append(RF_delta_2_Vs_mean[dist.index(min(dist))])
-		RF_delta_2_Vs_std_profile.append(RF_delta_2_Vs_std[dist.index(min(dist))])
+	#MTZ Ppds
+	
+	RF_DEPTH_mtz_thickness_profile_Ppds.append(RF_DEPTH_mtz_thickness_Ppds[idx])
+	RF_DEPTH_mtz_thickness_profile_Ppds_std.append(RF_DEPTH_mtz_thickness_Ppds_std[idx])
+
+	# True 410 km
+
+	RF_DEPTH_mean_1_true_profile.append(RF_DEPTH_mean_1_true_Pds[idx])
+	RF_DEPTH_std_1_true_profile.append(RF_DEPTH_std_1_true_Pds[idx])
+
+	# True 660 km
+
+	RF_DEPTH_mean_2_true_profile.append(RF_DEPTH_mean_2_true_Pds[idx])
+	RF_DEPTH_std_2_true_profile.append(RF_DEPTH_std_2_true_Pds[idx])
 
 
+	# True MTZ
 
-		RF_data_profile_Ppds.append(RF_stacking_Ppds[dist.index(min(dist))])
-		RF_DEPTH_mean_1_profile_Ppds.append(RF_DEPTH_mean_1_Ppds[dist.index(min(dist))])
-		RF_DEPTH_std_1_profile_Ppds.append(RF_DEPTH_std_1_Ppds[dist.index(min(dist))])
-		RF_DEPTH_mean_2_profile_Ppds.append(RF_DEPTH_mean_2_Ppds[dist.index(min(dist))])
-		RF_DEPTH_std_2_profile_Ppds.append(RF_DEPTH_std_2_Ppds[dist.index(min(dist))])
-		RF_DEPTH_mean_1_true_profile_Ppds.append(RF_DEPTH_mean_1_true_Ppds[dist.index(min(dist))])
-		RF_DEPTH_std_1_true_profile_Ppds.append(RF_DEPTH_std_1_true_Ppds[dist.index(min(dist))])
-		RF_DEPTH_mean_2_true_profile_Ppds.append(RF_DEPTH_mean_2_true_Ppds[dist.index(min(dist))])
-		RF_DEPTH_std_2_true_profile_Ppds.append(RF_DEPTH_std_2_true_Ppds[dist.index(min(dist))])
-		RF_DEPTH_mtz_thickness_profile_Ppds.append(RF_DEPTH_mtz_thickness_Ppds[dist.index(min(dist))])
-		RF_DEPTH_true_thickness_MTZ_profile_Ppds.append(RF_DEPTH_true_thickness_MTZ_Ppds[dist.index(min(dist))]) 
+	RF_DEPTH_true_thickness_MTZ_profile.append(RF_DEPTH_true_thickness_MTZ_Pds[idx]) 
+	RF_DEPTH_true_thickness_MTZ_profile_std.append(RF_DEPTH_true_thickness_MTZ_Pds_std[idx]) 
 
-		RF_stacking_Pds_BOOTSTRAP_profile.append(RF_stacking_Pds_BOOTSTRAP[dist.index(min(dist))]) 
-		RF_stacking_Ppds_BOOTSTRAP_profile.append(RF_stacking_Ppds_BOOTSTRAP[dist.index(min(dist))]) 
+	#Bootstrap Data Receiver Functions Pds and Ppds
+	
+	RF_stacking_Pds_BOOTSTRAP_profile.append(RF_stacking_Pds_BOOTSTRAP[idx]) 
+	RF_stacking_Ppds_BOOTSTRAP_profile.append(RF_stacking_Ppds_BOOTSTRAP[idx]) 
+
+	#Bootstrap Data Mean P410s
+	
+	RF_BOOTSTRAP_DEPTH_mean_1_Pds_profile.append(RF_BOOTSTRAP_DEPTH_mean_1_Pds[idx])
+
+	#Bootstrap Data Mean Pp410s
+	
+	RF_BOOTSTRAP_DEPTH_mean_1_Ppds_profile.append(RF_BOOTSTRAP_DEPTH_mean_1_Ppds[idx])
+
+	#Bootstrap Data Mean P660s
+
+	RF_BOOTSTRAP_DEPTH_mean_2_Pds_profile.append(RF_BOOTSTRAP_DEPTH_mean_2_Pds[idx])
+
+	#Bootstrap Data Mean P660s
+
+	RF_BOOTSTRAP_DEPTH_mean_2_Ppds_profile.append(RF_BOOTSTRAP_DEPTH_mean_2_Ppds[idx])
 
 print('Plotting the Final Figure')
 
@@ -355,7 +402,6 @@ gs.update(wspace=0.5, hspace=0.75)
 
 #Figure Pds
 for _i, _j in enumerate(RF_data_profile_Pds):
-
 		pds_grid = fig.add_subplot(gs[0:3, _i*2:_i*2+1])
 		ppds_grid = fig.add_subplot(gs[3:6, _i*2:_i*2+1])
 
@@ -379,9 +425,9 @@ for _i, _j in enumerate(RF_data_profile_Pds):
 		max_x = [max(a) for a in zip(*x_data_Pds)]
 		pds_grid.fill_betweenx(y=camadas_terra_10_km,x1=min_x, x2=max_x, facecolor='whitesmoke',alpha=0.3, interpolate=True, zorder=5)
 
-		pds_grid.text(min(min_x),RF_DEPTH_mean_1_profile_Pds[_i],str(round(RF_DEPTH_mean_1_profile_Pds[_i]))+'±'+str(round(RF_DEPTH_std_1_profile_Pds[_i])),zorder=40,fontsize=8, fontweight='bold',bbox={'facecolor':'white','edgecolor':'none','pad':1})
+		pds_grid.text(min(min_x),RF_DEPTH_mean_1_profile_Pds[_i],str(round(RF_DEPTH_mean_1_profile_Pds[_i]))+'±'+str(round(RF_DEPTH_std_1_profile_Pds[_i])),zorder=40,fontsize=6, fontweight='bold',bbox={'facecolor':'white','edgecolor':'none','pad':1})
 
-		pds_grid.text(min(min_x),RF_DEPTH_mean_2_profile_Pds[_i],str(round(RF_DEPTH_mean_2_profile_Pds[_i]))+'±'+str(round(RF_DEPTH_std_2_profile_Pds[_i])),zorder=41,fontsize=8, fontweight='bold',bbox={'facecolor':'white','edgecolor':'none','pad':1})
+		pds_grid.text(min(min_x),RF_DEPTH_mean_2_profile_Pds[_i],str(round(RF_DEPTH_mean_2_profile_Pds[_i]))+'±'+str(round(RF_DEPTH_std_2_profile_Pds[_i])),zorder=41,fontsize=6, fontweight='bold',bbox={'facecolor':'white','edgecolor':'none','pad':1})
 
 
 		RF_data_factor_Pds = [_i/factor_Pds+l for k, l in enumerate(_j)]
@@ -424,10 +470,10 @@ for _i, _j in enumerate(RF_data_profile_Pds):
 		RF_data_factor_Ppds = [_i/factor_Ppds+l for k, l in enumerate(RF_data_profile_Ppds[_i])]
 		ppds_grid.plot(RF_data_factor_Ppds,camadas_terra_10_km,'k',linewidth=2, zorder=30)
 
-		ppds_grid.text(min(min_x),RF_DEPTH_mean_1_profile_Ppds[_i],str(round(RF_DEPTH_mean_1_profile_Ppds[_i]))+'±'+str(round(RF_DEPTH_std_1_profile_Ppds[_i])),zorder=40,fontsize=8, fontweight='bold',bbox={'facecolor':'white','edgecolor':'none','pad':1})
+		ppds_grid.text(min(min_x),RF_DEPTH_mean_1_profile_Ppds[_i],str(round(RF_DEPTH_mean_1_profile_Ppds[_i]))+'±'+str(round(RF_DEPTH_std_1_profile_Ppds[_i])),zorder=40,fontsize=6, fontweight='bold',bbox={'facecolor':'white','edgecolor':'none','pad':1})
 
 		
-		ppds_grid.text(min(min_x),RF_DEPTH_mean_2_profile_Ppds[_i],str(round(RF_DEPTH_mean_2_profile_Ppds[_i]))+'±'+str(round(RF_DEPTH_std_2_profile_Ppds[_i])),zorder=41,fontsize=8, fontweight='bold',bbox={'facecolor':'white','edgecolor':'none','pad':1})
+		ppds_grid.text(min(min_x),RF_DEPTH_mean_2_profile_Ppds[_i],str(round(RF_DEPTH_mean_2_profile_Ppds[_i]))+'±'+str(round(RF_DEPTH_std_2_profile_Ppds[_i])),zorder=41,fontsize=6, fontweight='bold',bbox={'facecolor':'white','edgecolor':'none','pad':1})
 
 
 		ppds_grid.fill_betweenx(camadas_terra_10_km,RF_data_factor_Ppds,_i/factor_Ppds,where=np.array(RF_data_factor_Ppds)>=_i/factor_Ppds,alpha=0.5, facecolor='dimgrey',interpolate=True, zorder=19)
@@ -477,10 +523,10 @@ for _i, _j in enumerate(RF_data_profile_Pds):
 			pds_grid_410_660.yaxis.set_label_position("right")
 			pds_grid_410_660.tick_params(labelright=True,labelleft=False)
 
-		pds_grid_410_660.text(5,550,' MTZ = '+str(round(RF_DEPTH_mtz_thickness_Pds[_i]))+'±'+str(round(RF_DEPTH_mtz_thickness_Pds_std[_i])),zorder=40,fontsize=8, fontweight='bold',bbox={'facecolor':'white','edgecolor':'none','pad':1})
-		pds_grid_410_660.text(5,580,'(MTZ = '+str(round(RF_DEPTH_true_thickness_MTZ_profile_Pds[_i]))+'±'+str(round(RF_DEPTH_true_thickness_MTZ_profile_Pds_std[_i]))+')',zorder=40,fontsize=8, fontweight='bold',bbox={'facecolor':'white','edgecolor':'none','pad':1})
-		pds_grid_410_660.text(5,RF_DEPTH_mean_1_profile_Pds[_i]-30,'('+str(round(RF_DEPTH_mean_1_true_profile_Pds[_i]))+'±'+str(round(RF_DEPTH_std_2_true_profile_Pds[_i]))+')',zorder=40,fontsize=8, fontweight='bold',bbox={'facecolor':'white','edgecolor':'none','pad':1})
-		pds_grid_410_660.text(5,RF_DEPTH_mean_2_profile_Pds[_i]+40,'('+str(round(RF_DEPTH_mean_2_true_profile_Pds[_i]))+'±'+str(round(RF_DEPTH_std_2_true_profile_Pds[_i]))+')',zorder=40,fontsize=8, fontweight='bold',bbox={'facecolor':'white','edgecolor':'none','pad':1})
+		pds_grid_410_660.text(5,550,' MTZ = '+str(round(RF_DEPTH_mtz_thickness_profile_Pds[_i]))+'±'+str(round(RF_DEPTH_mtz_thickness_profile_Pds_std[_i])),zorder=40,fontsize=6, fontweight='bold',bbox={'facecolor':'white','edgecolor':'none','pad':1})
+		pds_grid_410_660.text(5,580,'(MTZ = '+str(round(RF_DEPTH_true_thickness_MTZ_profile[_i]))+'±'+str(round(RF_DEPTH_true_thickness_MTZ_profile_std[_i]))+')',zorder=40,fontsize=6, fontweight='bold',bbox={'facecolor':'white','edgecolor':'none','pad':1})
+		pds_grid_410_660.text(5,RF_DEPTH_mean_1_profile_Pds[_i]-30,'('+str(round(RF_DEPTH_mean_1_true_profile[_i]))+'±'+str(round(RF_DEPTH_std_2_true_profile[_i]))+')',zorder=40,fontsize=6, fontweight='bold',bbox={'facecolor':'white','edgecolor':'none','pad':1})
+		pds_grid_410_660.text(5,RF_DEPTH_mean_2_profile_Pds[_i]+40,'('+str(round(RF_DEPTH_mean_2_true_profile[_i]))+'±'+str(round(RF_DEPTH_std_2_true_profile[_i]))+')',zorder=40,fontsize=6, fontweight='bold',bbox={'facecolor':'white','edgecolor':'none','pad':1})
 
 
 		#### Plot Depth 410 Ppds ####
@@ -499,10 +545,10 @@ for _i, _j in enumerate(RF_data_profile_Pds):
 		ppds_grid_410_660.set_xlabel('Population')
 		ppds_grid_410_660.set_ylim(800,300)
 		
-		ppds_grid_410_660.text(5,550,' MTZ = '+str(round(RF_DEPTH_mtz_thickness_profile_Ppds[_i]))+'±'+str(round(RF_DEPTH_mtz_thickness_profile_Ppds_std[_i])),zorder=40,fontsize=8, fontweight='bold',bbox={'facecolor':'white','edgecolor':'none','pad':1})
-		ppds_grid_410_660.text(5,580,'(MTZ = '+str(round(RF_DEPTH_true_thickness_MTZ_profile_Pds[_i]))+'±'+str(round(RF_DEPTH_true_thickness_MTZ_profile_Pds_std[_i]))+')',zorder=40,fontsize=8, fontweight='bold',bbox={'facecolor':'white','edgecolor':'none','pad':1})
-		ppds_grid_410_660.text(5,RF_DEPTH_mean_1_profile_Ppds[_i]-30,'('+str(round(RF_DEPTH_mean_1_true_profile_Ppds[_i]))+'±'+str(round(RF_DEPTH_std_1_true_profile_Ppds[_i]))+')',zorder=40,fontsize=8, fontweight='bold',bbox={'facecolor':'white','edgecolor':'none','pad':1})
-		ppds_grid_410_660.text(5,RF_DEPTH_mean_2_profile_Ppds[_i]+40,'('+str(round(RF_DEPTH_mean_2_true_profile_Ppds[_i]))+'±'+str(round(RF_DEPTH_std_2_true_profile_Ppds[_i]))+')',zorder=40,fontsize=8, fontweight='bold',bbox={'facecolor':'white','edgecolor':'none','pad':1})
+		ppds_grid_410_660.text(5,550,' MTZ = '+str(round(RF_DEPTH_mtz_thickness_profile_Ppds[_i]))+'±'+str(round(RF_DEPTH_mtz_thickness_profile_Ppds_std[_i])),zorder=40,fontsize=6, fontweight='bold',bbox={'facecolor':'white','edgecolor':'none','pad':1})
+		ppds_grid_410_660.text(5,580,'(MTZ = '+str(round(RF_DEPTH_true_thickness_MTZ_profile[_i]))+'±'+str(round(RF_DEPTH_true_thickness_MTZ_profile_std[_i]))+')',zorder=40,fontsize=6, fontweight='bold',bbox={'facecolor':'white','edgecolor':'none','pad':1})
+		ppds_grid_410_660.text(5,RF_DEPTH_mean_1_profile_Ppds[_i]-30,'('+str(round(RF_DEPTH_mean_1_true_profile[_i]))+'±'+str(round(RF_DEPTH_std_1_true_profile[_i]))+')',zorder=40,fontsize=6, fontweight='bold',bbox={'facecolor':'white','edgecolor':'none','pad':1})
+		ppds_grid_410_660.text(5,RF_DEPTH_mean_2_profile_Ppds[_i]+40,'('+str(round(RF_DEPTH_mean_2_true_profile[_i]))+'±'+str(round(RF_DEPTH_std_2_true_profile[_i]))+')',zorder=40,fontsize=6, fontweight='bold',bbox={'facecolor':'white','edgecolor':'none','pad':1})
 
 
 		if _i != 3:

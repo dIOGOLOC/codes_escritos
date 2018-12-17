@@ -43,7 +43,7 @@ from parameters_py.mgconfig import (
 					LLCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLON_LARGE,URCRNRLAT_LARGE,
 					LLCRNRLON_SMALL,URCRNRLON_SMALL,LLCRNRLAT_SMALL,URCRNRLAT_SMALL,
 					PROJECT_LAT,PROJECT_LON,GRID_PP_MULT,BOUNDARY_1_SHP,BOUNDARY_2_SHP,
-					EXT_FIG,DPI_FIG,FRESNEL_ZONE_RADIUS,DIST_GRID_PP,NUMBER_STA_PER_BIN,OUTPUT_DIR,
+					EXT_FIG,DPI_FIG,FRESNEL_ZONE_RADIUS,DIST_GRID_PP,NUMBER_STA_PER_BIN,OUTPUT_DIR,MIN_AMP_GOOD,
 					DEPTH_RANGE,BOOTSTRAP_INTERATOR,BOOTSTRAP_DEPTH_ESTIMATION,GAMMA,COLORMAP_STD,COLORMAP_VEL
 				   )
 
@@ -455,7 +455,7 @@ ax1.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 ax1.gridlines(draw_labels=True)
 
 print('GRID Check!')
-plt.show()
+#plt.show()
 
 PP_FIGURE = OUTPUT_DIR+'MODEL_INTER_DEPTH_'+str(INTER_DEPTH)+'/'+'Figures'+'/'
 
@@ -1024,7 +1024,7 @@ for i,j in enumerate(RF_data_raw_Pds):
 		amp_d410Pds = lst_stacking_data_410_Pds[d410Pds_candidate.index(min(d410Pds_candidate))]
 
 		
-		if  amp_d410Pds >= MIN_AMP_PDS_PPDS:
+		if  amp_d410Pds >= MIN_AMP_GOOD:
 			
 			RF_DEPTH_mean_1_Pds.append(np.nanmean(flat_mean_1_Pds))
 			RF_DEPTH_std_1_Pds.append(np.nanstd(flat_mean_1_Pds))
@@ -1045,7 +1045,7 @@ for i,j in enumerate(RF_data_raw_Pds):
 
 		amp_d410Ppds = lst_stacking_data_410_Ppds[d410Ppds_candidate.index(min(d410Ppds_candidate))]
 
-		if  amp_d410Ppds >= MIN_AMP_PDS_PPDS:
+		if  amp_d410Ppds >= MIN_AMP_GOOD:
 
 			RF_DEPTH_mean_1_Ppds.append(np.nanmean(flat_mean_1_Ppds))
 			RF_DEPTH_std_1_Ppds.append(np.nanstd(flat_mean_1_Ppds))
@@ -1066,7 +1066,7 @@ for i,j in enumerate(RF_data_raw_Pds):
 		amp_d660Pds = lst_stacking_data_660_Pds[d660Pds_candidate.index(min(d660Pds_candidate))]
 
 
-		if  amp_d660Pds >= MIN_AMP_PDS_PPDS:
+		if  amp_d660Pds >= MIN_AMP_GOOD:
 
 			counts = mode(flat_mean_2_Pds).count
 			RF_DEPTH_mean_2_Pds.append(np.nanmean(flat_mean_2_Pds))
@@ -1088,7 +1088,7 @@ for i,j in enumerate(RF_data_raw_Pds):
 		amp_d660Ppds = lst_stacking_data_660_Pds[d660Ppds_candidate.index(min(d660Ppds_candidate))]
 
 
-		if  amp_d660Ppds >= MIN_AMP_PDS_PPDS:
+		if  amp_d660Ppds >= MIN_AMP_GOOD:
 
 			counts = mode(flat_mean_2_Ppds).count
 			RF_DEPTH_mean_2_Ppds.append(np.nanmean(flat_mean_2_Ppds))
@@ -1103,7 +1103,7 @@ for i,j in enumerate(RF_data_raw_Pds):
 		#Analysing stacked data amplitude to calculate MTZ THICKNESS Pds
 
 
-		if  amp_d410Pds >= MIN_AMP_PDS_PPDS and amp_d660Pds >= MIN_AMP_PDS_PPDS:
+		if  amp_d410Pds >= MIN_AMP_GOOD and amp_d660Pds >= MIN_AMP_GOOD:
 
 			flat_thickness_MTZ_Pds = [float(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['thickness_MTZ_mean']) for _k in range(BOOTSTRAP_INTERATOR)]
 			thickness_MTZ_Pds.append(np.nanmean(flat_thickness_MTZ_Pds))
@@ -1116,7 +1116,7 @@ for i,j in enumerate(RF_data_raw_Pds):
 
 		#Analysing stacked data amplitude to calculate MTZ THICKNESS Ppds
 
-		if  amp_d410Ppds >= MIN_AMP_PDS_PPDS and amp_d660Ppds >= MIN_AMP_PDS_PPDS:
+		if  amp_d410Ppds >= MIN_AMP_GOOD and amp_d660Ppds >= MIN_AMP_GOOD:
 
 			flat_thickness_MTZ_Ppds = [float(RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['thickness_MTZ_mean']) for _k in range(BOOTSTRAP_INTERATOR)]
 			thickness_MTZ_Ppds.append(np.nanmean(flat_thickness_MTZ_Ppds))
@@ -1131,7 +1131,7 @@ for i,j in enumerate(RF_data_raw_Pds):
 		#Analysing stacked data amplitude to calculate TRUE MTZ THICKNESS
 
 
-		if amp_d410Pds >= MIN_AMP_PDS_PPDS and amp_d660Pds >= MIN_AMP_PDS_PPDS and amp_d410Ppds >= MIN_AMP_PDS_PPDS and amp_d660Ppds >= MIN_AMP_PDS_PPDS:
+		if amp_d410Pds >= MIN_AMP_GOOD and amp_d660Pds >= MIN_AMP_GOOD and amp_d410Ppds >= MIN_AMP_GOOD and amp_d660Ppds >= MIN_AMP_GOOD:
 			RF_lat_true.append(grid_sel_y[i])
 			RF_lon_true.append(grid_sel_x[i])
 

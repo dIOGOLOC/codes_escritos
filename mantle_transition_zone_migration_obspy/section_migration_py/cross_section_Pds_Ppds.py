@@ -144,7 +144,6 @@ RF_DEPTH_std_1_true = SELECTED_BINNED_DATA_dic['true_std_1_Pds']
 RF_DEPTH_mean_2_true = SELECTED_BINNED_DATA_dic['true_mean_2_Pds']
 RF_DEPTH_std_2_true = SELECTED_BINNED_DATA_dic['true_std_2_Pds']
 
-
 #############################################################################################################################3
 
 
@@ -474,7 +473,7 @@ for i,j in enumerate(RF_data_profile_Pds):
 
 	for t,y in enumerate(lons_true):
 		if math.isnan(RF_DEPTH_true_thickness_MTZ[t]) == False:
-			circulo_410 = Circle(radius=DIST_GRID_PP,xy=(lons_true[t], lats_true[t]),color=colormap(norm_map_MTZ_thickness(RF_DEPTH_true_thickness_MTZ[t])), ec='None',transform=ccrs.Geodetic(),zorder=2)
+			circulo_410 = Circle(radius=DIST_GRID_PP*(1-(RF_DEPTH_true_thickness_MTZ_std[t]/50)),xy=(lons_true[t], lats_true[t]),color=colormap(norm_map_MTZ_thickness(RF_DEPTH_true_thickness_MTZ[t])), ec='None',transform=ccrs.Geodetic(),zorder=2)
 			map_MTZ_thickness.add_patch(circulo_410)
 		else:
 			pass

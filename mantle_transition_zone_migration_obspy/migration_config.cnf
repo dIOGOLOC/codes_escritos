@@ -42,8 +42,8 @@ RF_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/data_MTZ_NO_PP/
 RF_EXT = .eqr
 
 #Directory of the earth models
-MODEL_FILE_NPZ = /home/diogo/diogo_git/codes_escritos/mantle_transition_zone_migration_obspy/velocity_model/iasp91_5.npz
-MODEL_FILE_TAUP = /home/diogo/diogo_git/codes_escritos/mantle_transition_zone_migration_obspy/velocity_model/iasp91_5.taup
+MODEL_FILE_NPZ = /home/diogo/diogo_git/codes_escritos/mantle_transition_zone_migration_obspy/velocity_model/iasp91_10.npz
+MODEL_FILE_TAUP = /home/diogo/diogo_git/codes_escritos/mantle_transition_zone_migration_obspy/velocity_model/iasp91_10.taup
 
 # dir of OUTPUTs
 OUTPUT_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/Mantle_Transition_Migration_NO_PP_obspy/
@@ -122,7 +122,7 @@ MIN_DEPTH = 300
 MAX_DEPTH = 800
 
 #depth interval of the migration
-INTER_DEPTH = 5
+INTER_DEPTH = 10
 
 # ==========
 [migration]
@@ -147,7 +147,7 @@ FRESNEL_ZONE_RADIUS = 1.2
 NUMBER_PP_PER_BIN = 30
 
 #number of stations RF per bin
-NUMBER_STA_PER_BIN = 4
+NUMBER_STA_PER_BIN = 3
 
 #False or True for depth estimation
 DEPTH_ESTIMATION = True 
@@ -165,7 +165,10 @@ BOOTSTRAP_INTERATOR = 200
 GAMMA = 2
 
 #Minimum amplitude of the 410 and 660 km (both Pds and Ppds ) to compute apparent and true depth
-MIN_AMP_PDS_PPDS = 0.0
+MIN_AMP_PDS_PPDS = 0.001
+
+#Minimum amplitude of the 410 and 660 km (both Pds and Ppds ) to accept apparent and true depth
+MIN_AMP_GOOD = 0.0017
 
 #Depth range (+/-) that we will use to find the maximum amplitude
 DEPTH_RANGE = 20
