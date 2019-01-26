@@ -97,11 +97,19 @@ RF_stacking_Ppds = SELECTED_BINNED_DATA_dic['data_Ppds']
 
 RF_DEPTH_mean_1_Pds = SELECTED_BINNED_DATA_dic['mean_1_Pds']
 RF_DEPTH_std_1_Pds = SELECTED_BINNED_DATA_dic['std_1_Pds']
+
+RF_DEPTH_mean_520_Pds = SELECTED_BINNED_DATA_dic['mean_520_Pds']
+RF_DEPTH_std_520_Pds = SELECTED_BINNED_DATA_dic['std_520_Pds']
+
 RF_DEPTH_mean_2_Pds = SELECTED_BINNED_DATA_dic['mean_2_Pds']
 RF_DEPTH_std_2_Pds = SELECTED_BINNED_DATA_dic['std_2_Pds']
 
 RF_DEPTH_mean_1_Ppds = SELECTED_BINNED_DATA_dic['mean_1_Ppds']
 RF_DEPTH_std_1_Ppds = SELECTED_BINNED_DATA_dic['std_1_Ppds']
+
+RF_DEPTH_mean_520_Ppds = SELECTED_BINNED_DATA_dic['mean_520_Ppds']
+RF_DEPTH_std_520_Ppds = SELECTED_BINNED_DATA_dic['std_520_Ppds']
+
 RF_DEPTH_mean_2_Ppds = SELECTED_BINNED_DATA_dic['mean_2_Ppds']
 RF_DEPTH_std_2_Ppds = SELECTED_BINNED_DATA_dic['std_2_Ppds']
 
@@ -157,6 +165,9 @@ print('Pds Phases')
 print('Number of bins - 410 km depth: '+str(np.count_nonzero(~np.isnan(RF_DEPTH_mean_1_Pds))))
 print(r'Bins - 410 km depth: '+str(np.nanmean(RF_DEPTH_mean_1_Pds))+' ± '+str(np.nanstd(RF_DEPTH_mean_1_Pds)))
 
+print('Number of bins - 520 km depth: '+str(np.count_nonzero(~np.isnan(RF_DEPTH_mean_520_Pds))))
+print(r'Bins - 520 km depth: '+str(np.nanmean(RF_DEPTH_mean_520_Pds))+' ± '+str(np.nanstd(RF_DEPTH_mean_520_Pds)))
+
 print('Number of bins - 660 km depth: '+str(np.count_nonzero(~np.isnan(RF_DEPTH_mean_2_Pds))))
 print(r'Bins - 660 km depth: '+str(np.nanmean(RF_DEPTH_mean_2_Pds))+' ± '+str(np.nanstd(RF_DEPTH_mean_2_Pds)))
 
@@ -167,6 +178,9 @@ print('\n')
 print('Ppds Phases')
 print('Number of bins - 410 km depth: '+str(np.count_nonzero(~np.isnan(RF_DEPTH_mean_1_Ppds))))
 print(r'Bins - 410 km depth: '+str(np.nanmean(RF_DEPTH_mean_1_Ppds))+' ± '+str(np.nanstd(RF_DEPTH_mean_1_Ppds)))
+
+print('Number of bins - 520 km depth: '+str(np.count_nonzero(~np.isnan(RF_DEPTH_mean_520_Ppds))))
+print(r'Bins - 520 km depth: '+str(np.nanmean(RF_DEPTH_mean_520_Ppds))+' ± '+str(np.nanstd(RF_DEPTH_mean_520_Ppds)))
 
 print('Number of bins - 660 km depth: '+str(np.count_nonzero(~np.isnan(RF_DEPTH_mean_2_Ppds))))
 print(r'Bins - 660 km depth: '+str(np.nanmean(RF_DEPTH_mean_2_Ppds))+' ± '+str(np.nanstd(RF_DEPTH_mean_2_Ppds)))
@@ -349,7 +363,7 @@ plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
 ax2.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 ax2.gridlines(draw_labels=True)
 
-norm_660 = mpl.colors.Normalize(vmin=560,vmax=760,clip=True)
+norm_660 = mpl.colors.Normalize(vmin=610,vmax=710,clip=True)
 
 for i,j in enumerate(lons):
 	if math.isnan(RF_DEPTH_mean_2_Pds[i]) == False:
@@ -427,7 +441,7 @@ plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
 ax2.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 ax2.gridlines(draw_labels=True)
 
-norm_660 = mpl.colors.Normalize(vmin=560,vmax=760,clip=True)
+norm_660 = mpl.colors.Normalize(vmin=610,vmax=710,clip=True)
 
 for i,j in enumerate(lons):
 	if math.isnan(RF_DEPTH_mean_2_Ppds[i]) == False:
@@ -507,7 +521,7 @@ plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
 ax2.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 ax2.gridlines(draw_labels=True)
 
-norm_660 = mpl.colors.Normalize(vmin=560,vmax=760,clip=True)
+norm_660 = mpl.colors.Normalize(vmin=610,vmax=710,clip=True)
 
 for i,j in enumerate(lons):
 	if math.isnan(RF_DEPTH_mean_2_true_Pds[i]) == False:
@@ -532,322 +546,10 @@ fig.colorbar(sm_660,ax=ax2,orientation='horizontal',shrink=0.8)
 
 fig.savefig(RESULTS_FOLDER+'TRUE_DEPTH_410_660.'+EXT_FIG,dpi=DPI_FIG)
 
-'''
-print('Plotting Figure: Uncertainty (1 sigma) of 410 km and 660 km (Pds phases)')
 
-fig, axes = plt.subplots(nrows=1, ncols=2, subplot_kw={'projection': ccrs.Mercator(central_longitude=PROJECT_LON, globe=None)},figsize=(20,10),sharey=True)
+#######################################################################################################################
 
-ax = axes[0]
-ax2 = axes[1]
 
-#410 km
-
-ax.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
-
-reader_1_SHP = Reader(BOUNDARY_1_SHP)
-shape_1_SHP = list(reader_1_SHP.geometries())
-plot_shape_1_SHP = cfeature.ShapelyFeature(shape_1_SHP, ccrs.PlateCarree())
-ax.add_feature(plot_shape_1_SHP, facecolor='none', edgecolor='k',linewidth=3)
-
-reader_2_SHP = Reader(BOUNDARY_2_SHP)
-shape_2_SHP = list(reader_2_SHP.geometries())
-plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
-ax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
-ax.gridlines(draw_labels=True)
-
-norm_410 = mpl.colors.Normalize(vmin=0,vmax=50,clip=True)
-
-for i,j in enumerate(lons):
-	if math.isnan(RF_DEPTH_std_1_Pds[i]) == False:
-		circulo_410 = Circle(radius=DIST_GRID_PP,xy=(lons[i], lats[i]),color=colormap_std(norm_410(RF_DEPTH_std_1_Pds[i])), ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
-		ax.add_patch(circulo_410)
-	else:
-		pass
-
-
-ax.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
-
-ax.set_title(r'Uncertainty (1$\sigma$) of  410 km Pds', y=1.08)
-
-
-#660 km
-
-ax2.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
-
-reader_1_SHP = Reader(BOUNDARY_1_SHP)
-shape_1_SHP = list(reader_1_SHP.geometries())
-plot_shape_1_SHP = cfeature.ShapelyFeature(shape_1_SHP, ccrs.PlateCarree())
-ax2.add_feature(plot_shape_1_SHP, facecolor='none', edgecolor='k',linewidth=3)
-
-reader_2_SHP = Reader(BOUNDARY_2_SHP)
-shape_2_SHP = list(reader_2_SHP.geometries())
-plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
-ax2.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
-ax2.gridlines(draw_labels=True)
-
-norm_660 = mpl.colors.Normalize(vmin=0,vmax=50,clip=True)
-
-for i,j in enumerate(lons):
-	if math.isnan(RF_DEPTH_std_2_Pds[i]) == False:
-		circulo_660 = Circle(radius=DIST_GRID_PP,xy=(lons[i], lats[i]),color=colormap_std(norm_660(RF_DEPTH_std_2_Pds[i])), ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
-		ax2.add_patch(circulo_660)
-	else: 
-		pass
-
-ax2.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
-
-ax2.set_title(r'Uncertainty (1$\sigma$) of  660 km Pds', y=1.08)
-
-#______________________________________________________________________
-
-sm_410 = plt.cm.ScalarMappable(cmap=colormap_std,norm=norm_410)
-sm_410._A = []
-fig.colorbar(sm_410,ax=ax,orientation='horizontal',shrink=0.8)
-
-sm_660 = plt.cm.ScalarMappable(cmap=colormap_std,norm=norm_660)
-sm_660._A = []
-fig.colorbar(sm_660,ax=ax2,orientation='horizontal',shrink=0.8)
-
-fig.savefig(RESULTS_FOLDER+'Uncertainty_DEPTH_Pds.'+EXT_FIG,dpi=DPI_FIG)
-
-#######################################################################################################################################
-
-print('Plotting Figure: Uncertainty (1 sigma) of 410 km and 660 km (True Depth)')
-
-fig, axes = plt.subplots(nrows=1, ncols=2, subplot_kw={'projection': ccrs.Mercator(central_longitude=PROJECT_LON, globe=None)},figsize=(20,10),sharey=True)
-
-ax = axes[0]
-ax2 = axes[1]
-
-#410 km
-
-ax.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
-
-reader_1_SHP = Reader(BOUNDARY_1_SHP)
-shape_1_SHP = list(reader_1_SHP.geometries())
-plot_shape_1_SHP = cfeature.ShapelyFeature(shape_1_SHP, ccrs.PlateCarree())
-ax.add_feature(plot_shape_1_SHP, facecolor='none', edgecolor='k',linewidth=3)
-
-reader_2_SHP = Reader(BOUNDARY_2_SHP)
-shape_2_SHP = list(reader_2_SHP.geometries())
-plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
-ax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
-ax.gridlines(draw_labels=True)
-
-norm_410 = mpl.colors.Normalize(vmin=0,vmax=50,clip=True)
-
-for i,j in enumerate(lons):
-	if math.isnan(RF_DEPTH_std_1_true_Pds[i]) == False:
-		circulo_410 = Circle(radius=DIST_GRID_PP,xy=(lons[i], lats[i]),color=colormap_std(norm_410(RF_DEPTH_std_1_true_Pds[i])), ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
-		ax.add_patch(circulo_410)
-	else:
-		pass
-
-
-ax.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
-
-ax.set_title(r'Uncertainty (1$\sigma$) of True 410 km', y=1.08)
-
-
-#660 km
-
-ax2.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
-
-reader_1_SHP = Reader(BOUNDARY_1_SHP)
-shape_1_SHP = list(reader_1_SHP.geometries())
-plot_shape_1_SHP = cfeature.ShapelyFeature(shape_1_SHP, ccrs.PlateCarree())
-ax2.add_feature(plot_shape_1_SHP, facecolor='none', edgecolor='k',linewidth=3)
-
-reader_2_SHP = Reader(BOUNDARY_2_SHP)
-shape_2_SHP = list(reader_2_SHP.geometries())
-plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
-ax2.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
-ax2.gridlines(draw_labels=True)
-
-norm_660 = mpl.colors.Normalize(vmin=0,vmax=50,clip=True)
-
-for i,j in enumerate(lons):
-	if math.isnan(RF_DEPTH_std_2_true_Pds[i]) == False:
-		circulo_660 = Circle(radius=DIST_GRID_PP,xy=(lons[i], lats[i]),color=colormap_std(norm_660(RF_DEPTH_std_2_true_Pds[i])), ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
-		ax2.add_patch(circulo_660)
-	else: 
-		pass
-
-ax2.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
-
-ax2.set_title(r'Uncertainty (1$\sigma$) of True 660 km', y=1.08)
-
-#______________________________________________________________________
-
-sm_410 = plt.cm.ScalarMappable(cmap=colormap_std,norm=norm_410)
-sm_410._A = []
-fig.colorbar(sm_410,ax=ax,orientation='horizontal',shrink=0.8)
-
-sm_660 = plt.cm.ScalarMappable(cmap=colormap_std,norm=norm_660)
-sm_660._A = []
-fig.colorbar(sm_660,ax=ax2,orientation='horizontal',shrink=0.8)
-
-fig.savefig(RESULTS_FOLDER+'Uncertainty_TRUE_DEPTH.'+EXT_FIG,dpi=DPI_FIG)
-
-#######################################################################################################################################
-
-
-print('Plotting Figure: Uncertainty (1 sigma) of 410 km and 660 km (Ppds phases)')
-
-fig, axes = plt.subplots(nrows=1, ncols=2, subplot_kw={'projection': ccrs.Mercator(central_longitude=PROJECT_LON, globe=None)},figsize=(20,10),sharey=True)
-
-ax = axes[0]
-ax2 = axes[1]
-
-#410 km
-
-ax.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
-
-reader_1_SHP = Reader(BOUNDARY_1_SHP)
-shape_1_SHP = list(reader_1_SHP.geometries())
-plot_shape_1_SHP = cfeature.ShapelyFeature(shape_1_SHP, ccrs.PlateCarree())
-ax.add_feature(plot_shape_1_SHP, facecolor='none', edgecolor='k',linewidth=3)
-
-reader_2_SHP = Reader(BOUNDARY_2_SHP)
-shape_2_SHP = list(reader_2_SHP.geometries())
-plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
-ax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
-ax.gridlines(draw_labels=True)
-
-norm_410 = mpl.colors.Normalize(vmin=0,vmax=50,clip=True)
-
-for i,j in enumerate(lons):
-	if math.isnan(RF_DEPTH_std_1_Ppds[i]) == False:
-		circulo_410 = Circle(radius=DIST_GRID_PP,xy=(lons[i], lats[i]),color=colormap_std(norm_410(RF_DEPTH_std_1_Ppds[i])), ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
-		ax.add_patch(circulo_410)
-	else:
-		pass
-
-
-ax.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
-
-ax.set_title(r'Uncertainty (1$\sigma$) of  410 km Ppds', y=1.08)
-
-
-#660 km
-
-ax2.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
-
-reader_1_SHP = Reader(BOUNDARY_1_SHP)
-shape_1_SHP = list(reader_1_SHP.geometries())
-plot_shape_1_SHP = cfeature.ShapelyFeature(shape_1_SHP, ccrs.PlateCarree())
-ax2.add_feature(plot_shape_1_SHP, facecolor='none', edgecolor='k',linewidth=3)
-
-reader_2_SHP = Reader(BOUNDARY_2_SHP)
-shape_2_SHP = list(reader_2_SHP.geometries())
-plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
-ax2.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
-ax2.gridlines(draw_labels=True)
-
-norm_660 = mpl.colors.Normalize(vmin=0,vmax=50,clip=True)
-
-for i,j in enumerate(lons):
-	if math.isnan(RF_DEPTH_std_2_Ppds[i]) == False:
-		circulo_660 = Circle(radius=DIST_GRID_PP,xy=(lons[i], lats[i]),color=colormap_std(norm_660(RF_DEPTH_std_2_Ppds[i])), ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
-		ax2.add_patch(circulo_660)
-	else:
-		pass
-ax2.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
-
-ax2.set_title(r'Uncertainty (1$\sigma$) of  660 km Ppds', y=1.08)
-
-#______________________________________________________________________
-
-sm_410 = plt.cm.ScalarMappable(cmap=colormap_std,norm=norm_410)
-sm_410._A = []
-fig.colorbar(sm_410,ax=ax,orientation='horizontal',shrink=0.8)
-
-sm_660 = plt.cm.ScalarMappable(cmap=colormap_std,norm=norm_660)
-sm_660._A = []
-fig.colorbar(sm_660,ax=ax2,orientation='horizontal',shrink=0.8)
-
-fig.savefig(RESULTS_FOLDER+'Uncertainty_DEPTH_Ppds.'+EXT_FIG,dpi=DPI_FIG)
-
-#######################################################################################################################################
-
-print('Plotting Figure: Uncertainty (1 sigma) of MTZ Thickness (Pds and Ppds phases)')
-
-fig, axes = plt.subplots(nrows=1, ncols=2, subplot_kw={'projection': ccrs.Mercator(central_longitude=PROJECT_LON, globe=None)},figsize=(20,10),sharey=True)
-
-ax = axes[0]
-ax2 = axes[1]
-
-#410 km
-
-ax.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
-
-reader_1_SHP = Reader(BOUNDARY_1_SHP)
-shape_1_SHP = list(reader_1_SHP.geometries())
-plot_shape_1_SHP = cfeature.ShapelyFeature(shape_1_SHP, ccrs.PlateCarree())
-ax.add_feature(plot_shape_1_SHP, facecolor='none', edgecolor='k',linewidth=3)
-
-reader_2_SHP = Reader(BOUNDARY_2_SHP)
-shape_2_SHP = list(reader_2_SHP.geometries())
-plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
-ax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
-ax.gridlines(draw_labels=True)
-
-norm_410 = mpl.colors.Normalize(vmin=0,vmax=50,clip=True)
-
-for i,j in enumerate(lons):
-	if math.isnan(RF_DEPTH_mtz_thickness_Pds_std[i]) == False:
-		circulo_410 = Circle(radius=DIST_GRID_PP,xy=(lons[i], lats[i]),color=colormap_std(norm_410(RF_DEPTH_mtz_thickness_Pds_std[i])), ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
-		ax.add_patch(circulo_410)
-	else:
-		pass
-
-
-ax.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
-
-ax.set_title(r'Uncertainty (1$\sigma$) of  MTZ Thickness Pds', y=1.08)
-
-
-#660 km
-
-ax2.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
-
-reader_1_SHP = Reader(BOUNDARY_1_SHP)
-shape_1_SHP = list(reader_1_SHP.geometries())
-plot_shape_1_SHP = cfeature.ShapelyFeature(shape_1_SHP, ccrs.PlateCarree())
-ax2.add_feature(plot_shape_1_SHP, facecolor='none', edgecolor='k',linewidth=3)
-
-reader_2_SHP = Reader(BOUNDARY_2_SHP)
-shape_2_SHP = list(reader_2_SHP.geometries())
-plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
-ax2.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
-ax2.gridlines(draw_labels=True)
-
-norm_660 = mpl.colors.Normalize(vmin=0,vmax=50,clip=True)
-
-for i,j in enumerate(lons):
-	if math.isnan(RF_DEPTH_mtz_thickness_Ppds_std[i]) == False:
-		circulo_660 = Circle(radius=DIST_GRID_PP,xy=(lons[i], lats[i]),color=colormap_std(norm_660(RF_DEPTH_mtz_thickness_Ppds_std[i])), ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
-		ax2.add_patch(circulo_660)
-	else:
-		pass
-
-ax2.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
-
-ax2.set_title(r'Uncertainty (1$\sigma$) of  MTZ Thickness Ppds', y=1.08)
-#______________________________________________________________________
-
-sm_410 = plt.cm.ScalarMappable(cmap=colormap_std,norm=norm_410)
-sm_410._A = []
-fig.colorbar(sm_410,ax=ax,orientation='horizontal',shrink=0.8)
-
-sm_660 = plt.cm.ScalarMappable(cmap=colormap_std,norm=norm_660)
-sm_660._A = []
-fig.colorbar(sm_660,ax=ax2,orientation='horizontal',shrink=0.8)
-
-fig.savefig(RESULTS_FOLDER+'Uncertainty_MTZ_Pds_Ppds.'+EXT_FIG,dpi=DPI_FIG)
-
-#######################################################################################################################################
-'''
 print('Plotting Figure: Delta Vp (410 km/660 km) ')
 
 
@@ -897,7 +599,7 @@ plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
 ax2.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 ax2.gridlines(draw_labels=True)
 
-norm_660 = mpl.colors.Normalize(vmin=-1,vmax=1,clip=True)
+norm_660 = mpl.colors.Normalize(vmin=-0.5,vmax=0.5,clip=True)
 
 for i,j in enumerate(lon_true):
 	if math.isnan(RF_delta_2_Vp_mean[i]) == False:
@@ -1081,18 +783,20 @@ fig.colorbar(sm_660,ax=ax2,orientation='horizontal',shrink=0.8)
 
 fig.savefig(RESULTS_FOLDER+'TRUE_THICKNESS_MTZ.'+EXT_FIG,dpi=DPI_FIG)
 
-########################################################################################################################################################################
-'''
+##############################################################################################
 
-print('Plotting Figure: Difference True Thickness of the Mantle Transition Zone and Uncertainty')
+print('Plotting Figure: 520 Pds and Ppds Depth')
+
+#############################################################################################################################################################################################
+
+print('Plotting Figure: Apparent Depth of 410 km and 660 km (Ppds phase)')
 
 fig, axes = plt.subplots(nrows=1, ncols=2, subplot_kw={'projection': ccrs.Mercator(central_longitude=PROJECT_LON, globe=None)},figsize=(20,10),sharey=True)
 
 ax = axes[0]
 ax2 = axes[1]
 
-#TRUE MTZ THICKNESS
-
+#520 km Pds
 
 ax.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
 
@@ -1107,21 +811,21 @@ plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
 ax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 ax.gridlines(draw_labels=True)
 
-norm_410 = mpl.colors.Normalize(vmin=-100,vmax=100,clip=True)
+norm_410 = mpl.colors.Normalize(vmin=470,vmax=570,clip=True)
 
 for i,j in enumerate(lons):
-	if math.isnan(difference_thickness_MTZ_model[i]) == False:
-		circulo_410 = Circle(radius=DIST_GRID_PP,xy=(lons[i], lats[i]),color=colormap(norm_410(difference_thickness_MTZ_model[i])), ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+	if math.isnan(RF_DEPTH_mean_520_Pds[i]) == False:
+		circulo_410 = Circle(radius=DIST_GRID_PP*(1-(RF_DEPTH_std_520_Pds[i]/50)),xy=(lons[i], lats[i]),color=colormap(norm_410(RF_DEPTH_mean_520_Pds[i])), ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
 		ax.add_patch(circulo_410)
 	else:
 		pass
 
-
 ax.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
 
-ax.set_title('Diifference True Thickness of MTZ', y=1.08)
+ax.set_title('520 km Pds', y=1.08)
 
-#UNCERTAINTY TRUE MTZ THICKNESS
+
+#520 km Ppds
 
 ax2.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
 
@@ -1136,18 +840,18 @@ plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
 ax2.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 ax2.gridlines(draw_labels=True)
 
-norm_660 = mpl.colors.Normalize(vmin=0,vmax=50,clip=True)
+norm_660 = mpl.colors.Normalize(vmin=470,vmax=570,clip=True)
 
 for i,j in enumerate(lons):
-	if math.isnan(difference_thickness_MTZ_model_std[i]) == False:
-		circulo_660 = Circle(radius=DIST_GRID_PP,xy=(lons[i], lats[i]),color=colormap_std(norm_660(difference_thickness_MTZ_model_std[i])), ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+	if math.isnan(RF_DEPTH_mean_520_Ppds[i]) == False:
+		circulo_660 = Circle(radius=DIST_GRID_PP*(1-(RF_DEPTH_std_520_Ppds[i]/50)),xy=(lons[i], lats[i]),color=colormap(norm_660(RF_DEPTH_mean_520_Ppds[i])), ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
 		ax2.add_patch(circulo_660)
 	else:
 		pass
 
 ax2.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
 
-ax2.set_title(r'Uncertainty (1$\sigma$) of  Difference True Thickness of MTZ', y=1.08)
+ax2.set_title('520 km Ppds', y=1.08)
 
 #______________________________________________________________________
 
@@ -1155,56 +859,13 @@ sm_410 = plt.cm.ScalarMappable(cmap=colormap,norm=norm_410)
 sm_410._A = []
 fig.colorbar(sm_410,ax=ax,orientation='horizontal',shrink=0.8)
 
-sm_660 = plt.cm.ScalarMappable(cmap=colormap_std,norm=norm_660)
+sm_660 = plt.cm.ScalarMappable(cmap=colormap,norm=norm_660)
 sm_660._A = []
 fig.colorbar(sm_660,ax=ax2,orientation='horizontal',shrink=0.8)
 
-fig.savefig(RESULTS_FOLDER+'DIFFERENCE_TRUE_THICKNESS_MTZ_UNCERTAINTY.'+EXT_FIG,dpi=DPI_FIG)
 
-########################################################################################################################################################################
+fig.savefig(RESULTS_FOLDER+'520_APPARENT_DEPTH.'+EXT_FIG,dpi=DPI_FIG)
 
-print('Plotting Figure: Diifference True Thickness of the Mantle Transition Zone')
-
-fig, ax = plt.subplots(nrows=1, ncols=1, subplot_kw={'projection': ccrs.Mercator(central_longitude=PROJECT_LON, globe=None)},figsize=(10,10),sharey=True)
-
-#TRUE MTZ THICKNESS
-
-
-ax.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
-
-reader_1_SHP = Reader(BOUNDARY_1_SHP)
-shape_1_SHP = list(reader_1_SHP.geometries())
-plot_shape_1_SHP = cfeature.ShapelyFeature(shape_1_SHP, ccrs.PlateCarree())
-ax.add_feature(plot_shape_1_SHP, facecolor='none', edgecolor='k',linewidth=3)
-
-reader_2_SHP = Reader(BOUNDARY_2_SHP)
-shape_2_SHP = list(reader_2_SHP.geometries())
-plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
-ax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
-ax.gridlines(draw_labels=True)
-
-norm_410 = mpl.colors.Normalize(vmin=-100,vmax=100,clip=True)
-
-for i,j in enumerate(lons):
-	if math.isnan(difference_thickness_MTZ_model[i]) == False and abs(difference_thickness_MTZ_model[i]) > abs(difference_thickness_MTZ_model_std[i]):
-		circulo_410 = Circle(radius=DIST_GRID_PP,xy=(lons[i], lats[i]),color=colormap(norm_410(difference_thickness_MTZ_model[i])), ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
-		ax.add_patch(circulo_410)
-	else:
-		pass
-
-
-ax.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
-
-ax.set_title('Diifference True Thickness of MTZ', y=1.08)
-#______________________________________________________________________
-
-sm_410 = plt.cm.ScalarMappable(cmap=colormap,norm=norm_410)
-sm_410._A = []
-fig.colorbar(sm_410,ax=ax,orientation='horizontal',shrink=0.8)
-
-fig.savefig(RESULTS_FOLDER+'DIFFERENCE_TRUE_THICKNESS_MTZ.'+EXT_FIG,dpi=DPI_FIG)
-
-'''
 ########################################################################################################################################################################
 
 print('Ending Final Plot CODE')

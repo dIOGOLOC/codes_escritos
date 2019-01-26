@@ -59,7 +59,6 @@ RF_EXT = config.get('paths', 'RF_EXT')
 
 #Directory of the earth model 
 MODEL_FILE_NPZ = config.get('paths', 'MODEL_FILE_NPZ')
-MODEL_FILE_TAUP = config.get('paths', 'MODEL_FILE_TAUP')
 
 # dir of OUTPUTs
 OUTPUT_DIR = config.get('paths', 'OUTPUT_DIR')
@@ -151,9 +150,6 @@ NUMBER_PP_PER_BIN = config.getint('migration', 'NUMBER_PP_PER_BIN')
 #number of stations RF per bin
 NUMBER_STA_PER_BIN = config.getint('migration', 'NUMBER_STA_PER_BIN')  
 
-#False or True for depth estimation
-DEPTH_ESTIMATION = config.getboolean('migration', 'DEPTH_ESTIMATION')  
-
 #False or True for depth estimation with bootstrap
 BOOTSTRAP_DEPTH_ESTIMATION = config.getboolean('migration', 'BOOTSTRAP_DEPTH_ESTIMATION') 
 
@@ -161,7 +157,10 @@ BOOTSTRAP_DEPTH_ESTIMATION = config.getboolean('migration', 'BOOTSTRAP_DEPTH_EST
 BOOTSTRAP_INTERATOR = config.getint('migration', 'BOOTSTRAP_INTERATOR')  
 
 #GAMMA Number
-GAMMA = config.getfloat('migration', 'GAMMA') 
+GAMMA = config.getfloat('migration', 'GAMMA')
+
+#Depth Target
+DEPTH_TARGET = config.getint('migration', 'DEPTH_TARGET') 
 
 #Minimum amplitude of the 410 and 660 km (both Pds and Ppds ) to compute apparent and true depth
 MIN_AMP_PDS_PPDS = config.getfloat('migration', 'MIN_AMP_PDS_PPDS') 

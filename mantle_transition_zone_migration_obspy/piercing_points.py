@@ -41,7 +41,7 @@ from parameters_py.mgconfig import (
 					RF_DIR,RF_EXT,MODEL_FILE_NPZ,MIN_DEPTH,MAX_DEPTH,INTER_DEPTH,NUMBER_PP_PER_BIN,
 					LLCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLON_LARGE,URCRNRLAT_LARGE,LLCRNRLON_SMALL,
 					URCRNRLON_SMALL,LLCRNRLAT_SMALL,URCRNRLAT_SMALL,PROJECT_LAT,PROJECT_LON,
-					BOUNDARY_1_SHP,BOUNDARY_2_SHP,EXT_FIG,DPI_FIG,MP_PROCESSES,OUTPUT_DIR
+					BOUNDARY_1_SHP,BOUNDARY_2_SHP,EXT_FIG,DPI_FIG,MP_PROCESSES,OUTPUT_DIR,DEPTH_TARGET
 				   )
 # =====================================
 # Function to estimate piercing points  
@@ -103,7 +103,7 @@ camadas_terra_10_km = np.arange(MIN_DEPTH,MAX_DEPTH+INTER_DEPTH,INTER_DEPTH)
 print('Creating Pds list')
 print('\n')
 
-PHASES = 'P410s','P530s','P660s'
+PHASES = 'P410s','P'+str(DEPTH_TARGET)+'s','P660s'
 
 # ========================
 # Creating output Folder
@@ -117,9 +117,9 @@ Phase_P410s_folder = PP_DIR+'P410s/'
 os.makedirs(Phase_P410s_folder,exist_ok=True)
 print('Phase_P410s_folder = '+Phase_P410s_folder)
 
-Phase_P530s_folder = PP_DIR+'P530s/'
-print('Phase_P530s_folder = '+Phase_P530s_folder)
-os.makedirs(Phase_P530s_folder,exist_ok=True)
+Phase_TARGET_Ps_folder = PP_DIR+'P'+str(DEPTH_TARGET)+'s/'
+print('Phase_'+'P'+str(DEPTH_TARGET)+'s'+'_folder = '+Phase_TARGET_Ps_folder)
+os.makedirs(Phase_TARGET_Ps_folder,exist_ok=True)
 
 Phase_P660s_folder = PP_DIR+'P660s/'
 print('Phase_P660s_folder = '+Phase_P660s_folder)
@@ -135,7 +135,7 @@ print('\n')
 
 input_list_410 = [[i+1,PHASES[0],event_depth[i],event_lat[i],event_long[i],sta_lat[i],sta_long[i],Phase_P410s_folder] for i,j in enumerate(event_depth)]
 
-input_list_530 = [[i+1,PHASES[1],event_depth[i],event_lat[i],event_long[i],sta_lat[i],sta_long[i],Phase_P530s_folder] for i,j in enumerate(event_depth)]
+input_list_TARGET = [[i+1,PHASES[1],event_depth[i],event_lat[i],event_long[i],sta_lat[i],sta_long[i],Phase_TARGET_Ps_folder] for i,j in enumerate(event_depth)]
 
 input_list_660 = [[i+1,PHASES[2],event_depth[i],event_lat[i],event_long[i],sta_lat[i],sta_long[i],Phase_P660s_folder] for i,j in enumerate(event_depth)]
 
@@ -185,7 +185,7 @@ with open(PP_DIR+'PP_'+PHASES[0]+'_dic.json', 'w') as fp:
 	json.dump(PP_dic_P410s, fp)
 
 # ===================================
-# Calculating P530s Piercing Points
+# Calculating TARGET Piercing Points
 # ===================================
  
 print('Calculating Piercing Points to '+PHASES[1])
@@ -193,33 +193,33 @@ print('\n')
 
 start_time = time.time()
 pool_530 = Pool(MP_PROCESSES)
-pool_530.starmap(parallel_piercing_points, input_list_530)
+pool_530.starmap(parallel_piercing_points, input_list_TARGET)
 pool_530.close()
 print("--- %.2f execution time (min) ---" % ((time.time() - start_time)/60))
 print(PHASES[1]+' Piercing Points estimated!')
 print('\n')
 
 # =============================
-# Saving Piercing Points P530s
+# Saving Piercing Points TARGET
 # =============================
 
-filename_pds_json_P530s = sorted(glob.glob(Phase_P530s_folder+'*'))
+filename_pds_json_TARGET_Ps = sorted(glob.glob(Phase_TARGET_Ps_folder+'*'))
 
-PP_dic_P530s_files = [json.load(open(i)) for i in filename_pds_json_P530s]
+PP_dic_TARGET_Ps_files = [json.load(open(i)) for i in filename_pds_json_TARGET_Ps]
 
-PP_dic_P530s = {'depth':[],'time':[],'lat':[],'lon':[]}
+PP_dic_TARGET_Ps = {'depth':[],'time':[],'lat':[],'lon':[]}
 
-for i,j in enumerate(PP_dic_P530s_files):
-	PP_dic_P530s['time'].append(j['time'])
-	PP_dic_P530s['depth'].append(j['depth'])
-	PP_dic_P530s['lat'].append(j['lat']) 
-	PP_dic_P530s['lon'].append(j['lon']) 
+for i,j in enumerate(PP_dic_TARGET_Ps_files):
+	PP_dic_TARGET_Ps['time'].append(j['time'])
+	PP_dic_TARGET_Ps['depth'].append(j['depth'])
+	PP_dic_TARGET_Ps['lat'].append(j['lat']) 
+	PP_dic_TARGET_Ps['lon'].append(j['lon']) 
 
 
 print('Saving Piercing Points in JSON file')
 
 with open(PP_DIR+'PP_'+PHASES[1]+'_dic.json', 'w') as fp:
-	json.dump(PP_dic_P530s, fp)
+	json.dump(PP_dic_TARGET_Ps, fp)
 
 # ===================================
 # Calculating P660s Piercing Points
@@ -271,7 +271,7 @@ with open(PP_DIR+'PP_'+PHASES[2]+'_dic.json', 'w') as fp:
 print('Creating Ppds list')
 print('\n')
 
-PHASES_Ppds = 'PPv410s','PPv530s','PPv660s'
+PHASES_Ppds = 'PPv410s','PPv'+str(DEPTH_TARGET)+'s','PPv660s'
 
 
 # ========================
@@ -284,9 +284,9 @@ Phase_PPv410s_folder = PP_DIR+'PPv410s/'
 os.makedirs(Phase_PPv410s_folder,exist_ok=True)
 print('Phase_PPv410s_folder = '+Phase_PPv410s_folder)
 
-Phase_PPv530s_folder = PP_DIR+'PPv530s/'
-print('Phase_PPv530s_folder = '+Phase_PPv530s_folder)
-os.makedirs(Phase_PPv530s_folder,exist_ok=True)
+Phase_TARGET_PPvs_folder = PP_DIR+'PPv'+str(DEPTH_TARGET)+'s/'
+print('Phase_PPv'+str(DEPTH_TARGET)+'s_folder = '+Phase_TARGET_PPvs_folder)
+os.makedirs(Phase_TARGET_PPvs_folder,exist_ok=True)
 
 Phase_PPv660s_folder = PP_DIR+'PPv660s/'
 print('Phase_PPv660s_folder = '+Phase_PPv660s_folder)
@@ -303,7 +303,7 @@ print('\n')
 
 input_list_410_Ppds = [[i+1,PHASES_Ppds[0],event_depth[i],event_lat[i],event_long[i],sta_lat[i],sta_long[i],Phase_PPv410s_folder] for i,j in enumerate(event_depth)]
 
-input_list_530_Ppds = [[i+1,PHASES_Ppds[1],event_depth[i],event_lat[i],event_long[i],sta_lat[i],sta_long[i],Phase_PPv530s_folder] for i,j in enumerate(event_depth)]
+input_list_TARGET_PPvs_Ppds = [[i+1,PHASES_Ppds[1],event_depth[i],event_lat[i],event_long[i],sta_lat[i],sta_long[i],Phase_TARGET_PPvs_folder] for i,j in enumerate(event_depth)]
 
 input_list_660_Ppds = [[i+1,PHASES_Ppds[2],event_depth[i],event_lat[i],event_long[i],sta_lat[i],sta_long[i],Phase_PPv660s_folder] for i,j in enumerate(event_depth)]
 
@@ -345,41 +345,41 @@ with open(PP_DIR+'PP_'+PHASES_Ppds[0]+'_dic.json', 'w') as fp:
 	json.dump(PP_dic_PPv410s, fp)
 
 # ===================================
-# Calculating PPv530s Piercing Points
+# Calculating TARGET Piercing Points
 # ===================================
 
 print('Calculating Piercing Points to '+PHASES_Ppds[1])
 print('\n')
 
 start_time = time.time()
-pool_530_Ppds = Pool(MP_PROCESSES)
-pool_530_Ppds.starmap(parallel_piercing_points, input_list_530_Ppds)
-pool_530_Ppds.close()
+pool_TARGET_Ppds = Pool(MP_PROCESSES)
+pool_TARGET_Ppds.starmap(parallel_piercing_points, input_list_TARGET_PPvs_Ppds)
+pool_TARGET_Ppds.close()
 print("--- %.2f execution time (min) ---" % ((time.time() - start_time)/60))
 print(PHASES_Ppds[1]+' Piercing Points estimated!')
 print('\n')
 
 # ===============================
-# Saving Piercing Points PPv530s
+# Saving Piercing Points TARGET
 # ===============================
 
-filename_pds_json_PPv530s = sorted(glob.glob(Phase_PPv530s_folder+'*'))
+filename_pds_json_TARGET_PPvs = sorted(glob.glob(Phase_TARGET_PPvs_folder+'*'))
 
-PP_dic_PPv530s_files = [json.load(open(i)) for i in filename_pds_json_PPv530s]
+PP_dic_TARGET_PPvs_files = [json.load(open(i)) for i in filename_pds_json_TARGET_PPvs]
 
-PP_dic_PPv530s = {'depth':[],'time':[],'lat':[],'lon':[]}
+PP_dic_TARGET_PPvs = {'depth':[],'time':[],'lat':[],'lon':[]}
 
-for i,j in enumerate(PP_dic_PPv530s_files):
-	PP_dic_PPv530s['time'].append(j['time'])
-	PP_dic_PPv530s['depth'].append(j['depth'])
-	PP_dic_PPv530s['lat'].append(j['lat']) 
-	PP_dic_PPv530s['lon'].append(j['lon']) 
+for i,j in enumerate(PP_dic_TARGET_PPvs_files):
+	PP_dic_TARGET_PPvs['time'].append(j['time'])
+	PP_dic_TARGET_PPvs['depth'].append(j['depth'])
+	PP_dic_TARGET_PPvs['lat'].append(j['lat']) 
+	PP_dic_TARGET_PPvs['lon'].append(j['lon']) 
 
 
 print('Saving Piercing Points in JSON file')
 
 with open(PP_DIR+'PP_'+PHASES_Ppds[1]+'_dic.json', 'w') as fp:
-	json.dump(PP_dic_PPv530s, fp)
+	json.dump(PP_dic_TARGET_PPvs, fp)
 
 
 # ===================================

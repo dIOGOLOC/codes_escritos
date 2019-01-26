@@ -1,4 +1,3 @@
-
 # coding: utf-8
 
 
@@ -39,7 +38,7 @@ import math
 
 from parameters_py.mgconfig import (
 					RF_DIR,RF_EXT,MODEL_FILE_NPZ,MIN_DEPTH,MAX_DEPTH,INTER_DEPTH,SHAPEFILE_GRID,FILTER_BY_SHAPEFILE,
-					NUMBER_PP_PER_BIN,MIN_AMP_PDS_PPDS,
+					NUMBER_PP_PER_BIN,MIN_AMP_PDS_PPDS,DEPTH_TARGET,
 					LLCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLON_LARGE,URCRNRLAT_LARGE,
 					LLCRNRLON_SMALL,URCRNRLON_SMALL,LLCRNRLAT_SMALL,URCRNRLAT_SMALL,
 					PROJECT_LAT,PROJECT_LON,GRID_PP_MULT,BOUNDARY_1_SHP,BOUNDARY_2_SHP,
@@ -103,7 +102,7 @@ camadas_terra_10_km = np.arange(MIN_DEPTH,MAX_DEPTH+INTER_DEPTH,INTER_DEPTH)
 print('Importing Pds piercing points to each PHASE')
 print('\n')
 
-PHASES = 'P410s','P530s','P660s'
+PHASES = 'P410s','P'+str(DEPTH_TARGET)+'s','P660s'
 
 print('Importing Pds Piercing Points for '+PHASES[0])
 print('\n')
@@ -163,7 +162,7 @@ for i,j in enumerate(PP_lon_1):
 pp_1_lat = [i for i in pp_1_lat if type(i) == float ]
 pp_1_long = [i for i in pp_1_long if type(i) == float ]
 
-print('P530s Piercing Points')
+print('P'+str(DEPTH_TARGET)+'s Piercing Points')
 print('\n')
 
 pp_med_lat  = [[]]*len(PP_lon_med)
@@ -172,7 +171,7 @@ pp_med_long  = [[]]*len(PP_lon_med)
 
 for i,j in enumerate(PP_lon_med):
 	for k,l in enumerate(j):
-		if LLCRNRLON_LARGE <= l <= URCRNRLON_LARGE and PP_depth_med[i][k] == 530:
+		if LLCRNRLON_LARGE <= l <= URCRNRLON_LARGE and PP_depth_med[i][k] == DEPTH_TARGET:
 				pp_med_lat[i] = PP_lat_med[i][k]
 				pp_med_long[i] = l
 
@@ -199,7 +198,7 @@ pp_2_long = [i for i in pp_2_long if type(i) == float ]
 print('Importing Ppds piercing points to each PHASE')
 print('\n')
 
-PHASES_Ppds = 'PPv410s','PPv530s','PPv660s'
+PHASES_Ppds = 'PPv410s','PPv'+str(DEPTH_TARGET)+'s','PPv660s'
 
 print('Importing Ppds Piercing Points '+PHASES_Ppds[0])
 print('\n')
@@ -255,7 +254,7 @@ pp_1_lat_Ppds = [i for i in pp_1_lat_Ppds if type(i) == float ]
 pp_1_long_Ppds = [i for i in pp_1_long_Ppds if type(i) == float ]
 
 
-print('PPv530s Piercing Points')
+print('PPv'+str(DEPTH_TARGET)+'s Piercing Points')
 print('\n')
 
 pp_med_lat_Ppds  = [[]]*len(PP_lon_med_Ppds)
@@ -264,7 +263,7 @@ pp_med_long_Ppds  = [[]]*len(PP_lon_med_Ppds)
 
 for i,j in enumerate(PP_lon_med_Ppds):
 	for k,l in enumerate(j):
-		if LLCRNRLON_LARGE<= l <= URCRNRLON_LARGE and PP_depth_med_Ppds[i][k] == 530:
+		if LLCRNRLON_LARGE<= l <= URCRNRLON_LARGE and PP_depth_med_Ppds[i][k] == DEPTH_TARGET:
 				pp_med_lat_Ppds[i] = PP_lat_med_Ppds[i][k]
 				pp_med_long_Ppds[i] = l
 
@@ -441,7 +440,7 @@ for i,j in enumerate(grdx):
 	circulo = Circle(radius=DIST_GRID_PP,xy=(grdx[i], grdy[i]),color='None', ec='k',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
 	ax1.add_patch(circulo)
 ax1.set_title('Ppds Piercing Points',ha='center',va='top',y=1.08)
-ax1.legend([l1,l2,l3,l4,circulo],['Stations','Piercing Points 410 km','Piercing Points 530 km','Piercing Points 660 km','Selected Grid'],scatterpoints=1, frameon=True,labelspacing=1, loc='lower right',facecolor='w',fontsize='smaller')
+ax1.legend([l1,l2,l3,l4,circulo],['Stations','Piercing Points 410 km','Piercing Points '+str(DEPTH_TARGET)+' km','Piercing Points 660 km','Selected Grid'],scatterpoints=1, frameon=True,labelspacing=1, loc='lower right',facecolor='w',fontsize='smaller')
 
 reader_1_SHP = Reader(BOUNDARY_1_SHP)
 shape_1_SHP = list(reader_1_SHP.geometries())
@@ -471,7 +470,7 @@ fig_PP_Pds_Ppds.savefig(RESULTS_FOLDER+'PP_Pds_Ppds.'+EXT_FIG,dpi=DPI_FIG)
 
 ###################################################################################################################
 
-print('Plotting: Figure Pds Average Piercing Points')
+print('Plotting: Figure Pds Depth Target Piercing Points')
 print('\n')
 
 
@@ -501,7 +500,7 @@ plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
 ax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 
 ax.set_title('Pds Piercing Points',ha='center',va='top',y=1.08)
-ax.legend([l1,l3,circulo,circulo_fresnel],['Stations','Piercing Points 530 km','Selected Grid','Piercing Points Fresnel Zone'],scatterpoints=1, frameon=True,labelspacing=1, loc='lower right',facecolor='w',fontsize='smaller')
+ax.legend([l1,l3,circulo,circulo_fresnel],['Stations','Piercing Points '+str(DEPTH_TARGET)+' km','Selected Grid','Piercing Points Fresnel Zone'],scatterpoints=1, frameon=True,labelspacing=1, loc='lower right',facecolor='w',fontsize='smaller')
 ax.gridlines(draw_labels=True)
 
 #plt.show()
@@ -510,7 +509,7 @@ fig_PP.savefig(RESULTS_FOLDER+'PP_MED_Pds.'+EXT_FIG,dpi=DPI_FIG)
 
 ###################################################################################################################
 
-print('Plotting: Figure Ppds Average Piercing Points')
+print('Plotting: Figure Ppds Depth Target Piercing Points')
 print('\n')
 fig_PP, ax = plt.subplots(ncols=1, subplot_kw={'projection': ccrs.Mercator(central_longitude=PROJECT_LON, globe=None)},figsize=(10,10))
 
@@ -538,7 +537,7 @@ ax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 ax.gridlines(draw_labels=True)
 
 ax.set_title('Ppds Piercing Points',ha='center',va='top',y=1.08)
-ax.legend([l1,l3,circulo,circulo_fresnel],['Stations','Piercing Points 530 km','Selected Grid','Piercing Points Fresnel Zone'],scatterpoints=1, frameon=True,labelspacing=1, loc='lower right',facecolor='w',fontsize='smaller')
+ax.legend([l1,l3,circulo,circulo_fresnel],['Stations','Piercing Points '+str(DEPTH_TARGET)+' km','Selected Grid','Piercing Points Fresnel Zone'],scatterpoints=1, frameon=True,labelspacing=1, loc='lower right',facecolor='w',fontsize='smaller')
 
 #plt.show()
 
@@ -709,6 +708,22 @@ if BOOTSTRAP_DEPTH_ESTIMATION == True:
 				lst_410_depth_Ppds = lst_depth_pp_410_Ppds[lst_depth_amp_410_Ppds.index(max(lst_depth_amp_410_Ppds))]
 				lst_410_amp_Ppds = lst_depth_amp_410_Ppds.index(max(lst_depth_amp_410_Ppds))
 
+				######## Estimating 520 km apparent depth ########
+
+				#520 km Pds
+
+				lst_depth_amp_520_Pds = [RF_STACKING_BOOTSTRAP_Pds[x] for x,c in enumerate(camadas_terra_10_km) if 520-DEPTH_RANGE <= c <= 520+DEPTH_RANGE]
+				lst_depth_pp_520_Pds = [c for x,c in enumerate(camadas_terra_10_km) if 520-DEPTH_RANGE <= c <= 520+DEPTH_RANGE]
+				lst_520_depth_Pds = lst_depth_pp_520_Pds[lst_depth_amp_520_Pds.index(max(lst_depth_amp_520_Pds))]
+				lst_520_amp_Pds = lst_depth_amp_520_Pds.index(max(lst_depth_amp_520_Pds))
+
+				#520 km Ppds
+
+				lst_depth_amp_520_Ppds = [RF_STACKING_BOOTSTRAP_Ppds[x] for x,c in enumerate(camadas_terra_10_km) if 520-DEPTH_RANGE <= c <= 520+DEPTH_RANGE]
+				lst_depth_pp_520_Ppds = [c for x,c in enumerate(camadas_terra_10_km) if 520-DEPTH_RANGE <= c <= 520+DEPTH_RANGE]
+				lst_520_depth_Ppds = lst_depth_pp_520_Ppds[lst_depth_amp_520_Ppds.index(max(lst_depth_amp_520_Ppds))]
+				lst_520_amp_Ppds = lst_depth_amp_520_Ppds.index(max(lst_depth_amp_520_Ppds))
+
 
 				######## Estimating 660 km apparent depth ########
 
@@ -725,6 +740,9 @@ if BOOTSTRAP_DEPTH_ESTIMATION == True:
 				lst_depth_pp_660_Ppds = [c for x,c in enumerate(camadas_terra_10_km) if 660-DEPTH_RANGE <= c <= 660+DEPTH_RANGE]
 				lst_660_depth_Ppds = lst_depth_pp_660_Ppds[lst_depth_amp_660_Ppds.index(max(lst_depth_amp_660_Ppds))]
 				lst_660_amp_Ppds = lst_depth_amp_660_Ppds.index(max(lst_depth_amp_660_Ppds))
+
+
+				##############################
 
 				if lst_410_amp_Pds >= MIN_AMP_PDS_PPDS:
 
@@ -744,6 +762,25 @@ if BOOTSTRAP_DEPTH_ESTIMATION == True:
 				
 				print('410 Pds Depth = '+str(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['410_mean']))
 				print('410 Ppds Depth = '+str(RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['410_mean']))
+
+				if lst_520_amp_Pds >= MIN_AMP_PDS_PPDS:
+
+					RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['520_mean'] = lst_520_depth_Pds
+				
+				else: 
+
+					RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['520_mean'] = np.nan
+
+				if lst_520_amp_Ppds >= MIN_AMP_PDS_PPDS:
+
+					RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['520_mean'] = lst_520_depth_Ppds
+				
+				else:
+
+					RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['520_mean'] = np.nan
+				
+				print('520 Pds Depth = '+str(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['520_mean']))
+				print('520 Ppds Depth = '+str(RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['520_mean']))
 
 				if lst_660_depth_Pds >= MIN_AMP_PDS_PPDS:
 
@@ -926,6 +963,11 @@ RF_lon = []
 RF_lat_true = []
 RF_lon_true = []
 
+RF_DEPTH_mean_520_Pds = []
+RF_DEPTH_std_520_Pds = []
+RF_DEPTH_mean_520_Ppds = []
+RF_DEPTH_std_520_Ppds = []
+
 RF_DEPTH_mean_1_Pds = []
 RF_DEPTH_std_1_Pds = []
 RF_DEPTH_mean_1_Ppds = []
@@ -985,6 +1027,10 @@ RF_BOOTSTRAP_DATA_Ppds = []
 
 RF_BOOTSTRAP_DEPTH_mean_1_Pds = []
 RF_BOOTSTRAP_DEPTH_mean_1_Ppds = []
+
+RF_BOOTSTRAP_DEPTH_mean_520_Pds = []
+RF_BOOTSTRAP_DEPTH_mean_520_Ppds = []
+
 RF_BOOTSTRAP_DEPTH_mean_2_Pds = []
 RF_BOOTSTRAP_DEPTH_mean_2_Ppds = []
 
@@ -1054,6 +1100,49 @@ for i,j in enumerate(RF_data_raw_Pds):
 
 			RF_DEPTH_mean_1_Ppds.append(np.nan)
 			RF_DEPTH_std_1_Ppds.append(np.nan)
+
+
+		#Analysing stacked data amplitude in d520Pds
+
+		flat_mean_520_Pds = [float(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['520_mean']) for _k in range(BOOTSTRAP_INTERATOR)]
+		RF_BOOTSTRAP_DEPTH_mean_520_Pds.append(flat_mean_520_Pds)
+
+		lst_stacking_data_520_Pds = [stacking_Pds_data[x] for x,c in enumerate(camadas_terra_10_km) if 520-DEPTH_RANGE <= c <= 520+DEPTH_RANGE]
+		d520Pds_candidate = [abs(np.nanmean(flat_mean_520_Pds) - c) for x,c in enumerate(camadas_terra_10_km) if 520-DEPTH_RANGE <= c <= 520+DEPTH_RANGE]
+		
+		amp_d520Pds = lst_stacking_data_520_Pds[d520Pds_candidate.index(min(d520Pds_candidate))]
+
+		
+		if  amp_d520Pds >= MIN_AMP_GOOD:
+			
+			RF_DEPTH_mean_520_Pds.append(np.nanmean(flat_mean_520_Pds))
+			RF_DEPTH_std_520_Pds.append(np.nanstd(flat_mean_520_Pds))
+
+		else: 
+
+			RF_DEPTH_mean_520_Pds.append(np.nan)
+			RF_DEPTH_std_520_Pds.append(np.nan)
+
+
+		#Analysing stacked data amplitude in d520Ppds
+
+		flat_mean_520_Ppds = [float(RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['520_mean']) for _k in range(BOOTSTRAP_INTERATOR)]
+		RF_BOOTSTRAP_DEPTH_mean_520_Ppds.append(flat_mean_520_Ppds)		
+
+		lst_stacking_data_520_Ppds = [stacking_Ppds_data[x] for x,c in enumerate(camadas_terra_10_km) if 520-DEPTH_RANGE <= c <= 520+DEPTH_RANGE]
+		d520Ppds_candidate = [abs(np.nanmean(flat_mean_520_Ppds) - c) for x,c in enumerate(camadas_terra_10_km) if 520-DEPTH_RANGE <= c <= 520+DEPTH_RANGE]
+
+		amp_d520Ppds = lst_stacking_data_520_Ppds[d520Ppds_candidate.index(min(d520Ppds_candidate))]
+
+		if  amp_d520Ppds >= MIN_AMP_GOOD:
+
+			RF_DEPTH_mean_520_Ppds.append(np.nanmean(flat_mean_520_Ppds))
+			RF_DEPTH_std_520_Ppds.append(np.nanstd(flat_mean_520_Ppds))
+
+		else: 
+
+			RF_DEPTH_mean_520_Ppds.append(np.nan)
+			RF_DEPTH_std_520_Ppds.append(np.nan)
 
 		#Analysing stacked data amplitude in d660Pds
 
@@ -1286,8 +1375,10 @@ SELECTED_BINNED_DATA_dic = {
 	'true_mean_1_Ppds':[],'true_std_1_Ppds':[],
 	'true_mean_2_Ppds':[],'true_std_2_Ppds':[],
 	'mean_1_Pds':[],'std_1_Pds':[],
+	'mean_520_Pds':[],'std_520_Pds':[],
 	'mean_2_Pds':[],'std_2_Pds':[],
 	'mean_1_Ppds':[],'std_1_Ppds':[],
+	'mean_520_Ppds':[],'std_520_Ppds':[],
 	'mean_2_Ppds':[],'std_2_Ppds':[],
 	'delta_1_Vp_mean':[],'delta_1_Vp_std':[],
 	'delta_2_Vp_mean':[],'delta_2_Vp_std':[],
@@ -1302,6 +1393,7 @@ SELECTED_BINNED_DATA_dic = {
 	'data_Pds':[],'data_Ppds':[],
 	'data_BOOTSTRAP_Pds':[],'data_BOOTSTRAP_Ppds':[],
 	'RF_BOOTSTRAP_DEPTH_mean_1_Pds':[],'RF_BOOTSTRAP_DEPTH_mean_1_Ppds':[],
+	'RF_BOOTSTRAP_DEPTH_mean_520_Pds':[],'RF_BOOTSTRAP_DEPTH_mean_520_Ppds':[],
 	'RF_BOOTSTRAP_DEPTH_mean_2_Pds':[],'RF_BOOTSTRAP_DEPTH_mean_2_Ppds':[],
 	'difference_thickness_MTZ_model_Pds':[],'difference_thickness_MTZ_model_Pds_std':[],
 	'difference_thickness_MTZ_model_Ppds':[],'difference_thickness_MTZ_model_Ppds_std':[]
@@ -1313,6 +1405,8 @@ for i,j in enumerate(RF_BOOTSTRAP_DATA_Pds):
 
 	SELECTED_BINNED_DATA_dic['RF_BOOTSTRAP_DEPTH_mean_1_Pds'].append(RF_BOOTSTRAP_DEPTH_mean_1_Pds[i])
 	SELECTED_BINNED_DATA_dic['RF_BOOTSTRAP_DEPTH_mean_1_Ppds'].append(RF_BOOTSTRAP_DEPTH_mean_1_Ppds[i])
+	SELECTED_BINNED_DATA_dic['RF_BOOTSTRAP_DEPTH_mean_520_Pds'].append(RF_BOOTSTRAP_DEPTH_mean_520_Pds[i])
+	SELECTED_BINNED_DATA_dic['RF_BOOTSTRAP_DEPTH_mean_520_Ppds'].append(RF_BOOTSTRAP_DEPTH_mean_520_Ppds[i])
 	SELECTED_BINNED_DATA_dic['RF_BOOTSTRAP_DEPTH_mean_2_Pds'].append(RF_BOOTSTRAP_DEPTH_mean_2_Pds[i])
 	SELECTED_BINNED_DATA_dic['RF_BOOTSTRAP_DEPTH_mean_2_Ppds'].append(RF_BOOTSTRAP_DEPTH_mean_2_Ppds[i])
 
@@ -1335,6 +1429,8 @@ for i,j in enumerate(RF_BOOTSTRAP_DATA_Pds):
 
 	SELECTED_BINNED_DATA_dic['mean_1_Pds'].append(float(RF_DEPTH_mean_1_Pds[i]))
 	SELECTED_BINNED_DATA_dic['std_1_Pds'].append(float(RF_DEPTH_std_1_Pds[i]))
+	SELECTED_BINNED_DATA_dic['mean_520_Pds'].append(float(RF_DEPTH_mean_520_Pds[i]))
+	SELECTED_BINNED_DATA_dic['std_520_Pds'].append(float(RF_DEPTH_std_520_Pds[i]))
 	SELECTED_BINNED_DATA_dic['mean_2_Pds'].append(float(RF_DEPTH_mean_2_Pds[i]))
 	SELECTED_BINNED_DATA_dic['std_2_Pds'].append(float(RF_DEPTH_std_2_Pds[i]))
 
@@ -1345,6 +1441,8 @@ for i,j in enumerate(RF_BOOTSTRAP_DATA_Pds):
 
 	SELECTED_BINNED_DATA_dic['mean_1_Ppds'].append(float(RF_DEPTH_mean_1_Ppds[i]))
 	SELECTED_BINNED_DATA_dic['std_1_Ppds'].append(float(RF_DEPTH_std_1_Ppds[i]))
+	SELECTED_BINNED_DATA_dic['mean_520_Ppds'].append(float(RF_DEPTH_mean_520_Ppds[i]))
+	SELECTED_BINNED_DATA_dic['std_520_Ppds'].append(float(RF_DEPTH_std_520_Ppds[i]))
 	SELECTED_BINNED_DATA_dic['mean_2_Ppds'].append(float(RF_DEPTH_mean_2_Ppds[i]))
 	SELECTED_BINNED_DATA_dic['std_2_Ppds'].append(float(RF_DEPTH_std_2_Ppds[i]))
 
