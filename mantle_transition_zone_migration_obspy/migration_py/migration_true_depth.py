@@ -74,7 +74,7 @@ print('660 km earth model Vp : '+str(Vp_depth_2))
 print('660 km earth model Vs : '+str(Vs_depth_2))
 print('\n')
 
-STA_DIR = OUTPUT_DIR+'MODEL_INTER_DEPTH_'+str(INTER_DEPTH)+'/'+'Stations'+'/'
+STA_DIR = OUTPUT_DIR+'MODEL_INTER_DEPTH_'+str(INTER_DEPTH)+'_DEPTH_TARGET_'+str(DEPTH_TARGET)+'/'+'Stations'+'/'
 
 print('Looking for Receiver Functions data in JSON file in '+STA_DIR)
 print('\n')
@@ -107,7 +107,7 @@ PHASES = 'P410s','P'+str(DEPTH_TARGET)+'s','P660s'
 print('Importing Pds Piercing Points for '+PHASES[0])
 print('\n')
 
-PP_DIR = OUTPUT_DIR+'MODEL_INTER_DEPTH_'+str(INTER_DEPTH)+'/'+'Piercing_Points'+'/'
+PP_DIR = OUTPUT_DIR+'MODEL_INTER_DEPTH_'+str(INTER_DEPTH)+'_DEPTH_TARGET_'+str(DEPTH_TARGET)+'/'+'Piercing_Points'+'/'
 
 
 filename_1 = PP_DIR+'PP_'+PHASES[0]+'_dic.json'
@@ -456,7 +456,7 @@ ax1.gridlines(draw_labels=True)
 print('GRID Check!')
 #plt.show()
 
-PP_FIGURE = OUTPUT_DIR+'MODEL_INTER_DEPTH_'+str(INTER_DEPTH)+'/'+'Figures'+'/'
+PP_FIGURE = OUTPUT_DIR+'MODEL_INTER_DEPTH_'+str(INTER_DEPTH)+'_DEPTH_TARGET_'+str(DEPTH_TARGET)+'/'+'Figures'+'/'
 
 RESULTS_FOLDER = PP_FIGURE+'RESULTS_NUMBER_PP_PER_BIN_'+str(NUMBER_PP_PER_BIN)+'_NUMBER_STA_PER_BIN_'+str(NUMBER_STA_PER_BIN)+'/'
 os.makedirs(RESULTS_FOLDER,exist_ok=True)
@@ -548,7 +548,7 @@ fig_PP.savefig(RESULTS_FOLDER+'PP_MED_Ppds.'+EXT_FIG,dpi=DPI_FIG)
 print('Importing depths and times of Pds conversion  dataset')
 print('\n')
 
-PdS_DIR = OUTPUT_DIR+'MODEL_INTER_DEPTH_'+str(INTER_DEPTH)+'/'+'Phases'+'/'
+PdS_DIR = OUTPUT_DIR+'MODEL_INTER_DEPTH_'+str(INTER_DEPTH)+'_DEPTH_TARGET_'+str(DEPTH_TARGET)+'/'+'Phases'+'/'
 
 filename_Pds = PdS_DIR+'Pds_dic.json'
 
@@ -712,8 +712,8 @@ if BOOTSTRAP_DEPTH_ESTIMATION == True:
 
 				#520 km Pds
 
-				lst_depth_amp_520_Pds = [RF_STACKING_BOOTSTRAP_Pds[x] for x,c in enumerate(camadas_terra_10_km) if 520-DEPTH_RANGE <= c <= 520+DEPTH_RANGE]
-				lst_depth_pp_520_Pds = [c for x,c in enumerate(camadas_terra_10_km) if 520-DEPTH_RANGE <= c <= 520+DEPTH_RANGE]
+				lst_depth_amp_520_Pds = [RF_STACKING_BOOTSTRAP_Pds[x] for x,c in enumerate(camadas_terra_10_km) if 520-(DEPTH_RANGE*2) <= c <= 520+(DEPTH_RANGE*2)]
+				lst_depth_pp_520_Pds = [c for x,c in enumerate(camadas_terra_10_km) if 520-(DEPTH_RANGE*2) <= c <= 520+(DEPTH_RANGE*2)]
 				lst_520_depth_Pds = lst_depth_pp_520_Pds[lst_depth_amp_520_Pds.index(max(lst_depth_amp_520_Pds))]
 				lst_520_amp_Pds = lst_depth_amp_520_Pds.index(max(lst_depth_amp_520_Pds))
 
@@ -1107,8 +1107,8 @@ for i,j in enumerate(RF_data_raw_Pds):
 		flat_mean_520_Pds = [float(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['520_mean']) for _k in range(BOOTSTRAP_INTERATOR)]
 		RF_BOOTSTRAP_DEPTH_mean_520_Pds.append(flat_mean_520_Pds)
 
-		lst_stacking_data_520_Pds = [stacking_Pds_data[x] for x,c in enumerate(camadas_terra_10_km) if 520-DEPTH_RANGE <= c <= 520+DEPTH_RANGE]
-		d520Pds_candidate = [abs(np.nanmean(flat_mean_520_Pds) - c) for x,c in enumerate(camadas_terra_10_km) if 520-DEPTH_RANGE <= c <= 520+DEPTH_RANGE]
+		lst_stacking_data_520_Pds = [stacking_Pds_data[x] for x,c in enumerate(camadas_terra_10_km) if 520-(DEPTH_RANGE*2) <= c <= 520+(DEPTH_RANGE*2)]
+		d520Pds_candidate = [abs(np.nanmean(flat_mean_520_Pds) - c) for x,c in enumerate(camadas_terra_10_km) if 520-(DEPTH_RANGE*2) <= c <= 520+(DEPTH_RANGE*2)]
 		
 		amp_d520Pds = lst_stacking_data_520_Pds[d520Pds_candidate.index(min(d520Pds_candidate))]
 
@@ -1129,8 +1129,8 @@ for i,j in enumerate(RF_data_raw_Pds):
 		flat_mean_520_Ppds = [float(RF_BOOTSTRAP_ESTIMATION_Ppds[_k][i]['520_mean']) for _k in range(BOOTSTRAP_INTERATOR)]
 		RF_BOOTSTRAP_DEPTH_mean_520_Ppds.append(flat_mean_520_Ppds)		
 
-		lst_stacking_data_520_Ppds = [stacking_Ppds_data[x] for x,c in enumerate(camadas_terra_10_km) if 520-DEPTH_RANGE <= c <= 520+DEPTH_RANGE]
-		d520Ppds_candidate = [abs(np.nanmean(flat_mean_520_Ppds) - c) for x,c in enumerate(camadas_terra_10_km) if 520-DEPTH_RANGE <= c <= 520+DEPTH_RANGE]
+		lst_stacking_data_520_Ppds = [stacking_Ppds_data[x] for x,c in enumerate(camadas_terra_10_km) if 520-(DEPTH_RANGE*2) <= c <= 520+(DEPTH_RANGE*2)]
+		d520Ppds_candidate = [abs(np.nanmean(flat_mean_520_Ppds) - c) for x,c in enumerate(camadas_terra_10_km) if 520-(DEPTH_RANGE*2) <= c <= 520+(DEPTH_RANGE*2)]
 
 		amp_d520Ppds = lst_stacking_data_520_Ppds[d520Ppds_candidate.index(min(d520Ppds_candidate))]
 
@@ -1362,7 +1362,7 @@ fig_PP.savefig(RESULTS_FOLDER+'PP_FINAL_GRID.'+EXT_FIG,dpi=DPI_FIG)
 print('Saving Selected Piercing Points in JSON file')
 print('\n')
 
-PP_SELEC_DIR = OUTPUT_DIR+'MODEL_INTER_DEPTH_'+str(INTER_DEPTH)+'/'+'SELECTED_BINNED_DATA'+'/'
+PP_SELEC_DIR = OUTPUT_DIR+'MODEL_INTER_DEPTH_'+str(INTER_DEPTH)+'_DEPTH_TARGET_'+str(DEPTH_TARGET)+'/'+'SELECTED_BINNED_DATA'+'/'
 
 os.makedirs(PP_SELEC_DIR,exist_ok=True)
 

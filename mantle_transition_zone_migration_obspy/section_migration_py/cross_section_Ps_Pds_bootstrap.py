@@ -33,14 +33,14 @@ from parameters_py.mgconfig import (
 					URCRNRLON_SMALL,LLCRNRLAT_SMALL,URCRNRLAT_SMALL,PROJECT_LAT,PROJECT_LON,
 					BOUNDARY_1_SHP,BOUNDARY_2_SHP,OUTPUT_DIR,		
 					EXT_FIG,DPI_FIG,FRESNEL_ZONE_RADIUS,DIST_GRID_PP,DEPTH_RANGE,COLORMAP_VEL,
-					NUMBER_PP_PER_BIN,NUMBER_STA_PER_BIN
+					NUMBER_PP_PER_BIN,NUMBER_STA_PER_BIN,DEPTH_TARGET
 				   )
 
 
 print('Starting Cross section CODE')
 print('\n')
 
-STA_DIR = OUTPUT_DIR+'MODEL_INTER_DEPTH_'+str(INTER_DEPTH)+'/'+'Stations'+'/'
+STA_DIR = OUTPUT_DIR+'MODEL_INTER_DEPTH_'+str(INTER_DEPTH)+'_DEPTH_TARGET_'+str(DEPTH_TARGET)+'/'+'Stations'+'/'
 
 
 print('Looking for receiver functions data in JSON file in '+STA_DIR)
@@ -65,7 +65,7 @@ sta_time = sta_dic['sta_time']
 print('Importing selected binned data')
 print('\n')
 
-PP_SELEC_DIR = OUTPUT_DIR+'MODEL_INTER_DEPTH_'+str(INTER_DEPTH)+'/'+'SELECTED_BINNED_DATA'+'/'
+PP_SELEC_DIR = OUTPUT_DIR+'MODEL_INTER_DEPTH_'+str(INTER_DEPTH)+'_DEPTH_TARGET_'+str(DEPTH_TARGET)+'/'+'SELECTED_BINNED_DATA'+'/'
 
 RESULTS_FOLDER_BINS = PP_SELEC_DIR+'/'+'RESULTS_NUMBER_PP_PER_BIN_'+str(NUMBER_PP_PER_BIN)+'_NUMBER_STA_PER_BIN_'+str(NUMBER_STA_PER_BIN)+'/'
 filename = RESULTS_FOLDER_BINS+'SELECTED_BINNED.json'
@@ -225,7 +225,7 @@ cid = fig.canvas.mpl_connect('pick_event', onpick1)
 
 plt.show()
 
-PP_FIGURE = OUTPUT_DIR+'MODEL_INTER_DEPTH_'+str(INTER_DEPTH)+'/'+'Figures'+'/'
+PP_FIGURE = OUTPUT_DIR+'MODEL_INTER_DEPTH_'+str(INTER_DEPTH)+'_DEPTH_TARGET_'+str(DEPTH_TARGET)+'/'+'Figures'+'/'
 
 RESULTS_FOLDER = PP_FIGURE+'/'+'RESULTS_NUMBER_PP_PER_BIN_'+str(NUMBER_PP_PER_BIN)+'_NUMBER_STA_PER_BIN_'+str(NUMBER_STA_PER_BIN)+'/'
 os.makedirs(RESULTS_FOLDER,exist_ok=True)
@@ -451,7 +451,7 @@ for _i, _j in enumerate(RF_data_profile_Pds):
 		pds_grid_410_660 = fig.add_subplot(gs[0:3, _i*2+1])
 		ppds_grid_410_660 = fig.add_subplot(gs[3:6,_i*2+1])
 
-		factor_Pds = 2
+		factor_Pds = 1
 
 		majorLocatorY = MultipleLocator(50)
 		minorLocatorY = MultipleLocator(10)
@@ -459,23 +459,25 @@ for _i, _j in enumerate(RF_data_profile_Pds):
 	
 		x_data_Pds= []
 		for x,c in enumerate(RF_stacking_Pds_BOOTSTRAP_profile[_i]):
-			RF_data_factor_Pds_bootstrap = [_i/factor_Pds+l for k, l in enumerate(c)]
+			RF_data_factor_Pds_bootstrap = [l for k, l in enumerate(c)]
 			x_data_Pds.append(RF_data_factor_Pds_bootstrap)
 			pds_grid.plot(RF_data_factor_Pds_bootstrap,camadas_terra_10_km,'silver',linewidth=0.1, zorder=10)
 
 		min_x = [min(a) for a in zip(*x_data_Pds)]
 		max_x = [max(a) for a in zip(*x_data_Pds)]
 		pds_grid.fill_betweenx(y=camadas_terra_10_km,x1=min_x, x2=max_x, facecolor='whitesmoke',alpha=0.3, interpolate=True, zorder=5)
-
-		pds_grid.text(min(min_x),RF_DEPTH_mean_1_profile_Pds[_i],str(round(RF_DEPTH_mean_1_profile_Pds[_i]))+'±'+str(round(RF_DEPTH_std_1_profile_Pds[_i])),zorder=40,fontsize=6, fontweight='bold',bbox={'facecolor':'white','edgecolor':'none','pad':1})
 		
-		if math.isnan(RF_DEPTH_mean_520_profile_Pds[i]) == False:
-			pds_grid.text(min(min_x),RF_DEPTH_mean_520_profile_Pds[_i],str(round(RF_DEPTH_mean_520_profile_Pds[_i]))+'±'+str(round(RF_DEPTH_std_520_profile_Pds[_i])),zorder=41,fontsize=6, fontweight='bold',bbox={'facecolor':'white','edgecolor':'none','pad':1})
+		if math.isnan(RF_DEPTH_mean_1_profile_Pds[i]) == False:
+			pds_grid.text(-0.0095,RF_DEPTH_mean_1_profile_Pds[_i],str(round(RF_DEPTH_mean_1_profile_Pds[_i]))+'±'+str(round(RF_DEPTH_std_1_profile_Pds[_i])),zorder=40,fontsize=6, fontweight='bold',ha='left',bbox={'facecolor':'white','edgecolor':'none','pad':1})
+		
+		#if math.isnan(RF_DEPTH_std_520_profile_Pds[i]) == False:
+		#	pds_grid.text(-0.0095,RF_DEPTH_mean_520_profile_Pds[_i],str(round(RF_DEPTH_mean_520_profile_Pds[_i]))+'±'+str(round(RF_DEPTH_std_520_profile_Pds[_i])),zorder=41,fontsize=6, fontweight='bold',ha='left',bbox={'facecolor':'white','edgecolor':'none','pad':1})
 
-		pds_grid.text(min(min_x),RF_DEPTH_mean_2_profile_Pds[_i],str(round(RF_DEPTH_mean_2_profile_Pds[_i]))+'±'+str(round(RF_DEPTH_std_2_profile_Pds[_i])),zorder=42,fontsize=6, fontweight='bold',bbox={'facecolor':'white','edgecolor':'none','pad':1})
+		if math.isnan(RF_DEPTH_mean_2_profile_Pds[i]) == False:
+			pds_grid.text(-0.0095,RF_DEPTH_mean_2_profile_Pds[_i],str(round(RF_DEPTH_mean_2_profile_Pds[_i]))+'±'+str(round(RF_DEPTH_std_2_profile_Pds[_i])),zorder=42,fontsize=6, fontweight='bold',ha='left',bbox={'facecolor':'white','edgecolor':'none','pad':1})
 
 
-		RF_data_factor_Pds = [_i/factor_Pds+l for k, l in enumerate(_j)]
+		RF_data_factor_Pds = [l for k, l in enumerate(_j)]
 		pds_grid.plot(RF_data_factor_Pds,camadas_terra_10_km,'k',linewidth=2, zorder=30)
 
 		pds_grid.yaxis.set_ticks_position('both')
@@ -483,10 +485,10 @@ for _i, _j in enumerate(RF_data_profile_Pds):
 		pds_grid.yaxis.set_minor_locator(minorLocatorY)
 		pds_grid.grid(True,which='major',linestyle='None')
 
-		pds_grid.fill_betweenx(camadas_terra_10_km,RF_data_factor_Pds,_i/factor_Pds,where=np.array(RF_data_factor_Pds)>=_i/factor_Pds,alpha=0.5, facecolor='dimgrey',interpolate=True, zorder=19)
-		pds_grid.fill_betweenx(camadas_terra_10_km,RF_data_factor_Pds,_i/factor_Pds,where=np.array(RF_data_factor_Pds)<=_i/factor_Pds,alpha=0.5, facecolor='lightgrey', interpolate=True, zorder=20)
-		pds_grid.set_xticks([])
-
+		pds_grid.fill_betweenx(camadas_terra_10_km,RF_data_factor_Pds,0,where=np.array(RF_data_factor_Pds)>=0,alpha=0.5, facecolor='dimgrey',interpolate=True, zorder=19)
+		pds_grid.fill_betweenx(camadas_terra_10_km,RF_data_factor_Pds,0,where=np.array(RF_data_factor_Pds)<=0,alpha=0.5, facecolor='lightgrey', interpolate=True, zorder=20)
+		#pds_grid.set_xticks([])
+		pds_grid.set_xlim(-0.01,0.01)
 	
 		pds_grid.set_title('Lat = '+str(round(RF_lat_profile[_i],1))+' - Lon = '+str(round(RF_lon_profile[_i],1)))
 		pds_grid.set_ylim(800,300)
@@ -500,11 +502,11 @@ for _i, _j in enumerate(RF_data_profile_Pds):
 	#Figure Ppds
 
 
-		factor_Ppds = 2
+		factor_Ppds = 1
 
 		x_data_Ppds = []
 		for x,c in enumerate(RF_stacking_Ppds_BOOTSTRAP_profile[_i]):
-			RF_data_factor_Ppds_bootstrap = [_i/factor_Ppds+l for k, l in enumerate(c)]
+			RF_data_factor_Ppds_bootstrap = [l for k, l in enumerate(c)]
 			x_data_Ppds.append(RF_data_factor_Ppds_bootstrap)
 			ppds_grid.plot(RF_data_factor_Ppds_bootstrap,camadas_terra_10_km,'silver',linewidth=0.1, zorder=10)
 
@@ -512,19 +514,22 @@ for _i, _j in enumerate(RF_data_profile_Pds):
 		max_x = [max(a) for a in zip(*x_data_Ppds)]
 		ppds_grid.fill_betweenx(y=camadas_terra_10_km,x1=min_x, x2=max_x, facecolor='whitesmoke',alpha=0.3, interpolate=True, zorder=5)
 
-		RF_data_factor_Ppds = [_i/factor_Ppds+l for k, l in enumerate(RF_data_profile_Ppds[_i])]
+		RF_data_factor_Ppds = [l for k, l in enumerate(RF_data_profile_Ppds[_i])]
 		ppds_grid.plot(RF_data_factor_Ppds,camadas_terra_10_km,'k',linewidth=2, zorder=30)
 
-		ppds_grid.text(min(min_x),RF_DEPTH_mean_1_profile_Ppds[_i],str(round(RF_DEPTH_mean_1_profile_Ppds[_i]))+'±'+str(round(RF_DEPTH_std_1_profile_Ppds[_i])),zorder=40,fontsize=6, fontweight='bold',bbox={'facecolor':'white','edgecolor':'none','pad':1})
+		if math.isnan(RF_DEPTH_mean_1_profile_Ppds[i]) == False:
+			ppds_grid.text(-0.0045,RF_DEPTH_mean_1_profile_Ppds[_i],str(round(RF_DEPTH_mean_1_profile_Ppds[_i]))+'±'+str(round(RF_DEPTH_std_1_profile_Ppds[_i])),zorder=40,fontsize=6, fontweight='bold',ha='left',bbox={'facecolor':'white','edgecolor':'none','pad':1})
 		
-		if math.isnan(RF_DEPTH_mean_520_profile_Ppds[i]) == False:
-			ppds_grid.text(min(min_x),RF_DEPTH_mean_520_profile_Ppds[_i],str(round(RF_DEPTH_mean_520_profile_Ppds[_i]))+'±'+str(round(RF_DEPTH_std_520_profile_Ppds[_i])),zorder=41,fontsize=6, fontweight='bold',bbox={'facecolor':'white','edgecolor':'none','pad':1})
+		#if math.isnan(RF_DEPTH_mean_520_profile_Ppds[i]) == False:
+		#	ppds_grid.text(-0.0045,RF_DEPTH_mean_520_profile_Ppds[_i],str(round(RF_DEPTH_mean_520_profile_Ppds[_i]))+'±'+str(round(RF_DEPTH_std_520_profile_Ppds[_i])),zorder=41,fontsize=6, fontweight='bold',bbox={'facecolor':'white','edgecolor':'none','pad':1})
 
-		ppds_grid.text(min(min_x),RF_DEPTH_mean_2_profile_Ppds[_i],str(round(RF_DEPTH_mean_2_profile_Ppds[_i]))+'±'+str(round(RF_DEPTH_std_2_profile_Ppds[_i])),zorder=42,fontsize=6, fontweight='bold',bbox={'facecolor':'white','edgecolor':'none','pad':1})
+		if math.isnan(RF_DEPTH_mean_2_profile_Ppds[i]) == False:
+			ppds_grid.text(-0.0045,RF_DEPTH_mean_2_profile_Ppds[_i],str(round(RF_DEPTH_mean_2_profile_Ppds[_i]))+'±'+str(round(RF_DEPTH_std_2_profile_Ppds[_i])),zorder=42,fontsize=6, fontweight='bold',ha='left',bbox={'facecolor':'white','edgecolor':'none','pad':1})
 
 
-		ppds_grid.fill_betweenx(camadas_terra_10_km,RF_data_factor_Ppds,_i/factor_Ppds,where=np.array(RF_data_factor_Ppds)>=_i/factor_Ppds,alpha=0.5, facecolor='dimgrey',interpolate=True, zorder=19)
-		ppds_grid.fill_betweenx(camadas_terra_10_km,RF_data_factor_Ppds,_i/factor_Ppds,where=np.array(RF_data_factor_Ppds)<=_i/factor_Ppds,alpha=0.5, facecolor='lightgrey',interpolate=True, zorder=20)
+		ppds_grid.fill_betweenx(camadas_terra_10_km,RF_data_factor_Ppds,0,where=np.array(RF_data_factor_Ppds)>=0,alpha=0.5, facecolor='dimgrey',interpolate=True, zorder=19)
+		
+		ppds_grid.fill_betweenx(camadas_terra_10_km,RF_data_factor_Ppds,0,where=np.array(RF_data_factor_Ppds)<=0,alpha=0.5, facecolor='lightgrey',interpolate=True, zorder=20)
 		
 		ppds_grid.yaxis.set_major_locator(majorLocatorY)
 		ppds_grid.yaxis.set_minor_locator(minorLocatorY)
@@ -533,7 +538,9 @@ for _i, _j in enumerate(RF_data_profile_Pds):
 
 		ppds_grid.yaxis.set_ticks_position('both')
 
-		ppds_grid.set_xticks([])
+		#ppds_grid.set_xticks([])
+		ppds_grid.set_xlim(-0.005,0.005)
+
 		ppds_grid.set_ylim(800,300)
 
 		if _i == 0:
@@ -575,7 +582,7 @@ for _i, _j in enumerate(RF_data_profile_Pds):
 
 		pds_grid_410_660.text(5,550,' MTZ = '+str(round(RF_DEPTH_mtz_thickness_profile_Pds[_i]))+'±'+str(round(RF_DEPTH_mtz_thickness_profile_Pds_std[_i])),zorder=40,fontsize=6, fontweight='bold',bbox={'facecolor':'white','edgecolor':'none','pad':1})
 		pds_grid_410_660.text(5,580,'(MTZ = '+str(round(RF_DEPTH_true_thickness_MTZ_profile[_i]))+'±'+str(round(RF_DEPTH_true_thickness_MTZ_profile_std[_i]))+')',zorder=40,fontsize=6, fontweight='bold',bbox={'facecolor':'white','edgecolor':'none','pad':1})
-		pds_grid_410_660.text(5,RF_DEPTH_mean_1_profile_Pds[_i]-30,'('+str(round(RF_DEPTH_mean_1_true_profile[_i]))+'±'+str(round(RF_DEPTH_std_2_true_profile[_i]))+')',zorder=40,fontsize=6, fontweight='bold',bbox={'facecolor':'white','edgecolor':'none','pad':1})
+		pds_grid_410_660.text(5,RF_DEPTH_mean_1_profile_Pds[_i]-30,'('+str(round(RF_DEPTH_mean_1_true_profile[_i]))+'±'+str(round(RF_DEPTH_std_1_true_profile[_i]))+')',zorder=40,fontsize=6, fontweight='bold',bbox={'facecolor':'white','edgecolor':'none','pad':1})
 		pds_grid_410_660.text(5,RF_DEPTH_mean_2_profile_Pds[_i]+40,'('+str(round(RF_DEPTH_mean_2_true_profile[_i]))+'±'+str(round(RF_DEPTH_std_2_true_profile[_i]))+')',zorder=40,fontsize=6, fontweight='bold',bbox={'facecolor':'white','edgecolor':'none','pad':1})
 
 

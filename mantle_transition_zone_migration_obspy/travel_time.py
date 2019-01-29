@@ -27,7 +27,7 @@ from parameters_py.mgconfig import (
 					RF_DIR,RF_EXT,MODEL_FILE_NPZ,MIN_DEPTH,MAX_DEPTH,INTER_DEPTH,NUMBER_PP_PER_BIN,
 					LLCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLON_LARGE,URCRNRLAT_LARGE,LLCRNRLON_SMALL,
 					URCRNRLON_SMALL,LLCRNRLAT_SMALL,URCRNRLAT_SMALL,PROJECT_LAT,PROJECT_LON,
-					BOUNDARY_1_SHP,BOUNDARY_2_SHP,EXT_FIG,DPI_FIG,MP_PROCESSES,OUTPUT_DIR
+					BOUNDARY_1_SHP,BOUNDARY_2_SHP,EXT_FIG,DPI_FIG,MP_PROCESSES,OUTPUT_DIR,DEPTH_TARGET
 				   )
 
 
@@ -49,7 +49,7 @@ def parallel_travel_times_Ppds(number,ev_depth,ev_lat,ev_long,st_lat,st_long):
 # Importing station dictionary from JSON file 
 # ============================================
 
-STA_DIR = OUTPUT_DIR+'MODEL_INTER_DEPTH_'+str(INTER_DEPTH)+'/'+'Stations'+'/'
+STA_DIR = OUTPUT_DIR+'MODEL_INTER_DEPTH_'+str(INTER_DEPTH)+'_DEPTH_TARGET_'+str(DEPTH_TARGET)+'/'+'Stations'+'/'
 
 print('\n')
 print('Looking for receiver functions data in JSON file in '+STA_DIR)
@@ -86,7 +86,7 @@ model_THICKNESS_km = TauPyModel(model=MODEL_FILE_NPZ)
 
 print('Creating travel times output folders')
 
-Travel_times_folder = OUTPUT_DIR+'MODEL_INTER_DEPTH_'+str(INTER_DEPTH)+'/'+'Phases'+'/'
+Travel_times_folder = OUTPUT_DIR+'MODEL_INTER_DEPTH_'+str(INTER_DEPTH)+'_DEPTH_TARGET_'+str(DEPTH_TARGET)+'/'+'Phases'+'/'
 os.makedirs(Travel_times_folder,exist_ok=True)
 print('travel_times_dic = '+Travel_times_folder)
 

@@ -56,7 +56,7 @@ def parallel_piercing_points(number,PHASE,ev_depth,ev_lat,ev_long,st_lat,st_long
 # Importing station dictionary from JSON file 
 # ============================================
 
-STA_DIR = OUTPUT_DIR+'MODEL_INTER_DEPTH_'+str(INTER_DEPTH)+'/'+'Stations'+'/'
+STA_DIR = OUTPUT_DIR+'MODEL_INTER_DEPTH_'+str(INTER_DEPTH)+'_DEPTH_TARGET_'+str(DEPTH_TARGET)+'/'+'Stations'+'/'
 
 print('\n')
 print('Looking for receiver functions data in JSON file in '+STA_DIR)
@@ -111,7 +111,7 @@ PHASES = 'P410s','P'+str(DEPTH_TARGET)+'s','P660s'
 
 print('Creating output folders')
 
-PP_DIR = OUTPUT_DIR+'MODEL_INTER_DEPTH_'+str(INTER_DEPTH)+'/'+'Piercing_Points'+'/'
+PP_DIR = OUTPUT_DIR+'MODEL_INTER_DEPTH_'+str(INTER_DEPTH)+'_DEPTH_TARGET_'+str(DEPTH_TARGET)+'/'+'Piercing_Points'+'/'
 
 Phase_P410s_folder = PP_DIR+'P410s/'
 os.makedirs(Phase_P410s_folder,exist_ok=True)
