@@ -40,7 +40,7 @@ from parameters_py.mgconfig import (
 					URCRNRLON_SMALL,LLCRNRLAT_SMALL,URCRNRLAT_SMALL,PROJECT_LAT,PROJECT_LON,GRID_PP_MULT,
 					BOUNDARY_1_SHP,BOUNDARY_2_SHP,TECTO_SHP,COLORMAP_VEL,COLORMAP_STD,OUTPUT_DIR,
 					EXT_FIG,DPI_FIG,FRESNEL_ZONE_RADIUS,DIST_GRID_PP,NUMBER_STA_PER_BIN,NUMBER_PP_PER_BIN,
-					DEPTH_RANGE,BOOTSTRAP_INTERATOR,BOOTSTRAP_DEPTH_ESTIMATION,GAMMA,CROSS_SECTION_AXIS,DEPTH_TARGET
+					DEPTH_RANGE,BOOTSTRAP_INTERATOR,BOOTSTRAP_DEPTH_ESTIMATION,GAMMA,CROSS_SECTION_AXIS,DEPTH_TARGET,
 				   )
 
 
@@ -543,77 +543,71 @@ for i,j in enumerate(RF_data_profile_Pds):
 	fig.colorbar(sm_map_MTZ_thickness,ax=map_MTZ_thickness,orientation='vertical',shrink=0.9,pad=0.1,label='Thickness (km)')
 
 	#### Figure Pds  ####
-
-
-	factor_Pds = 300
-
+	
 	majorLocatorY = MultipleLocator(50)
 	minorLocatorY = MultipleLocator(10)
 
-	
+	grid_Pds = np.array(RF_data_profile_Pds[i])
+	extent_Pds = [0,len(RF_data_profile_Pds[i]),800,300]
+
+
+	pefil_pds.imshow(grid_Pds.T,extent=extent_Pds,interpolation='bicubic', cmap='seismic',vmin=-0.01,vmax=0.01)
+	pefil_pds.set_aspect('auto')
+
 	for _i, _j in enumerate(RF_data_profile_Pds[i]):
-		RF_data_factor_Pds = [_i/factor_Pds+l for k, l in enumerate(_j)]
-		pefil_pds.plot(RF_data_factor_Pds,camadas_terra_10_km,'k',linewidth=1)
-		pefil_pds.yaxis.set_major_locator(majorLocatorY)
-		pefil_pds.yaxis.set_minor_locator(minorLocatorY)
-		pefil_pds.grid(True,which='major',color='gray',linewidth=1,linestyle='--')
+		pefil_pds.plot(_i,RF_DEPTH_mean_1_profile_Pds[i][_i],'ok',ms=3,markerfacecolor='none')
+		pefil_pds.plot(_i,RF_DEPTH_mean_520_profile_Pds[i][_i],'ok',ms=3,markerfacecolor='none')
+		pefil_pds.plot(_i,RF_DEPTH_mean_2_profile_Pds[i][_i],'ok',ms=3,markerfacecolor='none')
 
-		pefil_pds.plot(_i/factor_Pds,RF_DEPTH_mean_1_profile_Pds[i][_i],'ok',ms=3,markerfacecolor='none')
-		pefil_pds.plot(_i/factor_Pds,RF_DEPTH_mean_520_profile_Pds[i][_i],'ok',ms=3,markerfacecolor='none')
-		pefil_pds.plot(_i/factor_Pds,RF_DEPTH_mean_2_profile_Pds[i][_i],'ok',ms=3,markerfacecolor='none')
+		pefil_pds.errorbar(_i,RF_DEPTH_mean_1_profile_Pds[i][_i], yerr=RF_DEPTH_std_1_profile_Pds[i][_i], ecolor='k',elinewidth=1,capsize=1,capthick=1)
+		pefil_pds.errorbar(_i,RF_DEPTH_mean_520_profile_Pds[i][_i], yerr=RF_DEPTH_std_520_profile_Pds[i][_i], ecolor='k',elinewidth=1,capsize=1,capthick=1)
+		pefil_pds.errorbar(_i,RF_DEPTH_mean_2_profile_Pds[i][_i], yerr=RF_DEPTH_std_2_profile_Pds[i][_i], ecolor='k',elinewidth=1,capsize=1,capthick=1)
 
-		pefil_pds.errorbar(_i/factor_Pds,RF_DEPTH_mean_1_profile_Pds[i][_i], yerr=RF_DEPTH_std_1_profile_Pds[i][_i], ecolor='k',elinewidth=1,capsize=1,capthick=1)
-		pefil_pds.errorbar(_i/factor_Pds,RF_DEPTH_mean_520_profile_Pds[i][_i], yerr=RF_DEPTH_std_520_profile_Pds[i][_i], ecolor='k',elinewidth=1,capsize=1,capthick=1)
-		pefil_pds.errorbar(_i/factor_Pds,RF_DEPTH_mean_2_profile_Pds[i][_i], yerr=RF_DEPTH_std_2_profile_Pds[i][_i], ecolor='k',elinewidth=1,capsize=1,capthick=1)
-
-		pefil_pds.yaxis.set_ticks_position('both')
-
-		pefil_pds.fill_betweenx(camadas_terra_10_km,RF_data_factor_Pds,_i/factor_Pds,where=np.array(RF_data_factor_Pds)>=_i/factor_Pds, facecolor='black',alpha=0.3, interpolate=True)
-		pefil_pds.fill_betweenx(camadas_terra_10_km,RF_data_factor_Pds,_i/factor_Pds,where=np.array(RF_data_factor_Pds)<=_i/factor_Pds, facecolor='gray',alpha=0.3, interpolate=True)
-		
-		pefil_pds.set_title('Cross-section - Pds')
-		pefil_pds.set_xticks([])
-		pefil_pds.set_ylabel('Depth (km)')
-		pefil_pds.yaxis.set_label_position("right")
-		pefil_pds.tick_params(labelright=True)
-		pefil_pds.set_ylim(MAX_DEPTH,MIN_DEPTH)
+	pefil_pds.yaxis.set_ticks_position('both')
+	pefil_pds.yaxis.set_major_locator(majorLocatorY)
+	pefil_pds.yaxis.set_minor_locator(minorLocatorY)
+	pefil_pds.grid(True,which='major',color='gray',linewidth=1,linestyle='--')
+	pefil_pds.set_title('Cross-section - Pds')
+	pefil_pds.set_xticks([])
+	pefil_pds.set_ylabel('Depth (km)')
+	pefil_pds.yaxis.set_label_position("right")
+	pefil_pds.tick_params(labelright=True)
 
 	#### Figure Ppds  ####
 
+	grid_Ppds = np.array(RF_data_profile_Ppds[i])
+	extent_Ppds = [0,len(RF_data_profile_Ppds[i]),800,300]
 
-	factor_Ppds = 300
+	pefil_ppds.imshow(grid_Ppds.T,extent=extent_Ppds,interpolation='bicubic', cmap='seismic',vmin=-0.01,vmax=0.01)
+	pefil_ppds.set_aspect('auto')
 
 	for _i, _j in enumerate(RF_data_profile_Ppds[i]):
-		RF_data_factor_Ppds = [_i/factor_Ppds+l for k, l in enumerate(_j)]
-		pefil_ppds.plot(RF_data_factor_Ppds,camadas_terra_10_km,'k',linewidth=1)
+
 		pefil_ppds.yaxis.set_major_locator(majorLocatorY)
 		pefil_ppds.yaxis.set_minor_locator(minorLocatorY)
 		pefil_ppds.grid(True,which='major',color='gray',linewidth=1,linestyle='--')
 
-		pefil_ppds.plot(_i/factor_Ppds,RF_DEPTH_mean_1_profile_Ppds[i][_i],marker='p',ms=3,markerfacecolor='none',markeredgecolor='k')
-		pefil_ppds.plot(_i/factor_Ppds,RF_DEPTH_mean_520_profile_Ppds[i][_i],marker='p',ms=3,markerfacecolor='none',markeredgecolor='k')
-		pefil_ppds.plot(_i/factor_Ppds,RF_DEPTH_mean_2_profile_Ppds[i][_i],marker='p',ms=3,markerfacecolor='none',markeredgecolor='k')
+		pefil_ppds.plot(_i,RF_DEPTH_mean_1_profile_Ppds[i][_i],marker='p',ms=3,markerfacecolor='none',markeredgecolor='k')
+		pefil_ppds.plot(_i,RF_DEPTH_mean_520_profile_Ppds[i][_i],marker='p',ms=3,markerfacecolor='none',markeredgecolor='k')
+		pefil_ppds.plot(_i,RF_DEPTH_mean_2_profile_Ppds[i][_i],marker='p',ms=3,markerfacecolor='none',markeredgecolor='k')
 
-		pefil_ppds.errorbar(_i/factor_Ppds,RF_DEPTH_mean_1_profile_Ppds[i][_i], yerr=RF_DEPTH_std_1_profile_Ppds[i][_i], ecolor='k',elinewidth=1,capsize=1,capthick=1)
-		pefil_ppds.errorbar(_i/factor_Ppds,RF_DEPTH_mean_520_profile_Ppds[i][_i], yerr=RF_DEPTH_std_520_profile_Ppds[i][_i], ecolor='k',elinewidth=1,capsize=1,capthick=1)
-		pefil_ppds.errorbar(_i/factor_Ppds,RF_DEPTH_mean_2_profile_Ppds[i][_i], yerr=RF_DEPTH_std_2_profile_Ppds[i][_i], ecolor='k',elinewidth=1,capsize=1,capthick=1)
+		pefil_ppds.errorbar(_i,RF_DEPTH_mean_1_profile_Ppds[i][_i], yerr=RF_DEPTH_std_1_profile_Ppds[i][_i], ecolor='k',elinewidth=1,capsize=1,capthick=1)
+		pefil_ppds.errorbar(_i,RF_DEPTH_mean_520_profile_Ppds[i][_i], yerr=RF_DEPTH_std_520_profile_Ppds[i][_i], ecolor='k',elinewidth=1,capsize=1,capthick=1)
+		pefil_ppds.errorbar(_i,RF_DEPTH_mean_2_profile_Ppds[i][_i], yerr=RF_DEPTH_std_2_profile_Ppds[i][_i], ecolor='k',elinewidth=1,capsize=1,capthick=1)
 
 		pefil_ppds.yaxis.set_ticks_position('both')
 		pefil_ppds.yaxis.set_label_position("right")
 
-		pefil_ppds.fill_betweenx(camadas_terra_10_km,RF_data_factor_Ppds,_i/factor_Ppds,where=np.array(RF_data_factor_Ppds)>=_i/factor_Ppds, facecolor='black',alpha=0.3, interpolate=True)
-		pefil_ppds.fill_betweenx(camadas_terra_10_km,RF_data_factor_Ppds,_i/factor_Ppds,where=np.array(RF_data_factor_Ppds)<=_i/factor_Ppds, facecolor='gray',alpha=0.3, interpolate=True)
-		
 		pefil_ppds.set_xticks([])
 		pefil_ppds.set_title('Cross-section - Ppds')
 		pefil_ppds.set_ylabel('Depth (km)')
 		pefil_ppds.tick_params(labelleft=True,labelright=True)
-		pefil_ppds.set_ylim(MAX_DEPTH,MIN_DEPTH)
+
 		if CROSS_SECTION_AXIS == 'y':
-			pefil_ppds.text(_i/factor_Ppds,820,"{0:.1f}".format(AB_lon[i][_i]),rotation=-45,fontsize=10)
+			pefil_ppds.text(_i,820,"{0:.1f}".format(AB_lon[i][_i]),rotation=-45,fontsize=10)
 			pefil_ppds.set_xlabel('Longitude ($^\circ$)',labelpad=30)
 		else:
-			pefil_ppds.text(_i/factor_Ppds,820,"{0:.1f}".format(AB_lat[i][_i]),rotation=-45,fontsize=10)
+			pefil_ppds.text(_i,820,"{0:.1f}".format(AB_lat[i][_i]),rotation=-45,fontsize=10)
 			pefil_ppds.set_xlabel('Latitude ($^\circ$)',labelpad=30)
 
 
@@ -621,11 +615,11 @@ for i,j in enumerate(RF_data_profile_Pds):
 
 
 	for _i, _j in enumerate(RF_data_profile_Ppds[i]):
-		apparent_410.plot(_i/factor_Ppds,RF_DEPTH_mean_1_profile_Pds[i][_i],marker='o',markerfacecolor='none',markeredgecolor='dimgray')
-		apparent_410.plot(_i/factor_Ppds,RF_DEPTH_mean_1_true_profile[i][_i],marker='s',markerfacecolor='none',markeredgecolor='k')
+		apparent_410.plot(_i,RF_DEPTH_mean_1_profile_Pds[i][_i],marker='o',markerfacecolor='none',markeredgecolor='dimgray')
+		apparent_410.plot(_i,RF_DEPTH_mean_1_true_profile[i][_i],marker='s',markerfacecolor='none',markeredgecolor='k')
 
-		apparent_410.errorbar(_i/factor_Ppds,RF_DEPTH_mean_1_profile_Pds[i][_i], yerr=RF_DEPTH_std_1_profile_Pds[i][_i], ecolor='dimgray',elinewidth=1,capsize=2,capthick=1)
-		apparent_410.errorbar(_i/factor_Ppds,RF_DEPTH_mean_1_true_profile[i][_i], yerr=RF_DEPTH_std_1_true_profile[i][_i], ecolor='k',elinewidth=1,capsize=2,capthick=1)
+		apparent_410.errorbar(_i,RF_DEPTH_mean_1_profile_Pds[i][_i], yerr=RF_DEPTH_std_1_profile_Pds[i][_i], ecolor='dimgray',elinewidth=1,capsize=2,capthick=1)
+		apparent_410.errorbar(_i,RF_DEPTH_mean_1_true_profile[i][_i], yerr=RF_DEPTH_std_1_true_profile[i][_i], ecolor='k',elinewidth=1,capsize=2,capthick=1)
 
 		apparent_410.set_title('410 km Pds')
 		apparent_410.set_ylabel('Depth (km)')
@@ -642,11 +636,11 @@ for i,j in enumerate(RF_data_profile_Pds):
 
 
 	for _i, _j in enumerate(RF_DEPTH_mean_2_profile_Pds[i]):
-		apparent_660.plot(_i/factor_Ppds,RF_DEPTH_mean_2_profile_Pds[i][_i],marker='o',markerfacecolor='none',markeredgecolor='dimgray')
-		apparent_660.plot(_i/factor_Ppds,RF_DEPTH_mean_2_true_profile[i][_i],marker='s',markerfacecolor='none',markeredgecolor='k')
+		apparent_660.plot(_i,RF_DEPTH_mean_2_profile_Pds[i][_i],marker='o',markerfacecolor='none',markeredgecolor='dimgray')
+		apparent_660.plot(_i,RF_DEPTH_mean_2_true_profile[i][_i],marker='s',markerfacecolor='none',markeredgecolor='k')
 
-		apparent_660.errorbar(_i/factor_Ppds,RF_DEPTH_mean_2_profile_Pds[i][_i], yerr=RF_DEPTH_std_2_profile_Pds[i][_i], ecolor='dimgray',elinewidth=1,capsize=2,capthick=1)
-		apparent_660.errorbar(_i/factor_Ppds,RF_DEPTH_mean_2_true_profile[i][_i], yerr=RF_DEPTH_std_2_true_profile[i][_i], ecolor='k',elinewidth=1,capsize=2,capthick=1)
+		apparent_660.errorbar(_i,RF_DEPTH_mean_2_profile_Pds[i][_i], yerr=RF_DEPTH_std_2_profile_Pds[i][_i], ecolor='dimgray',elinewidth=1,capsize=2,capthick=1)
+		apparent_660.errorbar(_i,RF_DEPTH_mean_2_true_profile[i][_i], yerr=RF_DEPTH_std_2_true_profile[i][_i], ecolor='k',elinewidth=1,capsize=2,capthick=1)
 
 		apparent_660.set_title('660 km Pds')
 		apparent_660.set_ylim(800,600)
@@ -662,11 +656,11 @@ for i,j in enumerate(RF_data_profile_Pds):
 
 
 	for _i, _j in enumerate(RF_DEPTH_mean_2_profile_Pds[i]):
-		apparent_410_ppds.plot(_i/factor_Ppds,RF_DEPTH_mean_1_profile_Ppds[i][_i],marker='p',markerfacecolor='none',markeredgecolor='dimgray')
-		apparent_410_ppds.plot(_i/factor_Ppds,RF_DEPTH_mean_1_true_profile[i][_i],marker='s',markerfacecolor='none',markeredgecolor='k')
+		apparent_410_ppds.plot(_i,RF_DEPTH_mean_1_profile_Ppds[i][_i],marker='p',markerfacecolor='none',markeredgecolor='dimgray')
+		apparent_410_ppds.plot(_i,RF_DEPTH_mean_1_true_profile[i][_i],marker='s',markerfacecolor='none',markeredgecolor='k')
 
-		apparent_410_ppds.errorbar(_i/factor_Ppds,RF_DEPTH_mean_1_profile_Ppds[i][_i], yerr=RF_DEPTH_std_1_profile_Ppds[i][_i], ecolor='dimgray',elinewidth=1,capsize=2,capthick=1)
-		apparent_410_ppds.errorbar(_i/factor_Ppds,RF_DEPTH_mean_1_true_profile[i][_i], yerr=RF_DEPTH_std_1_true_profile[i][_i], ecolor='k',elinewidth=1,capsize=2,capthick=1)
+		apparent_410_ppds.errorbar(_i,RF_DEPTH_mean_1_profile_Ppds[i][_i], yerr=RF_DEPTH_std_1_profile_Ppds[i][_i], ecolor='dimgray',elinewidth=1,capsize=2,capthick=1)
+		apparent_410_ppds.errorbar(_i,RF_DEPTH_mean_1_true_profile[i][_i], yerr=RF_DEPTH_std_1_true_profile[i][_i], ecolor='k',elinewidth=1,capsize=2,capthick=1)
 
 		apparent_410_ppds.set_title('410 km Ppds')
 		apparent_410_ppds.set_ylim(500,300)
@@ -683,11 +677,11 @@ for i,j in enumerate(RF_data_profile_Pds):
 
 
 	for _i, _j in enumerate(RF_DEPTH_mean_2_profile_Pds[i]):
-		apparent_660_ppds.plot(_i/factor_Ppds,RF_DEPTH_mean_2_profile_Ppds[i][_i],marker='p',markerfacecolor='none',markeredgecolor='dimgray')
-		apparent_660_ppds.plot(_i/factor_Ppds,RF_DEPTH_mean_2_true_profile[i][_i],marker='s',markerfacecolor='none',markeredgecolor='k')
+		apparent_660_ppds.plot(_i,RF_DEPTH_mean_2_profile_Ppds[i][_i],marker='p',markerfacecolor='none',markeredgecolor='dimgray')
+		apparent_660_ppds.plot(_i,RF_DEPTH_mean_2_true_profile[i][_i],marker='s',markerfacecolor='none',markeredgecolor='k')
 
-		apparent_660_ppds.errorbar(_i/factor_Ppds,RF_DEPTH_mean_2_profile_Ppds[i][_i], yerr=RF_DEPTH_std_2_profile_Ppds[i][_i], ecolor='dimgray',elinewidth=1,capsize=2,capthick=1)
-		apparent_660_ppds.errorbar(_i/factor_Ppds,RF_DEPTH_mean_2_true_profile[i][_i], yerr=RF_DEPTH_std_2_true_profile[i][_i], ecolor='k',elinewidth=1,capsize=2,capthick=1)
+		apparent_660_ppds.errorbar(_i,RF_DEPTH_mean_2_profile_Ppds[i][_i], yerr=RF_DEPTH_std_2_profile_Ppds[i][_i], ecolor='dimgray',elinewidth=1,capsize=2,capthick=1)
+		apparent_660_ppds.errorbar(_i,RF_DEPTH_mean_2_true_profile[i][_i], yerr=RF_DEPTH_std_2_true_profile[i][_i], ecolor='k',elinewidth=1,capsize=2,capthick=1)
 
 		apparent_660_ppds.set_title('660 km Ppds')
 		apparent_660_ppds.set_ylim(800,600)
@@ -699,31 +693,30 @@ for i,j in enumerate(RF_data_profile_Pds):
 		apparent_660_ppds.tick_params(labelleft=True,labelright=False)
 		apparent_660_ppds.set_xticks([])
 		if CROSS_SECTION_AXIS == 'y':
-			apparent_660_ppds.text(_i/factor_Ppds,820,"{0:.1f}".format(AB_lon[i][_i]),rotation=-45,fontsize=10)
+			apparent_660_ppds.text(_i,820,"{0:.1f}".format(AB_lon[i][_i]),rotation=-45,fontsize=10)
 			apparent_660_ppds.set_xlabel('Longitude ($^\circ$)',labelpad=30)
 		else:
-			apparent_660_ppds.text(_i/factor_Ppds,820,"{0:.1f}".format(AB_lat[i][_i]),rotation=-45,fontsize=10)
+			apparent_660_ppds.text(_i,820,"{0:.1f}".format(AB_lat[i][_i]),rotation=-45,fontsize=10)
 			apparent_660_ppds.set_xlabel('Latitude ($^\circ$)',labelpad=30)
 
 
 		#### Figure MTZ True and Apparent thickness  ####
 
 	for _i, _j in enumerate(RF_DEPTH_mtz_thickness_profile_Pds[i]):
-		MTZ_thickness.plot(_i/factor_Ppds,RF_DEPTH_mtz_thickness_profile_Pds[i][_i],marker='o',markerfacecolor='none',markeredgecolor='gray')
+		MTZ_thickness.plot(_i,RF_DEPTH_mtz_thickness_profile_Pds[i][_i],marker='o',markerfacecolor='none',markeredgecolor='gray')
 	for _i, _j in enumerate(RF_DEPTH_mtz_thickness_profile_Ppds[i]):
-		MTZ_thickness.plot(_i/factor_Ppds,RF_DEPTH_mtz_thickness_profile_Ppds[i][_i],marker='p',markerfacecolor='none',markeredgecolor='dimgray')
+		MTZ_thickness.plot(_i,RF_DEPTH_mtz_thickness_profile_Ppds[i][_i],marker='p',markerfacecolor='none',markeredgecolor='dimgray')
 
 	for _i, _j in enumerate(RF_DEPTH_true_thickness_MTZ_profile[i]):
-		MTZ_thickness.plot(_i/factor_Ppds,RF_DEPTH_true_thickness_MTZ_profile[i][_i],marker='s',markerfacecolor='none',markeredgecolor='k')
+		MTZ_thickness.plot(_i,RF_DEPTH_true_thickness_MTZ_profile[i][_i],marker='s',markerfacecolor='none',markeredgecolor='k')
 
 	for _i, _j in enumerate(RF_DEPTH_mtz_thickness_profile_Pds[i]):
-		MTZ_thickness.errorbar(_i/factor_Ppds,RF_DEPTH_mtz_thickness_profile_Pds[i][_i], yerr=RF_DEPTH_mtz_thickness_profile_Pds_std[i][_i], ecolor='gray',elinewidth=1,capsize=2,capthick=1)
-
+		MTZ_thickness.errorbar(_i,RF_DEPTH_mtz_thickness_profile_Pds[i][_i], yerr=RF_DEPTH_mtz_thickness_profile_Pds_std[i][_i], ecolor='gray',elinewidth=1,capsize=2,capthick=1)
 	for _i, _j in enumerate(RF_DEPTH_mtz_thickness_profile_Ppds[i]):
-		MTZ_thickness.errorbar(_i/factor_Ppds,RF_DEPTH_mtz_thickness_profile_Ppds[i][_i], yerr=RF_DEPTH_mtz_thickness_profile_Ppds_std[i][_i], ecolor='dimgray',elinewidth=1,capsize=2,capthick=1)
+		MTZ_thickness.errorbar(_i,RF_DEPTH_mtz_thickness_profile_Ppds[i][_i], yerr=RF_DEPTH_mtz_thickness_profile_Ppds_std[i][_i], ecolor='dimgray',elinewidth=1,capsize=2,capthick=1)
 
 	for _i, _j in enumerate(RF_DEPTH_true_thickness_MTZ_profile[i]):
-		MTZ_thickness.errorbar(_i/factor_Ppds,RF_DEPTH_true_thickness_MTZ_profile[i][_i], yerr=RF_DEPTH_true_thickness_MTZ_profile_std[i][_i], ecolor='k',elinewidth=1,capsize=2,capthick=1)
+		MTZ_thickness.errorbar(_i,RF_DEPTH_true_thickness_MTZ_profile[i][_i], yerr=RF_DEPTH_true_thickness_MTZ_profile_std[i][_i], ecolor='k',elinewidth=1,capsize=2,capthick=1)
 	
 	MTZ_thickness.axhline(y=250,linewidth=0.25,linestyle='--', color='gray')
 	MTZ_thickness.set_ylim(300,200)
@@ -736,5 +729,5 @@ for i,j in enumerate(RF_data_profile_Pds):
 	MTZ_thickness.grid(True,which='major',color='gray',linewidth=1,linestyle='--')
 	MTZ_thickness.tick_params(labelleft=True,labelright=True)
 
-	fig.savefig(RESULTS_FOLDER+'SELECTED_BINNED_DATA_'+CROSS_SECTION_AXIS+'_CROSS_SECTION_Pds_Ppds_PROFILE_'+str(i+1)+'.'+EXT_FIG,dpi=DPI_FIG)
+	fig.savefig(RESULTS_FOLDER+'SELECTED_BINNED_DATA_'+CROSS_SECTION_AXIS+'_CROSS_SECTION_Pds_Ppds_PROFILE_'+str(i+1)+'_COLOR.'+EXT_FIG,dpi=DPI_FIG)
 print('Ending the Cross-section CODE')
