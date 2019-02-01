@@ -698,12 +698,6 @@ for i,j in enumerate(RF_data_profile_Pds):
 		apparent_660_ppds.grid(True,which='major',color='gray',linewidth=1,linestyle='--')
 		apparent_660_ppds.tick_params(labelleft=True,labelright=False)
 		apparent_660_ppds.set_xticks([])
-		if CROSS_SECTION_AXIS == 'y':
-			apparent_660_ppds.text(_i/factor_Ppds,820,"{0:.1f}".format(AB_lon[i][_i]),rotation=-45,fontsize=10)
-			apparent_660_ppds.set_xlabel('Longitude ($^\circ$)',labelpad=30)
-		else:
-			apparent_660_ppds.text(_i/factor_Ppds,820,"{0:.1f}".format(AB_lat[i][_i]),rotation=-45,fontsize=10)
-			apparent_660_ppds.set_xlabel('Latitude ($^\circ$)',labelpad=30)
 
 
 		#### Figure MTZ True and Apparent thickness  ####

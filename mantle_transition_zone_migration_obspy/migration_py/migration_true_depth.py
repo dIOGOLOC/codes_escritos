@@ -62,6 +62,11 @@ for i,j in enumerate(model_10_km.model.s_mod.v_mod.layers):
 	if j[1] == 410:
 		Vp_depth_1 = j[3]
 		Vs_depth_1 = j[5]
+
+for i,j in enumerate(model_10_km.model.s_mod.v_mod.layers):
+	if j[1] == 520:
+		Vp_depth_520 = j[3]
+		Vs_depth_520 = j[5]
 		
 for i,j in enumerate(model_10_km.model.s_mod.v_mod.layers):
 	if j[1] == 660:
@@ -70,6 +75,8 @@ for i,j in enumerate(model_10_km.model.s_mod.v_mod.layers):
 
 print('410 km earth model Vp : '+str(Vp_depth_1))
 print('410 km earth model Vs : '+str(Vs_depth_1))
+print('520 km earth model Vp : '+str(Vp_depth_520))
+print('520 km earth model Vs : '+str(Vs_depth_520))
 print('660 km earth model Vp : '+str(Vp_depth_2))
 print('660 km earth model Vs : '+str(Vs_depth_2))
 print('\n')
@@ -1351,7 +1358,7 @@ ax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 ax.gridlines(draw_labels=True)
 
 #ax.set_title('Figure: Final Grid and Ppds Average Piercing Points',ha='center',va='top',y=1.08)
-ax.legend([l1,l3,circulo,circulo_fresnel],['Stations','Piercing Points 530 km','Selected Grid','Piercing Points Fresnel Zone'],scatterpoints=1, frameon=True,labelspacing=1, loc='lower right',facecolor='w',fontsize='smaller')
+ax.legend([l1,l3,circulo,circulo_fresnel],['Stations','Piercing Points '+str(DEPTH_TARGET),'Selected Grid','Piercing Points Fresnel Zone'],scatterpoints=1, frameon=True,labelspacing=1, loc='lower right',facecolor='w',fontsize='smaller')
 
 #plt.show()
 

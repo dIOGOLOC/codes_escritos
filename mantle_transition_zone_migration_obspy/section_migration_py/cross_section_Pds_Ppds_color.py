@@ -551,7 +551,7 @@ for i,j in enumerate(RF_data_profile_Pds):
 	extent_Pds = [0,len(RF_data_profile_Pds[i]),800,300]
 
 
-	pefil_pds.imshow(grid_Pds.T,extent=extent_Pds,interpolation='bicubic', cmap='seismic',vmin=-0.01,vmax=0.01)
+	pefil_pds.imshow(grid_Pds.T,extent=extent_Pds,interpolation='bicubic', cmap='seismic',vmin=-0.005,vmax=0.005)
 	pefil_pds.set_aspect('auto')
 
 	for _i, _j in enumerate(RF_data_profile_Pds[i]):
@@ -578,7 +578,7 @@ for i,j in enumerate(RF_data_profile_Pds):
 	grid_Ppds = np.array(RF_data_profile_Ppds[i])
 	extent_Ppds = [0,len(RF_data_profile_Ppds[i]),800,300]
 
-	pefil_ppds.imshow(grid_Ppds.T,extent=extent_Ppds,interpolation='bicubic', cmap='seismic',vmin=-0.01,vmax=0.01)
+	pefil_ppds.imshow(grid_Ppds.T,extent=extent_Ppds,interpolation='bicubic', cmap='seismic',vmin=-0.005,vmax=0.005)
 	pefil_ppds.set_aspect('auto')
 
 	for _i, _j in enumerate(RF_data_profile_Ppds[i]):
@@ -692,13 +692,6 @@ for i,j in enumerate(RF_data_profile_Pds):
 		apparent_660_ppds.grid(True,which='major',color='gray',linewidth=1,linestyle='--')
 		apparent_660_ppds.tick_params(labelleft=True,labelright=False)
 		apparent_660_ppds.set_xticks([])
-		if CROSS_SECTION_AXIS == 'y':
-			apparent_660_ppds.text(_i,820,"{0:.1f}".format(AB_lon[i][_i]),rotation=-45,fontsize=10)
-			apparent_660_ppds.set_xlabel('Longitude ($^\circ$)',labelpad=30)
-		else:
-			apparent_660_ppds.text(_i,820,"{0:.1f}".format(AB_lat[i][_i]),rotation=-45,fontsize=10)
-			apparent_660_ppds.set_xlabel('Latitude ($^\circ$)',labelpad=30)
-
 
 		#### Figure MTZ True and Apparent thickness  ####
 
