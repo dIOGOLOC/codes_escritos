@@ -518,13 +518,13 @@ for _i, _j in enumerate(RF_data_profile_Pds):
 		ppds_grid.plot(RF_data_factor_Ppds,camadas_terra_10_km,'k',linewidth=2, zorder=30)
 
 		if math.isnan(RF_DEPTH_mean_1_profile_Ppds[i]) == False:
-			ppds_grid.text(-0.0045,RF_DEPTH_mean_1_profile_Ppds[_i],str(round(RF_DEPTH_mean_1_profile_Ppds[_i]))+'±'+str(round(RF_DEPTH_std_1_profile_Ppds[_i])),zorder=40,fontsize=6, fontweight='bold',ha='left',bbox={'facecolor':'white','edgecolor':'none','pad':1})
+			ppds_grid.text(-0.0095,RF_DEPTH_mean_1_profile_Ppds[_i],str(round(RF_DEPTH_mean_1_profile_Ppds[_i]))+'±'+str(round(RF_DEPTH_std_1_profile_Ppds[_i])),zorder=40,fontsize=6, fontweight='bold',ha='left',bbox={'facecolor':'white','edgecolor':'none','pad':1})
 		
 		#if math.isnan(RF_DEPTH_mean_520_profile_Ppds[i]) == False:
-		#	ppds_grid.text(-0.0045,RF_DEPTH_mean_520_profile_Ppds[_i],str(round(RF_DEPTH_mean_520_profile_Ppds[_i]))+'±'+str(round(RF_DEPTH_std_520_profile_Ppds[_i])),zorder=41,fontsize=6, fontweight='bold',bbox={'facecolor':'white','edgecolor':'none','pad':1})
+		#	ppds_grid.text(-0.0095,RF_DEPTH_mean_520_profile_Ppds[_i],str(round(RF_DEPTH_mean_520_profile_Ppds[_i]))+'±'+str(round(RF_DEPTH_std_520_profile_Ppds[_i])),zorder=41,fontsize=6, fontweight='bold',bbox={'facecolor':'white','edgecolor':'none','pad':1})
 
 		if math.isnan(RF_DEPTH_mean_2_profile_Ppds[i]) == False:
-			ppds_grid.text(-0.0045,RF_DEPTH_mean_2_profile_Ppds[_i],str(round(RF_DEPTH_mean_2_profile_Ppds[_i]))+'±'+str(round(RF_DEPTH_std_2_profile_Ppds[_i])),zorder=42,fontsize=6, fontweight='bold',ha='left',bbox={'facecolor':'white','edgecolor':'none','pad':1})
+			ppds_grid.text(-0.0095,RF_DEPTH_mean_2_profile_Ppds[_i],str(round(RF_DEPTH_mean_2_profile_Ppds[_i]))+'±'+str(round(RF_DEPTH_std_2_profile_Ppds[_i])),zorder=42,fontsize=6, fontweight='bold',ha='left',bbox={'facecolor':'white','edgecolor':'none','pad':1})
 
 
 		ppds_grid.fill_betweenx(camadas_terra_10_km,RF_data_factor_Ppds,0,where=np.array(RF_data_factor_Ppds)>=0,alpha=0.5, facecolor='dimgrey',interpolate=True, zorder=19)
@@ -539,7 +539,7 @@ for _i, _j in enumerate(RF_data_profile_Pds):
 		ppds_grid.yaxis.set_ticks_position('both')
 
 		#ppds_grid.set_xticks([])
-		ppds_grid.set_xlim(-0.005,0.005)
+		ppds_grid.set_xlim(-0.01,0.01)
 
 		ppds_grid.set_ylim(800,300)
 

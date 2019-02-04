@@ -28,6 +28,8 @@ import shapefile
 from matplotlib.colors import Normalize
 from matplotlib.patches import Circle,Rectangle
 import math
+from mpl_toolkits.axes_grid1.inset_locator import inset_axes
+
 
 
 
@@ -578,8 +580,18 @@ for i,j in enumerate(RF_data_profile_Pds):
 	grid_Ppds = np.array(RF_data_profile_Ppds[i])
 	extent_Ppds = [0,len(RF_data_profile_Ppds[i]),800,300]
 
-	pefil_ppds.imshow(grid_Ppds.T,extent=extent_Ppds,interpolation='bicubic', cmap='seismic',vmin=-0.005,vmax=0.005)
+	im = pefil_ppds.imshow(grid_Ppds.T,extent=extent_Ppds,interpolation='bicubic', cmap='seismic',vmin=-0.005,vmax=0.005)
 	pefil_ppds.set_aspect('auto')
+
+	axins = inset_axes(pefil_ppds,
+                   width="10%",  # width = 10% of parent_bbox width
+                   height="5%",  # height : 50%
+                   loc='upper left',
+                   bbox_to_anchor=(0.85, 0.07, 1, 1),
+                   bbox_transform=pefil_ppds.transAxes,
+                   borderpad=0,
+                   )
+	plt.colorbar(im, cax=axins, orientation="horizontal", ticklocation='top')
 
 	for _i, _j in enumerate(RF_data_profile_Ppds[i]):
 
