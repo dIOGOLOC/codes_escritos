@@ -141,8 +141,8 @@ GRID_PP_MULT = config.getfloat('migration', 'GRID_PP_MULT')
 # distance between grid points and piercing points for each depth (degree)
 DIST_GRID_PP = config.getfloat('migration', 'DIST_GRID_PP')
 
-# Fresnel Zone Radius (degree)
-FRESNEL_ZONE_RADIUS = config.getfloat('migration', 'FRESNEL_ZONE_RADIUS') 
+# Receiver Function Frequency (Hz)
+RF_FREQUENCY = config.getfloat('migration', 'RF_FREQUENCY') 
 
 # number of piercing points per bin 
 NUMBER_PP_PER_BIN = config.getint('migration', 'NUMBER_PP_PER_BIN')  

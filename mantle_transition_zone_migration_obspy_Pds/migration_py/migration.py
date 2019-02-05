@@ -38,11 +38,11 @@ import math
 
 from parameters_py.mgconfig import (
 					RF_DIR,RF_EXT,MODEL_FILE_NPZ,MIN_DEPTH,MAX_DEPTH,INTER_DEPTH,SHAPEFILE_GRID,FILTER_BY_SHAPEFILE,
-					NUMBER_PP_PER_BIN,DEPTH_TARGET,
+					NUMBER_PP_PER_BIN,DEPTH_TARGET,RF_FREQUENCY,
 					LLCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLON_LARGE,URCRNRLAT_LARGE,
 					LLCRNRLON_SMALL,URCRNRLON_SMALL,LLCRNRLAT_SMALL,URCRNRLAT_SMALL,
 					PROJECT_LAT,PROJECT_LON,GRID_PP_MULT,BOUNDARY_1_SHP,BOUNDARY_2_SHP,
-					EXT_FIG,DPI_FIG,FRESNEL_ZONE_RADIUS,DIST_GRID_PP,NUMBER_STA_PER_BIN,OUTPUT_DIR,MIN_AMP_GOOD,
+					EXT_FIG,DPI_FIG,DIST_GRID_PP,NUMBER_STA_PER_BIN,OUTPUT_DIR,MIN_AMP_GOOD,
 					DEPTH_RANGE,BOOTSTRAP_INTERATOR,BOOTSTRAP_DEPTH_ESTIMATION,GAMMA,COLORMAP_STD,COLORMAP_VEL
 				   )
 
@@ -57,6 +57,7 @@ print('Importing earth model from : '+MODEL_FILE_NPZ)
 model_10_km = TauPyModel(model=MODEL_FILE_NPZ)
 print('\n')
 
+print('Calculating FIRST FRESNEL ZONE RADIUS')
 
 for i,j in enumerate(model_10_km.model.s_mod.v_mod.layers):
 	if j[1] == 410:
@@ -65,6 +66,7 @@ for i,j in enumerate(model_10_km.model.s_mod.v_mod.layers):
 
 print('410 km earth model Vp : '+str(Vp_depth_1))
 print('410 km earth model Vs : '+str(Vs_depth_1))
+print('----')
 #====================================================
 
 for i,j in enumerate(model_10_km.model.s_mod.v_mod.layers):
@@ -74,6 +76,7 @@ for i,j in enumerate(model_10_km.model.s_mod.v_mod.layers):
 
 print('520 km earth model Vp : '+str(Vp_depth_520))
 print('520 km earth model Vs : '+str(Vs_depth_520))
+print('----')
 #====================================================
 		
 for i,j in enumerate(model_10_km.model.s_mod.v_mod.layers):
@@ -83,9 +86,28 @@ for i,j in enumerate(model_10_km.model.s_mod.v_mod.layers):
 
 print('660 km earth model Vp : '+str(Vp_depth_2))
 print('660 km earth model Vs : '+str(Vs_depth_2))
+print('----')
+
+#====================================================
+print('Target Depth = '+str(DEPTH_TARGET))
+
+for i,j in enumerate(model_10_km.model.s_mod.v_mod.layers):
+	if j[1] == DEPTH_TARGET:
+		Vp_depth_DEPTH_TARGET = j[3]
+		Vs_depth_DEPTH_TARGET = j[5]
+
+print('Target Depth earth model Vp : '+str(Vp_depth_DEPTH_TARGET))
+print('Target Depth earth model Vs : '+str(Vs_depth_DEPTH_TARGET))
 #====================================================
 
+FRESNEL_ZONE_RADIUS_km = (Vp_depth_DEPTH_TARGET/2)* np.sqrt((((2*DEPTH_TARGET)/Vp_depth_DEPTH_TARGET) / RF_FREQUENCY))
+FRESNEL_ZONE_RADIUS = kilometer2degrees(FRESNEL_ZONE_RADIUS_km)
+print('FIRST FRESNEL ZONE RADIUS : '+str(FRESNEL_ZONE_RADIUS))
+
+
 print('\n')
+
+
 
 STA_DIR = OUTPUT_DIR+'MODEL_INTER_DEPTH_'+str(INTER_DEPTH)+'_DEPTH_TARGET_'+str(DEPTH_TARGET)+'/'+'Stations'+'/'
 
@@ -477,6 +499,17 @@ if BOOTSTRAP_DEPTH_ESTIMATION == True:
 
 				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['RF_DATA'] = RF_STACKING_BOOTSTRAP_Pds
 
+
+				######## Estimating LVZ atop the 410-km discontinuity  ########
+
+				#LVZ atop 410 km
+
+				lst_depth_amp_LVZ_Pds = [RF_STACKING_BOOTSTRAP_Pds[x] for x,c in enumerate(camadas_terra_10_km) if 350-(DEPTH_RANGE*2) <= c <= 350+(DEPTH_RANGE*2)]
+				lst_depth_pp_LVZ_Pds = [c for x,c in enumerate(camadas_terra_10_km) if 350-(DEPTH_RANGE*2) <= c <= 350+(DEPTH_RANGE*2)]
+				lst_LVZ_depth_Pds = lst_depth_pp_LVZ_Pds[lst_depth_amp_LVZ_Pds.index(min(lst_depth_amp_LVZ_Pds))]
+				lst_LVZ_amp_Pds = lst_depth_amp_LVZ_Pds.index(min(lst_depth_amp_LVZ_Pds))
+
+
 				######## Estimating 410 km apparent depth ########
 
 				#410 km Pds
@@ -506,6 +539,17 @@ if BOOTSTRAP_DEPTH_ESTIMATION == True:
 				lst_660_amp_Pds = lst_depth_amp_660_Pds.index(max(lst_depth_amp_660_Pds))
 				
 				######################################################################################################################################################
+
+				if abs(lst_LVZ_amp_Pds) >= MIN_AMP_GOOD:
+
+					RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['LVZ_mean'] = lst_LVZ_depth_Pds
+				
+				else: 
+
+					RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['LVZ_mean'] = np.nan
+				
+				print('LVZ Pds = '+str(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['LVZ_mean']))
+
 
 				if lst_410_amp_Pds >= MIN_AMP_GOOD:
 
@@ -561,6 +605,9 @@ print('Allocating results and Stacking Pds data')
 RF_lat = []
 RF_lon = []
 
+RF_DEPTH_mean_LVZ_Pds = []
+RF_DEPTH_std_LVZ_Pds = []
+
 RF_DEPTH_mean_520_Pds = []
 RF_DEPTH_std_520_Pds = []
 
@@ -577,6 +624,8 @@ difference_thickness_MTZ_model_Pds = []
 difference_thickness_MTZ_model_Pds_std = []
 
 RF_BOOTSTRAP_DATA_Pds = []
+
+RF_BOOTSTRAP_DEPTH_mean_LVZ_Pds = []
 
 RF_BOOTSTRAP_DEPTH_mean_1_Pds = []
 
@@ -599,6 +648,29 @@ for i,j in enumerate(RF_data_raw_Pds):
 
 		flat_DATA_list_Pds = [RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['RF_DATA'] for _k in range(BOOTSTRAP_INTERATOR)]
 		RF_BOOTSTRAP_DATA_Pds.append(flat_DATA_list_Pds)
+
+		#Analysing stacked data amplitude in LVZ atop 410 km
+
+		flat_mean_LVZ_Pds = [float(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['LVZ_mean']) for _k in range(BOOTSTRAP_INTERATOR)]
+		RF_BOOTSTRAP_DEPTH_mean_LVZ_Pds.append(flat_mean_LVZ_Pds)
+
+		lst_stacking_data_LVZ_Pds = [stacking_Pds_data[x] for x,c in enumerate(camadas_terra_10_km) if 400-(DEPTH_RANGE*2) <= c <= 400-(DEPTH_RANGE*2)]
+		LVZ_candidate = [abs(np.nanmean(flat_mean_LVZ_Pds) - c) for x,c in enumerate(camadas_terra_10_km) if 400-(DEPTH_RANGE*2) <= c <= 400-(DEPTH_RANGE*2)]
+		
+		amp_LVZ = lst_stacking_data_LVZ_Pds[LVZ_candidate.index(min(LVZ_candidate))]
+
+		
+		if  abs(amp_LVZ) >= MIN_AMP_GOOD:
+			
+			RF_DEPTH_mean_LVZ_Pds.append(np.nanmean(flat_mean_LVZ_Pds))
+			RF_DEPTH_std_LVZ_Pds.append(np.nanstd(flat_mean_LVZ_Pds))
+
+		else: 
+
+			RF_DEPTH_mean_LVZ_Pds.append(np.nan)
+			RF_DEPTH_std_LVZ_Pds.append(np.nan)
+
+
 		
 		#Analysing stacked data amplitude in d410Pds
 
@@ -743,6 +815,7 @@ SELECTED_BINNED_DATA_dic = {
 	'lat':[],'lon':[],
 	'len_Pds':[],
 	'mean_1_Pds':[],'std_1_Pds':[],
+	'mean_LVZ_Pds':[],'std_LVZ_Pds':[],
 	'mean_520_Pds':[],'std_520_Pds':[],
 	'mean_2_Pds':[],'std_2_Pds':[],
 
@@ -752,6 +825,7 @@ SELECTED_BINNED_DATA_dic = {
 	'data_Pds':[],'data_BOOTSTRAP_Pds':[],
 
 	'RF_BOOTSTRAP_DEPTH_mean_1_Pds':[],
+	'RF_BOOTSTRAP_DEPTH_mean_LVZ_Pds':[],
 	'RF_BOOTSTRAP_DEPTH_mean_520_Pds':[],
 	'RF_BOOTSTRAP_DEPTH_mean_2_Pds':[],
 
@@ -760,6 +834,8 @@ SELECTED_BINNED_DATA_dic = {
 
 for i,j in enumerate(RF_BOOTSTRAP_DATA_Pds):
 	SELECTED_BINNED_DATA_dic['data_BOOTSTRAP_Pds'].append(j)
+
+	SELECTED_BINNED_DATA_dic['RF_BOOTSTRAP_DEPTH_mean_LVZ_Pds'].append(RF_BOOTSTRAP_DEPTH_mean_LVZ_Pds[i])
 
 	SELECTED_BINNED_DATA_dic['RF_BOOTSTRAP_DEPTH_mean_1_Pds'].append(RF_BOOTSTRAP_DEPTH_mean_1_Pds[i])
 
@@ -777,10 +853,15 @@ for i,j in enumerate(RF_BOOTSTRAP_DATA_Pds):
 	SELECTED_BINNED_DATA_dic['len_Pds'].append(len_RF_stacking_Pds[i])
 
 
+	SELECTED_BINNED_DATA_dic['mean_LVZ_Pds'].append(float(RF_DEPTH_mean_LVZ_Pds[i]))
+	SELECTED_BINNED_DATA_dic['std_LVZ_Pds'].append(float(RF_DEPTH_std_LVZ_Pds[i]))
+
 	SELECTED_BINNED_DATA_dic['mean_1_Pds'].append(float(RF_DEPTH_mean_1_Pds[i]))
 	SELECTED_BINNED_DATA_dic['std_1_Pds'].append(float(RF_DEPTH_std_1_Pds[i]))
+
 	SELECTED_BINNED_DATA_dic['mean_520_Pds'].append(float(RF_DEPTH_mean_520_Pds[i]))
 	SELECTED_BINNED_DATA_dic['std_520_Pds'].append(float(RF_DEPTH_std_520_Pds[i]))
+	
 	SELECTED_BINNED_DATA_dic['mean_2_Pds'].append(float(RF_DEPTH_mean_2_Pds[i]))
 	SELECTED_BINNED_DATA_dic['std_2_Pds'].append(float(RF_DEPTH_std_2_Pds[i]))
 

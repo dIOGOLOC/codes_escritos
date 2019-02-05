@@ -139,22 +139,8 @@ GRID_PP_MULT = 4
 # grid bin radius (degree)
 DIST_GRID_PP = 0.25
 
-# Fresnel Zone Radius (degree)
-#410 km earth model Vp : 9.03
-#(9.03 ÷ 2) √(((2*410)/9.03) ÷ 0.24)
-#r = 87.8 km
-#FRESNEL_ZONE_RADIUS = 0.79
-
-#520 km earth model Vp : 9.7296
-#(9.7296 ÷ 2) √(((2*520)/9.7296) ÷ 0.24)
-#r = 102.6
-#FRESNEL_ZONE_RADIUS = 0.92
-
-#660 km earth model Vp : 10.2
-#(10.2 ÷ 2) √(((2*660)/10.2) ÷ 0.24)
-#FRESNEL_ZONE_RADIUS = 1.07
-
-FRESNEL_ZONE_RADIUS = 0.79
+# Receiver Function Frequency (Hz)
+RF_FREQUENCY = 0.24
 
 #number of piercing points per bin
 NUMBER_PP_PER_BIN = 30
@@ -166,7 +152,7 @@ NUMBER_STA_PER_BIN = 3
 BOOTSTRAP_DEPTH_ESTIMATION = True 
 
 #Depth Target
-DEPTH_TARGET = 410
+DEPTH_TARGET = 350
 
 #Number of interations to compute bootstrapping
 BOOTSTRAP_INTERATOR = 200

@@ -41,7 +41,7 @@ from parameters_py.mgconfig import (
 					LLCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLON_LARGE,URCRNRLAT_LARGE,LLCRNRLON_SMALL,
 					URCRNRLON_SMALL,LLCRNRLAT_SMALL,URCRNRLAT_SMALL,PROJECT_LAT,PROJECT_LON,GRID_PP_MULT,
 					BOUNDARY_1_SHP,BOUNDARY_2_SHP,TECTO_SHP,COLORMAP_VEL,COLORMAP_STD,OUTPUT_DIR,
-					EXT_FIG,DPI_FIG,FRESNEL_ZONE_RADIUS,DIST_GRID_PP,NUMBER_STA_PER_BIN,NUMBER_PP_PER_BIN,
+					EXT_FIG,DPI_FIG,DIST_GRID_PP,NUMBER_STA_PER_BIN,NUMBER_PP_PER_BIN,
 					DEPTH_RANGE,BOOTSTRAP_INTERATOR,BOOTSTRAP_DEPTH_ESTIMATION,GAMMA,CROSS_SECTION_AXIS,DEPTH_TARGET,
 				   )
 
@@ -96,6 +96,11 @@ lons = SELECTED_BINNED_DATA_dic['lon']
 RF_number = SELECTED_BINNED_DATA_dic['len_Pds']
 
 RF_stacking_Pds = SELECTED_BINNED_DATA_dic['data_Pds']
+
+#Estimates LVZ:
+
+RF_DEPTH_mean_LVZ_Pds = SELECTED_BINNED_DATA_dic['mean_LVZ_Pds']
+RF_DEPTH_std_LVZ_Pds = SELECTED_BINNED_DATA_dic['std_LVZ_Pds']
 
 #Estimates P410s:
 
@@ -155,6 +160,11 @@ if CROSS_SECTION_AXIS == 'x':
 
 	RF_data_profile_Pds = [[]]*len(rows[:,0])
 
+	#Estimates LVZ:
+
+	RF_DEPTH_mean_LVZ_profile_Pds = [[]]*len(rows[:,0])
+	RF_DEPTH_std_LVZ_profile_Pds = [[]]*len(rows[:,0])
+
 	#Estimates P410s:
 
 	RF_DEPTH_mean_1_profile_Pds = [[]]*len(rows[:,0])
@@ -194,6 +204,12 @@ if CROSS_SECTION_AXIS == 'x':
 		#Receiver Functions:
 
 		RF_data_profile_Pds[i] = [RF_stacking_Pds[lat_lon.index(l)] if l in lat_lon else np.zeros_like(RF_stacking_Pds[k]) for k,l in enumerate(grid_column)]
+
+		#Estimates LVZ:
+
+		RF_DEPTH_mean_LVZ_profile_Pds[i] = [RF_DEPTH_mean_LVZ_Pds[lat_lon.index(l)] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
+		RF_DEPTH_std_LVZ_profile_Pds[i] = [RF_DEPTH_std_LVZ_Pds[lat_lon.index(l)] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
+
 
 		#Estimates P410s:
 
@@ -237,6 +253,11 @@ else:
 	RF_DEPTH_mean_1_profile_Pds = [[]]*len(rows[0,:])
 	RF_DEPTH_std_1_profile_Pds = [[]]*len(rows[0,:])
 
+	#Estimates LVZ:
+
+	RF_DEPTH_mean_LVZ_profile_Pds = [[]]*len(rows[0,:])
+	RF_DEPTH_std_LVZ_profile_Pds = [[]]*len(rows[0,:])
+
 	#Estimates P520s:
 
 	RF_DEPTH_mean_520_profile_Pds = [[]]*len(rows[0,:])
@@ -270,6 +291,12 @@ else:
 		#Receiver Functions:
 
 		RF_data_profile_Pds[i] = [RF_stacking_Pds[lat_lon.index(l)] if l in lat_lon else np.zeros_like(RF_stacking_Pds[k]) for k,l in enumerate(grid_column)]
+
+		#Estimates LVZ:
+
+		RF_DEPTH_mean_LVZ_profile_Pds[i] = [RF_DEPTH_mean_LVZ_Pds[lat_lon.index(l)] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
+		RF_DEPTH_std_LVZ_profile_Pds[i] = [RF_DEPTH_std_LVZ_Pds[lat_lon.index(l)]  if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
+
 
 		#Estimates P410s:
 
@@ -395,10 +422,12 @@ for i,j in enumerate(RF_data_profile_Pds):
                    )
 	plt.colorbar(im, cax=axins, orientation="horizontal", ticklocation='top')
 	for _i, _j in enumerate(RF_data_profile_Pds[i]):
+		pefil_pds.plot(_i,RF_DEPTH_mean_LVZ_profile_Pds[i][_i],'ok',ms=3,markerfacecolor='none')
 		pefil_pds.plot(_i,RF_DEPTH_mean_1_profile_Pds[i][_i],'ok',ms=3,markerfacecolor='none')
 		pefil_pds.plot(_i,RF_DEPTH_mean_520_profile_Pds[i][_i],'ok',ms=3,markerfacecolor='none')
 		pefil_pds.plot(_i,RF_DEPTH_mean_2_profile_Pds[i][_i],'ok',ms=3,markerfacecolor='none')
 
+		pefil_pds.errorbar(_i,RF_DEPTH_mean_LVZ_profile_Pds[i][_i], yerr=RF_DEPTH_std_LVZ_profile_Pds[i][_i], ecolor='k',elinewidth=1,capsize=1,capthick=1)
 		pefil_pds.errorbar(_i,RF_DEPTH_mean_1_profile_Pds[i][_i], yerr=RF_DEPTH_std_1_profile_Pds[i][_i], ecolor='k',elinewidth=1,capsize=1,capthick=1)
 		pefil_pds.errorbar(_i,RF_DEPTH_mean_520_profile_Pds[i][_i], yerr=RF_DEPTH_std_520_profile_Pds[i][_i], ecolor='k',elinewidth=1,capsize=1,capthick=1)
 		pefil_pds.errorbar(_i,RF_DEPTH_mean_2_profile_Pds[i][_i], yerr=RF_DEPTH_std_2_profile_Pds[i][_i], ecolor='k',elinewidth=1,capsize=1,capthick=1)
@@ -430,13 +459,12 @@ for i,j in enumerate(RF_data_profile_Pds):
 
 		apparent_410.errorbar(_i,RF_DEPTH_mean_1_profile_Pds[i][_i]-410, yerr=RF_DEPTH_std_1_profile_Pds[i][_i], ecolor='dimgray',elinewidth=1,capsize=2,capthick=1)
 
-		apparent_410.set_title('diff 410 km Pds')
-		#apparent_410.set_ylabel('Depth (km)')
+		apparent_410.set_title('diff 410 km')
 		apparent_410.yaxis.set_ticks_position('both')
 		apparent_410.yaxis.set_major_locator(MultipleLocator(25))
 		apparent_410.yaxis.set_minor_locator(MultipleLocator(10))
 		apparent_410.grid(True,which='major',color='gray',linewidth=1,linestyle='--')
-		apparent_410.tick_params(labelleft=True,labelright=False)
+		apparent_410.tick_params(labelleft=True,labelright=True)
 		apparent_410.yaxis.set_label_position("right")
 		apparent_410.set_xticks([])
 		apparent_410.set_ylim(-50,50)
@@ -449,15 +477,14 @@ for i,j in enumerate(RF_data_profile_Pds):
 		apparent_660.plot(_i,RF_DEPTH_mean_2_profile_Pds[i][_i]-660,marker='o',markerfacecolor='none',markeredgecolor='dimgray')
 
 		apparent_660.errorbar(_i,RF_DEPTH_mean_2_profile_Pds[i][_i]-660, yerr=RF_DEPTH_std_2_profile_Pds[i][_i], ecolor='dimgray',elinewidth=1,capsize=2,capthick=1)
-
-		apparent_660.set_title('diff 660 km Pds')
+		
 		apparent_660.set_ylim(-50,50)
-		#apparent_660.set_ylabel('Depth (km)')
+		apparent_660.set_title('diff 660 km ')
 		apparent_660.yaxis.set_ticks_position('both')
 		apparent_660.yaxis.set_major_locator(MultipleLocator(25))
 		apparent_660.yaxis.set_minor_locator(MultipleLocator(10))
 		apparent_660.grid(True,which='major',color='gray',linewidth=1,linestyle='--')
-		apparent_660.tick_params(labelleft=True,labelright=False)
+		apparent_660.tick_params(labelleft=True,labelright=True)
 		apparent_660.yaxis.set_label_position("right")
 		apparent_660.set_xticks([])
 
@@ -471,7 +498,6 @@ for i,j in enumerate(RF_data_profile_Pds):
 		MTZ_thickness.errorbar(_i,RF_DEPTH_mtz_thickness_profile_Pds[i][_i]-250, yerr=RF_DEPTH_mtz_thickness_profile_Pds_std[i][_i], ecolor='gray',elinewidth=1,capsize=2,capthick=1)
 	
 	MTZ_thickness.set_ylim(-50,50)
-	#MTZ_thickness.set_ylabel('Depth (km)')
 	MTZ_thickness.yaxis.set_label_position("right")
 	MTZ_thickness.set_title('diff MTZ Thickness')
 	MTZ_thickness.yaxis.set_ticks_position('both')
@@ -489,13 +515,12 @@ for i,j in enumerate(RF_data_profile_Pds):
 	for _i, _j in enumerate(RF_DEPTH_mean_520_profile_Pds[i]):
 		diff_MTZ_thickness.errorbar(_i,RF_DEPTH_mean_520_profile_Pds[i][_i]-520, yerr=RF_DEPTH_std_520_profile_Pds[i][_i], ecolor='gray',elinewidth=1,capsize=2,capthick=1)
 	
-	diff_MTZ_thickness.set_ylim(-50,50)
-	#diff_MTZ_thickness.set_ylabel('Depth (km)')
+	diff_MTZ_thickness.set_ylim(-100,100)
 	diff_MTZ_thickness.yaxis.set_label_position("right")
-	diff_MTZ_thickness.set_title('diff 520 km Pds')
+	diff_MTZ_thickness.set_title('diff 520 km')
 	diff_MTZ_thickness.yaxis.set_ticks_position('both')
-	diff_MTZ_thickness.yaxis.set_major_locator(MultipleLocator(25))
-	diff_MTZ_thickness.yaxis.set_minor_locator(MultipleLocator(10))
+	diff_MTZ_thickness.yaxis.set_major_locator(MultipleLocator(50))
+	diff_MTZ_thickness.yaxis.set_minor_locator(MultipleLocator(20))
 	diff_MTZ_thickness.grid(True,which='major',color='gray',linewidth=1,linestyle='--')
 	diff_MTZ_thickness.tick_params(labelleft=True,labelright=True)
 

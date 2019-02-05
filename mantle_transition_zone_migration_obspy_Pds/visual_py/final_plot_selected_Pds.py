@@ -40,7 +40,7 @@ from parameters_py.mgconfig import (
 					LLCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLON_LARGE,URCRNRLAT_LARGE,LLCRNRLON_SMALL,
 					URCRNRLON_SMALL,LLCRNRLAT_SMALL,URCRNRLAT_SMALL,PROJECT_LAT,PROJECT_LON,GRID_PP_MULT,
 					BOUNDARY_1_SHP,BOUNDARY_2_SHP,
-					EXT_FIG,DPI_FIG,FRESNEL_ZONE_RADIUS,DIST_GRID_PP,NUMBER_STA_PER_BIN,
+					EXT_FIG,DPI_FIG,DIST_GRID_PP,NUMBER_STA_PER_BIN,
 					DEPTH_RANGE,BOOTSTRAP_INTERATOR,BOOTSTRAP_DEPTH_ESTIMATION,GAMMA,COLORMAP_STD,COLORMAP_VEL,DEPTH_TARGET
 				   )
 
@@ -91,6 +91,9 @@ RF_number = SELECTED_BINNED_DATA_dic['len_Pds']
 
 RF_stacking_Pds = SELECTED_BINNED_DATA_dic['data_Pds']
 
+RF_DEPTH_mean_LVZ_Pds = SELECTED_BINNED_DATA_dic['mean_LVZ_Pds']
+RF_DEPTH_std_LVZ_Pds = SELECTED_BINNED_DATA_dic['std_LVZ_Pds']
+
 RF_DEPTH_mean_1_Pds = SELECTED_BINNED_DATA_dic['mean_1_Pds']
 RF_DEPTH_std_1_Pds = SELECTED_BINNED_DATA_dic['std_1_Pds']
 
@@ -118,6 +121,9 @@ print('Total of bins: '+str(len(RF_DEPTH_mean_1_Pds)))
 print('\n')
 
 print('Pds Phases')
+print('Number of bins - LVZ: '+str(np.count_nonzero(~np.isnan(RF_DEPTH_mean_LVZ_Pds))))
+print(r'Bins - 410 km depth: '+str(np.nanmean(RF_DEPTH_mean_LVZ_Pds))+' ± '+str(np.nanstd(RF_DEPTH_mean_LVZ_Pds)))
+
 print('Number of bins - 410 km depth: '+str(np.count_nonzero(~np.isnan(RF_DEPTH_mean_1_Pds))))
 print(r'Bins - 410 km depth: '+str(np.nanmean(RF_DEPTH_mean_1_Pds))+' ± '+str(np.nanstd(RF_DEPTH_mean_1_Pds)))
 
@@ -308,7 +314,7 @@ fig.savefig(RESULTS_FOLDER+'THICKNESS_MTZ.'+EXT_FIG,dpi=DPI_FIG)
 #############################################################################################################################################################################################
 
 
-print('Plotting Figure: 520 Pds and Ppds Depth')
+print('Plotting Figure: 520 Pds Depth')
 
 fig, ax = plt.subplots(nrows=1, ncols=1, subplot_kw={'projection': ccrs.Mercator(central_longitude=PROJECT_LON, globe=None)},figsize=(10,10))
 
@@ -350,5 +356,47 @@ fig.colorbar(sm_410,ax=ax,orientation='horizontal',shrink=0.8)
 fig.savefig(RESULTS_FOLDER+'520_APPARENT_DEPTH.'+EXT_FIG,dpi=DPI_FIG)
 
 ########################################################################################################################################################################
+
+
+print('Plotting Figure: LVZ atop 410 km')
+
+fig, ax = plt.subplots(nrows=1, ncols=1, subplot_kw={'projection': ccrs.Mercator(central_longitude=PROJECT_LON, globe=None)},figsize=(10,10))
+
+#LVZ
+
+ax.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
+
+reader_1_SHP = Reader(BOUNDARY_1_SHP)
+shape_1_SHP = list(reader_1_SHP.geometries())
+plot_shape_1_SHP = cfeature.ShapelyFeature(shape_1_SHP, ccrs.PlateCarree())
+ax.add_feature(plot_shape_1_SHP, facecolor='none', edgecolor='k',linewidth=3)
+
+reader_2_SHP = Reader(BOUNDARY_2_SHP)
+shape_2_SHP = list(reader_2_SHP.geometries())
+plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
+ax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
+ax.gridlines(draw_labels=True)
+
+norm_410 = mpl.colors.Normalize(vmin=300,vmax=400,clip=True)
+
+for i,j in enumerate(lons):
+	if math.isnan(RF_DEPTH_mean_LVZ_Pds[i]) == False:
+		circulo_410 = Circle(radius=DIST_GRID_PP*(1-(RF_DEPTH_std_LVZ_Pds[i]/100)),xy=(lons[i], lats[i]),color=colormap(norm_410(RF_DEPTH_mean_LVZ_Pds[i])), ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+		ax.add_patch(circulo_410)
+	else:
+		pass
+
+ax.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
+
+ax.set_title('LVZ atop 410 km', y=1.08)
+
+#______________________________________________________________________
+
+sm_410 = plt.cm.ScalarMappable(cmap=colormap,norm=norm_410)
+sm_410._A = []
+fig.colorbar(sm_410,ax=ax,orientation='horizontal',shrink=0.8)
+
+
+fig.savefig(RESULTS_FOLDER+'LVZ_ATOP_410_KM.'+EXT_FIG,dpi=DPI_FIG)
 
 print('Ending Final Plot CODE')
