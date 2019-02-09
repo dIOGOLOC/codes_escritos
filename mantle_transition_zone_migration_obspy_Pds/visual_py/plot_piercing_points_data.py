@@ -33,12 +33,10 @@ import shapefile
 
 
 from parameters_py.mgconfig import (
-					RF_DIR,RF_EXT,MODEL_FILE_NPZ,MIN_DEPTH,MAX_DEPTH,INTER_DEPTH,PdS_DIR,SHAPEFILE_GRID,FILTER_BY_SHAPEFILE,
-					PP_DIR,PP_SELEC_DIR,NUMBER_PP_PER_BIN,STA_DIR,
-					LLCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLON_LARGE,URCRNRLAT_LARGE,LLCRNRLON_SMALL,
+					RF_EXT,MODEL_FILE_NPZ,MIN_DEPTH,MAX_DEPTH,INTER_DEPTH,SHAPEFILE_GRID,FILTER_BY_SHAPEFILE,
+					NUMBER_PP_PER_BIN,LLCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLON_LARGE,URCRNRLAT_LARGE,LLCRNRLON_SMALL,
 					URCRNRLON_SMALL,LLCRNRLAT_SMALL,URCRNRLAT_SMALL,PROJECT_LAT,PROJECT_LON,GRID_PP_MULT,
-					BOUNDARY_1_SHP,BOUNDARY_2_SHP,
-					PP_FIGURE,EXT_FIG,DPI_FIG,DIST_GRID_PP_MED,DIST_GRID_PP,NUMBER_STA_PER_BIN,
+					BOUNDARY_1_SHP,BOUNDARY_2_SHP,EXT_FIG,DPI_FIG,NUMBER_STA_PER_BIN,OUTPUT_DIR,RF_FREQUENCY,
 					DEPTH_RANGE,BOOTSTRAP_INTERATOR,BOOTSTRAP_DEPTH_ESTIMATION,GAMMA,COLORMAP_STD,COLORMAP_VEL,DEPTH_TARGET
 				   )
 
@@ -47,23 +45,57 @@ print('Importing earth model from : '+MODEL_FILE_NPZ)
 model_10_km = TauPyModel(model=MODEL_FILE_NPZ)
 print('\n')
 
+print('Calculating FIRST FRESNEL ZONE RADIUS')
 
 for i,j in enumerate(model_10_km.model.s_mod.v_mod.layers):
 	if j[1] == 410:
 		Vp_depth_1 = j[3]
 		Vs_depth_1 = j[5]
+
+print('410 km earth model Vp : '+str(Vp_depth_1))
+print('410 km earth model Vs : '+str(Vs_depth_1))
+print('----')
+#====================================================
+
+for i,j in enumerate(model_10_km.model.s_mod.v_mod.layers):
+	if j[1] == 520:
+		Vp_depth_520 = j[3]
+		Vs_depth_520 = j[5]
+
+print('520 km earth model Vp : '+str(Vp_depth_520))
+print('520 km earth model Vs : '+str(Vs_depth_520))
+print('----')
+#====================================================
 		
 for i,j in enumerate(model_10_km.model.s_mod.v_mod.layers):
 	if j[1] == 660:
 		Vp_depth_2 = j[3]
 		Vs_depth_2 = j[5]
 
-print('410 km earth model Vp : '+str(Vp_depth_1))
-print('410 km earth model Vs : '+str(Vs_depth_1))
 print('660 km earth model Vp : '+str(Vp_depth_2))
 print('660 km earth model Vs : '+str(Vs_depth_2))
+print('----')
+
+#====================================================
+print('Target Depth = '+str(DEPTH_TARGET))
+
+for i,j in enumerate(model_10_km.model.s_mod.v_mod.layers):
+	if j[1] == DEPTH_TARGET:
+		Vp_depth_DEPTH_TARGET = j[3]
+		Vs_depth_DEPTH_TARGET = j[5]
+
+print('Target Depth earth model Vp : '+str(Vp_depth_DEPTH_TARGET))
+print('Target Depth earth model Vs : '+str(Vs_depth_DEPTH_TARGET))
+#====================================================
+
+FRESNEL_ZONE_RADIUS_km = (Vp_depth_DEPTH_TARGET/2)* np.sqrt((((2*DEPTH_TARGET)/Vp_depth_DEPTH_TARGET) / RF_FREQUENCY))
+FRESNEL_ZONE_RADIUS = kilometer2degrees(FRESNEL_ZONE_RADIUS_km)
+print('FIRST FRESNEL ZONE RADIUS : '+str(FRESNEL_ZONE_RADIUS))
+
 print('\n')
 
+
+STA_DIR = OUTPUT_DIR+'MODEL_INTER_DEPTH_'+str(INTER_DEPTH)+'_DEPTH_TARGET_'+str(DEPTH_TARGET)+'/'+'Stations'+'/'
 
 print('Looking for Receiver Functions data in JSON file in '+STA_DIR)
 print('\n')
@@ -88,34 +120,27 @@ print('\n')
 
 camadas_terra_10_km = np.arange(MIN_DEPTH,MAX_DEPTH+INTER_DEPTH,INTER_DEPTH)
 
-dist_med_camada_terra = [abs(c - ((410+660)/2)) for x,c in enumerate(camadas_terra_10_km)]
-
-DEPTH_MED = camadas_terra_10_km[dist_med_camada_terra.index(min(dist_med_camada_terra))]
-
 print('Importing Pds piercing points to each PHASE')
 print('\n')
 
-PHASES = 'P410s','P'+"{0:.0f}".format(DEPTH_MED)+'s','P660s'
+PHASES = 'P410s','P'+str(DEPTH_TARGET)+'s','P660s'
 
 print('Importing Pds Piercing Points for '+PHASES[0])
 print('\n')
+
+PP_DIR = OUTPUT_DIR+'MODEL_INTER_DEPTH_'+str(INTER_DEPTH)+'_DEPTH_TARGET_'+str(DEPTH_TARGET)+'/'+'Piercing_Points'+'/'
+
 
 filename_1 = PP_DIR+'PP_'+PHASES[0]+'_dic.json'
 
 PP_1_dic = json.load(open(filename_1))
 
-PP_dist_1 = []
-PP_time_1 = []
-PP_lat_1 = []
-PP_lon_1 = []
-PP_depth_1 = [] 
 
-for i,j in enumerate(PP_1_dic):
-	PP_dist_1.append(j['dist'][0])
-	PP_time_1.append(j['time'][0])
-	PP_lat_1.append(j['lat'][0])
-	PP_lon_1.append(j['lon'][0])
-	PP_depth_1.append(j['depth'][0])
+PP_time_1 = PP_1_dic['time']
+PP_lat_1 = PP_1_dic['lat']
+PP_lon_1 = PP_1_dic['lon']
+PP_depth_1 = PP_1_dic['depth']
+
 
 print('Importing Pds Piercing Points for '+PHASES[1])
 print('\n')
@@ -124,18 +149,11 @@ filename_med = PP_DIR+'PP_'+PHASES[1]+'_dic.json'
 
 PP_med_dic = json.load(open(filename_med))
 
-PP_dist_med = []
-PP_time_med = []
-PP_lat_med = []
-PP_lon_med = []
-PP_depth_med = [] 
+PP_time_med = PP_med_dic['time']
+PP_lat_med = PP_med_dic['lat']
+PP_lon_med = PP_med_dic['lon']
+PP_depth_med = PP_med_dic['depth']
 
-for i,j in enumerate(PP_med_dic):
-	PP_dist_med.append(j['dist'][0])
-	PP_time_med.append(j['time'][0])
-	PP_lat_med.append(j['lat'][0])
-	PP_lon_med.append(j['lon'][0])
-	PP_depth_med.append(j['depth'][0])
 
 print('Importing Pds Piercing Points for '+PHASES[2])
 print('\n')
@@ -144,18 +162,10 @@ filename_2 = PP_DIR+'PP_'+PHASES[2]+'_dic.json'
 
 PP_2_dic = json.load(open(filename_2))
 
-PP_dist_2 = []
-PP_time_2 = []
-PP_lat_2 = []
-PP_lon_2 = []
-PP_depth_2 = [] 
-
-for i,j in enumerate(PP_2_dic):
-	PP_dist_2.append(j['dist'][0])
-	PP_time_2.append(j['time'][0])
-	PP_lat_2.append(j['lat'][0])
-	PP_lon_2.append(j['lon'][0])
-	PP_depth_2.append(j['depth'][0])
+PP_time_2 = PP_2_dic['time']
+PP_lat_2 = PP_2_dic['lat']
+PP_lon_2 = PP_2_dic['lon']
+PP_depth_2 = PP_2_dic['depth'] 
 
 print('P410s Piercing Points')
 print('\n')
@@ -173,7 +183,7 @@ for i,j in enumerate(PP_lon_1):
 pp_1_lat = [i for i in pp_1_lat if type(i) == float ]
 pp_1_long = [i for i in pp_1_long if type(i) == float ]
 
-print('Pds Piercing Points - '+"{0:.0f}".format(DEPTH_MED))
+print('P'+str(DEPTH_TARGET)+'s Piercing Points')
 print('\n')
 
 pp_med_lat  = [[]]*len(PP_lon_med)
@@ -182,7 +192,7 @@ pp_med_long  = [[]]*len(PP_lon_med)
 
 for i,j in enumerate(PP_lon_med):
 	for k,l in enumerate(j):
-		if LLCRNRLON_LARGE <= l <= URCRNRLON_LARGE and PP_depth_med[i][k] == DEPTH_MED:
+		if LLCRNRLON_LARGE <= l <= URCRNRLON_LARGE and PP_depth_med[i][k] == DEPTH_TARGET:
 				pp_med_lat[i] = PP_lat_med[i][k]
 				pp_med_long[i] = l
 
@@ -191,7 +201,6 @@ pp_med_long = [i for i in pp_med_long if type(i) == float ]
 
 print('P660s Piercing Points')
 print('\n')
-
 
 pp_2_lat  = [[]]*len(PP_lon_2)
 pp_2_long  = [[]]*len(PP_lon_2)
@@ -207,128 +216,6 @@ for i,j in enumerate(PP_lon_2):
 pp_2_lat = [i for i in pp_2_lat if type(i) == float ]
 pp_2_long = [i for i in pp_2_long if type(i) == float ]
 
-print('Importing Ppds piercing points to each PHASE')
-print('\n')
-
-PHASES_Ppds = 'PPv410s','PPv'+"{0:.0f}".format(DEPTH_MED)+'s','PPv660s'
-
-print('Importing Ppds Piercing Points '+PHASES_Ppds[0])
-print('\n')
-
-filename_1_Ppds = PP_DIR+'PP_'+PHASES_Ppds[0]+'_dic.json'
-
-PP_1_dic_Ppds = json.load(open(filename_1_Ppds))
-
-PP_dist_1_Ppds = []
-PP_time_1_Ppds = []
-PP_lat_1_Ppds = []
-PP_lon_1_Ppds = []
-PP_depth_1_Ppds = [] 
-PP_1_number = [] 
-for i,j in enumerate(PP_1_dic_Ppds):
-	PP_dist_1_Ppds.append(j['dist'][0])
-	PP_time_1_Ppds.append(j['time'][0])
-	PP_lat_1_Ppds.append(j['lat'][0])
-	PP_lon_1_Ppds.append(j['lon'][0])
-	PP_depth_1_Ppds.append(j['depth'][0])
-	PP_1_number.append(j['number'][0])
-
-
-print('Importing Ppds Piercing Points '+PHASES_Ppds[1])
-print('\n')
-
-filename_med_Ppds = PP_DIR+'PP_'+PHASES_Ppds[1]+'_dic.json'
-
-PP_med_dic_Ppds = json.load(open(filename_med_Ppds))
-
-PP_dist_med_Ppds = []
-PP_time_med_Ppds = []
-PP_lat_med_Ppds = []
-PP_lon_med_Ppds = []
-PP_depth_med_Ppds = [] 
-PP_med_number = [] 
-
-for i,j in enumerate(PP_med_dic_Ppds):
-	PP_dist_med_Ppds.append(j['dist'][0])
-	PP_time_med_Ppds.append(j['time'][0])
-	PP_lat_med_Ppds.append(j['lat'][0])
-	PP_lon_med_Ppds.append(j['lon'][0])
-	PP_depth_med_Ppds.append(j['depth'][0])
-	PP_med_number.append(j['number'][0])
-
-
-print('Importing Ppds Piercing Points '+PHASES_Ppds[2])
-print('\n')
-
-filename_2_Ppds = PP_DIR+'PP_'+PHASES_Ppds[2]+'_dic.json'
-
-PP_2_dic_Ppds = json.load(open(filename_2_Ppds))
-
-PP_dist_2_Ppds = []
-PP_time_2_Ppds = []
-PP_lat_2_Ppds = []
-PP_lon_2_Ppds = []
-PP_depth_2_Ppds = [] 
-PP_2_number = [] 
-
-for i,j in enumerate(PP_2_dic_Ppds):
-	PP_dist_2_Ppds.append(j['dist'][0])
-	PP_time_2_Ppds.append(j['time'][0])
-	PP_lat_2_Ppds.append(j['lat'][0])
-	PP_lon_2_Ppds.append(j['lon'][0])
-	PP_depth_2_Ppds.append(j['depth'][0])
-	PP_2_number.append(j['number'][0])
-
-print('PPv410s Piercing Points')
-print('\n')
-
-pp_1_lat_Ppds  = [[]]*len(PP_lon_1_Ppds)
-pp_1_long_Ppds  = [[]]*len(PP_lon_1_Ppds)
-
-
-for i,j in enumerate(PP_lon_1_Ppds):
-	for k,l in enumerate(j):
-		if LLCRNRLON_LARGE<= l <= URCRNRLON_LARGE and PP_depth_1_Ppds[i][k] == 410:
-				pp_1_lat_Ppds[i] = PP_lat_1_Ppds[i][k]
-				pp_1_long_Ppds[i] = l
-
-pp_1_lat_Ppds = [i for i in pp_1_lat_Ppds if type(i) == float ]
-pp_1_long_Ppds = [i for i in pp_1_long_Ppds if type(i) == float ]
-
-
-print('Ppds Piercing Points - '+"{0:.0f}".format(DEPTH_MED))
-print('\n')
-
-pp_med_lat_Ppds  = [[]]*len(PP_lon_med_Ppds)
-pp_med_long_Ppds  = [[]]*len(PP_lon_med_Ppds)
-
-
-for i,j in enumerate(PP_lon_med_Ppds):
-	for k,l in enumerate(j):
-		if LLCRNRLON_LARGE<= l <= URCRNRLON_LARGE and PP_depth_med_Ppds[i][k] == DEPTH_MED:
-				pp_med_lat_Ppds[i] = PP_lat_med_Ppds[i][k]
-				pp_med_long_Ppds[i] = l
-
-pp_med_lat_Ppds = [i for i in pp_med_lat_Ppds if type(i) == float ]
-pp_med_long_Ppds = [i for i in pp_med_long_Ppds if type(i) == float ]
-
-print('PPv660s Piercing Points')
-print('\n')
-
-
-pp_2_lat_Ppds  = [[]]*len(PP_lon_2_Ppds)
-pp_2_long_Ppds  = [[]]*len(PP_lon_2_Ppds)
-pp_2_depth_Ppds  = [[]]*len(PP_lon_2_Ppds)
-
-
-for i,j in enumerate(PP_lon_2_Ppds):
-	for k,l in enumerate(j):
-		if LLCRNRLON_LARGE <= l <= URCRNRLON_LARGE and PP_depth_2_Ppds[i][k] == 660:
-				pp_2_lat_Ppds[i] = PP_lat_2_Ppds[i][k]
-				pp_2_long_Ppds[i] = l
-
-pp_2_lat_Ppds = [i for i in pp_2_lat_Ppds if type(i) == float ]
-pp_2_long_Ppds = [i for i in pp_2_long_Ppds if type(i) == float ]
 
 
 
@@ -366,15 +253,15 @@ print('\n')
 
 dist_pp_grid_min = [[]]*len(grdx)
 for i,j in enumerate(grdx):
-    dist_pp_grid_min[i] = [np.sqrt((j - pp_1_long_Ppds[k])**2 + (grdy[i] - l)**2) for k,l in enumerate(pp_1_lat_Ppds)]
+    dist_pp_grid_min[i] = [np.sqrt((j - pp_1_long[k])**2 + (grdy[i] - l)**2) for k,l in enumerate(pp_1_lat)]
 
 dist_pp_grid_med = [[]]*len(grdx)
 for i,j in enumerate(grdx):
-    dist_pp_grid_med[i] = [np.sqrt((j - pp_med_long_Ppds[k])**2 + (grdy[i] - l)**2) for k,l in enumerate(pp_med_lat_Ppds)]
+    dist_pp_grid_med[i] = [np.sqrt((j - pp_med_long[k])**2 + (grdy[i] - l)**2) for k,l in enumerate(pp_med_lat)]
     
 dist_pp_grid_max = [[]]*len(grdx)
 for i,j in enumerate(grdx):
-    dist_pp_grid_max[i] = [np.sqrt((j - pp_2_long_Ppds[k])**2 + (grdy[i] - l)**2) for k,l in enumerate(pp_2_lat_Ppds)]
+    dist_pp_grid_max[i] = [np.sqrt((j - pp_2_long[k])**2 + (grdy[i] - l)**2) for k,l in enumerate(pp_2_lat)]
 
 
 grid_sel_min = []
@@ -382,7 +269,7 @@ grid_sel_min_data = []
 for i,j in enumerate(dist_pp_grid_min):
     vect_j = np.array(j) 
     indices = vect_j.argsort()
-    if vect_j[indices[NUMBER_PP_PER_BIN]] < DIST_GRID_PP:
+    if vect_j[indices[NUMBER_PP_PER_BIN]] < FRESNEL_ZONE_RADIUS:
         grid_sel_min.append((grdx[i],grdy[i]))
 
 
@@ -391,7 +278,7 @@ grid_sel_med_data = []
 for i,j in enumerate(dist_pp_grid_med):
     vect_j = np.array(j) 
     indices = vect_j.argsort()
-    if vect_j[indices[NUMBER_PP_PER_BIN]] < DIST_GRID_PP:
+    if vect_j[indices[NUMBER_PP_PER_BIN]] < FRESNEL_ZONE_RADIUS:
         grid_sel_med.append((grdx[i],grdy[i]))
 
         
@@ -401,7 +288,7 @@ grid_sel_min_data = []
 for i,j in enumerate(dist_pp_grid_max):
     vect_j = np.array(j) 
     indices = vect_j.argsort()
-    if vect_j[indices[NUMBER_PP_PER_BIN]] < DIST_GRID_PP:
+    if vect_j[indices[NUMBER_PP_PER_BIN]] < FRESNEL_ZONE_RADIUS:
         grid_sel_max.append((grdx[i],grdy[i]))
 
 
@@ -445,9 +332,8 @@ print('\n')
 
 time_PP_wave = []
 time_P410s_wave = []
-time_Pp410s_wave = []
 time_P660s_wave = []
-time_Pp660s_wave = []
+
 for i,j in enumerate(event_depth):
 	model_RF = TauPyModel(model="iasp91")
 	arrivalsP = model_RF.get_travel_times(source_depth_in_km=event_depth[i], distance_in_degree=event_gcarc[i], phase_list=["P"])
@@ -455,16 +341,10 @@ for i,j in enumerate(event_depth):
 
 	arrivalsP410s = model_RF.get_travel_times(source_depth_in_km=event_depth[i], distance_in_degree=event_gcarc[i], phase_list=["P410s"])
 	arrP410s = arrivalsP410s[0]
-    
-	arrivalsPp410s = model_RF.get_travel_times(source_depth_in_km=event_depth[i], distance_in_degree=event_gcarc[i], phase_list=["PPv410s"])
-	arrPp410s = arrivalsPp410s[0]
-    
+     
 	arrivalsP660s = model_RF.get_travel_times(source_depth_in_km=event_depth[i], distance_in_degree=event_gcarc[i], phase_list=["P660s"])
 	arrP660s = arrivalsP660s[0]
     
-	arrivalsPp660s = model_RF.get_travel_times(source_depth_in_km=event_depth[i], distance_in_degree=event_gcarc[i], phase_list=["PPv660s"])
-	arrPp660s = arrivalsPp660s[0]
-
 	arrivalsPP = model_RF.get_travel_times(source_depth_in_km=event_depth[i], distance_in_degree=event_gcarc[i], phase_list=["PP"])
 	arrPP = arrivalsPP[0]
 	
@@ -472,11 +352,8 @@ for i,j in enumerate(event_depth):
 
 	time_P410s_wave.append(arrP410s.time - arrP.time)
     
-	time_Pp410s_wave.append(arrPp410s.time - arrP.time)
-    
 	time_P660s_wave.append(arrP660s.time - arrP.time)
     
-	time_Pp660s_wave.append(arrPp660s.time - arrP.time)
 
 RF_orglisl = np.argsort(event_ray)[::-1] 
 
@@ -487,17 +364,13 @@ GCARC = []
 RP = [] 
 time_PP_wave_corrected = []
 time_P410s_wave_corrected = []
-time_Pp410s_wave_corrected = []
 time_P660s_wave_corrected = []
-time_Pp660s_wave_corrected = []
 for i,j in enumerate(RF_orglisl):
 	FR.append(sta_data[j])
 	RP.append(event_ray[j])
 	time_PP_wave_corrected.append(time_PP_wave[j])
 	time_P410s_wave_corrected.append(time_P410s_wave[j])
-	time_Pp410s_wave_corrected.append(time_Pp410s_wave[j])
 	time_P660s_wave_corrected.append(time_P660s_wave[j])
-	time_Pp660s_wave_corrected.append(time_Pp660s_wave[j])
 
 Z = np.array(FR)
 
@@ -546,21 +419,15 @@ minorLocatorX = MultipleLocator(10)
 
 
 #Sismograma sem filtro PP
-v=0.008
+v=0.01
 im = ax.imshow(Z.T, interpolation='bicubic', cmap=cm.viridis,
                 origin='upper', aspect='auto',
                 vmax=v, vmin=-v)
 
 for i,j in enumerate(time_P410s_wave_corrected):
     ax.plot(i,j*10,'.k',markersize=0.5,alpha=0.75)
-
-for i,j in enumerate(time_Pp410s_wave_corrected):
-    ax.plot(i,j*10,'.k',markersize=0.5,alpha=0.75)
     
 for i,j in enumerate(time_P660s_wave_corrected):
-    ax.plot(i,j*10,'.k',markersize=0.5,alpha=0.75)
-    
-for i,j in enumerate(time_Pp660s_wave_corrected):
     ax.plot(i,j*10,'.k',markersize=0.5,alpha=0.75)
     
     

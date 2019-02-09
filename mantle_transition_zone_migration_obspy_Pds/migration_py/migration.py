@@ -37,7 +37,7 @@ import math
 
 
 from parameters_py.mgconfig import (
-					RF_DIR,RF_EXT,MODEL_FILE_NPZ,MIN_DEPTH,MAX_DEPTH,INTER_DEPTH,SHAPEFILE_GRID,FILTER_BY_SHAPEFILE,
+					RF_EXT,MODEL_FILE_NPZ,MIN_DEPTH,MAX_DEPTH,INTER_DEPTH,SHAPEFILE_GRID,FILTER_BY_SHAPEFILE,
 					NUMBER_PP_PER_BIN,DEPTH_TARGET,RF_FREQUENCY,
 					LLCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLON_LARGE,URCRNRLAT_LARGE,
 					LLCRNRLON_SMALL,URCRNRLON_SMALL,LLCRNRLAT_SMALL,URCRNRLAT_SMALL,
@@ -106,8 +106,6 @@ print('FIRST FRESNEL ZONE RADIUS : '+str(FRESNEL_ZONE_RADIUS))
 
 
 print('\n')
-
-
 
 STA_DIR = OUTPUT_DIR+'MODEL_INTER_DEPTH_'+str(INTER_DEPTH)+'_DEPTH_TARGET_'+str(DEPTH_TARGET)+'/'+'Stations'+'/'
 
@@ -499,7 +497,6 @@ if BOOTSTRAP_DEPTH_ESTIMATION == True:
 
 				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['RF_DATA'] = RF_STACKING_BOOTSTRAP_Pds
 
-
 				######## Estimating LVZ atop the 410-km discontinuity  ########
 
 				#LVZ atop 410 km
@@ -509,7 +506,6 @@ if BOOTSTRAP_DEPTH_ESTIMATION == True:
 				lst_LVZ_depth_Pds = lst_depth_pp_LVZ_Pds[lst_depth_amp_LVZ_Pds.index(min(lst_depth_amp_LVZ_Pds))]
 				lst_LVZ_amp_Pds = lst_depth_amp_LVZ_Pds.index(min(lst_depth_amp_LVZ_Pds))
 
-
 				######## Estimating 410 km apparent depth ########
 
 				#410 km Pds
@@ -518,7 +514,6 @@ if BOOTSTRAP_DEPTH_ESTIMATION == True:
 				lst_depth_pp_410_Pds = [c for x,c in enumerate(camadas_terra_10_km) if 410-DEPTH_RANGE <= c <= 410+DEPTH_RANGE]
 				lst_410_depth_Pds = lst_depth_pp_410_Pds[lst_depth_amp_410_Pds.index(max(lst_depth_amp_410_Pds))]
 				lst_410_amp_Pds = lst_depth_amp_410_Pds.index(max(lst_depth_amp_410_Pds))
-
 
 				######## Estimating 520 km apparent depth ########
 
@@ -646,8 +641,16 @@ for i,j in enumerate(RF_data_raw_Pds):
 		RF_lat.append(grid_sel_y[i])
 		RF_lon.append(grid_sel_x[i])
 
+		#Analysing BOOTSTRAP data amplitude
+
 		flat_DATA_list_Pds = [RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['RF_DATA'] for _k in range(BOOTSTRAP_INTERATOR)]
 		RF_BOOTSTRAP_DATA_Pds.append(flat_DATA_list_Pds)
+
+		#################### FAZAER CAPETA DA STD PARA A FORMA DE ONDA
+		for i,j in enumerate(flat_DATA_list_Pds):
+			
+
+		RF_BOOTSTRAP_DATA_Pds_std  = 
 
 		#Analysing stacked data amplitude in LVZ atop 410 km
 
