@@ -78,6 +78,7 @@ lons = SELECTED_BINNED_DATA_dic['lon']
 RF_number = SELECTED_BINNED_DATA_dic['len_Pds']
 
 RF_stacking_Pds = SELECTED_BINNED_DATA_dic['data_Pds']
+RF_stacking_Pds_std = SELECTED_BINNED_DATA_dic['data_Pds_std']
 
 RF_stacking_Pds_BOOTSTRAP = SELECTED_BINNED_DATA_dic['data_BOOTSTRAP_Pds']
 
@@ -138,11 +139,11 @@ shape_2_SHP = list(reader_2_SHP.geometries())
 plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
 ax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 
-norm_410 = mpl.colors.Normalize(vmin=450,vmax=580,clip=True)
+norm_410 = mpl.colors.Normalize(vmin=200,vmax=300,clip=True)
 
 for i,j in enumerate(lons):
-	if math.isnan(RF_DEPTH_mean_520_Pds[i]) == False:
-		circulo_410 = Circle(radius=DIST_GRID_PP*(1-(RF_DEPTH_std_520_Pds[i]/50)),xy=(lons[i],lats[i]),color=colormap(norm_410(RF_DEPTH_mean_520_Pds[i])), ec='None',transform=ccrs.Geodetic(),zorder=3)
+	if math.isnan(RF_DEPTH_mtz_thickness_Pds[i]) == False:
+		circulo_410 = Circle(radius=DIST_GRID_PP,xy=(lons[i],lats[i]),color=colormap(norm_410(RF_DEPTH_mtz_thickness_Pds[i])), ec='None',transform=ccrs.Geodetic(),zorder=3)
 		ax.add_patch(circulo_410)
 		circulo_410.pickable()
 		circulo_410.set_picker(True)
@@ -203,6 +204,7 @@ RF_lon_profile = []
 #Profile Data
 
 RF_data_profile_Pds = []
+RF_data_profile_Pds_std = []
 
 #LVZ
 
@@ -229,7 +231,7 @@ RF_DEPTH_std_2_profile_Pds = []
 RF_DEPTH_mtz_thickness_profile_Pds = [] 
 RF_DEPTH_mtz_thickness_profile_Pds_std = []
 
-#Bootstrap Data Receiver Functions Pds and Ppds
+#Bootstrap Data Receiver Functions Pds
 
 RF_stacking_Pds_BOOTSTRAP_profile = []
 
@@ -264,6 +266,7 @@ for i,j in enumerate(lon_click):
 	#Profile Data
 
 	RF_data_profile_Pds.append(RF_stacking_Pds[idx])
+	RF_data_profile_Pds_std.append(RF_stacking_Pds_std[idx])
 
 	#LVZ
 	
@@ -292,8 +295,8 @@ for i,j in enumerate(lon_click):
 
 	#Bootstrap Data Receiver Functions Pds
 	
-	RF_stacking_Pds_BOOTSTRAP_profile.append(RF_stacking_Pds_BOOTSTRAP[idx]) 
-
+	RF_stacking_Pds_BOOTSTRAP_profile.append(RF_stacking_Pds_BOOTSTRAP[idx])
+ 
 	#Bootstrap Data Mean LVZ
 	
 	RF_BOOTSTRAP_DEPTH_mean_LVZ_Pds_profile.append(RF_BOOTSTRAP_DEPTH_mean_LVZ_Pds[idx])
@@ -347,13 +350,13 @@ for _i, _j in enumerate(RF_data_profile_Pds):
 		pds_grid.fill_betweenx(y=camadas_terra_10_km,x1=min_x, x2=max_x, facecolor='whitesmoke',alpha=0.3, interpolate=True, zorder=5)
 		
 		if math.isnan(RF_DEPTH_mean_1_profile_Pds[i]) == False:
-			pds_grid.text(-0.0095,RF_DEPTH_mean_1_profile_Pds[_i],str(round(RF_DEPTH_mean_1_profile_Pds[_i]))+'±'+str(round(RF_DEPTH_std_1_profile_Pds[_i])),zorder=40,fontsize=6, fontweight='bold',ha='left',bbox={'facecolor':'white','edgecolor':'none','pad':1})
+			pds_grid.text(-0.0095,RF_DEPTH_mean_1_profile_Pds[_i],str(round(RF_DEPTH_mean_1_profile_Pds[_i]))+'±'+str(round(RF_DEPTH_std_1_profile_Pds[_i])),zorder=40,fontsize=10, fontweight='bold',ha='left',bbox={'facecolor':'white','edgecolor':'none','pad':1})
 		
 		if math.isnan(RF_DEPTH_mean_520_profile_Pds[i]) == False and math.isnan(RF_DEPTH_std_520_profile_Pds[i]) == False:
-			pds_grid.text(-0.0095,RF_DEPTH_mean_520_profile_Pds[_i],str(round(RF_DEPTH_mean_520_profile_Pds[_i]))+'±'+str(round(RF_DEPTH_std_520_profile_Pds[_i])),zorder=41,fontsize=6, fontweight='bold',ha='left',bbox={'facecolor':'white','edgecolor':'none','pad':1})
+			pds_grid.text(-0.0095,RF_DEPTH_mean_520_profile_Pds[_i],str(round(RF_DEPTH_mean_520_profile_Pds[_i]))+'±'+str(round(RF_DEPTH_std_520_profile_Pds[_i])),zorder=41,fontsize=10, fontweight='bold',ha='left',bbox={'facecolor':'white','edgecolor':'none','pad':1})
 
 		if math.isnan(RF_DEPTH_mean_2_profile_Pds[i]) == False:
-			pds_grid.text(-0.0095,RF_DEPTH_mean_2_profile_Pds[_i],str(round(RF_DEPTH_mean_2_profile_Pds[_i]))+'±'+str(round(RF_DEPTH_std_2_profile_Pds[_i])),zorder=42,fontsize=6, fontweight='bold',ha='left',bbox={'facecolor':'white','edgecolor':'none','pad':1})
+			pds_grid.text(-0.0095,RF_DEPTH_mean_2_profile_Pds[_i],str(round(RF_DEPTH_mean_2_profile_Pds[_i]))+'±'+str(round(RF_DEPTH_std_2_profile_Pds[_i])),zorder=42,fontsize=10, fontweight='bold',ha='left',bbox={'facecolor':'white','edgecolor':'none','pad':1})
 
 		#if math.isnan(RF_DEPTH_mean_LVZ_profile_Pds[i]) == False and math.isnan(RF_DEPTH_std_LVZ_profile_Pds[i]) == False:
 			#pds_grid.text(0.001,RF_DEPTH_mean_LVZ_profile_Pds[_i],str(round(RF_DEPTH_mean_LVZ_profile_Pds[_i]))+'±'+str(round(RF_DEPTH_std_LVZ_profile_Pds[_i])),zorder=42,fontsize=6, fontweight='bold',ha='left',bbox={'facecolor':'white','edgecolor':'none','pad':1})
@@ -361,6 +364,16 @@ for _i, _j in enumerate(RF_data_profile_Pds):
 
 		RF_data_factor_Pds = [l for k, l in enumerate(_j)]
 		pds_grid.plot(RF_data_factor_Pds,camadas_terra_10_km,'k',linewidth=2, zorder=30)
+
+		std_mais = []
+		std_menos = []
+		for w,t in enumerate(RF_data_factor_Pds):
+			std_mais.append(t+RF_data_profile_Pds_std[i][w])
+			std_menos.append(t-RF_data_profile_Pds_std[i][w])
+
+		pds_grid.plot(std_mais,camadas_terra_10_km,color='gray',linewidth=1,linestyle='dashed', zorder=30)
+		pds_grid.plot(std_menos,camadas_terra_10_km,color='gray',linewidth=1,linestyle='dashed', zorder=30)
+
 
 		pds_grid.yaxis.set_ticks_position('both')
 		pds_grid.yaxis.set_major_locator(majorLocatorY)
@@ -370,12 +383,15 @@ for _i, _j in enumerate(RF_data_profile_Pds):
 		pds_grid.fill_betweenx(camadas_terra_10_km,RF_data_factor_Pds,0,where=np.array(RF_data_factor_Pds)>=0,alpha=0.5, facecolor='dimgrey',interpolate=True, zorder=19)
 		pds_grid.fill_betweenx(camadas_terra_10_km,RF_data_factor_Pds,0,where=np.array(RF_data_factor_Pds)<=0,alpha=0.5, facecolor='lightgrey', interpolate=True, zorder=20)
 		pds_grid.set_xlim(-0.01,0.01)
+		pds_grid.xaxis.label.set_size(24)
+		pds_grid.yaxis.label.set_size(24)
+
 	
 		pds_grid.set_title('Lat = '+str(round(RF_lat_profile[_i],1))+' - Lon = '+str(round(RF_lon_profile[_i],1)))
-		pds_grid.set_ylim(800,300)
+		pds_grid.set_ylim(799,301)
 
 		if _i == 0:
-			pds_grid.set_ylabel('Depth (km)')
+			pds_grid.set_ylabel('Depth (km)',fontsize=15)
 			pds_grid.yaxis.set_label_position("left")
 		if _i != 0:
 			pds_grid.axes.axes.yaxis.set_ticklabels([])
@@ -401,19 +417,21 @@ for _i, _j in enumerate(RF_data_profile_Pds):
 		pds_grid_410_660.yaxis.set_major_locator(majorLocatorY)
 		pds_grid_410_660.yaxis.set_minor_locator(minorLocatorY)
 		pds_grid_410_660.grid(True,which='major',linestyle='None')
+		pds_grid_410_660.set_xlabel('Population')
 		pds_grid_410_660.set_xlim(0,100)
-		pds_grid_410_660.set_ylim(800,300)
+		pds_grid_410_660.set_ylim(799,301)
+
 
 		if _i != 3:
 			pds_grid_410_660.axes.axes.yaxis.set_ticklabels([])
 
 		if _i == 3:
-			pds_grid_410_660.set_ylabel('Depth (km)')
+			pds_grid_410_660.set_ylabel('Depth (km)',fontsize=15)
 			pds_grid_410_660.yaxis.set_label_position("right")
-			pds_grid_410_660.tick_params(labelright=True,labelleft=False)
+			pds_grid_410_660.tick_params(labelright=True,labelleft=False,labelsize=10)
 
 
-		pds_grid_410_660.text(5,790,' MTZ = '+str(round(RF_DEPTH_mtz_thickness_profile_Pds[_i]))+'±'+str(round(RF_DEPTH_mtz_thickness_profile_Pds_std[_i])),zorder=40,fontsize=6, fontweight='bold',bbox={'facecolor':'white','edgecolor':'none','pad':1})		
+		pds_grid_410_660.text(5,790,' MTZ = '+str(round(RF_DEPTH_mtz_thickness_profile_Pds[_i]))+'±'+str(round(RF_DEPTH_mtz_thickness_profile_Pds_std[_i])),zorder=40,fontsize=10, fontweight='bold',bbox={'facecolor':'white','edgecolor':'none','pad':1})		
 
 plt.show()
 

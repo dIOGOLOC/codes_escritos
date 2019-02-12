@@ -128,7 +128,7 @@ INTER_DEPTH = 10
 # ==========
 
 #Filter by shapefile the grid?
-FILTER_BY_SHAPEFILE = True
+FILTER_BY_SHAPEFILE = False
 
 #Shapefile containing lines or polygons representing grid boundary
 SHAPEFILE_GRID = /home/diogo/dados_doutorado/parnaiba_basin/SIG_dados/shapes/bacia_parnaiba/bacia_parnaiba.shp
@@ -137,7 +137,7 @@ SHAPEFILE_GRID = /home/diogo/dados_doutorado/parnaiba_basin/SIG_dados/shapes/bac
 GRID_PP_MULT = 4
 
 # grid bin radius (degree)
-DIST_GRID_PP = 0.25
+DIST_GRID_PP = 0.2
 
 # Receiver Function Frequency (Hz)
 RF_FREQUENCY = 0.24
@@ -152,7 +152,7 @@ NUMBER_STA_PER_BIN = 3
 BOOTSTRAP_DEPTH_ESTIMATION = True 
 
 #Depth Target
-DEPTH_TARGET = 530
+DEPTH_TARGET = 350
 
 #Number of interations to compute bootstrapping
 BOOTSTRAP_INTERATOR = 200
@@ -164,7 +164,7 @@ BOOTSTRAP_INTERATOR = 200
 GAMMA = 2
 
 #Minimum amplitude of the 410 and 660 km (both Pds and Ppds ) to accept apparent and true depth
-MIN_AMP_GOOD = 0.002
+MIN_AMP_GOOD = 0.00
 
 #Depth range (+/-) that we will use to find the maximum amplitude
 DEPTH_RANGE = 30

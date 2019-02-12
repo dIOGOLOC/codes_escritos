@@ -276,6 +276,7 @@ fig, ax = plt.subplots(nrows=1, ncols=1, subplot_kw={'projection': ccrs.Mercator
 #Pds phase
 
 ax.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
+ax.gridlines(draw_labels=True)
 
 reader_1_SHP = Reader(BOUNDARY_1_SHP)
 shape_1_SHP = list(reader_1_SHP.geometries())
@@ -286,7 +287,6 @@ reader_2_SHP = Reader(BOUNDARY_2_SHP)
 shape_2_SHP = list(reader_2_SHP.geometries())
 plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
 ax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
-ax.gridlines(draw_labels=True)
 
 norm_410 = mpl.colors.Normalize(vmin=200,vmax=300,clip=True)
 
