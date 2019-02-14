@@ -152,7 +152,7 @@ NUMBER_STA_PER_BIN = 3
 BOOTSTRAP_DEPTH_ESTIMATION = True 
 
 #Depth Target
-DEPTH_TARGET = 350
+DEPTH_TARGET = 530
 
 #Number of interations to compute bootstrapping
 BOOTSTRAP_INTERATOR = 200

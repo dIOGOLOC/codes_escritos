@@ -142,7 +142,7 @@ ax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 norm_410 = mpl.colors.Normalize(vmin=200,vmax=300,clip=True)
 
 for i,j in enumerate(lons):
-	if math.isnan(RF_DEPTH_mtz_thickness_Pds[i]) == False:
+	if math.isnan(RF_DEPTH_mtz_thickness_Pds[i]) == False and math.isnan(RF_DEPTH_mean_1_Pds[i]) == False  and math.isnan(RF_DEPTH_mean_1_Pds[i]) == False and  math.isnan(RF_DEPTH_mean_LVZ_Pds[i]) == False and math.isnan(RF_DEPTH_mean_520_Pds[i]) == False:
 		circulo_410 = Circle(radius=DIST_GRID_PP,xy=(lons[i],lats[i]),color=colormap(norm_410(RF_DEPTH_mtz_thickness_Pds[i])), ec='None',transform=ccrs.Geodetic(),zorder=3)
 		ax.add_patch(circulo_410)
 		circulo_410.pickable()
@@ -252,7 +252,7 @@ RF_BOOTSTRAP_DEPTH_mean_520_Pds_profile = []
 RF_BOOTSTRAP_DEPTH_mean_2_Pds_profile = []
 
 
-lat_lon =  [(lons[k],lats[k]) for k,l in enumerate(lats)]
+lat_lon = [(lons[k],lats[k]) for k,l in enumerate(lats)]
 
 for i,j in enumerate(lon_click):
 
@@ -262,7 +262,7 @@ for i,j in enumerate(lon_click):
 
 	RF_lat_profile.append(lats[idx])
 	RF_lon_profile.append(lons[idx])
-
+	
 	#Profile Data
 
 	RF_data_profile_Pds.append(RF_stacking_Pds[idx])
@@ -327,6 +327,46 @@ gs = gridspec.GridSpec(3, 8)
 gs.update(wspace=0.5, hspace=0.75)
 
 
+#Inset image
+newax = fig.add_axes([0.8, 0.8, 0.15,0.15],anchor='NE', zorder=30,projection=ccrs.Mercator(central_longitude=PROJECT_LON, globe=None))
+
+newax.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
+newax.yaxis.set_ticks_position('both')
+newax.xaxis.set_ticks_position('both')
+
+newax.set_xticks(np.arange(LLCRNRLON_LARGE,URCRNRLON_LARGE,4), crs=ccrs.PlateCarree())
+newax.set_yticks(np.arange(LLCRNRLAT_LARGE,URCRNRLAT_LARGE,4), crs=ccrs.PlateCarree())
+newax.tick_params(labelbottom=True,labeltop=True,labelleft=True,labelright=True)
+
+newax.grid(True,which='major',color='gray',linewidth=1,linestyle='None')
+
+reader_1_SHP = Reader(BOUNDARY_1_SHP)
+shape_1_SHP = list(reader_1_SHP.geometries())
+plot_shape_1_SHP = cfeature.ShapelyFeature(shape_1_SHP, ccrs.PlateCarree())
+newax.add_feature(plot_shape_1_SHP, facecolor='none', edgecolor='k',linewidth=3)
+
+reader_2_SHP = Reader(BOUNDARY_2_SHP)
+shape_2_SHP = list(reader_2_SHP.geometries())
+plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
+newax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
+
+norm_410 = mpl.colors.Normalize(vmin=200,vmax=300,clip=True)
+
+for i,j in enumerate(lons):
+	if math.isnan(RF_DEPTH_mtz_thickness_Pds[i]) == False:
+		circulo_410 = Circle(radius=DIST_GRID_PP,xy=(lons[i],lats[i]),color=colormap(norm_410(RF_DEPTH_mtz_thickness_Pds[i])), ec='None',transform=ccrs.Geodetic(),zorder=3)
+		newax.add_patch(circulo_410)
+		circulo_410.pickable()
+		circulo_410.set_picker(True)
+
+for i,j in enumerate(lon_click):
+	retangulo_PICK = Circle(radius=DIST_GRID_PP*2,xy=(lon_click[i],lat_click[i]),color='r', ec='k',linewidth=1,transform=ccrs.Geodetic(),zorder=5)
+	newax.add_patch(retangulo_PICK)
+
+newax.plot(sta_long,sta_lat, '^',markersize=5,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
+newax.axis('off')
+
+
 #Figure Pds
 for _i, _j in enumerate(RF_data_profile_Pds):
 		pds_grid = fig.add_subplot(gs[0:3, _i*2:_i*2+1])
@@ -350,16 +390,16 @@ for _i, _j in enumerate(RF_data_profile_Pds):
 		pds_grid.fill_betweenx(y=camadas_terra_10_km,x1=min_x, x2=max_x, facecolor='whitesmoke',alpha=0.3, interpolate=True, zorder=5)
 		
 		if math.isnan(RF_DEPTH_mean_1_profile_Pds[i]) == False:
-			pds_grid.text(-0.0095,RF_DEPTH_mean_1_profile_Pds[_i],str(round(RF_DEPTH_mean_1_profile_Pds[_i]))+'±'+str(round(RF_DEPTH_std_1_profile_Pds[_i])),zorder=40,fontsize=10, fontweight='bold',ha='left',bbox={'facecolor':'white','edgecolor':'none','pad':1})
+			pds_grid.text(-0.0095,RF_DEPTH_mean_1_profile_Pds[_i],str(round(RF_DEPTH_mean_1_profile_Pds[_i]))+'±'+str(round(RF_DEPTH_std_1_profile_Pds[_i])),zorder=40,fontsize=9, fontweight='bold',ha='left',bbox={'facecolor':'white','edgecolor':'none','pad':1})
 		
 		if math.isnan(RF_DEPTH_mean_520_profile_Pds[i]) == False and math.isnan(RF_DEPTH_std_520_profile_Pds[i]) == False:
-			pds_grid.text(-0.0095,RF_DEPTH_mean_520_profile_Pds[_i],str(round(RF_DEPTH_mean_520_profile_Pds[_i]))+'±'+str(round(RF_DEPTH_std_520_profile_Pds[_i])),zorder=41,fontsize=10, fontweight='bold',ha='left',bbox={'facecolor':'white','edgecolor':'none','pad':1})
+			pds_grid.text(-0.0095,RF_DEPTH_mean_520_profile_Pds[_i],str(round(RF_DEPTH_mean_520_profile_Pds[_i]))+'±'+str(round(RF_DEPTH_std_520_profile_Pds[_i])),zorder=41,fontsize=9, fontweight='bold',ha='left',bbox={'facecolor':'white','edgecolor':'none','pad':1})
 
 		if math.isnan(RF_DEPTH_mean_2_profile_Pds[i]) == False:
-			pds_grid.text(-0.0095,RF_DEPTH_mean_2_profile_Pds[_i],str(round(RF_DEPTH_mean_2_profile_Pds[_i]))+'±'+str(round(RF_DEPTH_std_2_profile_Pds[_i])),zorder=42,fontsize=10, fontweight='bold',ha='left',bbox={'facecolor':'white','edgecolor':'none','pad':1})
+			pds_grid.text(-0.0095,RF_DEPTH_mean_2_profile_Pds[_i],str(round(RF_DEPTH_mean_2_profile_Pds[_i]))+'±'+str(round(RF_DEPTH_std_2_profile_Pds[_i])),zorder=42,fontsize=9, fontweight='bold',ha='left',bbox={'facecolor':'white','edgecolor':'none','pad':1})
 
-		#if math.isnan(RF_DEPTH_mean_LVZ_profile_Pds[i]) == False and math.isnan(RF_DEPTH_std_LVZ_profile_Pds[i]) == False:
-			#pds_grid.text(0.001,RF_DEPTH_mean_LVZ_profile_Pds[_i],str(round(RF_DEPTH_mean_LVZ_profile_Pds[_i]))+'±'+str(round(RF_DEPTH_std_LVZ_profile_Pds[_i])),zorder=42,fontsize=6, fontweight='bold',ha='left',bbox={'facecolor':'white','edgecolor':'none','pad':1})
+		if math.isnan(RF_DEPTH_mean_LVZ_profile_Pds[i]) == False and math.isnan(RF_DEPTH_std_LVZ_profile_Pds[i]) == False:
+			pds_grid.text(0.001,RF_DEPTH_mean_LVZ_profile_Pds[_i],str(round(RF_DEPTH_mean_LVZ_profile_Pds[_i]))+'±'+str(round(RF_DEPTH_std_LVZ_profile_Pds[_i])),zorder=42,fontsize=9, fontweight='bold',ha='left',bbox={'facecolor':'white','edgecolor':'none','pad':1})
 
 
 		RF_data_factor_Pds = [l for k, l in enumerate(_j)]
