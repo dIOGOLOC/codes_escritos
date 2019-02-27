@@ -113,6 +113,13 @@ COLORMAP_VEL = config.get('maps', 'COLORMAP_VEL')
 #Colormap to standard deviation map (see https://matplotlib.org/examples/color/colormaps_reference.html)
 COLORMAP_STD = config.get('maps', 'COLORMAP_STD')
 
+#Minimum Velocity in cross-section color
+VMIN = config.getfloat('maps', 'VMIN')
+
+
+#Maximum Velocity in cross-section color
+VMAX = config.getfloat('maps', 'VMAX')
+
 
 # ---------------
 # time
@@ -156,14 +163,11 @@ BOOTSTRAP_DEPTH_ESTIMATION = config.getboolean('migration', 'BOOTSTRAP_DEPTH_EST
 #Number of interations to compute bootstrapping
 BOOTSTRAP_INTERATOR = config.getint('migration', 'BOOTSTRAP_INTERATOR')  
 
-#GAMMA Number
-GAMMA = config.getfloat('migration', 'GAMMA')
-
 #Depth Target
 DEPTH_TARGET = config.getint('migration', 'DEPTH_TARGET') 
 
-#Minimum amplitude of the 410 and 660 km (both Pds and Ppds ) to accept apparent and true depth
-MIN_AMP_GOOD = config.getfloat('migration', 'MIN_AMP_GOOD') 
-
 #Number that multiply the difference between the cross-section points
 DEPTH_RANGE = config.getfloat('migration', 'DEPTH_RANGE') 
+
+#Number of confidence bound (CONFIDENCE_BOUND*standard deviation)
+CONFIDENCE_BOUND = config.getfloat('migration', 'CONFIDENCE_BOUND')

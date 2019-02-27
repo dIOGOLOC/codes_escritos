@@ -41,8 +41,8 @@ from parameters_py.mgconfig import (
 					LLCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLON_LARGE,URCRNRLAT_LARGE,LLCRNRLON_SMALL,
 					URCRNRLON_SMALL,LLCRNRLAT_SMALL,URCRNRLAT_SMALL,PROJECT_LAT,PROJECT_LON,GRID_PP_MULT,
 					BOUNDARY_1_SHP,BOUNDARY_2_SHP,TECTO_SHP,COLORMAP_VEL,COLORMAP_STD,OUTPUT_DIR,
-					EXT_FIG,DPI_FIG,DIST_GRID_PP,NUMBER_STA_PER_BIN,NUMBER_PP_PER_BIN,
-					DEPTH_RANGE,BOOTSTRAP_INTERATOR,BOOTSTRAP_DEPTH_ESTIMATION,GAMMA,CROSS_SECTION_AXIS,DEPTH_TARGET,
+					EXT_FIG,DPI_FIG,DIST_GRID_PP,NUMBER_STA_PER_BIN,NUMBER_PP_PER_BIN,VMIN,VMAX,
+					DEPTH_RANGE,BOOTSTRAP_INTERATOR,BOOTSTRAP_DEPTH_ESTIMATION,CROSS_SECTION_AXIS,DEPTH_TARGET,
 				   )
 
 
@@ -333,7 +333,7 @@ for i,j in enumerate(RF_data_profile_Pds):
 
 	fig.suptitle('Cross section for Pds')
 
-	gs = gridspec.GridSpec(4, 2)
+	gs = gridspec.GridSpec(4, 3)
 	gs.update(wspace=0.2, hspace=0.5)
 
 	MTZ_thickness = fig.add_subplot(gs[1,1:])
@@ -343,12 +343,13 @@ for i,j in enumerate(RF_data_profile_Pds):
 
 	#_____________________________________________
 
-	apparent_410 = fig.add_subplot(gs[2,0])
-	apparent_660 = fig.add_subplot(gs[3,0],sharex=apparent_410)
+	map_MTZ_thickness =  fig.add_subplot(gs[0:2,0],projection=ccrs.PlateCarree())
 
 	#_____________________________________________
 
-	map_MTZ_thickness =  fig.add_subplot(gs[0:2,0], projection=ccrs.PlateCarree())
+	apparent_410 = fig.add_subplot(gs[2,0])
+	apparent_660 = fig.add_subplot(gs[3,0])
+
 
 	#######################################################################
 
@@ -410,7 +411,7 @@ for i,j in enumerate(RF_data_profile_Pds):
 	extent_Pds = [0,len(RF_data_profile_Pds[i]),800,300]
 
 
-	im = pefil_pds.imshow(grid_Pds.T,extent=extent_Pds,interpolation='bicubic', cmap='seismic',vmin=-0.01,vmax=0.01)
+	im = pefil_pds.imshow(grid_Pds.T,extent=extent_Pds,interpolation='bicubic', cmap='seismic',vmin=VMIN,vmax=VMAX)
 	pefil_pds.set_aspect('auto')
 	axins = inset_axes(pefil_pds,
                    width="10%",  # width = 10% of parent_bbox width
@@ -509,15 +510,15 @@ for i,j in enumerate(RF_data_profile_Pds):
 
 	#### Figure diff MTZ Apparent thickness  ####
 
-	for _i, _j in enumerate(RF_DEPTH_mean_520_profile_Pds[i]):
-		diff_MTZ_thickness.plot(_i,RF_DEPTH_mean_520_profile_Pds[i][_i]-520,marker='o',markerfacecolor='none',markeredgecolor='gray')
+	for _i, _j in enumerate(RF_DEPTH_mean_LVZ_profile_Pds[i]):
+		diff_MTZ_thickness.plot(_i,RF_DEPTH_mean_LVZ_profile_Pds[i][_i]-350,marker='o',markerfacecolor='none',markeredgecolor='gray')
 
-	for _i, _j in enumerate(RF_DEPTH_mean_520_profile_Pds[i]):
-		diff_MTZ_thickness.errorbar(_i,RF_DEPTH_mean_520_profile_Pds[i][_i]-520, yerr=RF_DEPTH_std_520_profile_Pds[i][_i], ecolor='gray',elinewidth=1,capsize=2,capthick=1)
+	for _i, _j in enumerate(RF_DEPTH_mean_LVZ_profile_Pds[i]):
+		diff_MTZ_thickness.errorbar(_i,RF_DEPTH_mean_LVZ_profile_Pds[i][_i]-350, yerr=RF_DEPTH_std_LVZ_profile_Pds[i][_i], ecolor='gray',elinewidth=1,capsize=2,capthick=1)
 	
 	diff_MTZ_thickness.set_ylim(-100,100)
 	diff_MTZ_thickness.yaxis.set_label_position("right")
-	diff_MTZ_thickness.set_title('diff 520 km')
+	diff_MTZ_thickness.set_title('diff LVZ')
 	diff_MTZ_thickness.yaxis.set_ticks_position('both')
 	diff_MTZ_thickness.yaxis.set_major_locator(MultipleLocator(50))
 	diff_MTZ_thickness.yaxis.set_minor_locator(MultipleLocator(20))

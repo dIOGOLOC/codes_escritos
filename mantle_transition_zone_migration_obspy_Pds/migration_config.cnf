@@ -46,6 +46,7 @@ MODEL_FILE_NPZ = /home/diogo/diogo_git/codes_escritos/mantle_transition_zone_mig
 
 # dir of OUTPUTs
 OUTPUT_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/Mantle_Transition_Migration_NO_PP_obspy_Pds/
+#OUTPUT_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/Mantle_Transition_Migration_YES_PP_obspy_Pds/
 
 #=====
 [maps]
@@ -76,17 +77,17 @@ PROJECT_LON = -45
 
 #lower and upper corner (lat/lon) of the large map
 
-LLCRNRLON_LARGE=-51
-LLCRNRLAT_LARGE=-12
-URCRNRLON_LARGE=-39
-URCRNRLAT_LARGE=0
+LLCRNRLON_LARGE=-53
+LLCRNRLAT_LARGE=-13
+URCRNRLON_LARGE=-37
+URCRNRLAT_LARGE=1
 
 #lower and upper corner (lat/lon) of the small map
 
-LLCRNRLON_SMALL=-50
-LLCRNRLAT_SMALL=-11
-URCRNRLON_SMALL=-40
-URCRNRLAT_SMALL=-1
+LLCRNRLON_SMALL=-52
+LLCRNRLAT_SMALL=-12
+URCRNRLON_SMALL=-38
+URCRNRLAT_SMALL=0
 
 #figures extention and dpi
 EXT_FIG=pdf
@@ -106,6 +107,12 @@ COLORMAP_VEL = Spectral
 
 #Colormap to standard deviation map (see https://matplotlib.org/examples/color/colormaps_reference.html)
 COLORMAP_STD = Greys
+
+#Minimum Amplitude in cross-section color
+VMIN = -0.05
+
+#Maximum Amplitude in cross-section color
+VMAX = 0.05
 
 #==================
 [time]
@@ -157,14 +164,8 @@ DEPTH_TARGET = 530
 #Number of interations to compute bootstrapping
 BOOTSTRAP_INTERATOR = 200
 
-#The gamma value is a function of temperature, rock composition, 
-#and degree of partial melting. This value is found to be in the 
-#range of 1.5–2.5 for most continental areas.
-
-GAMMA = 2
-
-#Minimum amplitude of the 410 and 660 km (both Pds and Ppds ) to accept apparent and true depth
-MIN_AMP_GOOD = 0.00
-
 #Depth range (+/-) that we will use to find the maximum amplitude
 DEPTH_RANGE = 30
+
+#Number of confidence bound (CONFIDENCE_BOUND*standard deviation)
+CONFIDENCE_BOUND = 1

@@ -8,7 +8,7 @@ import numpy as np
 import obspy
 import os
 from obspy.taup import TauPyModel
-from obspy.geodetics import kilometer2degrees
+from obspy.geodetics import kilometer2degrees, degrees2kilometers
 import copy
 import matplotlib
 from mpl_toolkits.mplot3d import Axes3D
@@ -42,8 +42,8 @@ from parameters_py.mgconfig import (
 					LLCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLON_LARGE,URCRNRLAT_LARGE,
 					LLCRNRLON_SMALL,URCRNRLON_SMALL,LLCRNRLAT_SMALL,URCRNRLAT_SMALL,
 					PROJECT_LAT,PROJECT_LON,GRID_PP_MULT,BOUNDARY_1_SHP,BOUNDARY_2_SHP,
-					EXT_FIG,DPI_FIG,DIST_GRID_PP,NUMBER_STA_PER_BIN,OUTPUT_DIR,MIN_AMP_GOOD,
-					DEPTH_RANGE,BOOTSTRAP_INTERATOR,BOOTSTRAP_DEPTH_ESTIMATION,GAMMA,COLORMAP_STD,COLORMAP_VEL
+					EXT_FIG,DPI_FIG,DIST_GRID_PP,NUMBER_STA_PER_BIN,OUTPUT_DIR,CONFIDENCE_BOUND,
+					DEPTH_RANGE,BOOTSTRAP_INTERATOR,BOOTSTRAP_DEPTH_ESTIMATION,COLORMAP_STD,COLORMAP_VEL
 				   )
 
 print('Starting Receiver Functions migration code to estimate the true depths of the Earth discontinuities')
@@ -530,7 +530,7 @@ if BOOTSTRAP_DEPTH_ESTIMATION == True:
 				
 				######################################################################################################################################################
 
-				if abs(lst_LVZ_amp_Pds) >= MIN_AMP_GOOD:
+				if abs(lst_LVZ_amp_Pds) > 0:
 
 					RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['LVZ_mean'] = lst_LVZ_depth_Pds
 				
@@ -541,7 +541,7 @@ if BOOTSTRAP_DEPTH_ESTIMATION == True:
 				print('LVZ Pds = '+str(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['LVZ_mean']))
 
 
-				if lst_410_amp_Pds >= MIN_AMP_GOOD:
+				if lst_410_amp_Pds > 0:
 
 					RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['410_mean'] = lst_410_depth_Pds
 				
@@ -552,7 +552,7 @@ if BOOTSTRAP_DEPTH_ESTIMATION == True:
 				print('410 Pds Depth = '+str(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['410_mean']))
 
 
-				if lst_520_amp_Pds >= MIN_AMP_GOOD:
+				if lst_520_amp_Pds > 0:
 
 					RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['520_mean'] = lst_520_depth_Pds
 				
@@ -562,7 +562,7 @@ if BOOTSTRAP_DEPTH_ESTIMATION == True:
 				
 				print('520 Pds Depth = '+str(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['520_mean']))
 
-				if lst_660_depth_Pds >= MIN_AMP_GOOD:
+				if lst_660_depth_Pds > 0:
 
 					RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['660_mean'] = lst_660_depth_Pds
 			
@@ -574,7 +574,7 @@ if BOOTSTRAP_DEPTH_ESTIMATION == True:
 
 				######## Estimating MTZ thickness and difference between MTZ and Model thickness ########
 
-				if  lst_410_amp_Pds >= MIN_AMP_GOOD  and lst_660_depth_Pds >= MIN_AMP_GOOD:
+				if  lst_410_amp_Pds > 0  and lst_660_depth_Pds > 0:
 
 					RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['thickness_MTZ_mean'] = lst_660_depth_Pds - lst_410_depth_Pds
 					RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['difference_thickness_MTZ_model'] = (lst_660_depth_Pds - lst_410_depth_Pds)  - 250
@@ -647,7 +647,7 @@ for i,j in enumerate(RF_data_raw_Pds):
 			for z,q in enumerate(w):
 				BOOTSTRAP_DATA_Pds_per_depth[z].append(q)
 
-		BOOTSTRAP_DATA_Pds_std = [np.std(i) for i in BOOTSTRAP_DATA_Pds_per_depth]
+		BOOTSTRAP_DATA_Pds_std = [np.std(i)*CONFIDENCE_BOUND for i in BOOTSTRAP_DATA_Pds_per_depth]
 		RF_BOOTSTRAP_DATA_Pds_std.append(BOOTSTRAP_DATA_Pds_std)
 
 		#Analysing stacked data amplitude in LVZ atop 410 km
@@ -661,12 +661,12 @@ for i,j in enumerate(RF_data_raw_Pds):
 
 		amp_LVZ = lst_stacking_data_LVZ_Pds[LVZ_candidate.index(min(LVZ_candidate))]
 
-		BOOTSTRAP_DATA_Pds_std_amp = BOOTSTRAP_DATA_Pds_std_lst[LVZ_candidate.index(min(LVZ_candidate))]
+		BOOTSTRAP_DATA_LVZ_std_amp = BOOTSTRAP_DATA_Pds_std_lst[LVZ_candidate.index(min(LVZ_candidate))]
 		
-		if  abs(amp_LVZ)-BOOTSTRAP_DATA_Pds_std_amp >= MIN_AMP_GOOD:
+		if  abs(amp_LVZ)-(BOOTSTRAP_DATA_LVZ_std_amp*CONFIDENCE_BOUND) >= 0:
 			
 			RF_DEPTH_mean_LVZ_Pds.append(np.nanmean(flat_mean_LVZ_Pds))
-			RF_DEPTH_std_LVZ_Pds.append(np.nanstd(flat_mean_LVZ_Pds))
+			RF_DEPTH_std_LVZ_Pds.append(np.nanstd(flat_mean_LVZ_Pds)*CONFIDENCE_BOUND)
 
 		else: 
 
@@ -685,13 +685,13 @@ for i,j in enumerate(RF_data_raw_Pds):
 		BOOTSTRAP_DATA_Pds_std_lst = [BOOTSTRAP_DATA_Pds_std[x] for x,c in enumerate(camadas_terra_10_km) if 410-DEPTH_RANGE <= c <= 410+DEPTH_RANGE]
 
 		amp_d410Pds = lst_stacking_data_410_Pds[d410Pds_candidate.index(min(d410Pds_candidate))]
-		BOOTSTRAP_DATA_Pds_std_amp = BOOTSTRAP_DATA_Pds_std_lst[d410Pds_candidate.index(min(d410Pds_candidate))]
+		BOOTSTRAP_DATA_410_std_amp = BOOTSTRAP_DATA_Pds_std_lst[d410Pds_candidate.index(min(d410Pds_candidate))]
 
 		
-		if  amp_d410Pds-BOOTSTRAP_DATA_Pds_std_amp >= MIN_AMP_GOOD:
+		if  amp_d410Pds-(BOOTSTRAP_DATA_410_std_amp*CONFIDENCE_BOUND) >= 0:
 				
 			RF_DEPTH_mean_1_Pds.append(np.nanmean(flat_mean_1_Pds))
-			RF_DEPTH_std_1_Pds.append(np.nanstd(flat_mean_1_Pds))
+			RF_DEPTH_std_1_Pds.append(np.nanstd(flat_mean_1_Pds)*CONFIDENCE_BOUND)
 
 		else: 
 
@@ -709,13 +709,13 @@ for i,j in enumerate(RF_data_raw_Pds):
 		BOOTSTRAP_DATA_Pds_std_lst = [BOOTSTRAP_DATA_Pds_std[x] for x,c in enumerate(camadas_terra_10_km) if 520-(DEPTH_RANGE*2) <= c <= 520+(DEPTH_RANGE*2)]
 
 		amp_d520Pds = lst_stacking_data_520_Pds[d520Pds_candidate.index(min(d520Pds_candidate))]
-		BOOTSTRAP_DATA_Pds_std_amp = BOOTSTRAP_DATA_Pds_std_lst[d520Pds_candidate.index(min(d520Pds_candidate))]
+		BOOTSTRAP_DATA_520_std_amp = BOOTSTRAP_DATA_Pds_std_lst[d520Pds_candidate.index(min(d520Pds_candidate))]
 
 		
-		if  amp_d520Pds-BOOTSTRAP_DATA_Pds_std_amp >= MIN_AMP_GOOD:
+		if  amp_d520Pds-(BOOTSTRAP_DATA_520_std_amp*CONFIDENCE_BOUND) >= 0:
 					
 			RF_DEPTH_mean_520_Pds.append(np.nanmean(flat_mean_520_Pds))
-			RF_DEPTH_std_520_Pds.append(np.nanstd(flat_mean_520_Pds))
+			RF_DEPTH_std_520_Pds.append(np.nanstd(flat_mean_520_Pds)*CONFIDENCE_BOUND)
 
 		else: 
 
@@ -733,14 +733,14 @@ for i,j in enumerate(RF_data_raw_Pds):
 		BOOTSTRAP_DATA_Pds_std_lst = [BOOTSTRAP_DATA_Pds_std[x] for x,c in enumerate(camadas_terra_10_km) if 660-DEPTH_RANGE <= c <= 660+DEPTH_RANGE]
 
 		amp_d660Pds = lst_stacking_data_660_Pds[d660Pds_candidate.index(min(d660Pds_candidate))]
-		BOOTSTRAP_DATA_Pds_std_amp = BOOTSTRAP_DATA_Pds_std_lst[d660Pds_candidate.index(min(d660Pds_candidate))]
+		BOOTSTRAP_DATA_660_std_amp = BOOTSTRAP_DATA_Pds_std_lst[d660Pds_candidate.index(min(d660Pds_candidate))]
 
 
-		if  amp_d660Pds-BOOTSTRAP_DATA_Pds_std_amp >= MIN_AMP_GOOD:
+		if  amp_d660Pds-(BOOTSTRAP_DATA_660_std_amp*CONFIDENCE_BOUND) >= 0:
 
 			counts = mode(flat_mean_2_Pds).count
 			RF_DEPTH_mean_2_Pds.append(np.nanmean(flat_mean_2_Pds))
-			RF_DEPTH_std_2_Pds.append(np.nanstd(flat_mean_2_Pds))
+			RF_DEPTH_std_2_Pds.append(np.nanstd(flat_mean_2_Pds)*CONFIDENCE_BOUND)
 
 		else: 
 
@@ -750,11 +750,11 @@ for i,j in enumerate(RF_data_raw_Pds):
 		#Analysing stacked data amplitude to calculate MTZ THICKNESS Pds
 
 
-		if  amp_d410Pds-BOOTSTRAP_DATA_Pds_std_amp >= MIN_AMP_GOOD and amp_d660Pds-BOOTSTRAP_DATA_Pds_std_amp >= MIN_AMP_GOOD:
+		if  amp_d410Pds-(BOOTSTRAP_DATA_410_std_amp*CONFIDENCE_BOUND) >= 0 and amp_d660Pds-(BOOTSTRAP_DATA_660_std_amp*CONFIDENCE_BOUND) >= 0:
 
 			flat_thickness_MTZ_Pds = [float(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['thickness_MTZ_mean']) for _k in range(BOOTSTRAP_INTERATOR)]
 			thickness_MTZ_Pds.append(np.nanmean(flat_thickness_MTZ_Pds))
-			thickness_MTZ_Pds_std.append(np.nanstd(flat_thickness_MTZ_Pds))
+			thickness_MTZ_Pds_std.append(np.nanstd(flat_thickness_MTZ_Pds)*CONFIDENCE_BOUND)
 
 		else:
 
@@ -763,7 +763,7 @@ for i,j in enumerate(RF_data_raw_Pds):
 
 		#Analysing stacked data amplitude to calculate diff MTZ THICKNESS Pds and Model
 
-		if  amp_d410Pds-BOOTSTRAP_DATA_Pds_std_amp >= MIN_AMP_GOOD and amp_d660Pds-BOOTSTRAP_DATA_Pds_std_amp >= MIN_AMP_GOOD:
+		if  amp_d410Pds-(BOOTSTRAP_DATA_410_std_amp*CONFIDENCE_BOUND) >= 0 and amp_d660Pds-(BOOTSTRAP_DATA_660_std_amp*CONFIDENCE_BOUND) >= 0:
 
 			flat_diff_thickness_MTZ_Pds = [float(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['difference_thickness_MTZ_model']) for _k in range(BOOTSTRAP_INTERATOR)]
 			difference_thickness_MTZ_model_Pds.append(np.nanmean(flat_diff_thickness_MTZ_Pds))

@@ -42,7 +42,7 @@ from parameters_py.mgconfig import (
 					NUMBER_PP_PER_BIN,LLCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLON_LARGE,URCRNRLAT_LARGE,LLCRNRLON_SMALL,
 					URCRNRLON_SMALL,LLCRNRLAT_SMALL,URCRNRLAT_SMALL,PROJECT_LAT,PROJECT_LON,GRID_PP_MULT,
 					BOUNDARY_1_SHP,BOUNDARY_2_SHP,OUTPUT_DIR,
-					EXT_FIG,DPI_FIG,FRESNEL_ZONE_RADIUS,DIST_GRID_PP,NUMBER_STA_PER_BIN,
+					EXT_FIG,DPI_FIG,DIST_GRID_PP,NUMBER_STA_PER_BIN,
 					DEPTH_RANGE,BOOTSTRAP_INTERATOR,BOOTSTRAP_DEPTH_ESTIMATION,GAMMA,COLORMAP_STD,COLORMAP_VEL,DEPTH_TARGET
 				   )
 
@@ -106,27 +106,8 @@ RF_DEPTH_std_1_Pds =  []
 RF_DEPTH_mean_2_Pds =  []
 RF_DEPTH_std_2_Pds =  []
 
-RF_DEPTH_mean_1_Ppds =  []
-RF_DEPTH_std_1_Ppds =  []
-	
-RF_DEPTH_mean_2_Ppds =  []
-RF_DEPTH_std_2_Ppds =  []
-
 RF_DEPTH_mtz_thickness_Pds =  []
 RF_DEPTH_mtz_thickness_Pds_std =  []
-
-RF_DEPTH_mtz_thickness_Ppds =  []
-RF_DEPTH_mtz_thickness_Ppds_std =  []
-
-RF_DEPTH_true_thickness_MTZ =  []
-RF_DEPTH_true_thickness_MTZ_std =  []
-
-
-RF_DEPTH_mean_1_true = []
-RF_DEPTH_std_1_true = []
-
-RF_DEPTH_mean_2_true = []
-RF_DEPTH_std_2_true = []
 
 
 for i,j in enumerate(sort_lst_json):
@@ -142,26 +123,8 @@ for i,j in enumerate(sort_lst_json):
 	RF_DEPTH_mean_2_Pds.append(SELECTED_BINNED_DATA_dic['mean_2_Pds'])
 	RF_DEPTH_std_2_Pds.append(SELECTED_BINNED_DATA_dic['std_2_Pds'])
 
-	RF_DEPTH_mean_1_Ppds.append(SELECTED_BINNED_DATA_dic['mean_1_Ppds'])
-	RF_DEPTH_std_1_Ppds.append(SELECTED_BINNED_DATA_dic['std_1_Ppds'])
-	
-	RF_DEPTH_mean_2_Ppds.append(SELECTED_BINNED_DATA_dic['mean_2_Ppds'])
-	RF_DEPTH_std_2_Ppds.append(SELECTED_BINNED_DATA_dic['std_2_Ppds'])
-
 	RF_DEPTH_mtz_thickness_Pds.append(SELECTED_BINNED_DATA_dic['mtz_thickness_Pds'])
 	RF_DEPTH_mtz_thickness_Pds_std.append(SELECTED_BINNED_DATA_dic['mtz_thickness_Pds_std'])
-
-	RF_DEPTH_mtz_thickness_Ppds.append(SELECTED_BINNED_DATA_dic['mtz_thickness_Ppds'])
-	RF_DEPTH_mtz_thickness_Ppds_std.append(SELECTED_BINNED_DATA_dic['mtz_thickness_Ppds_std'])
-
-	RF_DEPTH_true_thickness_MTZ.append(SELECTED_BINNED_DATA_dic['true_thickness_MTZ_Pds'])
-	RF_DEPTH_true_thickness_MTZ_std.append(SELECTED_BINNED_DATA_dic['true_thickness_MTZ_Pds_std'])
-
-	RF_DEPTH_mean_1_true.append(SELECTED_BINNED_DATA_dic['true_mean_1_Pds'])
-	RF_DEPTH_std_1_true.append(SELECTED_BINNED_DATA_dic['true_std_1_Pds'])
-
-	RF_DEPTH_mean_2_true.append(SELECTED_BINNED_DATA_dic['true_mean_2_Pds'])
-	RF_DEPTH_std_2_true.append(SELECTED_BINNED_DATA_dic['true_std_2_Pds'])
 
 
 PP_FIGURE = OUTPUT_DIR+'MODEL_INTER_DEPTH_'+str(INTER_DEPTH)+'_DEPTH_TARGET_'+str(DEPTH_TARGET)+'/'+'Figures'+'/'
@@ -182,20 +145,20 @@ colormap_std = plt.get_cmap(COLORMAP_STD)
 #############################################################################################################################################################################################
 
 
-mosaic_lst_MTZ = [RF_DEPTH_mtz_thickness_Pds,RF_DEPTH_mtz_thickness_Ppds,RF_DEPTH_true_thickness_MTZ]
-mosaic_lst_MTZ_std = [RF_DEPTH_mtz_thickness_Pds_std,RF_DEPTH_mtz_thickness_Ppds_std,RF_DEPTH_true_thickness_MTZ_std]
-mosaic_lst_MTZ_name = ['MTZ_thickness_Pds','MTZ_thickness_Ppds','MTZ_true_thickness']
-mosaic_lst_MTZ_label = ['MTZ thickness Pds (km)','MTZ thickness Ppds (km)','MTZ True thickness (km)']
+mosaic_lst_MTZ = [RF_DEPTH_mtz_thickness_Pds]
+mosaic_lst_MTZ_std = [RF_DEPTH_mtz_thickness_Pds_std]
+mosaic_lst_MTZ_name = ['MTZ_thickness_Pds']
+mosaic_lst_MTZ_label = ['MTZ thickness Pds (km)']
 
-mosaic_lst_660 = [RF_DEPTH_mean_2_Pds,RF_DEPTH_mean_2_Ppds,RF_DEPTH_mean_2_true]
-mosaic_lst_660_std = [RF_DEPTH_std_2_Pds,RF_DEPTH_std_2_Ppds,RF_DEPTH_std_2_true]
-mosaic_lst_660_name = ['DEPTH_660_Pds','DEPTH_660_Ppds','True_DEPTH_660']
-mosaic_lst_660_label = ['660 depth Pds (km)','660 depth Ppds (km)','660 true depth Pds (km)']
+mosaic_lst_660 = [RF_DEPTH_mean_2_Pds]
+mosaic_lst_660_std = [RF_DEPTH_std_2_Pds]
+mosaic_lst_660_name = ['DEPTH_660_Pds']
+mosaic_lst_660_label = ['660 depth Pds (km)']
 
-mosaic_lst_410 = [RF_DEPTH_mean_1_Pds,RF_DEPTH_mean_1_Ppds,RF_DEPTH_mean_1_true]
-mosaic_lst_410_std = [RF_DEPTH_std_1_Pds,RF_DEPTH_std_1_Ppds,RF_DEPTH_std_1_true]
-mosaic_lst_410_name = ['DEPTH_410_Pds','DEPTH_410_Ppds','True_DEPTH_410']
-mosaic_lst_410_label = ['410 depth Pds (km)','410 depth Ppds (km)','410 true depth Pds (km)']
+mosaic_lst_410 = [RF_DEPTH_mean_1_Pds]
+mosaic_lst_410_std = [RF_DEPTH_std_1_Pds]
+mosaic_lst_410_name = ['DEPTH_410_Pds']
+mosaic_lst_410_label = ['410 depth Pds (km)']
 
 
 #############################################################################################################################################################################################
