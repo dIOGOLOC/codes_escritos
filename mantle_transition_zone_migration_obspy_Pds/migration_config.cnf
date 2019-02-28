@@ -43,6 +43,7 @@ RF_EXT = .eqr
 
 #Directory of the earth models
 MODEL_FILE_NPZ = /home/diogo/diogo_git/codes_escritos/mantle_transition_zone_migration_obspy/velocity_model/iasp91_10.npz
+#MODEL_FILE_NPZ = /home/diogo/diogo_git/codes_escritos/mantle_transition_zone_migration_obspy/velocity_model/iasp91_5.npz
 
 # dir of OUTPUTs
 OUTPUT_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/Mantle_Transition_Migration_NO_PP_obspy_Pds/
@@ -109,10 +110,10 @@ COLORMAP_VEL = Spectral
 COLORMAP_STD = Greys
 
 #Minimum Amplitude in cross-section color
-VMIN = -0.05
+VMIN = -0.01
 
 #Maximum Amplitude in cross-section color
-VMAX = 0.05
+VMAX = 0.01
 
 #==================
 [time]
@@ -144,19 +145,16 @@ SHAPEFILE_GRID = /home/diogo/dados_doutorado/parnaiba_basin/SIG_dados/shapes/bac
 GRID_PP_MULT = 4
 
 # grid bin radius (degree)
-DIST_GRID_PP = 0.2
+DIST_GRID_PP = 0.15
 
 # Receiver Function Frequency (Hz)
 RF_FREQUENCY = 0.24
 
 #number of piercing points per bin
-NUMBER_PP_PER_BIN = 30
+NUMBER_PP_PER_BIN = 10
 
 #number of stations RF per bin
 NUMBER_STA_PER_BIN = 3
-
-#False or True for depth estimation with bootstrap
-BOOTSTRAP_DEPTH_ESTIMATION = True 
 
 #Depth Target
 DEPTH_TARGET = 530

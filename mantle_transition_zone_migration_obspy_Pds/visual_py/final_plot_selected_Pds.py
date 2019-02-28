@@ -43,7 +43,7 @@ from parameters_py.mgconfig import (
 					URCRNRLON_SMALL,LLCRNRLAT_SMALL,URCRNRLAT_SMALL,PROJECT_LAT,PROJECT_LON,GRID_PP_MULT,
 					BOUNDARY_1_SHP,BOUNDARY_2_SHP,
 					EXT_FIG,DPI_FIG,DIST_GRID_PP,NUMBER_STA_PER_BIN,
-					DEPTH_RANGE,BOOTSTRAP_INTERATOR,BOOTSTRAP_DEPTH_ESTIMATION,COLORMAP_STD,COLORMAP_VEL,DEPTH_TARGET
+					DEPTH_RANGE,BOOTSTRAP_INTERATOR,COLORMAP_STD,COLORMAP_VEL,DEPTH_TARGET
 				   )
 
 
@@ -107,9 +107,6 @@ RF_DEPTH_std_2_Pds = SELECTED_BINNED_DATA_dic['std_2_Pds']
 
 RF_DEPTH_mtz_thickness_Pds = SELECTED_BINNED_DATA_dic['mtz_thickness_Pds']
 RF_DEPTH_mtz_thickness_Pds_std = SELECTED_BINNED_DATA_dic['mtz_thickness_Pds_std']
-
-difference_thickness_MTZ_model = SELECTED_BINNED_DATA_dic['difference_thickness_MTZ_model_Pds']
-difference_thickness_MTZ_model_std = SELECTED_BINNED_DATA_dic['difference_thickness_MTZ_model_Pds_std']
 
 PP_FIGURE = OUTPUT_DIR+'MODEL_INTER_DEPTH_'+str(INTER_DEPTH)+'_DEPTH_TARGET_'+str(DEPTH_TARGET)+'/'+'Figures'+'/'
 
@@ -220,7 +217,7 @@ norm_410 = mpl.colors.Normalize(vmin=360,vmax=460,clip=True)
 for i,j in enumerate(lons):
 	if math.isnan(RF_DEPTH_mean_1_Pds[i]) == False:
 		if RF_DEPTH_std_1_Pds[i] < 10:
-			circulo_410 = Circle(radius=DIST_GRID_PP,xy=(lons[i], lats[i]),color=colormap(norm_410(RF_DEPTH_mean_1_Pds[i])), ec='k',linewidth=1,linestyle='-',transform=ccrs.Geodetic(),zorder=2)
+			circulo_410 = Circle(radius=DIST_GRID_PP,xy=(lons[i], lats[i]),color=colormap(norm_410(RF_DEPTH_mean_1_Pds[i])), ec='None',linewidth=1,linestyle='-',transform=ccrs.Geodetic(),zorder=2)
 			ax.add_patch(circulo_410)
 		else:
 			circulo_410 = Circle(radius=DIST_GRID_PP,xy=(lons[i], lats[i]),color=colormap(norm_410(RF_DEPTH_mean_1_Pds[i])), ec='k',linewidth=1,linestyle=':',transform=ccrs.Geodetic(),zorder=2)
@@ -253,7 +250,7 @@ norm_660 = mpl.colors.Normalize(vmin=610,vmax=710,clip=True)
 for i,j in enumerate(lons):
 	if math.isnan(RF_DEPTH_mean_2_Pds[i]) == False:
 		if RF_DEPTH_std_1_Pds[i] < 10:
-			circulo_660 = Circle(radius=DIST_GRID_PP,xy=(lons[i], lats[i]),color=colormap(norm_660(RF_DEPTH_mean_2_Pds[i])),  ec='k',linewidth=1,linestyle='-',transform=ccrs.Geodetic(),zorder=2)
+			circulo_660 = Circle(radius=DIST_GRID_PP,xy=(lons[i], lats[i]),color=colormap(norm_660(RF_DEPTH_mean_2_Pds[i])),  ec='None',linewidth=1,linestyle='-',transform=ccrs.Geodetic(),zorder=2)
 			ax2.add_patch(circulo_660)
 		else:
 			circulo_660 = Circle(radius=DIST_GRID_PP,xy=(lons[i], lats[i]),color=colormap(norm_660(RF_DEPTH_mean_2_Pds[i])),  ec='k',linewidth=1,linestyle=':',transform=ccrs.Geodetic(),zorder=2)
@@ -305,7 +302,7 @@ norm_410 = mpl.colors.Normalize(vmin=200,vmax=300,clip=True)
 for i,j in enumerate(lons):
 	if math.isnan(RF_DEPTH_mtz_thickness_Pds[i]) == False:
 		if RF_DEPTH_mtz_thickness_Pds_std[i] < 10:
-			circulo_410 = Circle(radius=DIST_GRID_PP,xy=(lons[i], lats[i]),color=colormap(norm_410(RF_DEPTH_mtz_thickness_Pds[i])),  ec='k',linewidth=1,linestyle='-',transform=ccrs.Geodetic(),zorder=2)
+			circulo_410 = Circle(radius=DIST_GRID_PP,xy=(lons[i], lats[i]),color=colormap(norm_410(RF_DEPTH_mtz_thickness_Pds[i])),  ec='None',linewidth=1,linestyle='-',transform=ccrs.Geodetic(),zorder=2)
 			ax.add_patch(circulo_410)
 		else: 
 			circulo_410 = Circle(radius=DIST_GRID_PP,xy=(lons[i], lats[i]),color=colormap(norm_410(RF_DEPTH_mtz_thickness_Pds[i])),  ec='k',linewidth=1,linestyle=':',transform=ccrs.Geodetic(),zorder=2)
@@ -354,7 +351,7 @@ norm_410 = mpl.colors.Normalize(vmin=470,vmax=570,clip=True)
 for i,j in enumerate(lons):
 	if math.isnan(RF_DEPTH_mean_520_Pds[i]) == False:
 		if RF_DEPTH_std_520_Pds[i] < 10:
-			circulo_410 = Circle(radius=DIST_GRID_PP,xy=(lons[i], lats[i]),color=colormap(norm_410(RF_DEPTH_mean_520_Pds[i])), ec='k',linewidth=1,linestyle='-',transform=ccrs.Geodetic(),zorder=2)
+			circulo_410 = Circle(radius=DIST_GRID_PP,xy=(lons[i], lats[i]),color=colormap(norm_410(RF_DEPTH_mean_520_Pds[i])), ec='None',linewidth=1,linestyle='-',transform=ccrs.Geodetic(),zorder=2)
 			ax.add_patch(circulo_410)
 		else:
 			circulo_410 = Circle(radius=DIST_GRID_PP,xy=(lons[i], lats[i]),color=colormap(norm_410(RF_DEPTH_mean_520_Pds[i])), ec='k',linewidth=1,linestyle=':',transform=ccrs.Geodetic(),zorder=2)
@@ -402,7 +399,7 @@ norm_410 = mpl.colors.Normalize(vmin=300,vmax=400,clip=True)
 for i,j in enumerate(lons):
 	if math.isnan(RF_DEPTH_mean_LVZ_Pds[i]) == False:
 		if RF_DEPTH_std_LVZ_Pds[i] < 10:
-			circulo_410 = Circle(radius=DIST_GRID_PP,xy=(lons[i], lats[i]),color=colormap(norm_410(RF_DEPTH_mean_LVZ_Pds[i])), ec='k',linewidth=1,linestyle='-',transform=ccrs.Geodetic(),zorder=2)
+			circulo_410 = Circle(radius=DIST_GRID_PP,xy=(lons[i], lats[i]),color=colormap(norm_410(RF_DEPTH_mean_LVZ_Pds[i])), ec='None',linewidth=1,linestyle='-',transform=ccrs.Geodetic(),zorder=2)
 			ax.add_patch(circulo_410)
 		else:
 			circulo_410 = Circle(radius=DIST_GRID_PP,xy=(lons[i], lats[i]),color=colormap(norm_410(RF_DEPTH_mean_LVZ_Pds[i])), ec='k',linewidth=1,linestyle=':',transform=ccrs.Geodetic(),zorder=2)

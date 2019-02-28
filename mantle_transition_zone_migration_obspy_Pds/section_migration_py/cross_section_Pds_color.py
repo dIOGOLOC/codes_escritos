@@ -42,7 +42,7 @@ from parameters_py.mgconfig import (
 					URCRNRLON_SMALL,LLCRNRLAT_SMALL,URCRNRLAT_SMALL,PROJECT_LAT,PROJECT_LON,GRID_PP_MULT,
 					BOUNDARY_1_SHP,BOUNDARY_2_SHP,TECTO_SHP,COLORMAP_VEL,COLORMAP_STD,OUTPUT_DIR,
 					EXT_FIG,DPI_FIG,DIST_GRID_PP,NUMBER_STA_PER_BIN,NUMBER_PP_PER_BIN,VMIN,VMAX,
-					DEPTH_RANGE,BOOTSTRAP_INTERATOR,BOOTSTRAP_DEPTH_ESTIMATION,CROSS_SECTION_AXIS,DEPTH_TARGET,
+					DEPTH_RANGE,BOOTSTRAP_INTERATOR,CROSS_SECTION_AXIS,DEPTH_TARGET,
 				   )
 
 
@@ -122,11 +122,6 @@ RF_DEPTH_std_2_Pds = SELECTED_BINNED_DATA_dic['std_2_Pds']
 RF_DEPTH_mtz_thickness_Pds = SELECTED_BINNED_DATA_dic['mtz_thickness_Pds']
 RF_DEPTH_mtz_thickness_Pds_std = SELECTED_BINNED_DATA_dic['mtz_thickness_Pds_std']
 
-#Estimates diff MTZ Pds:
-
-RF_DEPTH_diff_mtz_thickness_Pds = SELECTED_BINNED_DATA_dic['difference_thickness_MTZ_model_Pds']
-RF_DEPTH_diff_mtz_thickness_Pds_std = SELECTED_BINNED_DATA_dic['difference_thickness_MTZ_model_Pds_std']
-
 #############################################################################################################################3
 
 
@@ -185,11 +180,6 @@ if CROSS_SECTION_AXIS == 'x':
 	RF_DEPTH_mtz_thickness_profile_Pds = [[]]*len(rows[:,0]) 
 	RF_DEPTH_mtz_thickness_profile_Pds_std = [[]]*len(rows[:,0]) 
 
-	#Estimates diff MTZ Pds:
-
-	RF_DEPTH_diff_mtz_thickness_profile_Pds = [[]]*len(rows[:,0]) 
-	RF_DEPTH_diff_mtz_thickness_profile_Pds_std = [[]]*len(rows[:,0]) 
-
 	for i,j in enumerate(rows[:,0]):
 
 		lat_lon = [(lons[k],lats[k]) for k,l in enumerate(lats)]
@@ -232,11 +222,6 @@ if CROSS_SECTION_AXIS == 'x':
 		RF_DEPTH_mtz_thickness_profile_Pds[i] = [RF_DEPTH_mtz_thickness_Pds[lat_lon.index(l)] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
 		RF_DEPTH_mtz_thickness_profile_Pds_std[i] = [RF_DEPTH_mtz_thickness_Pds_std[lat_lon.index(l)] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
 
-		#Estimates diff MTZ Pds:
-
-		RF_DEPTH_diff_mtz_thickness_profile_Pds[i] = [RF_DEPTH_diff_mtz_thickness_Pds[lat_lon.index(l)] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
-		RF_DEPTH_diff_mtz_thickness_profile_Pds_std[i] = [RF_DEPTH_diff_mtz_thickness_Pds_std[lat_lon.index(l)] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
-
 else:
 
 	#Profile lat/lon
@@ -273,11 +258,6 @@ else:
 	RF_DEPTH_mtz_thickness_profile_Pds = [[]]*len(rows[0,:])
 	RF_DEPTH_mtz_thickness_profile_Pds_std = [[]]*len(rows[0,:])
 
-	#Estimates diff MTZ Pds:
-
-	RF_DEPTH_diff_mtz_thickness_profile_Pds = [[]]*len(rows[0,:])
-	RF_DEPTH_diff_mtz_thickness_profile_Pds_std = [[]]*len(rows[0,:])
-
 	for i,j in enumerate(rows[0,:]):
 		
 		lat_lon = [(lons[k],lats[k]) for k,l in enumerate(lats)]
@@ -308,7 +288,6 @@ else:
 		RF_DEPTH_mean_520_profile_Pds[i] = [RF_DEPTH_mean_520_Pds[lat_lon.index(l)] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
 		RF_DEPTH_std_520_profile_Pds[i] = [RF_DEPTH_std_520_Pds[lat_lon.index(l)]  if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
 
-
 		#Estimates P660s:
 
 		RF_DEPTH_mean_2_profile_Pds[i] = [RF_DEPTH_mean_2_Pds[lat_lon.index(l)] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
@@ -318,11 +297,6 @@ else:
 
 		RF_DEPTH_mtz_thickness_profile_Pds[i] = [RF_DEPTH_mtz_thickness_Pds[lat_lon.index(l)] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
 		RF_DEPTH_mtz_thickness_profile_Pds_std[i] = [RF_DEPTH_mtz_thickness_Pds_std[lat_lon.index(l)] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
-
-		#Estimates diff MTZ Pds:
-
-		RF_DEPTH_diff_mtz_thickness_profile_Pds[i] = [RF_DEPTH_diff_mtz_thickness_Pds[lat_lon.index(l)] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
-		RF_DEPTH_diff_mtz_thickness_profile_Pds_std[i] = [RF_DEPTH_diff_mtz_thickness_Pds_std[lat_lon.index(l)] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
 
 print('Plotting cross-sections according to the '+CROSS_SECTION_AXIS+' direction')
 for i,j in enumerate(RF_data_profile_Pds):
@@ -378,17 +352,16 @@ for i,j in enumerate(RF_data_profile_Pds):
 	plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
 	map_MTZ_thickness.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 
-	reader_3_SHP = Reader(TECTO_SHP)
-	shape_3_SHP = list(reader_3_SHP.geometries())
-	plot_shape_3_SHP = cfeature.ShapelyFeature(shape_3_SHP, ccrs.PlateCarree())
-	map_MTZ_thickness.add_feature(plot_shape_3_SHP, facecolor='none', edgecolor='k',linewidth=2)
-
 	norm_map_MTZ_thickness = mpl.colors.Normalize(vmin=200,vmax=300,clip=True)
 
 	for t,y in enumerate(lons):
 		if math.isnan(RF_DEPTH_mtz_thickness_Pds[t]) == False:
-			circulo_410 = Circle(radius=DIST_GRID_PP*(1-(RF_DEPTH_mtz_thickness_Pds_std[t]/50)),xy=(lons[t], lats[t]),color=colormap(norm_map_MTZ_thickness(RF_DEPTH_mtz_thickness_Pds[t])), ec='None',transform=ccrs.Geodetic(),zorder=2)
-			map_MTZ_thickness.add_patch(circulo_410)
+			if RF_DEPTH_mtz_thickness_Pds_std[t] < 10:
+				circulo_410 = Circle(radius=DIST_GRID_PP,xy=(lons[t], lats[t]),color=colormap(norm_map_MTZ_thickness(RF_DEPTH_mtz_thickness_Pds[t])),ec='None',linewidth=1,linestyle='-',transform=ccrs.Geodetic(),zorder=2)
+				map_MTZ_thickness.add_patch(circulo_410)
+			else:
+				circulo_410 = Circle(radius=DIST_GRID_PP,xy=(lons[t], lats[t]),color=colormap(norm_map_MTZ_thickness(RF_DEPTH_mtz_thickness_Pds[t])),  ec='k',linewidth=1,linestyle=':',transform=ccrs.Geodetic(),zorder=2)
+				map_MTZ_thickness.add_patch(circulo_410)
 		else:
 			pass
 
@@ -450,10 +423,7 @@ for i,j in enumerate(RF_data_profile_Pds):
 	pefil_pds.yaxis.set_label_position("right")
 	pefil_pds.tick_params(labelright=True)
 
-
-
 	#### Figure Apparent  410 km Pds  ####
-
 
 	for _i, _j in enumerate(RF_data_profile_Pds[i]):
 		apparent_410.plot(_i,RF_DEPTH_mean_1_profile_Pds[i][_i]-410,marker='o',markerfacecolor='none',markeredgecolor='dimgray')

@@ -157,9 +157,6 @@ NUMBER_PP_PER_BIN = config.getint('migration', 'NUMBER_PP_PER_BIN')
 #number of stations RF per bin
 NUMBER_STA_PER_BIN = config.getint('migration', 'NUMBER_STA_PER_BIN')  
 
-#False or True for depth estimation with bootstrap
-BOOTSTRAP_DEPTH_ESTIMATION = config.getboolean('migration', 'BOOTSTRAP_DEPTH_ESTIMATION') 
-
 #Number of interations to compute bootstrapping
 BOOTSTRAP_INTERATOR = config.getint('migration', 'BOOTSTRAP_INTERATOR')  
 

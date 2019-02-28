@@ -43,7 +43,7 @@ from parameters_py.mgconfig import (
 					LLCRNRLON_SMALL,URCRNRLON_SMALL,LLCRNRLAT_SMALL,URCRNRLAT_SMALL,
 					PROJECT_LAT,PROJECT_LON,GRID_PP_MULT,BOUNDARY_1_SHP,BOUNDARY_2_SHP,
 					EXT_FIG,DPI_FIG,DIST_GRID_PP,NUMBER_STA_PER_BIN,OUTPUT_DIR,CONFIDENCE_BOUND,
-					DEPTH_RANGE,BOOTSTRAP_INTERATOR,BOOTSTRAP_DEPTH_ESTIMATION,COLORMAP_STD,COLORMAP_VEL
+					DEPTH_RANGE,BOOTSTRAP_INTERATOR,COLORMAP_STD,COLORMAP_VEL
 				   )
 
 print('Starting Receiver Functions migration code to estimate the true depths of the Earth discontinuities')
@@ -328,7 +328,11 @@ for i,j in enumerate(grdx):
 	circulo = Circle(radius=DIST_GRID_PP,xy=(grdx[i], grdy[i]),color='None', ec='k',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
 	ax.add_patch(circulo)
 ax.set_title('Pds Piercing Points',ha='center',va='top',y=1.08)
-ax.legend([l1,l2,l3,l4,circulo],['Stations','Piercing Points 410 km','Piercing Points '+str(DEPTH_TARGET)+' km','Piercing Points 660 km','Selected Grid'],scatterpoints=1, frameon=True,labelspacing=1, loc='lower right',facecolor='w',fontsize='smaller')
+legend = ax.legend([l1,l2,l3,l4,circulo],['Stations','Piercing Points 410 km','Piercing Points '+str(DEPTH_TARGET)+' km','Piercing Points 660 km','Selected Grid'],scatterpoints=1, frameon=True,labelspacing=1, loc='lower right',facecolor='w',fontsize='smaller')
+
+legend.get_frame().set_facecolor('white')
+
+
 
 reader_1_SHP = Reader(BOUNDARY_1_SHP)
 shape_1_SHP = list(reader_1_SHP.geometries())
@@ -388,8 +392,10 @@ plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
 ax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 
 ax.set_title('Pds Piercing Points',ha='center',va='top',y=1.08)
-ax.legend([l1,l3,circulo,circulo_fresnel],['Stations','Piercing Points '+str(DEPTH_TARGET)+' km','Selected Grid','Piercing Points Fresnel Zone'],scatterpoints=1, frameon=True,labelspacing=1, loc='lower right',facecolor='w',fontsize='smaller')
+legend = ax.legend([l1,l3,circulo,circulo_fresnel],['Stations','Piercing Points '+str(DEPTH_TARGET)+' km','Selected Grid','Piercing Points Fresnel Zone'],scatterpoints=1, frameon=True,labelspacing=1, loc='lower right',facecolor='w',fontsize='smaller')
 ax.gridlines(draw_labels=True)
+legend.get_frame().set_facecolor('white')
+
 
 #plt.show()
 
@@ -463,130 +469,126 @@ print('Estimating Mean and Standard Deviation for each discontinuity')
 print('\n')
 
 
-if BOOTSTRAP_DEPTH_ESTIMATION == True:
-	### Creating Dictionaries to allocate results ###
-	def nested_dict():
-		return collections.defaultdict(nested_dict)
+### Creating Dictionaries to allocate results ###
+def nested_dict():
+	return collections.defaultdict(nested_dict)
 
-	RF_BOOTSTRAP_ESTIMATION_Pds = nested_dict()
+RF_BOOTSTRAP_ESTIMATION_Pds = nested_dict()
 
-	for _k in range(BOOTSTRAP_INTERATOR):
-		print('Bootstrap estimation '+str(_k))
+for _k in range(BOOTSTRAP_INTERATOR):
+	print('Bootstrap estimation '+str(_k))
 
-		for i,j in enumerate(RF_data_raw_Pds):
-			if len(j) >= NUMBER_PP_PER_BIN and RF_STA_number_raw[i] >= NUMBER_STA_PER_BIN:
+	for i,j in enumerate(RF_data_raw_Pds):
+		if len(j) >= NUMBER_PP_PER_BIN and RF_STA_number_raw[i] >= NUMBER_STA_PER_BIN:
 
-				print('Grid point number: '+str(i))
-				print('lat: '+str(grid_sel_y[i]))
-				print('lon: '+str(grid_sel_x[i]))
+			print('Grid point number: '+str(i))
+			print('lat: '+str(grid_sel_y[i]))
+			print('lon: '+str(grid_sel_x[i]))
 
-				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['lon'] = grid_sel_x[i]
-				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['lat'] = grid_sel_y[i]
+			RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['lon'] = grid_sel_x[i]
+			RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['lat'] = grid_sel_y[i]
 
-				old_RF_DATA_raw_Pds_lst = np.arange(0,len(j))
-				new_RANDOM_RF_DATA_raw_Pds_lst = np.random.choice(old_RF_DATA_raw_Pds_lst,size=len(old_RF_DATA_raw_Pds_lst),replace=True)
+			old_RF_DATA_raw_Pds_lst = np.arange(0,len(j))
+			new_RANDOM_RF_DATA_raw_Pds_lst = np.random.choice(old_RF_DATA_raw_Pds_lst,size=len(old_RF_DATA_raw_Pds_lst),replace=True)
 				
-				new_RANDOM_RF_DATA_raw_Pds = [j[_t_] for _t_ in new_RANDOM_RF_DATA_raw_Pds_lst]
+			new_RANDOM_RF_DATA_raw_Pds = [j[_t_] for _t_ in new_RANDOM_RF_DATA_raw_Pds_lst]
 
-				RF_STACKING_BOOTSTRAP_Pds = [sum(i)/len(new_RANDOM_RF_DATA_raw_Pds) for i in zip(*new_RANDOM_RF_DATA_raw_Pds)]
+			RF_STACKING_BOOTSTRAP_Pds = [sum(i)/len(new_RANDOM_RF_DATA_raw_Pds) for i in zip(*new_RANDOM_RF_DATA_raw_Pds)]
 
-				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['RF_DATA'] = RF_STACKING_BOOTSTRAP_Pds
+			RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['RF_DATA'] = RF_STACKING_BOOTSTRAP_Pds
 
-				######## Estimating LVZ atop the 410-km discontinuity  ########
+			######## Estimating LVZ atop the 410-km discontinuity  ########
 
-				#LVZ atop 410 km
+			#LVZ atop 410 km
 
-				lst_depth_amp_LVZ_Pds = [RF_STACKING_BOOTSTRAP_Pds[x] for x,c in enumerate(camadas_terra_10_km) if 350-(DEPTH_RANGE*2) <= c <= 350+(DEPTH_RANGE*2)]
-				lst_depth_pp_LVZ_Pds = [c for x,c in enumerate(camadas_terra_10_km) if 350-(DEPTH_RANGE*2) <= c <= 350+(DEPTH_RANGE*2)]
-				lst_LVZ_depth_Pds = lst_depth_pp_LVZ_Pds[lst_depth_amp_LVZ_Pds.index(min(lst_depth_amp_LVZ_Pds))]
-				lst_LVZ_amp_Pds = lst_depth_amp_LVZ_Pds.index(min(lst_depth_amp_LVZ_Pds))
+			lst_depth_amp_LVZ_Pds = [RF_STACKING_BOOTSTRAP_Pds[x] for x,c in enumerate(camadas_terra_10_km) if 350-(DEPTH_RANGE*2) <= c <= 350+(DEPTH_RANGE*2)]
+			lst_depth_pp_LVZ_Pds = [c for x,c in enumerate(camadas_terra_10_km) if 350-(DEPTH_RANGE*2) <= c <= 350+(DEPTH_RANGE*2)]
+			lst_LVZ_depth_Pds = lst_depth_pp_LVZ_Pds[lst_depth_amp_LVZ_Pds.index(min(lst_depth_amp_LVZ_Pds))]
+			lst_LVZ_amp_Pds = lst_depth_amp_LVZ_Pds.index(min(lst_depth_amp_LVZ_Pds))
 
-				######## Estimating 410 km apparent depth ########
+			######## Estimating 410 km apparent depth ########
 
-				#410 km Pds
+			#410 km Pds
 
-				lst_depth_amp_410_Pds = [RF_STACKING_BOOTSTRAP_Pds[x] for x,c in enumerate(camadas_terra_10_km) if 410-DEPTH_RANGE <= c <= 410+DEPTH_RANGE]
-				lst_depth_pp_410_Pds = [c for x,c in enumerate(camadas_terra_10_km) if 410-DEPTH_RANGE <= c <= 410+DEPTH_RANGE]
-				lst_410_depth_Pds = lst_depth_pp_410_Pds[lst_depth_amp_410_Pds.index(max(lst_depth_amp_410_Pds))]
-				lst_410_amp_Pds = lst_depth_amp_410_Pds.index(max(lst_depth_amp_410_Pds))
+			lst_depth_amp_410_Pds = [RF_STACKING_BOOTSTRAP_Pds[x] for x,c in enumerate(camadas_terra_10_km) if 410-DEPTH_RANGE <= c <= 410+DEPTH_RANGE]
+			lst_depth_pp_410_Pds = [c for x,c in enumerate(camadas_terra_10_km) if 410-DEPTH_RANGE <= c <= 410+DEPTH_RANGE]
+			lst_410_depth_Pds = lst_depth_pp_410_Pds[lst_depth_amp_410_Pds.index(max(lst_depth_amp_410_Pds))]
+			lst_410_amp_Pds = lst_depth_amp_410_Pds.index(max(lst_depth_amp_410_Pds))
 
-				######## Estimating 520 km apparent depth ########
+			######## Estimating 520 km apparent depth ########
 
-				#520 km Pds
+			#520 km Pds
 
-				lst_depth_amp_520_Pds = [RF_STACKING_BOOTSTRAP_Pds[x] for x,c in enumerate(camadas_terra_10_km) if 520-(DEPTH_RANGE*2) <= c <= 520+(DEPTH_RANGE*2)]
-				lst_depth_pp_520_Pds = [c for x,c in enumerate(camadas_terra_10_km) if 520-(DEPTH_RANGE*2) <= c <= 520+(DEPTH_RANGE*2)]
-				lst_520_depth_Pds = lst_depth_pp_520_Pds[lst_depth_amp_520_Pds.index(max(lst_depth_amp_520_Pds))]
-				lst_520_amp_Pds = lst_depth_amp_520_Pds.index(max(lst_depth_amp_520_Pds))
+			lst_depth_amp_520_Pds = [RF_STACKING_BOOTSTRAP_Pds[x] for x,c in enumerate(camadas_terra_10_km) if 520-(DEPTH_RANGE*2) <= c <= 520+(DEPTH_RANGE*2)]
+			lst_depth_pp_520_Pds = [c for x,c in enumerate(camadas_terra_10_km) if 520-(DEPTH_RANGE*2) <= c <= 520+(DEPTH_RANGE*2)]
+			lst_520_depth_Pds = lst_depth_pp_520_Pds[lst_depth_amp_520_Pds.index(max(lst_depth_amp_520_Pds))]
+			lst_520_amp_Pds = lst_depth_amp_520_Pds.index(max(lst_depth_amp_520_Pds))
 
-				######## Estimating 660 km apparent depth ########
+			######## Estimating 660 km apparent depth ########
 
-				#660 km Pds
+			#660 km Pds
 
-				lst_depth_amp_660_Pds = [RF_STACKING_BOOTSTRAP_Pds[x] for x,c in enumerate(camadas_terra_10_km) if 660-DEPTH_RANGE <= c <= 660+DEPTH_RANGE]
-				lst_depth_pp_660_Pds = [c for x,c in enumerate(camadas_terra_10_km) if 660-DEPTH_RANGE <= c <= 660+DEPTH_RANGE]
-				lst_660_depth_Pds = lst_depth_pp_660_Pds[lst_depth_amp_660_Pds.index(max(lst_depth_amp_660_Pds))]
-				lst_660_amp_Pds = lst_depth_amp_660_Pds.index(max(lst_depth_amp_660_Pds))
+			lst_depth_amp_660_Pds = [RF_STACKING_BOOTSTRAP_Pds[x] for x,c in enumerate(camadas_terra_10_km) if 660-DEPTH_RANGE <= c <= 660+DEPTH_RANGE]
+			lst_depth_pp_660_Pds = [c for x,c in enumerate(camadas_terra_10_km) if 660-DEPTH_RANGE <= c <= 660+DEPTH_RANGE]
+			lst_660_depth_Pds = lst_depth_pp_660_Pds[lst_depth_amp_660_Pds.index(max(lst_depth_amp_660_Pds))]
+			lst_660_amp_Pds = lst_depth_amp_660_Pds.index(max(lst_depth_amp_660_Pds))
 				
-				######################################################################################################################################################
+			######################################################################################################################################################
 
-				if abs(lst_LVZ_amp_Pds) > 0:
+			if abs(lst_LVZ_amp_Pds) > 0:
 
-					RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['LVZ_mean'] = lst_LVZ_depth_Pds
+				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['LVZ_mean'] = lst_LVZ_depth_Pds
 				
-				else: 
+			else: 
 
-					RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['LVZ_mean'] = np.nan
+				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['LVZ_mean'] = np.nan
 				
-				print('LVZ Pds = '+str(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['LVZ_mean']))
+			print('LVZ Pds = '+str(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['LVZ_mean']))
 
 
-				if lst_410_amp_Pds > 0:
+			if lst_410_amp_Pds > 0:
 
-					RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['410_mean'] = lst_410_depth_Pds
+				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['410_mean'] = lst_410_depth_Pds
 				
-				else: 
+			else: 
 
-					RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['410_mean'] = np.nan
+				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['410_mean'] = np.nan
 				
-				print('410 Pds Depth = '+str(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['410_mean']))
+			print('410 Pds Depth = '+str(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['410_mean']))
 
 
-				if lst_520_amp_Pds > 0:
+			if lst_520_amp_Pds > 0:
 
-					RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['520_mean'] = lst_520_depth_Pds
+				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['520_mean'] = lst_520_depth_Pds
 				
-				else: 
+			else: 
 
-					RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['520_mean'] = np.nan
+				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['520_mean'] = np.nan
 				
-				print('520 Pds Depth = '+str(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['520_mean']))
+			print('520 Pds Depth = '+str(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['520_mean']))
 
-				if lst_660_depth_Pds > 0:
+			if lst_660_depth_Pds > 0:
 
-					RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['660_mean'] = lst_660_depth_Pds
+				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['660_mean'] = lst_660_depth_Pds
 			
-				else:
+			else:
 
-					RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['660_mean'] = np.nan
+				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['660_mean'] = np.nan
 
-				print('660 km Pds Depth = '+str(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['660_mean']))
+			print('660 km Pds Depth = '+str(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['660_mean']))
 
-				######## Estimating MTZ thickness and difference between MTZ and Model thickness ########
+			######## Estimating MTZ thickness and difference between MTZ and Model thickness ########
 
-				if  lst_410_amp_Pds > 0  and lst_660_depth_Pds > 0:
+			if  lst_410_amp_Pds > 0  and lst_660_depth_Pds > 0:
 
-					RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['thickness_MTZ_mean'] = lst_660_depth_Pds - lst_410_depth_Pds
-					RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['difference_thickness_MTZ_model'] = (lst_660_depth_Pds - lst_410_depth_Pds)  - 250
+				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['thickness_MTZ_mean'] = lst_660_depth_Pds - lst_410_depth_Pds
 
-				else: 
+			else: 
 
-					RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['thickness_MTZ_mean'] = np.nan
-					RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['difference_thickness_MTZ_model'] = np.nan
+				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['thickness_MTZ_mean'] = np.nan
 
-				print('MTZ Pds thickness = '+str(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['thickness_MTZ_mean']))
-				print('MTZ Pds diff Apparent and Model thickness = '+str(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['difference_thickness_MTZ_model']))
-				print('\n')
+			print('MTZ Pds thickness = '+str(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['thickness_MTZ_mean']))
+			print('\n')
 				
 ###################################################################################################################
 
@@ -609,9 +611,6 @@ RF_DEPTH_std_2_Pds = []
 
 thickness_MTZ_Pds = []
 thickness_MTZ_Pds_std = []
-
-difference_thickness_MTZ_model_Pds = []
-difference_thickness_MTZ_model_Pds_std = []
 
 RF_BOOTSTRAP_DATA_Pds = []
 RF_BOOTSTRAP_DATA_Pds_std = []
@@ -657,11 +656,11 @@ for i,j in enumerate(RF_data_raw_Pds):
 
 		lst_stacking_data_LVZ_Pds = [stacking_Pds_data[x] for x,c in enumerate(camadas_terra_10_km) if 400-(DEPTH_RANGE*2) <= c <= 400-(DEPTH_RANGE*2)]
 		LVZ_candidate = [abs(np.nanmean(flat_mean_LVZ_Pds) - c) for x,c in enumerate(camadas_terra_10_km) if 400-(DEPTH_RANGE*2) <= c <= 400-(DEPTH_RANGE*2)]
-		BOOTSTRAP_DATA_Pds_std_lst = [BOOTSTRAP_DATA_Pds_std[x] for x,c in enumerate(camadas_terra_10_km) if 400-(DEPTH_RANGE*2) <= c <= 400-(DEPTH_RANGE*2)]
+		BOOTSTRAP_DATA_LVZ_std_lst = [BOOTSTRAP_DATA_Pds_std[x] for x,c in enumerate(camadas_terra_10_km) if 400-(DEPTH_RANGE*2) <= c <= 400-(DEPTH_RANGE*2)]
 
 		amp_LVZ = lst_stacking_data_LVZ_Pds[LVZ_candidate.index(min(LVZ_candidate))]
 
-		BOOTSTRAP_DATA_LVZ_std_amp = BOOTSTRAP_DATA_Pds_std_lst[LVZ_candidate.index(min(LVZ_candidate))]
+		BOOTSTRAP_DATA_LVZ_std_amp = BOOTSTRAP_DATA_LVZ_std_lst[LVZ_candidate.index(min(LVZ_candidate))]
 		
 		if  abs(amp_LVZ)-(BOOTSTRAP_DATA_LVZ_std_amp*CONFIDENCE_BOUND) >= 0:
 			
@@ -682,10 +681,10 @@ for i,j in enumerate(RF_data_raw_Pds):
 
 		lst_stacking_data_410_Pds = [stacking_Pds_data[x] for x,c in enumerate(camadas_terra_10_km) if 410-DEPTH_RANGE <= c <= 410+DEPTH_RANGE]
 		d410Pds_candidate = [abs(np.nanmean(flat_mean_1_Pds) - c) for x,c in enumerate(camadas_terra_10_km) if 410-DEPTH_RANGE <= c <= 410+DEPTH_RANGE]	
-		BOOTSTRAP_DATA_Pds_std_lst = [BOOTSTRAP_DATA_Pds_std[x] for x,c in enumerate(camadas_terra_10_km) if 410-DEPTH_RANGE <= c <= 410+DEPTH_RANGE]
+		BOOTSTRAP_DATA_410_std_lst = [BOOTSTRAP_DATA_Pds_std[x] for x,c in enumerate(camadas_terra_10_km) if 410-DEPTH_RANGE <= c <= 410+DEPTH_RANGE]
 
 		amp_d410Pds = lst_stacking_data_410_Pds[d410Pds_candidate.index(min(d410Pds_candidate))]
-		BOOTSTRAP_DATA_410_std_amp = BOOTSTRAP_DATA_Pds_std_lst[d410Pds_candidate.index(min(d410Pds_candidate))]
+		BOOTSTRAP_DATA_410_std_amp = BOOTSTRAP_DATA_410_std_lst[d410Pds_candidate.index(min(d410Pds_candidate))]
 
 		
 		if  amp_d410Pds-(BOOTSTRAP_DATA_410_std_amp*CONFIDENCE_BOUND) >= 0:
@@ -706,10 +705,10 @@ for i,j in enumerate(RF_data_raw_Pds):
 
 		lst_stacking_data_520_Pds = [stacking_Pds_data[x] for x,c in enumerate(camadas_terra_10_km) if 520-(DEPTH_RANGE*2) <= c <= 520+(DEPTH_RANGE*2)]
 		d520Pds_candidate = [abs(np.nanmean(flat_mean_520_Pds) - c) for x,c in enumerate(camadas_terra_10_km) if 520-(DEPTH_RANGE*2) <= c <= 520+(DEPTH_RANGE*2)]
-		BOOTSTRAP_DATA_Pds_std_lst = [BOOTSTRAP_DATA_Pds_std[x] for x,c in enumerate(camadas_terra_10_km) if 520-(DEPTH_RANGE*2) <= c <= 520+(DEPTH_RANGE*2)]
+		BOOTSTRAP_DATA_520_std_lst = [BOOTSTRAP_DATA_Pds_std[x] for x,c in enumerate(camadas_terra_10_km) if 520-(DEPTH_RANGE*2) <= c <= 520+(DEPTH_RANGE*2)]
 
 		amp_d520Pds = lst_stacking_data_520_Pds[d520Pds_candidate.index(min(d520Pds_candidate))]
-		BOOTSTRAP_DATA_520_std_amp = BOOTSTRAP_DATA_Pds_std_lst[d520Pds_candidate.index(min(d520Pds_candidate))]
+		BOOTSTRAP_DATA_520_std_amp = BOOTSTRAP_DATA_520_std_lst[d520Pds_candidate.index(min(d520Pds_candidate))]
 
 		
 		if  amp_d520Pds-(BOOTSTRAP_DATA_520_std_amp*CONFIDENCE_BOUND) >= 0:
@@ -730,15 +729,14 @@ for i,j in enumerate(RF_data_raw_Pds):
 
 		lst_stacking_data_660_Pds = [stacking_Pds_data[x] for x,c in enumerate(camadas_terra_10_km) if 660-DEPTH_RANGE <= c <= 660+DEPTH_RANGE]
 		d660Pds_candidate = [abs(np.nanmean(flat_mean_2_Pds) - c) for x,c in enumerate(camadas_terra_10_km) if 660-DEPTH_RANGE <= c <= 660+DEPTH_RANGE]
-		BOOTSTRAP_DATA_Pds_std_lst = [BOOTSTRAP_DATA_Pds_std[x] for x,c in enumerate(camadas_terra_10_km) if 660-DEPTH_RANGE <= c <= 660+DEPTH_RANGE]
+		BOOTSTRAP_DATA_Pds_660_lst = [BOOTSTRAP_DATA_Pds_std[x] for x,c in enumerate(camadas_terra_10_km) if 660-DEPTH_RANGE <= c <= 660+DEPTH_RANGE]
 
 		amp_d660Pds = lst_stacking_data_660_Pds[d660Pds_candidate.index(min(d660Pds_candidate))]
-		BOOTSTRAP_DATA_660_std_amp = BOOTSTRAP_DATA_Pds_std_lst[d660Pds_candidate.index(min(d660Pds_candidate))]
+		BOOTSTRAP_DATA_660_std_amp = BOOTSTRAP_DATA_Pds_660_lst[d660Pds_candidate.index(min(d660Pds_candidate))]
 
 
 		if  amp_d660Pds-(BOOTSTRAP_DATA_660_std_amp*CONFIDENCE_BOUND) >= 0:
 
-			counts = mode(flat_mean_2_Pds).count
 			RF_DEPTH_mean_2_Pds.append(np.nanmean(flat_mean_2_Pds))
 			RF_DEPTH_std_2_Pds.append(np.nanstd(flat_mean_2_Pds)*CONFIDENCE_BOUND)
 
@@ -760,19 +758,6 @@ for i,j in enumerate(RF_data_raw_Pds):
 
 			thickness_MTZ_Pds.append(np.nan)
 			thickness_MTZ_Pds_std.append(np.nan)
-
-		#Analysing stacked data amplitude to calculate diff MTZ THICKNESS Pds and Model
-
-		if  amp_d410Pds-(BOOTSTRAP_DATA_410_std_amp*CONFIDENCE_BOUND) >= 0 and amp_d660Pds-(BOOTSTRAP_DATA_660_std_amp*CONFIDENCE_BOUND) >= 0:
-
-			flat_diff_thickness_MTZ_Pds = [float(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['difference_thickness_MTZ_model']) for _k in range(BOOTSTRAP_INTERATOR)]
-			difference_thickness_MTZ_model_Pds.append(np.nanmean(flat_diff_thickness_MTZ_Pds))
-			difference_thickness_MTZ_model_Pds_std.append(np.nanstd(flat_diff_thickness_MTZ_Pds))
-
-		else: 
-
-			difference_thickness_MTZ_model_Pds.append(np.nan)
-			difference_thickness_MTZ_model_Pds_std.append(np.nan)
 
 #############################################################################################################################################################################################
 
@@ -805,7 +790,8 @@ ax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 ax.gridlines(draw_labels=True)
 
 #ax.set_title('Figure: Final Grid and Ppds Average Piercing Points',ha='center',va='top',y=1.08)
-ax.legend([l1,l3,circulo,circulo_fresnel],['Stations','Piercing Points '+str(DEPTH_TARGET),'Selected Grid','Piercing Points Fresnel Zone'],scatterpoints=1, frameon=True,labelspacing=1, loc='lower right',facecolor='w',fontsize='smaller')
+legend = ax.legend([l1,l3,circulo,circulo_fresnel],['Stations','Piercing Points '+str(DEPTH_TARGET),'Selected Grid','Piercing Points Fresnel Zone'],scatterpoints=1,labelspacing=1, loc='lower right',facecolor='w',fontsize='smaller')
+legend.get_frame().set_facecolor('white')
 
 #plt.show()
 
@@ -830,7 +816,6 @@ SELECTED_BINNED_DATA_dic = {
 
 	'mtz_thickness_Pds':[],'mtz_thickness_Pds_std':[],
 
-	'difference_thickness_MTZ_Pds':[],'difference_thickness_MTZ_Pds_std':[],
 	'data_Pds':[],'data_BOOTSTRAP_Pds':[],'data_Pds_std':[],
 
 	'RF_BOOTSTRAP_DEPTH_mean_1_Pds':[],
@@ -838,7 +823,6 @@ SELECTED_BINNED_DATA_dic = {
 	'RF_BOOTSTRAP_DEPTH_mean_520_Pds':[],
 	'RF_BOOTSTRAP_DEPTH_mean_2_Pds':[],
 
-	'difference_thickness_MTZ_model_Pds':[],'difference_thickness_MTZ_model_Pds_std':[],
 	}
 
 for i,j in enumerate(RF_BOOTSTRAP_DATA_Pds):
@@ -878,10 +862,6 @@ for i,j in enumerate(RF_BOOTSTRAP_DATA_Pds):
 	SELECTED_BINNED_DATA_dic['mtz_thickness_Pds'].append(float(thickness_MTZ_Pds[i]))
 	SELECTED_BINNED_DATA_dic['mtz_thickness_Pds_std'].append(float(thickness_MTZ_Pds_std[i]))
 	
-	SELECTED_BINNED_DATA_dic['difference_thickness_MTZ_model_Pds'].append(float(difference_thickness_MTZ_model_Pds[i]))
-	SELECTED_BINNED_DATA_dic['difference_thickness_MTZ_model_Pds_std'].append(float(difference_thickness_MTZ_model_Pds_std[i]))
-
-
 RESULTS_FOLDER_BINS = PP_SELEC_DIR+'/'+'RESULTS_NUMBER_PP_PER_BIN_'+str(NUMBER_PP_PER_BIN)+'_NUMBER_STA_PER_BIN_'+str(NUMBER_STA_PER_BIN)+'/'
 os.makedirs(RESULTS_FOLDER_BINS,exist_ok=True)
 with open(RESULTS_FOLDER_BINS+'SELECTED_BINNED.json', 'w') as fp:
