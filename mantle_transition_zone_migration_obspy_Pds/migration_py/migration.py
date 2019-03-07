@@ -662,7 +662,7 @@ for i,j in enumerate(RF_data_raw_Pds):
 
 		BOOTSTRAP_DATA_LVZ_std_amp = BOOTSTRAP_DATA_LVZ_std_lst[LVZ_candidate.index(min(LVZ_candidate))]
 		
-		if  abs(amp_LVZ)-(BOOTSTRAP_DATA_LVZ_std_amp*CONFIDENCE_BOUND) >= 0:
+		if  abs(amp_LVZ)-(BOOTSTRAP_DATA_LVZ_std_amp*CONFIDENCE_BOUND) > 0:
 			
 			RF_DEPTH_mean_LVZ_Pds.append(np.nanmean(flat_mean_LVZ_Pds))
 			RF_DEPTH_std_LVZ_Pds.append(np.nanstd(flat_mean_LVZ_Pds)*CONFIDENCE_BOUND)
@@ -687,7 +687,7 @@ for i,j in enumerate(RF_data_raw_Pds):
 		BOOTSTRAP_DATA_410_std_amp = BOOTSTRAP_DATA_410_std_lst[d410Pds_candidate.index(min(d410Pds_candidate))]
 
 		
-		if  amp_d410Pds-(BOOTSTRAP_DATA_410_std_amp*CONFIDENCE_BOUND) >= 0:
+		if  amp_d410Pds-(BOOTSTRAP_DATA_410_std_amp*CONFIDENCE_BOUND) > 0:
 				
 			RF_DEPTH_mean_1_Pds.append(np.nanmean(flat_mean_1_Pds))
 			RF_DEPTH_std_1_Pds.append(np.nanstd(flat_mean_1_Pds)*CONFIDENCE_BOUND)
@@ -711,7 +711,7 @@ for i,j in enumerate(RF_data_raw_Pds):
 		BOOTSTRAP_DATA_520_std_amp = BOOTSTRAP_DATA_520_std_lst[d520Pds_candidate.index(min(d520Pds_candidate))]
 
 		
-		if  amp_d520Pds-(BOOTSTRAP_DATA_520_std_amp*CONFIDENCE_BOUND) >= 0:
+		if  amp_d520Pds-(BOOTSTRAP_DATA_520_std_amp*CONFIDENCE_BOUND) > 0:
 					
 			RF_DEPTH_mean_520_Pds.append(np.nanmean(flat_mean_520_Pds))
 			RF_DEPTH_std_520_Pds.append(np.nanstd(flat_mean_520_Pds)*CONFIDENCE_BOUND)
@@ -735,7 +735,7 @@ for i,j in enumerate(RF_data_raw_Pds):
 		BOOTSTRAP_DATA_660_std_amp = BOOTSTRAP_DATA_Pds_660_lst[d660Pds_candidate.index(min(d660Pds_candidate))]
 
 
-		if  amp_d660Pds-(BOOTSTRAP_DATA_660_std_amp*CONFIDENCE_BOUND) >= 0:
+		if  amp_d660Pds-(BOOTSTRAP_DATA_660_std_amp*CONFIDENCE_BOUND) > 0:
 
 			RF_DEPTH_mean_2_Pds.append(np.nanmean(flat_mean_2_Pds))
 			RF_DEPTH_std_2_Pds.append(np.nanstd(flat_mean_2_Pds)*CONFIDENCE_BOUND)
@@ -748,7 +748,7 @@ for i,j in enumerate(RF_data_raw_Pds):
 		#Analysing stacked data amplitude to calculate MTZ THICKNESS Pds
 
 
-		if  amp_d410Pds-(BOOTSTRAP_DATA_410_std_amp*CONFIDENCE_BOUND) >= 0 and amp_d660Pds-(BOOTSTRAP_DATA_660_std_amp*CONFIDENCE_BOUND) >= 0:
+		if  amp_d410Pds-(BOOTSTRAP_DATA_410_std_amp*CONFIDENCE_BOUND) > 0 and amp_d660Pds-(BOOTSTRAP_DATA_660_std_amp*CONFIDENCE_BOUND) > 0:
 
 			flat_thickness_MTZ_Pds = [float(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['thickness_MTZ_mean']) for _k in range(BOOTSTRAP_INTERATOR)]
 			thickness_MTZ_Pds.append(np.nanmean(flat_thickness_MTZ_Pds))

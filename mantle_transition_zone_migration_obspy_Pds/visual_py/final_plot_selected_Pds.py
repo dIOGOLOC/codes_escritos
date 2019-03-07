@@ -225,8 +225,7 @@ for i,j in enumerate(lons):
 	else:
 		pass
 
-ax.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
-
+ax.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree(),label='Stations')
 ax.set_title('410 km Pds', y=1.08)
 
 
@@ -259,8 +258,7 @@ for i,j in enumerate(lons):
 	else: 
 		pass
 
-ax2.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
-
+ax2.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree(),label='Stations')
 ax2.set_title('660 km Pds', y=1.08)
 
 #______________________________________________________________________
