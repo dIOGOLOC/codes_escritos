@@ -322,7 +322,7 @@ for i,j in enumerate(RF_data_profile_Pds):
 	#_____________________________________________
 
 	apparent_410 = fig.add_subplot(gs[2,0])
-	apparent_660 = fig.add_subplot(gs[3,0])
+	apparent_660 = fig.add_subplot(gs[3,0],sharex=apparent_410)
 
 
 	#######################################################################
@@ -438,7 +438,7 @@ for i,j in enumerate(RF_data_profile_Pds):
 		apparent_410.tick_params(labelleft=True,labelright=True)
 		apparent_410.yaxis.set_label_position("right")
 		apparent_410.set_xticks([])
-		apparent_410.set_ylim(-50,50)
+		apparent_410.set_ylim(50,-50)
 
 
 	#### Figure Apparent  660 km Pds  ####
@@ -449,7 +449,7 @@ for i,j in enumerate(RF_data_profile_Pds):
 
 		apparent_660.errorbar(_i,RF_DEPTH_mean_2_profile_Pds[i][_i]-660, yerr=RF_DEPTH_std_2_profile_Pds[i][_i], ecolor='dimgray',elinewidth=1,capsize=2,capthick=1)
 		
-		apparent_660.set_ylim(-50,50)
+		apparent_660.set_ylim(50,-50)
 		apparent_660.set_title('diff 660 km ')
 		apparent_660.yaxis.set_ticks_position('both')
 		apparent_660.yaxis.set_major_locator(MultipleLocator(25))
@@ -468,7 +468,7 @@ for i,j in enumerate(RF_data_profile_Pds):
 	for _i, _j in enumerate(RF_DEPTH_mtz_thickness_profile_Pds[i]):
 		MTZ_thickness.errorbar(_i,RF_DEPTH_mtz_thickness_profile_Pds[i][_i]-250, yerr=RF_DEPTH_mtz_thickness_profile_Pds_std[i][_i], ecolor='gray',elinewidth=1,capsize=2,capthick=1)
 	
-	MTZ_thickness.set_ylim(-50,50)
+	MTZ_thickness.set_ylim(50,-50)
 	MTZ_thickness.yaxis.set_label_position("right")
 	MTZ_thickness.set_title('diff MTZ Thickness')
 	MTZ_thickness.yaxis.set_ticks_position('both')
@@ -486,12 +486,12 @@ for i,j in enumerate(RF_data_profile_Pds):
 	for _i, _j in enumerate(RF_DEPTH_mean_LVZ_profile_Pds[i]):
 		diff_MTZ_thickness.errorbar(_i,RF_DEPTH_mean_LVZ_profile_Pds[i][_i]-350, yerr=RF_DEPTH_std_LVZ_profile_Pds[i][_i], ecolor='gray',elinewidth=1,capsize=2,capthick=1)
 	
-	diff_MTZ_thickness.set_ylim(-100,100)
+	diff_MTZ_thickness.set_ylim(50,-50)
 	diff_MTZ_thickness.yaxis.set_label_position("right")
 	diff_MTZ_thickness.set_title('diff LVZ')
 	diff_MTZ_thickness.yaxis.set_ticks_position('both')
-	diff_MTZ_thickness.yaxis.set_major_locator(MultipleLocator(50))
-	diff_MTZ_thickness.yaxis.set_minor_locator(MultipleLocator(20))
+	diff_MTZ_thickness.yaxis.set_major_locator(MultipleLocator(25))
+	diff_MTZ_thickness.yaxis.set_minor_locator(MultipleLocator(10))
 	diff_MTZ_thickness.grid(True,which='major',color='gray',linewidth=1,linestyle='--')
 	diff_MTZ_thickness.tick_params(labelleft=True,labelright=True)
 

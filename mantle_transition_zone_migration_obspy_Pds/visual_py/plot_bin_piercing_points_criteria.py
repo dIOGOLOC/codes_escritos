@@ -145,30 +145,26 @@ colormap_std = plt.get_cmap(COLORMAP_STD)
 #############################################################################################################################################################################################
 
 
-mosaic_lst_MTZ = [RF_DEPTH_mtz_thickness_Pds]
-mosaic_lst_MTZ_std = [RF_DEPTH_mtz_thickness_Pds_std]
-mosaic_lst_MTZ_name = ['MTZ_thickness_Pds']
-mosaic_lst_MTZ_label = ['MTZ thickness Pds (km)']
+mosaic_lst_MTZ = RF_DEPTH_mtz_thickness_Pds
+mosaic_lst_MTZ_name = 'MTZ_thickness_Pds'
+mosaic_lst_MTZ_label = 'MTZ thickness Pds (km)'
 
-mosaic_lst_660 = [RF_DEPTH_mean_2_Pds]
-mosaic_lst_660_std = [RF_DEPTH_std_2_Pds]
-mosaic_lst_660_name = ['DEPTH_660_Pds']
-mosaic_lst_660_label = ['660 depth Pds (km)']
+mosaic_lst_660 = RF_DEPTH_mean_2_Pds
+mosaic_lst_660_name = 'DEPTH_660_Pds'
+mosaic_lst_660_label = '660 depth Pds (km)'
 
-mosaic_lst_410 = [RF_DEPTH_mean_1_Pds]
-mosaic_lst_410_std = [RF_DEPTH_std_1_Pds]
-mosaic_lst_410_name = ['DEPTH_410_Pds']
-mosaic_lst_410_label = ['410 depth Pds (km)']
+mosaic_lst_410 = RF_DEPTH_mean_1_Pds
+mosaic_lst_410_name = 'DEPTH_410_Pds'
+mosaic_lst_410_label = '410 depth Pds (km)'
 
 
 #############################################################################################################################################################################################
 
-def plot_mosaic_MTZ(mosaic_lst,mosaic_lst_name,mosaic_lst_label,mosaic_lst_std):
-	for x,c in enumerate(mosaic_lst):
+def plot_mosaic_MTZ(mosaic_lst,mosaic_lst_name,mosaic_lst_label):
 
-		fig, axes = plt.subplots(nrows=len(set(lst_json_file_PP)), ncols=len(set(lst_json_file_STA)), subplot_kw={'projection': ccrs.Mercator(central_longitude=PROJECT_LON, globe=None)},figsize=(1+len(set(lst_json_file_PP))*4,len(set(lst_json_file_STA))*4),sharex='col', sharey='row')
+		fig, axes = plt.subplots(nrows=len(set(lst_json_file_PP)), ncols=len(set(lst_json_file_STA)), gridspec_kw = {'wspace':0, 'hspace':0}, subplot_kw={'projection': ccrs.Mercator(central_longitude=PROJECT_LON, globe=None)},figsize=(1+len(set(lst_json_file_PP))*2,len(set(lst_json_file_STA))*2),sharex='col', sharey='row',constrained_layout=True)
 
-		for k,ax in zip(range(len(c)), axes.flat):
+		for k,ax in zip(range(len(mosaic_lst)), axes.flat):
 
 			ax.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
 
@@ -194,31 +190,39 @@ def plot_mosaic_MTZ(mosaic_lst,mosaic_lst_name,mosaic_lst_label,mosaic_lst_std):
 			ax.text(-40.5, -0.6,'s = '+str(STA_index[k]),fontsize=7, verticalalignment='center', 
 						horizontalalignment='right', transform=text_transform,bbox=dict(facecolor='white',edgecolor='white',pad=0.1))
 
+			n=30
+			x = 0.5
+			lower = colormap(np.linspace(0, x, n))
+			white = colormap(np.ones(80-2*n)*x)
+			upper = colormap(np.linspace(1-x, 1, n))
+			colors = np.vstack((lower, white, upper))
+			tmap = mpl.colors.LinearSegmentedColormap.from_list('map_white', colors)
 
-			norm_660 = mpl.colors.Normalize(vmin=200,vmax=300,clip=True)
+
+			bounds = np.arange(200, 300+INTER_DEPTH, INTER_DEPTH)
+			norm_660 = mpl.colors.BoundaryNorm(boundaries=bounds, ncolors=colormap.N)
 
 			for i,j in enumerate(lons[k]):
-				if math.isnan(c[k][i]) == False:
-					retangulo_660 = Circle(radius=DIST_GRID_PP*(1-(mosaic_lst_std[x][k][i]/50)),xy=(lons[k][i], lats[k][i]),color=colormap(norm_660(c[k][i])), ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+				if math.isnan(mosaic_lst[k][i]) == False:
+					retangulo_660 = Circle(radius=DIST_GRID_PP,xy=(lons[k][i], lats[k][i]),color=tmap(norm_660(mosaic_lst[k][i])), ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
 					ax.add_patch(retangulo_660)
 				else: 
 					pass
 		#______________________________________________________________________
 
-		sm_660 = plt.cm.ScalarMappable(cmap=colormap,norm=norm_660)
+		sm_660 = plt.cm.ScalarMappable(cmap=tmap,norm=norm_660)
 		sm_660._A = []
 
-		fig.colorbar(sm_660,  ax=axes.ravel().tolist(), orientation='horizontal',shrink=0.5,label=mosaic_lst_label[x])
+		fig.colorbar(sm_660,  ax=axes.flat, orientation='horizontal',shrink=0.5,fraction=0.05,label=mosaic_lst_label)
 
-		fig.savefig(RESULTS_FOLDER+mosaic_lst_name[x]+'_mosaic.'+EXT_FIG,dpi=DPI_FIG)
+		fig.savefig(RESULTS_FOLDER+mosaic_lst_name+'_mosaic.'+EXT_FIG,dpi=DPI_FIG)
 
 
-def plot_mosaic_660(mosaic_lst,mosaic_lst_name,mosaic_lst_label,mosaic_lst_std):
-	for x,c in enumerate(mosaic_lst):
+def plot_mosaic_660(mosaic_lst,mosaic_lst_name,mosaic_lst_label):
 
-		fig, axes = plt.subplots(nrows=len(set(lst_json_file_PP)), ncols=len(set(lst_json_file_STA)), subplot_kw={'projection': ccrs.Mercator(central_longitude=PROJECT_LON, globe=None)},figsize=(1+len(set(lst_json_file_PP))*4,len(set(lst_json_file_STA))*4),sharex='col', sharey='row')
+		fig, axes = plt.subplots(nrows=len(set(lst_json_file_PP)), ncols=len(set(lst_json_file_STA)), gridspec_kw = {'wspace':0, 'hspace':0}, subplot_kw={'projection': ccrs.Mercator(central_longitude=PROJECT_LON, globe=None)},figsize=(1+len(set(lst_json_file_PP))*2,len(set(lst_json_file_STA))*2),sharex='col', sharey='row',constrained_layout=True)
 
-		for k,ax in zip(range(len(c)), axes.flat):
+		for k,ax in zip(range(len(mosaic_lst)), axes.flat):
 
 			ax.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
 
@@ -245,31 +249,38 @@ def plot_mosaic_660(mosaic_lst,mosaic_lst_name,mosaic_lst_label,mosaic_lst_std):
 						horizontalalignment='right', transform=text_transform,bbox=dict(facecolor='white',edgecolor='white',pad=0.1))
 
 
-			norm_660 = mpl.colors.Normalize(vmin=610,vmax=710,clip=True)
-			colors_660 = colormap(norm_660(np.array(c[k],dtype='float64')))
+			n=30
+			x = 0.5
+			lower = colormap(np.linspace(0, x, n))
+			white = colormap(np.ones(80-2*n)*x)
+			upper = colormap(np.linspace(1-x, 1, n))
+			colors = np.vstack((lower, white, upper))
+			tmap = mpl.colors.LinearSegmentedColormap.from_list('map_white', colors)
+
+			bounds = np.arange(610, 710+INTER_DEPTH, INTER_DEPTH)
+			norm_660 = mpl.colors.BoundaryNorm(boundaries=bounds, ncolors=colormap.N)
 
 			for i,j in enumerate(lons[k]):
-				if math.isnan(c[k][i]) == False:
-					retangulo_660 = Circle(radius=DIST_GRID_PP*(1-(mosaic_lst_std[x][k][i]/50)),xy=(lons[k][i],lats[k][i]),color=colormap(norm_660(c[k][i])), ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+				if math.isnan(mosaic_lst[k][i]) == False:
+					retangulo_660 = Circle(radius=DIST_GRID_PP,xy=(lons[k][i],lats[k][i]),color=tmap(norm_660(mosaic_lst[k][i])), ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
 					ax.add_patch(retangulo_660)
 				else: 
 					pass
 		#______________________________________________________________________
 
-		sm_660 = plt.cm.ScalarMappable(cmap=colormap,norm=norm_660)
+		sm_660 = plt.cm.ScalarMappable(cmap=tmap,norm=norm_660)
 		sm_660._A = []
 		
-		fig.colorbar(sm_660,  ax=axes.ravel().tolist(), orientation='horizontal',shrink=0.5,label=mosaic_lst_label[x])
+		fig.colorbar(sm_660,  ax=axes.flat, orientation='horizontal',shrink=0.5,fraction=0.05,label=mosaic_lst_label)
 
-		fig.savefig(RESULTS_FOLDER+mosaic_lst_name[x]+'_mosaic.'+EXT_FIG,dpi=DPI_FIG)
+		fig.savefig(RESULTS_FOLDER+mosaic_lst_name+'_mosaic.'+EXT_FIG,dpi=DPI_FIG)
 
 
-def plot_mosaic_410(mosaic_lst,mosaic_lst_name,mosaic_lst_label,mosaic_lst_std):
-	for x,c in enumerate(mosaic_lst):
+def plot_mosaic_410(mosaic_lst,mosaic_lst_name,mosaic_lst_label):
 
-		fig, axes = plt.subplots(nrows=len(set(lst_json_file_PP)), ncols=len(set(lst_json_file_STA)), subplot_kw={'projection': ccrs.Mercator(central_longitude=PROJECT_LON, globe=None)},figsize=(1+len(set(lst_json_file_PP))*4,len(set(lst_json_file_STA))*4),sharex='col', sharey='row')
+		fig, axes = plt.subplots(nrows=len(set(lst_json_file_PP)), ncols=len(set(lst_json_file_STA)), gridspec_kw = {'wspace':0, 'hspace':0}, subplot_kw={'projection': ccrs.Mercator(central_longitude=PROJECT_LON, globe=None)},figsize=(1+len(set(lst_json_file_PP))*2,len(set(lst_json_file_STA))*2),sharex='col', sharey='row',constrained_layout=True)
 
-		for k,ax in zip(range(len(c)), axes.flat):
+		for k,ax in zip(range(len(mosaic_lst)), axes.flat):
 
 			ax.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
 
@@ -295,30 +306,40 @@ def plot_mosaic_410(mosaic_lst,mosaic_lst_name,mosaic_lst_label,mosaic_lst_std):
 			ax.text(-40.5, -0.6,'s = '+str(STA_index[k]),fontsize=7, verticalalignment='center', 
 						horizontalalignment='right', transform=text_transform,bbox=dict(facecolor='white',edgecolor='white',pad=0.1))
 
+			n=30
+			x = 0.5
+			lower = colormap(np.linspace(0, x, n))
+			white = colormap(np.ones(80-2*n)*x)
+			upper = colormap(np.linspace(1-x, 1, n))
+			colors = np.vstack((lower, white, upper))
+			tmap = mpl.colors.LinearSegmentedColormap.from_list('map_white', colors)
 
-			norm_660 = mpl.colors.Normalize(vmin=360,vmax=460,clip=True)
-			colors_660 = colormap(norm_660(np.array(c[k],dtype='float64')))
+			bounds = np.arange(360, 460+INTER_DEPTH, INTER_DEPTH)
+			norm_660 = mpl.colors.BoundaryNorm(boundaries=bounds, ncolors=colormap.N)
+
+
 
 			for i,j in enumerate(lons[k]):
-				if math.isnan(c[k][i]) == False:
-					retangulo_660 = Circle(radius=DIST_GRID_PP*(1-(mosaic_lst_std[x][k][i]/50)),xy=(lons[k][i], lats[k][i]),color=colormap(norm_660(c[k][i])), ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+				if math.isnan(mosaic_lst[k][i]) == False:
+					retangulo_660 = Circle(radius=DIST_GRID_PP,xy=(lons[k][i], lats[k][i]),color=tmap(norm_660(mosaic_lst[k][i])), ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
 					ax.add_patch(retangulo_660)
 				else: 
 					pass
 		#______________________________________________________________________
 
-		sm_660 = plt.cm.ScalarMappable(cmap=colormap,norm=norm_660)
+		sm_660 = plt.cm.ScalarMappable(cmap=tmap,norm=norm_660)
 		sm_660._A = []
 
-		fig.colorbar(sm_660,  ax=axes.ravel().tolist(), orientation='horizontal',shrink=0.5,label=mosaic_lst_label[x])
+		fig.colorbar(sm_660,  ax=axes.flat, orientation='horizontal',shrink=0.5,fraction=0.05,label=mosaic_lst_label)
 
-		fig.savefig(RESULTS_FOLDER+mosaic_lst_name[x]+'_mosaic.'+EXT_FIG,dpi=DPI_FIG)
+
+		fig.savefig(RESULTS_FOLDER+mosaic_lst_name+'_mosaic.'+EXT_FIG,dpi=DPI_FIG)
 
 ########################################################################################################################################################################
 print('Plotting Figure: Mosaic of each estimates')
 
-plot_mosaic_MTZ(mosaic_lst_MTZ,mosaic_lst_MTZ_name,mosaic_lst_MTZ_label,mosaic_lst_MTZ_std)
-plot_mosaic_660(mosaic_lst_660,mosaic_lst_660_name,mosaic_lst_660_label,mosaic_lst_660_std)
-plot_mosaic_410(mosaic_lst_410,mosaic_lst_410_name,mosaic_lst_410_label,mosaic_lst_410_std)
+plot_mosaic_MTZ(mosaic_lst_MTZ,mosaic_lst_MTZ_name,mosaic_lst_MTZ_label)
+plot_mosaic_660(mosaic_lst_660,mosaic_lst_660_name,mosaic_lst_660_label)
+plot_mosaic_410(mosaic_lst_410,mosaic_lst_410_name,mosaic_lst_410_label)
 
 print('Ending Final Plot CODE')

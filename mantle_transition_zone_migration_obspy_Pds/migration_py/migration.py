@@ -446,7 +446,67 @@ for i,j in enumerate(RF_amplitude_time_Pds):
 
 ##################################################################################################################
 
-print('Filtering migrated data per grid data')
+print('Filtering migrated data per grid data raw')
+print('\n')
+
+dados_grid_lat = pp_med_lat
+dados_grid_lon = pp_med_long
+
+number_PP_per_bin_raw = [[]]*len(grdx)
+
+for i,j in enumerate(grdx):
+	number_PP_per_bin_raw[i] = [RF_amplitude_Pds[k] for k,l in enumerate(dados_grid_lat) if np.sqrt((j - dados_grid_lon[k])**2 + (grdy[i] - l)**2) <= FRESNEL_ZONE_RADIUS]
+
+
+#############################################################################################################################################################################################
+
+print('Plotting: Figure Piercing Points per bin')
+print('\n')
+
+fig_PP, ax = plt.subplots(ncols=1, subplot_kw={'projection': ccrs.Mercator(central_longitude=PROJECT_LON, globe=None)},figsize=(10,10))
+
+#Figure
+
+ax.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
+
+number_RF_per_bin = [len(i) for i in number_PP_per_bin_raw]
+
+colormap = plt.get_cmap("magma")
+
+
+norm_number = mpl.colors.Normalize(vmin=min(number_RF_per_bin),vmax=max(number_RF_per_bin),clip=True)
+colors_number = colormap(norm_number(np.array(number_RF_per_bin,dtype='float64')))
+
+for i,j in enumerate(number_RF_per_bin):
+	if j > 5:
+		circulo = Circle(radius=DIST_GRID_PP,xy=(grdx[i], grdy[i]),color=colors_number[i], ec='k',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+		ax.add_patch(circulo)
+
+
+reader_1_SHP = Reader(BOUNDARY_1_SHP)
+shape_1_SHP = list(reader_1_SHP.geometries())
+plot_shape_1_SHP = cfeature.ShapelyFeature(shape_1_SHP, ccrs.PlateCarree())
+ax.add_feature(plot_shape_1_SHP, facecolor='none', edgecolor='k',linewidth=3)
+
+reader_2_SHP = Reader(BOUNDARY_2_SHP)
+shape_2_SHP = list(reader_2_SHP.geometries())
+plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
+ax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
+ax.gridlines(draw_labels=True)
+
+sm_number = plt.cm.ScalarMappable(cmap=colormap,norm=norm_number)
+sm_number._A = []
+
+fig_PP.colorbar(sm_number,ax=ax,orientation='horizontal',shrink=0.8,label='Number of Piercing Points per Bin')
+
+#plt.show()
+
+fig_PP.savefig(RESULTS_FOLDER+'NUMBER_PP_PER_BIN.'+EXT_FIG,dpi=DPI_FIG)
+
+###################################################################################################################
+
+
+print('Filtering migrated data per selected grid data')
 print('\n')
 
 dados_grid_lat = pp_med_lat

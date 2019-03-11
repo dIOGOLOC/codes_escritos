@@ -121,18 +121,29 @@ print('\n')
 
 print('Pds Phases')
 print('Number of bins - LVZ: '+str(np.count_nonzero(~np.isnan(RF_DEPTH_mean_LVZ_Pds))))
+print('Max - LVZ: '+str(np.nanmax(RF_DEPTH_mean_LVZ_Pds)))
+print('Min - LVZ: '+str(np.nanmin(RF_DEPTH_mean_LVZ_Pds)))
 print(r'Bins - 410 km depth: '+str(np.nanmean(RF_DEPTH_mean_LVZ_Pds))+' ± '+str(np.nanstd(RF_DEPTH_mean_LVZ_Pds)))
 
+
 print('Number of bins - 410 km depth: '+str(np.count_nonzero(~np.isnan(RF_DEPTH_mean_1_Pds))))
+print('Max - 410 km depth: '+str(np.nanmax(RF_DEPTH_mean_1_Pds)))
+print('Min - 410 km depth: '+str(np.nanmin(RF_DEPTH_mean_1_Pds)))
 print(r'Bins - 410 km depth: '+str(np.nanmean(RF_DEPTH_mean_1_Pds))+' ± '+str(np.nanstd(RF_DEPTH_mean_1_Pds)))
 
 print('Number of bins - 520 km depth: '+str(np.count_nonzero(~np.isnan(RF_DEPTH_mean_520_Pds))))
+print('Max - 520 km depth: '+str(np.nanmax(RF_DEPTH_mean_520_Pds)))
+print('Min - 520 km depth: '+str(np.nanmin(RF_DEPTH_mean_520_Pds)))
 print(r'Bins - 520 km depth: '+str(np.nanmean(RF_DEPTH_mean_520_Pds))+' ± '+str(np.nanstd(RF_DEPTH_mean_520_Pds)))
 
 print('Number of bins - 660 km depth: '+str(np.count_nonzero(~np.isnan(RF_DEPTH_mean_2_Pds))))
+print('Max - 660 km depth: '+str(np.nanmax(RF_DEPTH_mean_2_Pds)))
+print('Min - 660 km depth: '+str(np.nanmin(RF_DEPTH_mean_2_Pds)))
 print(r'Bins - 660 km depth: '+str(np.nanmean(RF_DEPTH_mean_2_Pds))+' ± '+str(np.nanstd(RF_DEPTH_mean_2_Pds)))
 
 print('Number of bins - MTZ Thickness: '+str(np.count_nonzero(~np.isnan(RF_DEPTH_mtz_thickness_Pds))))
+print('Max - MTZ Thickness: '+str(np.nanmax(RF_DEPTH_mtz_thickness_Pds)))
+print('Min - MTZ Thickness: '+str(np.nanmin(RF_DEPTH_mtz_thickness_Pds)))
 print(r'Bins - MTZ Thickness: '+str(np.nanmean(RF_DEPTH_mtz_thickness_Pds))+' ± '+str(np.nanstd(RF_DEPTH_mtz_thickness_Pds)))
 print('\n')
 
@@ -145,6 +156,14 @@ colormap = plt.get_cmap(COLORMAP_VEL)
 
 colormap_std = plt.get_cmap(COLORMAP_STD)
 
+n=30
+x = 0.5
+lower = colormap(np.linspace(0, x, n))
+white = colormap(np.ones(80-2*n)*x)
+upper = colormap(np.linspace(1-x, 1, n))
+colors = np.vstack((lower, white, upper))
+tmap = mpl.colors.LinearSegmentedColormap.from_list('map_white', colors)
+
 
 #############################################################################################################################################################################################
 
@@ -154,8 +173,9 @@ fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(10,10))
 	
 idx_Pds = np.argsort(RF_DEPTH_mtz_thickness_Pds)
 
-norm_410 = mpl.colors.Normalize(vmin=200,vmax=300,clip=True)
-colors_410_Pds = colormap(norm_410(np.array(RF_DEPTH_mtz_thickness_Pds,dtype='float64')))
+bounds = np.arange(200, 300+INTER_DEPTH, INTER_DEPTH)
+norm_410 = mpl.colors.BoundaryNorm(boundaries=bounds, ncolors=colormap.N)
+colors_410_Pds = tmap(norm_410(np.array(RF_DEPTH_mtz_thickness_Pds,dtype='float64')))
 
 for j,i in enumerate(idx_Pds):
 	if math.isnan(RF_DEPTH_mtz_thickness_Pds[i]) == False:
@@ -178,10 +198,10 @@ ax.set_ylabel('Depth d410 (km)')
 ax.set_xlabel('Depth d660 (km)')
 
 
-sm_410 = plt.cm.ScalarMappable(cmap=colormap,norm=norm_410)
+sm_410 = plt.cm.ScalarMappable(cmap=tmap,norm=norm_410)
 sm_410._A = []
 
-fig.colorbar(sm_410,ax=ax,orientation='horizontal',shrink=0.8,label='MTZ Thickness Pds')
+fig.colorbar(sm_410,ax=ax,orientation='horizontal',shrink=0.8,label='MTZ Thickness')
 
 
 #plt.show()
@@ -212,21 +232,21 @@ plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
 ax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 ax.gridlines(draw_labels=True)
 
-norm_410 = mpl.colors.Normalize(vmin=360,vmax=460,clip=True)
+bounds = np.arange(360, 460+INTER_DEPTH, INTER_DEPTH)
+norm_410 = mpl.colors.BoundaryNorm(boundaries=bounds, ncolors=colormap.N)
 
 for i,j in enumerate(lons):
 	if math.isnan(RF_DEPTH_mean_1_Pds[i]) == False:
 		if RF_DEPTH_std_1_Pds[i] < 10:
-			circulo_410 = Circle(radius=DIST_GRID_PP,xy=(lons[i], lats[i]),color=colormap(norm_410(RF_DEPTH_mean_1_Pds[i])), ec='None',linewidth=1,linestyle='-',transform=ccrs.Geodetic(),zorder=2)
+			circulo_410 = Circle(radius=DIST_GRID_PP,xy=(lons[i], lats[i]),color=tmap(norm_410(RF_DEPTH_mean_1_Pds[i])), ec='None',linewidth=1,linestyle='-',transform=ccrs.Geodetic(),zorder=2)
 			ax.add_patch(circulo_410)
 		else:
-			circulo_410 = Circle(radius=DIST_GRID_PP,xy=(lons[i], lats[i]),color=colormap(norm_410(RF_DEPTH_mean_1_Pds[i])), ec='k',linewidth=1,linestyle=':',transform=ccrs.Geodetic(),zorder=2)
+			circulo_410 = Circle(radius=DIST_GRID_PP,xy=(lons[i], lats[i]),color=tmap(norm_410(RF_DEPTH_mean_1_Pds[i])), ec='k',linewidth=1,linestyle=':',transform=ccrs.Geodetic(),zorder=2)
 			ax.add_patch(circulo_410)
 	else:
 		pass
 
 ax.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree(),label='Stations')
-ax.set_title('410 km Pds', y=1.08)
 
 
 #660 km
@@ -244,33 +264,33 @@ plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
 ax2.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 ax2.gridlines(draw_labels=True)
 
-norm_660 = mpl.colors.Normalize(vmin=610,vmax=710,clip=True)
+bounds = np.arange(610, 710+INTER_DEPTH, INTER_DEPTH)
+norm_660 = mpl.colors.BoundaryNorm(boundaries=bounds, ncolors=colormap.N)
 
 for i,j in enumerate(lons):
 	if math.isnan(RF_DEPTH_mean_2_Pds[i]) == False:
 		if RF_DEPTH_std_1_Pds[i] < 10:
-			circulo_660 = Circle(radius=DIST_GRID_PP,xy=(lons[i], lats[i]),color=colormap(norm_660(RF_DEPTH_mean_2_Pds[i])),  ec='None',linewidth=1,linestyle='-',transform=ccrs.Geodetic(),zorder=2)
+			circulo_660 = Circle(radius=DIST_GRID_PP,xy=(lons[i], lats[i]),color=tmap(norm_660(RF_DEPTH_mean_2_Pds[i])),  ec='None',linewidth=1,linestyle='-',transform=ccrs.Geodetic(),zorder=2)
 			ax2.add_patch(circulo_660)
 		else:
-			circulo_660 = Circle(radius=DIST_GRID_PP,xy=(lons[i], lats[i]),color=colormap(norm_660(RF_DEPTH_mean_2_Pds[i])),  ec='k',linewidth=1,linestyle=':',transform=ccrs.Geodetic(),zorder=2)
+			circulo_660 = Circle(radius=DIST_GRID_PP,xy=(lons[i], lats[i]),color=tmap(norm_660(RF_DEPTH_mean_2_Pds[i])),  ec='k',linewidth=1,linestyle=':',transform=ccrs.Geodetic(),zorder=2)
 			ax2.add_patch(circulo_660)
 
 	else: 
 		pass
 
 ax2.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree(),label='Stations')
-ax2.set_title('660 km Pds', y=1.08)
 
 #______________________________________________________________________
 
-sm_410 = plt.cm.ScalarMappable(cmap=colormap,norm=norm_410)
+sm_410 = plt.cm.ScalarMappable(cmap=tmap,norm=norm_410)
 sm_410._A = []
-fig.colorbar(sm_410,ax=ax,orientation='horizontal',shrink=0.8)
+fig.colorbar(sm_410,ax=ax,orientation='horizontal',shrink=0.8,label='410 km Depth')
 
-sm_660 = plt.cm.ScalarMappable(cmap=colormap,norm=norm_660)
+sm_660 = plt.cm.ScalarMappable(cmap=tmap,norm=norm_660)
 sm_660._A = []
 
-fig.colorbar(sm_660,ax=ax2,orientation='horizontal',shrink=0.8)
+fig.colorbar(sm_660,ax=ax2,orientation='horizontal',shrink=0.8,label='660 km Depth')
 
 fig.savefig(RESULTS_FOLDER+'Apparent_depth_Pds.'+EXT_FIG,dpi=DPI_FIG)
 
@@ -295,15 +315,16 @@ shape_2_SHP = list(reader_2_SHP.geometries())
 plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
 ax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 
-norm_410 = mpl.colors.Normalize(vmin=200,vmax=300,clip=True)
+bounds = np.arange(200, 300+INTER_DEPTH, INTER_DEPTH)
+norm_410 = mpl.colors.BoundaryNorm(boundaries=bounds, ncolors=colormap.N)
 
 for i,j in enumerate(lons):
 	if math.isnan(RF_DEPTH_mtz_thickness_Pds[i]) == False:
 		if RF_DEPTH_mtz_thickness_Pds_std[i] < 10:
-			circulo_410 = Circle(radius=DIST_GRID_PP,xy=(lons[i], lats[i]),color=colormap(norm_410(RF_DEPTH_mtz_thickness_Pds[i])),  ec='None',linewidth=1,linestyle='-',transform=ccrs.Geodetic(),zorder=2)
+			circulo_410 = Circle(radius=DIST_GRID_PP,xy=(lons[i], lats[i]),color=tmap(norm_410(RF_DEPTH_mtz_thickness_Pds[i])),  ec='None',linewidth=1,linestyle='-',transform=ccrs.Geodetic(),zorder=2)
 			ax.add_patch(circulo_410)
 		else: 
-			circulo_410 = Circle(radius=DIST_GRID_PP,xy=(lons[i], lats[i]),color=colormap(norm_410(RF_DEPTH_mtz_thickness_Pds[i])),  ec='k',linewidth=1,linestyle=':',transform=ccrs.Geodetic(),zorder=2)
+			circulo_410 = Circle(radius=DIST_GRID_PP,xy=(lons[i], lats[i]),color=tmap(norm_410(RF_DEPTH_mtz_thickness_Pds[i])),  ec='k',linewidth=1,linestyle=':',transform=ccrs.Geodetic(),zorder=2)
 			ax.add_patch(circulo_410)
 	else:
 		pass
@@ -311,13 +332,11 @@ for i,j in enumerate(lons):
 
 ax.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
 
-ax.set_title('Thickness of MTZ (Pds)', y=1.08)
-
 #______________________________________________________________________
 
-sm_410 = plt.cm.ScalarMappable(cmap=colormap,norm=norm_410)
+sm_410 = plt.cm.ScalarMappable(cmap=tmap,norm=norm_410)
 sm_410._A = []
-fig.colorbar(sm_410,ax=ax,orientation='horizontal',shrink=0.8)
+fig.colorbar(sm_410,ax=ax,orientation='horizontal',shrink=0.8,label='Thickness of MTZ')
 
 fig.savefig(RESULTS_FOLDER+'THICKNESS_MTZ.'+EXT_FIG,dpi=DPI_FIG)
 
@@ -344,28 +363,27 @@ plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
 ax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 ax.gridlines(draw_labels=True)
 
-norm_410 = mpl.colors.Normalize(vmin=470,vmax=570,clip=True)
+bounds = np.arange(470, 570+INTER_DEPTH, INTER_DEPTH)
+norm_410 = mpl.colors.BoundaryNorm(boundaries=bounds, ncolors=colormap.N)
 
 for i,j in enumerate(lons):
 	if math.isnan(RF_DEPTH_mean_520_Pds[i]) == False:
 		if RF_DEPTH_std_520_Pds[i] < 10:
-			circulo_410 = Circle(radius=DIST_GRID_PP,xy=(lons[i], lats[i]),color=colormap(norm_410(RF_DEPTH_mean_520_Pds[i])), ec='None',linewidth=1,linestyle='-',transform=ccrs.Geodetic(),zorder=2)
+			circulo_410 = Circle(radius=DIST_GRID_PP,xy=(lons[i], lats[i]),color=tmap(norm_410(RF_DEPTH_mean_520_Pds[i])), ec='None',linewidth=1,linestyle='-',transform=ccrs.Geodetic(),zorder=2)
 			ax.add_patch(circulo_410)
 		else:
-			circulo_410 = Circle(radius=DIST_GRID_PP,xy=(lons[i], lats[i]),color=colormap(norm_410(RF_DEPTH_mean_520_Pds[i])), ec='k',linewidth=1,linestyle=':',transform=ccrs.Geodetic(),zorder=2)
+			circulo_410 = Circle(radius=DIST_GRID_PP,xy=(lons[i], lats[i]),color=tmap(norm_410(RF_DEPTH_mean_520_Pds[i])), ec='k',linewidth=1,linestyle=':',transform=ccrs.Geodetic(),zorder=2)
 			ax.add_patch(circulo_410)			
 	else:
 		pass
 
 ax.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
 
-ax.set_title('520 km Pds', y=1.08)
-
 #______________________________________________________________________
 
-sm_410 = plt.cm.ScalarMappable(cmap=colormap,norm=norm_410)
+sm_410 = plt.cm.ScalarMappable(cmap=tmap,norm=norm_410)
 sm_410._A = []
-fig.colorbar(sm_410,ax=ax,orientation='horizontal',shrink=0.8)
+fig.colorbar(sm_410,ax=ax,orientation='horizontal',shrink=0.8,label='520 km Depth')
 
 
 fig.savefig(RESULTS_FOLDER+'520_APPARENT_DEPTH.'+EXT_FIG,dpi=DPI_FIG)
@@ -392,28 +410,27 @@ plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
 ax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 ax.gridlines(draw_labels=True)
 
-norm_410 = mpl.colors.Normalize(vmin=300,vmax=400,clip=True)
+bounds = np.arange(300, 400+INTER_DEPTH, INTER_DEPTH)
+norm_410 = mpl.colors.BoundaryNorm(boundaries=bounds, ncolors=colormap.N)
 
 for i,j in enumerate(lons):
 	if math.isnan(RF_DEPTH_mean_LVZ_Pds[i]) == False:
 		if RF_DEPTH_std_LVZ_Pds[i] < 10:
-			circulo_410 = Circle(radius=DIST_GRID_PP,xy=(lons[i], lats[i]),color=colormap(norm_410(RF_DEPTH_mean_LVZ_Pds[i])), ec='None',linewidth=1,linestyle='-',transform=ccrs.Geodetic(),zorder=2)
+			circulo_410 = Circle(radius=DIST_GRID_PP,xy=(lons[i], lats[i]),color=tmap(norm_410(RF_DEPTH_mean_LVZ_Pds[i])), ec='None',linewidth=1,linestyle='-',transform=ccrs.Geodetic(),zorder=2)
 			ax.add_patch(circulo_410)
 		else:
-			circulo_410 = Circle(radius=DIST_GRID_PP,xy=(lons[i], lats[i]),color=colormap(norm_410(RF_DEPTH_mean_LVZ_Pds[i])), ec='k',linewidth=1,linestyle=':',transform=ccrs.Geodetic(),zorder=2)
+			circulo_410 = Circle(radius=DIST_GRID_PP,xy=(lons[i], lats[i]),color=tmap(norm_410(RF_DEPTH_mean_LVZ_Pds[i])), ec='k',linewidth=1,linestyle=':',transform=ccrs.Geodetic(),zorder=2)
 			ax.add_patch(circulo_410)
 	else:
 		pass
 
 ax.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
 
-ax.set_title('LVZ atop 410 km', y=1.08)
-
 #______________________________________________________________________
 
-sm_410 = plt.cm.ScalarMappable(cmap=colormap,norm=norm_410)
+sm_410 = plt.cm.ScalarMappable(cmap=tmap,norm=norm_410)
 sm_410._A = []
-fig.colorbar(sm_410,ax=ax,orientation='horizontal',shrink=0.8)
+fig.colorbar(sm_410,ax=ax,orientation='horizontal',shrink=0.8,label='LVZ atop 410 km')
 
 
 fig.savefig(RESULTS_FOLDER+'LVZ_ATOP_410_KM.'+EXT_FIG,dpi=DPI_FIG)

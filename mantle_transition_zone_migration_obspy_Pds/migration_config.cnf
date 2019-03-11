@@ -104,7 +104,7 @@ FINAL_DATE_EVENT = 2018-10-01T00:00:00
 CROSS_SECTION_AXIS  = y
 
 #Colormap to velocity map (see https://matplotlib.org/examples/color/colormaps_reference.html)
-COLORMAP_VEL = Spectral
+COLORMAP_VEL = seismic_r
 
 #Colormap to standard deviation map (see https://matplotlib.org/examples/color/colormaps_reference.html)
 COLORMAP_STD = Greys
