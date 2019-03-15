@@ -29,7 +29,7 @@
 # In the current version of the program, you just need to set the directory and
 # the suffix of the files organized inside their directory as:
 # FILENAME.fileextention, e.g., like:
-# .../a_1/BDCO/2015/251/2015.8.13.2/SYN.BDCO.2015.8.13.2.T:a=1.0.eqr																																																																																																																																																																																																																			
+# .../a_1/BDCO/2015/251/2015.8.13.2/SYN.BDCO.2015.8.13.2.T:a=1.0.eqr
 # the directory is a_1 and the extention is '.eqr'
 # file per event and per station.
 
@@ -74,21 +74,21 @@ TECTO_SHP = /home/diogo/dados_doutorado/parnaiba_basin/SIG_dados/shapes/mapas_in
 # center (lat/lon) of the map
 
 PROJECT_LAT = -5
-PROJECT_LON = -45
+PROJECT_LON = -46
 
 #lower and upper corner (lat/lon) of the large map
 
-LLCRNRLON_LARGE=-53
+LLCRNRLON_LARGE=-52
 LLCRNRLAT_LARGE=-13
-URCRNRLON_LARGE=-37
+URCRNRLON_LARGE=-38
 URCRNRLAT_LARGE=1
 
 #lower and upper corner (lat/lon) of the small map
 
-LLCRNRLON_SMALL=-52
+LLCRNRLON_SMALL=-49.5
 LLCRNRLAT_SMALL=-12
-URCRNRLON_SMALL=-38
-URCRNRLAT_SMALL=0
+URCRNRLON_SMALL=-40.5
+URCRNRLAT_SMALL=-1.8
 
 #figures extention and dpi
 EXT_FIG=pdf
@@ -100,8 +100,8 @@ INITIAL_DATE_EVENT = 2014-01-01T00:00:00
 #Date event final  (exemple: 2008-01-01T00:00:00)
 FINAL_DATE_EVENT = 2018-10-01T00:00:00
 
-#CROSS-SECTION AXIS DIRECTION ('x' or 'y'):
-CROSS_SECTION_AXIS  = y
+#CROSS-SECTION AXIS DIRECTION (x or y):
+CROSS_SECTION_AXIS  = x
 
 #Colormap to velocity map (see https://matplotlib.org/examples/color/colormaps_reference.html)
 COLORMAP_VEL = seismic_r
@@ -135,7 +135,7 @@ INTER_DEPTH = 10
 [migration]
 # ==========
 
-#Filter by shapefile the grid?
+#Filter by shapefile the grid? (True or False)
 FILTER_BY_SHAPEFILE = False
 
 #Shapefile containing lines or polygons representing grid boundary

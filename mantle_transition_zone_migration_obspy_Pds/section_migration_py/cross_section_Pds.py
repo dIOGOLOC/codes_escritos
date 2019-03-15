@@ -351,15 +351,26 @@ for i,j in enumerate(RF_data_profile_Pds):
 	plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
 	map_MTZ_thickness.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 
-	norm_map_MTZ_thickness = mpl.colors.Normalize(vmin=200,vmax=300,clip=True)
+	colormap_segmentation = INTER_DEPTH/100
+	n=41
+	x = 0.5
+	upper = plt.cm.seismic(np.linspace(0, x, n)[::-1])
+	white = plt.cm.seismic(np.ones(18)*0.5)
+	lower= plt.cm.seismic(np.linspace(1-x, 1, n)[::-1])
+	colors = np.vstack((lower, white,upper))
+	tmap = matplotlib.colors.LinearSegmentedColormap.from_list('map_white', colors)
+
+	bounds = np.arange(200, 300+colormap_segmentation, colormap_segmentation)
+
+	norm_map_MTZ_thickness = mpl.colors.BoundaryNorm(boundaries=bounds, ncolors=colormap.N)
 
 	for t,y in enumerate(lons):
 		if math.isnan(RF_DEPTH_mtz_thickness_Pds[t]) == False:
 			if RF_DEPTH_mtz_thickness_Pds_std[t] < 10:
-				circulo_410 = Circle(radius=DIST_GRID_PP,xy=(lons[t], lats[t]),color=colormap(norm_map_MTZ_thickness(RF_DEPTH_mtz_thickness_Pds[t])),ec='None',linewidth=1,linestyle='-',transform=ccrs.Geodetic(),zorder=2)
+				circulo_410 = Circle(radius=DIST_GRID_PP,xy=(lons[t], lats[t]),color=tmap(norm_map_MTZ_thickness(RF_DEPTH_mtz_thickness_Pds[t])),ec='k',linewidth=0.5,linestyle='-',transform=ccrs.Geodetic(),zorder=2)
 				map_MTZ_thickness.add_patch(circulo_410)
 			else:
-				circulo_410 = Circle(radius=DIST_GRID_PP,xy=(lons[t], lats[t]),color=colormap(norm_map_MTZ_thickness(RF_DEPTH_mtz_thickness_Pds[t])),  ec='k',linewidth=1,linestyle=':',transform=ccrs.Geodetic(),zorder=2)
+				circulo_410 = Circle(radius=DIST_GRID_PP,xy=(lons[t], lats[t]),color=tmap(norm_map_MTZ_thickness(RF_DEPTH_mtz_thickness_Pds[t])),  ec='k',linewidth=0.5,linestyle=':',transform=ccrs.Geodetic(),zorder=2)
 				map_MTZ_thickness.add_patch(circulo_410)
 		else:
 			pass
@@ -370,9 +381,12 @@ for i,j in enumerate(RF_data_profile_Pds):
 
 	map_MTZ_thickness.set_title('MTZ Thickness', y=1.1)
 
-	sm_map_MTZ_thickness = plt.cm.ScalarMappable(cmap=colormap,norm=norm_map_MTZ_thickness)
+	sm_map_MTZ_thickness = plt.cm.ScalarMappable(cmap=tmap,norm=norm_map_MTZ_thickness)
 	sm_map_MTZ_thickness._A = []
-	fig.colorbar(sm_map_MTZ_thickness,ax=map_MTZ_thickness,orientation='vertical',shrink=0.9,pad=0.1,label='Thickness (km)')
+	cbar = fig.colorbar(sm_map_MTZ_thickness,ax=map_MTZ_thickness,orientation='vertical',shrink=0.9,pad=0.1,label='MTZ Thickness (km)')
+
+	cbar.set_ticks(np.arange(200, 300+INTER_DEPTH, INTER_DEPTH))
+	cbar.set_ticklabels(np.arange(200, 300+INTER_DEPTH, INTER_DEPTH))
 
 	#### Figure Pds  ####
 

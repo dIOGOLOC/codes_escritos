@@ -142,8 +142,9 @@ ax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 norm_410 = mpl.colors.Normalize(vmin=200,vmax=300,clip=True)
 
 for i,j in enumerate(lons):
-	if math.isnan(RF_DEPTH_mtz_thickness_Pds[i]) == False and math.isnan(RF_DEPTH_mean_1_Pds[i]) == False  and math.isnan(RF_DEPTH_mean_1_Pds[i]) == False and  math.isnan(RF_DEPTH_mean_LVZ_Pds[i]) == False and math.isnan(RF_DEPTH_mean_520_Pds[i]) == False:
-		circulo_410 = Circle(radius=DIST_GRID_PP,xy=(lons[i],lats[i]),color=colormap(norm_410(RF_DEPTH_mtz_thickness_Pds[i])), ec='None',transform=ccrs.Geodetic(),zorder=3)
+#	if math.isnan(RF_DEPTH_mtz_thickness_Pds[i]) == False and math.isnan(RF_DEPTH_mean_1_Pds[i]) == False  and math.isnan(RF_DEPTH_mean_1_Pds[i]) == False and  math.isnan(RF_DEPTH_mean_LVZ_Pds[i]) == False and math.isnan(RF_DEPTH_mean_520_Pds[i]) == False:
+	if math.isnan(RF_DEPTH_mtz_thickness_Pds[i]) == False and math.isnan(RF_DEPTH_mean_1_Pds[i]) == False  and math.isnan(RF_DEPTH_mean_1_Pds[i]) == False and  math.isnan(RF_DEPTH_mean_LVZ_Pds[i]) == False:
+		circulo_410 = Circle(radius=DIST_GRID_PP,xy=(lons[i],lats[i]),color=colormap(norm_410(RF_DEPTH_mtz_thickness_Pds[i])), ec='k',transform=ccrs.Geodetic(),zorder=3)
 		ax.add_patch(circulo_410)
 		circulo_410.pickable()
 		circulo_410.set_picker(True)
@@ -174,7 +175,7 @@ def onpick1(event):
 
 		lon_click.append(patch_lon)
 		lat_click.append(patch_lat)
-		retangulo_PICK = Circle(radius=DIST_GRID_PP,xy=(patch_lon, patch_lat),color='k', ec='k',linewidth=1,transform=ccrs.Geodetic(),zorder=5)
+		retangulo_PICK = Circle(radius=DIST_GRID_PP,xy=(patch_lon, patch_lat),color='k', ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=5)
 		ax.add_patch(retangulo_PICK)
 	plt.draw()
 	if len(lon_click) == 4:
@@ -350,11 +351,22 @@ shape_2_SHP = list(reader_2_SHP.geometries())
 plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
 newax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 
-norm_410 = mpl.colors.Normalize(vmin=200,vmax=300,clip=True)
+n=40
+x = 0.5
+upper = plt.cm.seismic(np.linspace(0, x, n)[::-1])
+white = plt.cm.seismic(np.ones(20)*0.5)
+lower= plt.cm.seismic(np.linspace(1-x, 1, n)[::-1])
+colors = np.vstack((lower, white,upper))
+tmap = matplotlib.colors.LinearSegmentedColormap.from_list('map_white', colors)
+
+colormap_segmentation = INTER_DEPTH/10
+
+bounds = np.arange(200, 300+colormap_segmentation, colormap_segmentation)
+norm_410 = mpl.colors.BoundaryNorm(boundaries=bounds, ncolors=colormap.N)
 
 for i,j in enumerate(lons):
 	if math.isnan(RF_DEPTH_mtz_thickness_Pds[i]) == False:
-		circulo_410 = Circle(radius=DIST_GRID_PP,xy=(lons[i],lats[i]),color=colormap(norm_410(RF_DEPTH_mtz_thickness_Pds[i])), ec='None',transform=ccrs.Geodetic(),zorder=3)
+		circulo_410 = Circle(radius=DIST_GRID_PP,xy=(lons[i],lats[i]),color=tmap(norm_410(RF_DEPTH_mtz_thickness_Pds[i])), ec='None',transform=ccrs.Geodetic(),zorder=3)
 		newax.add_patch(circulo_410)
 		circulo_410.pickable()
 		circulo_410.set_picker(True)
@@ -471,7 +483,7 @@ for _i, _j in enumerate(RF_data_profile_Pds):
 			pds_grid_410_660.tick_params(labelright=True,labelleft=False,labelsize=10)
 
 
-		pds_grid_410_660.text(5,790,' MTZ = '+str(round(RF_DEPTH_mtz_thickness_profile_Pds[_i]))+'±'+str(round(RF_DEPTH_mtz_thickness_profile_Pds_std[_i])),zorder=40,fontsize=10, fontweight='bold',bbox={'facecolor':'white','edgecolor':'none','pad':1})		
+		pds_grid_410_660.text(5,790,' MTZ = '+str(round(RF_DEPTH_mtz_thickness_profile_Pds[_i]))+'±'+str(round(RF_DEPTH_mtz_thickness_profile_Pds_std[_i])),zorder=40,fontsize=8, fontweight='bold',bbox={'facecolor':'white','edgecolor':'none','pad':1})		
 
 plt.show()
 

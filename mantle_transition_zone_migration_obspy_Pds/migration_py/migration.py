@@ -324,10 +324,54 @@ l2, = ax.plot(pp_1_long,pp_1_lat, '.',markersize=5,markeredgecolor='k',markerfac
 l3, = ax.plot(pp_med_long,pp_med_lat, '.',markersize=5,markeredgecolor='k',markerfacecolor='g',transform=ccrs.Geodetic())
 l4, = ax.plot(pp_2_long,pp_2_lat, '.',markersize=5,markeredgecolor='k',markerfacecolor='r',transform=ccrs.Geodetic())
 
+legend = ax.legend([l1,l2,l3,l4],['Stations','Piercing Points 410 km','Piercing Points '+str(DEPTH_TARGET)+' km','Piercing Points 660 km'],scatterpoints=1, frameon=True,labelspacing=1, loc='lower right',facecolor='w',fontsize='smaller')
+
+legend.get_frame().set_facecolor('white')
+
+
+
+reader_1_SHP = Reader(BOUNDARY_1_SHP)
+shape_1_SHP = list(reader_1_SHP.geometries())
+plot_shape_1_SHP = cfeature.ShapelyFeature(shape_1_SHP, ccrs.PlateCarree())
+ax.add_feature(plot_shape_1_SHP, facecolor='none', edgecolor='k',linewidth=3)
+
+reader_2_SHP = Reader(BOUNDARY_2_SHP)
+shape_2_SHP = list(reader_2_SHP.geometries())
+plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
+ax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
+ax.gridlines(draw_labels=True)
+
+#plt.show()
+
+PP_FIGURE = OUTPUT_DIR+'MODEL_INTER_DEPTH_'+str(INTER_DEPTH)+'_DEPTH_TARGET_'+str(DEPTH_TARGET)+'/'+'Figures'+'/'
+
+RESULTS_FOLDER = PP_FIGURE+'RESULTS_NUMBER_PP_PER_BIN_'+str(NUMBER_PP_PER_BIN)+'_NUMBER_STA_PER_BIN_'+str(NUMBER_STA_PER_BIN)+'/'
+os.makedirs(RESULTS_FOLDER,exist_ok=True)
+
+print('Folder to save Figures files:')
+print(RESULTS_FOLDER)
+print('\n')
+
+fig_PP_Pds.savefig(RESULTS_FOLDER+'PP_Pds_no_GRID.'+EXT_FIG,dpi=DPI_FIG)
+
+###################################################################################################################
+print('Plotting: Figure Pds Piercing Points')
+print('\n')
+
+
+fig_PP_Pds, ax = plt.subplots(ncols=1, subplot_kw={'projection': ccrs.Mercator(central_longitude=PROJECT_LON, globe=None)},figsize=(10,10),sharey=True)
+
+#Figure Pds
+
+ax.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
+l1, = ax.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.Geodetic())
+l2, = ax.plot(pp_1_long,pp_1_lat, '.',markersize=5,markeredgecolor='k',markerfacecolor='b',transform=ccrs.Geodetic())
+l3, = ax.plot(pp_med_long,pp_med_lat, '.',markersize=5,markeredgecolor='k',markerfacecolor='g',transform=ccrs.Geodetic())
+l4, = ax.plot(pp_2_long,pp_2_lat, '.',markersize=5,markeredgecolor='k',markerfacecolor='r',transform=ccrs.Geodetic())
+
 for i,j in enumerate(grdx):
 	circulo = Circle(radius=DIST_GRID_PP,xy=(grdx[i], grdy[i]),color='None', ec='k',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
 	ax.add_patch(circulo)
-ax.set_title('Pds Piercing Points',ha='center',va='top',y=1.08)
 legend = ax.legend([l1,l2,l3,l4,circulo],['Stations','Piercing Points 410 km','Piercing Points '+str(DEPTH_TARGET)+' km','Piercing Points 660 km','Selected Grid'],scatterpoints=1, frameon=True,labelspacing=1, loc='lower right',facecolor='w',fontsize='smaller')
 
 legend.get_frame().set_facecolor('white')
@@ -345,17 +389,7 @@ plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
 ax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 ax.gridlines(draw_labels=True)
 
-print('GRID Check!')
 #plt.show()
-
-PP_FIGURE = OUTPUT_DIR+'MODEL_INTER_DEPTH_'+str(INTER_DEPTH)+'_DEPTH_TARGET_'+str(DEPTH_TARGET)+'/'+'Figures'+'/'
-
-RESULTS_FOLDER = PP_FIGURE+'RESULTS_NUMBER_PP_PER_BIN_'+str(NUMBER_PP_PER_BIN)+'_NUMBER_STA_PER_BIN_'+str(NUMBER_STA_PER_BIN)+'/'
-os.makedirs(RESULTS_FOLDER,exist_ok=True)
-
-print('Folder to save Figures files:')
-print(RESULTS_FOLDER)
-print('\n')
 
 fig_PP_Pds.savefig(RESULTS_FOLDER+'PP_Pds.'+EXT_FIG,dpi=DPI_FIG)
 
@@ -391,7 +425,6 @@ shape_2_SHP = list(reader_2_SHP.geometries())
 plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
 ax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 
-ax.set_title('Pds Piercing Points',ha='center',va='top',y=1.08)
 legend = ax.legend([l1,l3,circulo,circulo_fresnel],['Stations','Piercing Points '+str(DEPTH_TARGET)+' km','Selected Grid','Piercing Points Fresnel Zone'],scatterpoints=1, frameon=True,labelspacing=1, loc='lower right',facecolor='w',fontsize='smaller')
 ax.gridlines(draw_labels=True)
 legend.get_frame().set_facecolor('white')
@@ -478,7 +511,7 @@ norm_number = mpl.colors.Normalize(vmin=min(number_RF_per_bin),vmax=max(number_R
 colors_number = colormap(norm_number(np.array(number_RF_per_bin,dtype='float64')))
 
 for i,j in enumerate(number_RF_per_bin):
-	if j > 5:
+	if j > 9:
 		circulo = Circle(radius=DIST_GRID_PP,xy=(grdx[i], grdy[i]),color=colors_number[i], ec='k',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
 		ax.add_patch(circulo)
 

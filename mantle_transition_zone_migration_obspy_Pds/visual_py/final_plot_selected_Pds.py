@@ -156,24 +156,26 @@ colormap = plt.get_cmap(COLORMAP_VEL)
 
 colormap_std = plt.get_cmap(COLORMAP_STD)
 
-n=30
+colormap_segmentation = INTER_DEPTH/100
+
+n=41
 x = 0.5
-lower = colormap(np.linspace(0, x, n))
-white = colormap(np.ones(80-2*n)*x)
-upper = colormap(np.linspace(1-x, 1, n))
-colors = np.vstack((lower, white, upper))
-tmap = mpl.colors.LinearSegmentedColormap.from_list('map_white', colors)
+upper = plt.cm.seismic(np.linspace(0, x, n)[::-1])
+white = plt.cm.seismic(np.ones(18)*0.5)
+lower= plt.cm.seismic(np.linspace(1-x, 1, n)[::-1])
+colors = np.vstack((lower, white,upper))
+tmap = matplotlib.colors.LinearSegmentedColormap.from_list('map_white', colors)
 
 
 #############################################################################################################################################################################################
 
-print('Plotting Figure: Apparent Depth estimates (Pds phase)')
+print('Plotting Figure: Apparent Depth estimates')
 
 fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(10,10))
 	
 idx_Pds = np.argsort(RF_DEPTH_mtz_thickness_Pds)
 
-bounds = np.arange(200, 300+INTER_DEPTH, INTER_DEPTH)
+bounds = np.arange(200, 300+colormap_segmentation, colormap_segmentation)
 norm_410 = mpl.colors.BoundaryNorm(boundaries=bounds, ncolors=colormap.N)
 colors_410_Pds = tmap(norm_410(np.array(RF_DEPTH_mtz_thickness_Pds,dtype='float64')))
 
@@ -201,8 +203,10 @@ ax.set_xlabel('Depth d660 (km)')
 sm_410 = plt.cm.ScalarMappable(cmap=tmap,norm=norm_410)
 sm_410._A = []
 
-fig.colorbar(sm_410,ax=ax,orientation='horizontal',shrink=0.8,label='MTZ Thickness')
+cbar = fig.colorbar(sm_410,ax=ax,orientation='horizontal',shrink=0.8,label='MTZ Thickness')
 
+cbar.set_ticks(np.arange(200, 300+INTER_DEPTH, INTER_DEPTH))
+cbar.set_ticklabels(np.arange(200, 300+INTER_DEPTH, INTER_DEPTH))
 
 #plt.show()
 fig.savefig(RESULTS_FOLDER+'APPARENT_DEPTH_PLOT.'+EXT_FIG,dpi=DPI_FIG)
@@ -210,7 +214,7 @@ fig.savefig(RESULTS_FOLDER+'APPARENT_DEPTH_PLOT.'+EXT_FIG,dpi=DPI_FIG)
 
 #############################################################################################################################################################################################
 
-print('Plotting Figure: Apparent Depth of 410 km and 660 km (Pds phase)')
+print('Plotting Figure: Apparent Depth of 410 km and 660 km')
 
 fig, axes = plt.subplots(nrows=1, ncols=2, subplot_kw={'projection': ccrs.Mercator(central_longitude=PROJECT_LON, globe=None)},figsize=(20,10),sharey=True)
 
@@ -232,13 +236,13 @@ plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
 ax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 ax.gridlines(draw_labels=True)
 
-bounds = np.arange(360, 460+INTER_DEPTH, INTER_DEPTH)
+bounds = np.arange(360, 460+colormap_segmentation,colormap_segmentation)
 norm_410 = mpl.colors.BoundaryNorm(boundaries=bounds, ncolors=colormap.N)
 
 for i,j in enumerate(lons):
 	if math.isnan(RF_DEPTH_mean_1_Pds[i]) == False:
 		if RF_DEPTH_std_1_Pds[i] < 10:
-			circulo_410 = Circle(radius=DIST_GRID_PP,xy=(lons[i], lats[i]),color=tmap(norm_410(RF_DEPTH_mean_1_Pds[i])), ec='None',linewidth=1,linestyle='-',transform=ccrs.Geodetic(),zorder=2)
+			circulo_410 = Circle(radius=DIST_GRID_PP,xy=(lons[i], lats[i]),color=tmap(norm_410(RF_DEPTH_mean_1_Pds[i])), ec='k',linewidth=1,linestyle='-',transform=ccrs.Geodetic(),zorder=2)
 			ax.add_patch(circulo_410)
 		else:
 			circulo_410 = Circle(radius=DIST_GRID_PP,xy=(lons[i], lats[i]),color=tmap(norm_410(RF_DEPTH_mean_1_Pds[i])), ec='k',linewidth=1,linestyle=':',transform=ccrs.Geodetic(),zorder=2)
@@ -264,13 +268,13 @@ plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
 ax2.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 ax2.gridlines(draw_labels=True)
 
-bounds = np.arange(610, 710+INTER_DEPTH, INTER_DEPTH)
+bounds = np.arange(610, 710+colormap_segmentation, colormap_segmentation)
 norm_660 = mpl.colors.BoundaryNorm(boundaries=bounds, ncolors=colormap.N)
 
 for i,j in enumerate(lons):
 	if math.isnan(RF_DEPTH_mean_2_Pds[i]) == False:
 		if RF_DEPTH_std_1_Pds[i] < 10:
-			circulo_660 = Circle(radius=DIST_GRID_PP,xy=(lons[i], lats[i]),color=tmap(norm_660(RF_DEPTH_mean_2_Pds[i])),  ec='None',linewidth=1,linestyle='-',transform=ccrs.Geodetic(),zorder=2)
+			circulo_660 = Circle(radius=DIST_GRID_PP,xy=(lons[i], lats[i]),color=tmap(norm_660(RF_DEPTH_mean_2_Pds[i])),  ec='k',linewidth=1,linestyle='-',transform=ccrs.Geodetic(),zorder=2)
 			ax2.add_patch(circulo_660)
 		else:
 			circulo_660 = Circle(radius=DIST_GRID_PP,xy=(lons[i], lats[i]),color=tmap(norm_660(RF_DEPTH_mean_2_Pds[i])),  ec='k',linewidth=1,linestyle=':',transform=ccrs.Geodetic(),zorder=2)
@@ -285,18 +289,25 @@ ax2.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor
 
 sm_410 = plt.cm.ScalarMappable(cmap=tmap,norm=norm_410)
 sm_410._A = []
-fig.colorbar(sm_410,ax=ax,orientation='horizontal',shrink=0.8,label='410 km Depth')
+cbar_410 = fig.colorbar(sm_410,ax=ax,orientation='horizontal',shrink=0.8,label='410 km Depth')
+
+cbar_410.set_ticks(np.arange(360, 460+INTER_DEPTH, INTER_DEPTH))
+cbar_410.set_ticklabels(np.arange(360, 460+INTER_DEPTH, INTER_DEPTH))
 
 sm_660 = plt.cm.ScalarMappable(cmap=tmap,norm=norm_660)
 sm_660._A = []
 
-fig.colorbar(sm_660,ax=ax2,orientation='horizontal',shrink=0.8,label='660 km Depth')
+cbar_660 = fig.colorbar(sm_660,ax=ax2,orientation='horizontal',shrink=0.8,label='660 km Depth')
+
+cbar_660.set_ticks(np.arange(610, 710+INTER_DEPTH, INTER_DEPTH))
+cbar_660.set_ticklabels(np.arange(610, 710+INTER_DEPTH, INTER_DEPTH))
+
 
 fig.savefig(RESULTS_FOLDER+'Apparent_depth_Pds.'+EXT_FIG,dpi=DPI_FIG)
 
 #############################################################################################################################################################################################
 
-print('Plotting Figure: Thickness of the Mantle Transition Zone (Pds Phase)')
+print('Plotting Figure: Thickness of the Mantle Transition Zone')
 
 fig, ax = plt.subplots(nrows=1, ncols=1, subplot_kw={'projection': ccrs.Mercator(central_longitude=PROJECT_LON, globe=None)},figsize=(10,10))
 
@@ -315,13 +326,13 @@ shape_2_SHP = list(reader_2_SHP.geometries())
 plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
 ax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 
-bounds = np.arange(200, 300+INTER_DEPTH, INTER_DEPTH)
+bounds = np.arange(200, 300+colormap_segmentation, colormap_segmentation)
 norm_410 = mpl.colors.BoundaryNorm(boundaries=bounds, ncolors=colormap.N)
 
 for i,j in enumerate(lons):
 	if math.isnan(RF_DEPTH_mtz_thickness_Pds[i]) == False:
 		if RF_DEPTH_mtz_thickness_Pds_std[i] < 10:
-			circulo_410 = Circle(radius=DIST_GRID_PP,xy=(lons[i], lats[i]),color=tmap(norm_410(RF_DEPTH_mtz_thickness_Pds[i])),  ec='None',linewidth=1,linestyle='-',transform=ccrs.Geodetic(),zorder=2)
+			circulo_410 = Circle(radius=DIST_GRID_PP,xy=(lons[i], lats[i]),color=tmap(norm_410(RF_DEPTH_mtz_thickness_Pds[i])),  ec='k',linewidth=1,linestyle='-',transform=ccrs.Geodetic(),zorder=2)
 			ax.add_patch(circulo_410)
 		else: 
 			circulo_410 = Circle(radius=DIST_GRID_PP,xy=(lons[i], lats[i]),color=tmap(norm_410(RF_DEPTH_mtz_thickness_Pds[i])),  ec='k',linewidth=1,linestyle=':',transform=ccrs.Geodetic(),zorder=2)
@@ -336,7 +347,10 @@ ax.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor=
 
 sm_410 = plt.cm.ScalarMappable(cmap=tmap,norm=norm_410)
 sm_410._A = []
-fig.colorbar(sm_410,ax=ax,orientation='horizontal',shrink=0.8,label='Thickness of MTZ')
+cbar_410 = fig.colorbar(sm_410,ax=ax,orientation='horizontal',shrink=0.8,label='Thickness of MTZ')
+
+cbar_410.set_ticks(np.arange(200, 300+INTER_DEPTH, INTER_DEPTH))
+cbar_410.set_ticklabels(np.arange(200, 300+INTER_DEPTH, INTER_DEPTH))
 
 fig.savefig(RESULTS_FOLDER+'THICKNESS_MTZ.'+EXT_FIG,dpi=DPI_FIG)
 
@@ -363,13 +377,13 @@ plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
 ax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 ax.gridlines(draw_labels=True)
 
-bounds = np.arange(470, 570+INTER_DEPTH, INTER_DEPTH)
+bounds = np.arange(470, 570+colormap_segmentation, colormap_segmentation)
 norm_410 = mpl.colors.BoundaryNorm(boundaries=bounds, ncolors=colormap.N)
 
 for i,j in enumerate(lons):
 	if math.isnan(RF_DEPTH_mean_520_Pds[i]) == False:
 		if RF_DEPTH_std_520_Pds[i] < 10:
-			circulo_410 = Circle(radius=DIST_GRID_PP,xy=(lons[i], lats[i]),color=tmap(norm_410(RF_DEPTH_mean_520_Pds[i])), ec='None',linewidth=1,linestyle='-',transform=ccrs.Geodetic(),zorder=2)
+			circulo_410 = Circle(radius=DIST_GRID_PP,xy=(lons[i], lats[i]),color=tmap(norm_410(RF_DEPTH_mean_520_Pds[i])), ec='k',linewidth=1,linestyle='-',transform=ccrs.Geodetic(),zorder=2)
 			ax.add_patch(circulo_410)
 		else:
 			circulo_410 = Circle(radius=DIST_GRID_PP,xy=(lons[i], lats[i]),color=tmap(norm_410(RF_DEPTH_mean_520_Pds[i])), ec='k',linewidth=1,linestyle=':',transform=ccrs.Geodetic(),zorder=2)
@@ -383,8 +397,10 @@ ax.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor=
 
 sm_410 = plt.cm.ScalarMappable(cmap=tmap,norm=norm_410)
 sm_410._A = []
-fig.colorbar(sm_410,ax=ax,orientation='horizontal',shrink=0.8,label='520 km Depth')
+cbar_410 = fig.colorbar(sm_410,ax=ax,orientation='horizontal',shrink=0.8,label='520 km Depth')
 
+cbar_410.set_ticks(np.arange(470, 570+INTER_DEPTH, INTER_DEPTH))
+cbar_410.set_ticklabels(np.arange(470, 570+INTER_DEPTH, INTER_DEPTH))
 
 fig.savefig(RESULTS_FOLDER+'520_APPARENT_DEPTH.'+EXT_FIG,dpi=DPI_FIG)
 
@@ -410,13 +426,13 @@ plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
 ax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 ax.gridlines(draw_labels=True)
 
-bounds = np.arange(300, 400+INTER_DEPTH, INTER_DEPTH)
+bounds = np.arange(300, 400+colormap_segmentation, colormap_segmentation)
 norm_410 = mpl.colors.BoundaryNorm(boundaries=bounds, ncolors=colormap.N)
 
 for i,j in enumerate(lons):
 	if math.isnan(RF_DEPTH_mean_LVZ_Pds[i]) == False:
 		if RF_DEPTH_std_LVZ_Pds[i] < 10:
-			circulo_410 = Circle(radius=DIST_GRID_PP,xy=(lons[i], lats[i]),color=tmap(norm_410(RF_DEPTH_mean_LVZ_Pds[i])), ec='None',linewidth=1,linestyle='-',transform=ccrs.Geodetic(),zorder=2)
+			circulo_410 = Circle(radius=DIST_GRID_PP,xy=(lons[i], lats[i]),color=tmap(norm_410(RF_DEPTH_mean_LVZ_Pds[i])), ec='k',linewidth=1,linestyle='-',transform=ccrs.Geodetic(),zorder=2)
 			ax.add_patch(circulo_410)
 		else:
 			circulo_410 = Circle(radius=DIST_GRID_PP,xy=(lons[i], lats[i]),color=tmap(norm_410(RF_DEPTH_mean_LVZ_Pds[i])), ec='k',linewidth=1,linestyle=':',transform=ccrs.Geodetic(),zorder=2)
@@ -430,8 +446,10 @@ ax.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor=
 
 sm_410 = plt.cm.ScalarMappable(cmap=tmap,norm=norm_410)
 sm_410._A = []
-fig.colorbar(sm_410,ax=ax,orientation='horizontal',shrink=0.8,label='LVZ atop 410 km')
+cbar_410 = fig.colorbar(sm_410,ax=ax,orientation='horizontal',shrink=0.8,label='LVZ atop 410 km')
 
+cbar_410.set_ticks(np.arange(300, 400+INTER_DEPTH, INTER_DEPTH))
+cbar_410.set_ticklabels(np.arange(300, 400+INTER_DEPTH, INTER_DEPTH))
 
 fig.savefig(RESULTS_FOLDER+'LVZ_ATOP_410_KM.'+EXT_FIG,dpi=DPI_FIG)
 
