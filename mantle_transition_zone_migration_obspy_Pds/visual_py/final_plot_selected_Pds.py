@@ -105,6 +105,9 @@ RF_DEPTH_std_520_Pds = SELECTED_BINNED_DATA_dic['std_520_Pds']
 RF_DEPTH_mean_2_Pds = SELECTED_BINNED_DATA_dic['mean_2_Pds']
 RF_DEPTH_std_2_Pds = SELECTED_BINNED_DATA_dic['std_2_Pds']
 
+RF_DEPTH_mean_LVZ_700_Pds = SELECTED_BINNED_DATA_dic['mean_LVZ_700_Pds']
+RF_DEPTH_std_LVZ_700_Pds = SELECTED_BINNED_DATA_dic['std_LVZ_700_Pds']
+
 RF_DEPTH_mtz_thickness_Pds = SELECTED_BINNED_DATA_dic['mtz_thickness_Pds']
 RF_DEPTH_mtz_thickness_Pds_std = SELECTED_BINNED_DATA_dic['mtz_thickness_Pds_std']
 
@@ -119,32 +122,41 @@ os.makedirs(RESULTS_FOLDER,exist_ok=True)
 print('Total of bins: '+str(len(RF_DEPTH_mean_1_Pds)))
 print('\n')
 
-print('Pds Phases')
-print('Number of bins - LVZ: '+str(np.count_nonzero(~np.isnan(RF_DEPTH_mean_LVZ_Pds))))
-print('Max - LVZ: '+str(np.nanmax(RF_DEPTH_mean_LVZ_Pds)))
-print('Min - LVZ: '+str(np.nanmin(RF_DEPTH_mean_LVZ_Pds)))
-print(r'Bins - 410 km depth: '+str(np.nanmean(RF_DEPTH_mean_LVZ_Pds))+' ± '+str(np.nanstd(RF_DEPTH_mean_LVZ_Pds)))
-
+print('Number of bins - 350 LVZ: '+str(np.count_nonzero(~np.isnan(RF_DEPTH_mean_LVZ_Pds))))
+print('Max - 350 LVZ: '+str(np.nanmax(RF_DEPTH_mean_LVZ_Pds)))
+print('Min - 350 LVZ: '+str(np.nanmin(RF_DEPTH_mean_LVZ_Pds)))
+print(r'Bins - 350 LVZ depth: '+str(np.nanmean(RF_DEPTH_mean_LVZ_Pds))+' ± '+str(np.nanstd(RF_DEPTH_mean_LVZ_Pds)))
+print('\n')
 
 print('Number of bins - 410 km depth: '+str(np.count_nonzero(~np.isnan(RF_DEPTH_mean_1_Pds))))
 print('Max - 410 km depth: '+str(np.nanmax(RF_DEPTH_mean_1_Pds)))
 print('Min - 410 km depth: '+str(np.nanmin(RF_DEPTH_mean_1_Pds)))
 print(r'Bins - 410 km depth: '+str(np.nanmean(RF_DEPTH_mean_1_Pds))+' ± '+str(np.nanstd(RF_DEPTH_mean_1_Pds)))
+print('\n')
 
 print('Number of bins - 520 km depth: '+str(np.count_nonzero(~np.isnan(RF_DEPTH_mean_520_Pds))))
 print('Max - 520 km depth: '+str(np.nanmax(RF_DEPTH_mean_520_Pds)))
 print('Min - 520 km depth: '+str(np.nanmin(RF_DEPTH_mean_520_Pds)))
 print(r'Bins - 520 km depth: '+str(np.nanmean(RF_DEPTH_mean_520_Pds))+' ± '+str(np.nanstd(RF_DEPTH_mean_520_Pds)))
+print('\n')
 
 print('Number of bins - 660 km depth: '+str(np.count_nonzero(~np.isnan(RF_DEPTH_mean_2_Pds))))
 print('Max - 660 km depth: '+str(np.nanmax(RF_DEPTH_mean_2_Pds)))
 print('Min - 660 km depth: '+str(np.nanmin(RF_DEPTH_mean_2_Pds)))
 print(r'Bins - 660 km depth: '+str(np.nanmean(RF_DEPTH_mean_2_Pds))+' ± '+str(np.nanstd(RF_DEPTH_mean_2_Pds)))
+print('\n')
+
+print('Number of bins - 700 LVZ: '+str(np.count_nonzero(~np.isnan(RF_DEPTH_mean_LVZ_700_Pds))))
+print('Max - 700 LVZ: '+str(np.nanmax(RF_DEPTH_mean_LVZ_700_Pds)))
+print('Min - 700 LVZ: '+str(np.nanmin(RF_DEPTH_mean_LVZ_700_Pds)))
+print(r'Bins - 700 LVZ depth: '+str(np.nanmean(RF_DEPTH_mean_LVZ_700_Pds))+' ± '+str(np.nanstd(RF_DEPTH_mean_LVZ_700_Pds)))
+print('\n')
 
 print('Number of bins - MTZ Thickness: '+str(np.count_nonzero(~np.isnan(RF_DEPTH_mtz_thickness_Pds))))
 print('Max - MTZ Thickness: '+str(np.nanmax(RF_DEPTH_mtz_thickness_Pds)))
 print('Min - MTZ Thickness: '+str(np.nanmin(RF_DEPTH_mtz_thickness_Pds)))
 print(r'Bins - MTZ Thickness: '+str(np.nanmean(RF_DEPTH_mtz_thickness_Pds))+' ± '+str(np.nanstd(RF_DEPTH_mtz_thickness_Pds)))
+print('\n')
 print('\n')
 
 ###################################################################################################################
@@ -452,5 +464,53 @@ cbar_410.set_ticks(np.arange(300, 400+INTER_DEPTH, INTER_DEPTH))
 cbar_410.set_ticklabels(np.arange(300, 400+INTER_DEPTH, INTER_DEPTH))
 
 fig.savefig(RESULTS_FOLDER+'LVZ_ATOP_410_KM.'+EXT_FIG,dpi=DPI_FIG)
+
+########################################################################################################################################################################
+
+print('Plotting Figure: LVZ below 660 km')
+
+fig, ax = plt.subplots(nrows=1, ncols=1, subplot_kw={'projection': ccrs.Mercator(central_longitude=PROJECT_LON, globe=None)},figsize=(10,10))
+
+#LVZ
+
+ax.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
+
+reader_1_SHP = Reader(BOUNDARY_1_SHP)
+shape_1_SHP = list(reader_1_SHP.geometries())
+plot_shape_1_SHP = cfeature.ShapelyFeature(shape_1_SHP, ccrs.PlateCarree())
+ax.add_feature(plot_shape_1_SHP, facecolor='none', edgecolor='k',linewidth=3)
+
+reader_2_SHP = Reader(BOUNDARY_2_SHP)
+shape_2_SHP = list(reader_2_SHP.geometries())
+plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
+ax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
+ax.gridlines(draw_labels=True)
+
+bounds = np.arange(650, 750+colormap_segmentation, colormap_segmentation)
+norm_410 = mpl.colors.BoundaryNorm(boundaries=bounds, ncolors=colormap.N)
+
+for i,j in enumerate(lons):
+	if math.isnan(RF_DEPTH_mean_LVZ_700_Pds[i]) == False:
+		if RF_DEPTH_std_LVZ_700_Pds[i] < 10:
+			circulo_410 = Circle(radius=DIST_GRID_PP,xy=(lons[i], lats[i]),color=tmap(norm_410(RF_DEPTH_mean_LVZ_700_Pds[i])), ec='k',linewidth=1,linestyle='-',transform=ccrs.Geodetic(),zorder=2)
+			ax.add_patch(circulo_410)
+		else:
+			circulo_410 = Circle(radius=DIST_GRID_PP,xy=(lons[i], lats[i]),color=tmap(norm_410(RF_DEPTH_mean_LVZ_700_Pds[i])), ec='k',linewidth=1,linestyle=':',transform=ccrs.Geodetic(),zorder=2)
+			ax.add_patch(circulo_410)
+	else:
+		pass
+
+ax.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
+
+#______________________________________________________________________
+
+sm_410 = plt.cm.ScalarMappable(cmap=tmap,norm=norm_410)
+sm_410._A = []
+cbar_410 = fig.colorbar(sm_410,ax=ax,orientation='horizontal',shrink=0.8,label='LVZ atop 410 km')
+
+cbar_410.set_ticks(np.arange(650, 750+INTER_DEPTH, INTER_DEPTH))
+cbar_410.set_ticklabels(np.arange(650, 750+INTER_DEPTH, INTER_DEPTH))
+
+fig.savefig(RESULTS_FOLDER+'LVZ_BELOW_660_KM.'+EXT_FIG,dpi=DPI_FIG)
 
 print('Ending Final Plot CODE')

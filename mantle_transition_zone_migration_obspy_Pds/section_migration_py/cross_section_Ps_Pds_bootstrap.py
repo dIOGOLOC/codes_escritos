@@ -90,6 +90,9 @@ RF_BOOTSTRAP_DEPTH_mean_520_Pds = SELECTED_BINNED_DATA_dic['RF_BOOTSTRAP_DEPTH_m
 
 RF_BOOTSTRAP_DEPTH_mean_2_Pds = SELECTED_BINNED_DATA_dic['RF_BOOTSTRAP_DEPTH_mean_2_Pds']
 
+RF_BOOTSTRAP_DEPTH_mean_LVZ_700_Pds = SELECTED_BINNED_DATA_dic['RF_BOOTSTRAP_DEPTH_mean_LVZ_700_Pds']
+
+
 RF_DEPTH_mean_LVZ_Pds = SELECTED_BINNED_DATA_dic['mean_LVZ_Pds']
 RF_DEPTH_std_LVZ_Pds = SELECTED_BINNED_DATA_dic['std_LVZ_Pds']
 
@@ -101,6 +104,9 @@ RF_DEPTH_std_520_Pds = SELECTED_BINNED_DATA_dic['std_520_Pds']
 
 RF_DEPTH_mean_2_Pds = SELECTED_BINNED_DATA_dic['mean_2_Pds']
 RF_DEPTH_std_2_Pds = SELECTED_BINNED_DATA_dic['std_2_Pds']
+
+RF_DEPTH_mean_LVZ_700_Pds = SELECTED_BINNED_DATA_dic['mean_LVZ_700_Pds']
+RF_DEPTH_std_LVZ_700_Pds = SELECTED_BINNED_DATA_dic['std_LVZ_700_Pds']
 
 RF_DEPTH_mtz_thickness_Pds = SELECTED_BINNED_DATA_dic['mtz_thickness_Pds']
 RF_DEPTH_mtz_thickness_Pds_std = SELECTED_BINNED_DATA_dic['mtz_thickness_Pds_std']
@@ -207,7 +213,7 @@ RF_lon_profile = []
 RF_data_profile_Pds = []
 RF_data_profile_Pds_std = []
 
-#LVZ
+#350 LVZ
 
 RF_DEPTH_mean_LVZ_profile_Pds = []
 RF_DEPTH_std_LVZ_profile_Pds = []
@@ -227,6 +233,11 @@ RF_DEPTH_std_520_profile_Pds = []
 RF_DEPTH_mean_2_profile_Pds = []
 RF_DEPTH_std_2_profile_Pds = []
 
+#700 LVZ
+
+RF_DEPTH_mean_LVZ_700_profile_Pds = []
+RF_DEPTH_std_LVZ_700_profile_Pds = []
+
 #MTZ Pds
 
 RF_DEPTH_mtz_thickness_profile_Pds = [] 
@@ -236,7 +247,7 @@ RF_DEPTH_mtz_thickness_profile_Pds_std = []
 
 RF_stacking_Pds_BOOTSTRAP_profile = []
 
-#Bootstrap Data Mean LVZ
+#Bootstrap Data Mean 350 LVZ
 
 RF_BOOTSTRAP_DEPTH_mean_LVZ_Pds_profile = []
 
@@ -252,6 +263,9 @@ RF_BOOTSTRAP_DEPTH_mean_520_Pds_profile = []
 
 RF_BOOTSTRAP_DEPTH_mean_2_Pds_profile = []
 
+#Bootstrap Data Mean 700 LVZ
+
+RF_BOOTSTRAP_DEPTH_mean_LVZ_700_Pds_profile = []
 
 lat_lon = [(lons[k],lats[k]) for k,l in enumerate(lats)]
 
@@ -269,7 +283,7 @@ for i,j in enumerate(lon_click):
 	RF_data_profile_Pds.append(RF_stacking_Pds[idx])
 	RF_data_profile_Pds_std.append(RF_stacking_Pds_std[idx])
 
-	#LVZ
+	#350 LVZ
 	
 	RF_DEPTH_mean_LVZ_profile_Pds.append(RF_DEPTH_mean_LVZ_Pds[idx])
 	RF_DEPTH_std_LVZ_profile_Pds.append(RF_DEPTH_std_LVZ_Pds[idx])
@@ -288,6 +302,11 @@ for i,j in enumerate(lon_click):
 	
 	RF_DEPTH_mean_2_profile_Pds.append(RF_DEPTH_mean_2_Pds[idx])
 	RF_DEPTH_std_2_profile_Pds.append(RF_DEPTH_std_2_Pds[idx])
+
+	#700 LVZ
+	
+	RF_DEPTH_mean_LVZ_700_profile_Pds.append(RF_DEPTH_mean_LVZ_700_Pds[idx])
+	RF_DEPTH_std_LVZ_700_profile_Pds.append(RF_DEPTH_std_LVZ_700_Pds[idx])
 	
 	#MTZ Pds
 
@@ -298,7 +317,7 @@ for i,j in enumerate(lon_click):
 	
 	RF_stacking_Pds_BOOTSTRAP_profile.append(RF_stacking_Pds_BOOTSTRAP[idx])
  
-	#Bootstrap Data Mean LVZ
+	#Bootstrap Data Mean 350 LVZ
 	
 	RF_BOOTSTRAP_DEPTH_mean_LVZ_Pds_profile.append(RF_BOOTSTRAP_DEPTH_mean_LVZ_Pds[idx])
 
@@ -313,6 +332,10 @@ for i,j in enumerate(lon_click):
 	#Bootstrap Data Mean P660s
 
 	RF_BOOTSTRAP_DEPTH_mean_2_Pds_profile.append(RF_BOOTSTRAP_DEPTH_mean_2_Pds[idx])
+
+	#Bootstrap Data Mean 700 LVZ
+	
+	RF_BOOTSTRAP_DEPTH_mean_LVZ_700_Pds_profile.append(RF_BOOTSTRAP_DEPTH_mean_LVZ_700_Pds[idx])
 
 
 print('Plotting the Final Figure')
@@ -413,6 +436,8 @@ for _i, _j in enumerate(RF_data_profile_Pds):
 		if math.isnan(RF_DEPTH_mean_LVZ_profile_Pds[i]) == False and math.isnan(RF_DEPTH_std_LVZ_profile_Pds[i]) == False:
 			pds_grid.text(0.001,RF_DEPTH_mean_LVZ_profile_Pds[_i],str(round(RF_DEPTH_mean_LVZ_profile_Pds[_i]))+'±'+str(round(RF_DEPTH_std_LVZ_profile_Pds[_i])),zorder=42,fontsize=9, fontweight='bold',ha='left',bbox={'facecolor':'white','edgecolor':'none','pad':1})
 
+		if math.isnan(RF_DEPTH_mean_LVZ_700_profile_Pds[i]) == False and math.isnan(RF_DEPTH_std_LVZ_700_profile_Pds[i]) == False:
+			pds_grid.text(0.001,RF_DEPTH_mean_LVZ_700_profile_Pds[_i],str(round(RF_DEPTH_mean_LVZ_700_profile_Pds[_i]))+'±'+str(round(RF_DEPTH_std_LVZ_700_profile_Pds[_i])),zorder=42,fontsize=9, fontweight='bold',ha='left',bbox={'facecolor':'white','edgecolor':'none','pad':1})
 
 		RF_data_factor_Pds = [l for k, l in enumerate(_j)]
 		pds_grid.plot(RF_data_factor_Pds,camadas_terra_10_km,'k',linewidth=2, zorder=30)
@@ -425,7 +450,6 @@ for _i, _j in enumerate(RF_data_profile_Pds):
 
 		pds_grid.plot(std_mais,camadas_terra_10_km,color='gray',linewidth=1,linestyle='dashed', zorder=30)
 		pds_grid.plot(std_menos,camadas_terra_10_km,color='gray',linewidth=1,linestyle='dashed', zorder=30)
-
 
 		pds_grid.yaxis.set_ticks_position('both')
 		pds_grid.yaxis.set_major_locator(majorLocatorY)
@@ -448,7 +472,7 @@ for _i, _j in enumerate(RF_data_profile_Pds):
 		if _i != 0:
 			pds_grid.axes.axes.yaxis.set_ticklabels([])
 
-		#### Plot LVZ ####
+		#### Plot 350 LVZ ####
 
 		pds_grid_410_660.hist(RF_BOOTSTRAP_DEPTH_mean_LVZ_Pds_profile[_i],bins=10,orientation='horizontal',color='k')
 
@@ -463,6 +487,10 @@ for _i, _j in enumerate(RF_data_profile_Pds):
 		#### Plot Depth 660 Pds ####
 
 		pds_grid_410_660.hist(RF_BOOTSTRAP_DEPTH_mean_2_Pds_profile[_i],bins=10,orientation='horizontal',color='k')
+
+		#### Plot 700 LVZ ####
+
+		pds_grid_410_660.hist(RF_BOOTSTRAP_DEPTH_mean_LVZ_700_Pds_profile[_i],bins=10,orientation='horizontal',color='k')
 
 		pds_grid_410_660.yaxis.set_ticks_position('both')
 		pds_grid_410_660.yaxis.set_ticks_position('both')

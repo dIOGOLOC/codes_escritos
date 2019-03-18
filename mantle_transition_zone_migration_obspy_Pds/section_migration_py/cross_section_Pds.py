@@ -95,7 +95,7 @@ RF_number = SELECTED_BINNED_DATA_dic['len_Pds']
 
 RF_stacking_Pds = SELECTED_BINNED_DATA_dic['data_Pds']
 
-#Estimates LVZ:
+#Estimates 350 LVZ:
 
 RF_DEPTH_mean_LVZ_Pds = SELECTED_BINNED_DATA_dic['mean_LVZ_Pds']
 RF_DEPTH_std_LVZ_Pds = SELECTED_BINNED_DATA_dic['std_LVZ_Pds']
@@ -115,6 +115,11 @@ RF_DEPTH_std_520_Pds = SELECTED_BINNED_DATA_dic['std_520_Pds']
 
 RF_DEPTH_mean_2_Pds = SELECTED_BINNED_DATA_dic['mean_2_Pds']
 RF_DEPTH_std_2_Pds = SELECTED_BINNED_DATA_dic['std_2_Pds']
+
+#Estimates 700 LVZ:
+
+RF_DEPTH_mean_LVZ_700_Pds = SELECTED_BINNED_DATA_dic['mean_LVZ_700_Pds']
+RF_DEPTH_std_LVZ_700_Pds = SELECTED_BINNED_DATA_dic['std_LVZ_700_Pds']
 
 #Estimates MTZ Pds:
 
@@ -154,7 +159,7 @@ if CROSS_SECTION_AXIS == 'x':
 
 	RF_data_profile_Pds = [[]]*len(rows[:,0])
 
-	#Estimates LVZ:
+	#Estimates 350 LVZ:
 
 	RF_DEPTH_mean_LVZ_profile_Pds = [[]]*len(rows[:,0])
 	RF_DEPTH_std_LVZ_profile_Pds = [[]]*len(rows[:,0])
@@ -173,6 +178,11 @@ if CROSS_SECTION_AXIS == 'x':
 
 	RF_DEPTH_mean_2_profile_Pds = [[]]*len(rows[:,0])
 	RF_DEPTH_std_2_profile_Pds = [[]]*len(rows[:,0])
+
+	#Estimates 700 LVZ:
+
+	RF_DEPTH_mean_LVZ_700_profile_Pds = [[]]*len(rows[:,0])
+	RF_DEPTH_std_LVZ_700_profile_Pds = [[]]*len(rows[:,0])
 
 	#Estimates MTZ Pds:
 
@@ -194,7 +204,7 @@ if CROSS_SECTION_AXIS == 'x':
 
 		RF_data_profile_Pds[i] = [RF_stacking_Pds[lat_lon.index(l)] if l in lat_lon else np.zeros_like(RF_stacking_Pds[k]) for k,l in enumerate(grid_column)]
 
-		#Estimates LVZ:
+		#Estimates 350 LVZ:
 
 		RF_DEPTH_mean_LVZ_profile_Pds[i] = [RF_DEPTH_mean_LVZ_Pds[lat_lon.index(l)] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
 		RF_DEPTH_std_LVZ_profile_Pds[i] = [RF_DEPTH_std_LVZ_Pds[lat_lon.index(l)] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
@@ -210,11 +220,15 @@ if CROSS_SECTION_AXIS == 'x':
 		RF_DEPTH_mean_520_profile_Pds[i] = [RF_DEPTH_mean_520_Pds[lat_lon.index(l)] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
 		RF_DEPTH_std_520_profile_Pds[i] = [RF_DEPTH_std_520_Pds[lat_lon.index(l)] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
 
-
 		#Estimates P660s:
 
 		RF_DEPTH_mean_2_profile_Pds[i] = [RF_DEPTH_mean_2_Pds[lat_lon.index(l)] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
 		RF_DEPTH_std_2_profile_Pds[i] = [RF_DEPTH_std_2_Pds[lat_lon.index(l)] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
+
+		#Estimates 700 LVZ:
+
+		RF_DEPTH_mean_LVZ_700_profile_Pds[i] = [RF_DEPTH_mean_LVZ_700_Pds[lat_lon.index(l)] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
+		RF_DEPTH_std_LVZ_700_profile_Pds[i] = [RF_DEPTH_std_LVZ_700_Pds[lat_lon.index(l)] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
 
 		#Estimates MTZ Pds:
 
@@ -232,15 +246,17 @@ else:
 
 	RF_data_profile_Pds = [[]]*len(rows[0,:])
 
+	#Estimates 350 LVZ:
+
+	RF_DEPTH_mean_LVZ_profile_Pds = [[]]*len(rows[0,:])
+	RF_DEPTH_std_LVZ_profile_Pds = [[]]*len(rows[0,:])
+
+
 	#Estimates P410s:
 
 	RF_DEPTH_mean_1_profile_Pds = [[]]*len(rows[0,:])
 	RF_DEPTH_std_1_profile_Pds = [[]]*len(rows[0,:])
 
-	#Estimates LVZ:
-
-	RF_DEPTH_mean_LVZ_profile_Pds = [[]]*len(rows[0,:])
-	RF_DEPTH_std_LVZ_profile_Pds = [[]]*len(rows[0,:])
 
 	#Estimates P520s:
 
@@ -251,6 +267,11 @@ else:
 
 	RF_DEPTH_mean_2_profile_Pds = [[]]*len(rows[0,:])
 	RF_DEPTH_std_2_profile_Pds = [[]]*len(rows[0,:])
+
+	#Estimates 700 LVZ:
+
+	RF_DEPTH_mean_LVZ_700_profile_Pds = [[]]*len(rows[0,:])
+	RF_DEPTH_std_LVZ_700_profile_Pds = [[]]*len(rows[0,:])
 
 	#Estimates MTZ Pds:
 
@@ -271,11 +292,10 @@ else:
 
 		RF_data_profile_Pds[i] = [RF_stacking_Pds[lat_lon.index(l)] if l in lat_lon else np.zeros_like(RF_stacking_Pds[k]) for k,l in enumerate(grid_column)]
 
-		#Estimates LVZ:
+		#Estimates 350 LVZ:
 
 		RF_DEPTH_mean_LVZ_profile_Pds[i] = [RF_DEPTH_mean_LVZ_Pds[lat_lon.index(l)] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
 		RF_DEPTH_std_LVZ_profile_Pds[i] = [RF_DEPTH_std_LVZ_Pds[lat_lon.index(l)]  if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
-
 
 		#Estimates P410s:
 
@@ -291,6 +311,11 @@ else:
 
 		RF_DEPTH_mean_2_profile_Pds[i] = [RF_DEPTH_mean_2_Pds[lat_lon.index(l)] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
 		RF_DEPTH_std_2_profile_Pds[i] = [RF_DEPTH_std_2_Pds[lat_lon.index(l)] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
+
+		#Estimates 700 LVZ:
+
+		RF_DEPTH_mean_LVZ_700_profile_Pds[i] = [RF_DEPTH_mean_LVZ_700_Pds[lat_lon.index(l)] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
+		RF_DEPTH_std_LVZ_700_profile_Pds[i] = [RF_DEPTH_std_LVZ_700_Pds[lat_lon.index(l)]  if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
 
 		#Estimates MTZ Pds:
 
@@ -388,8 +413,7 @@ for i,j in enumerate(RF_data_profile_Pds):
 	cbar.set_ticks(np.arange(200, 300+INTER_DEPTH, INTER_DEPTH))
 	cbar.set_ticklabels(np.arange(200, 300+INTER_DEPTH, INTER_DEPTH))
 
-	#### Figure Pds  ####
-
+	#### Profile  ####
 
 	factor_Pds = 300
 
@@ -404,13 +428,17 @@ for i,j in enumerate(RF_data_profile_Pds):
 		pefil_pds.yaxis.set_minor_locator(minorLocatorY)
 		pefil_pds.grid(True,which='major',color='gray',linewidth=1,linestyle='--')
 
+		pefil_pds.plot(_i/factor_Pds,RF_DEPTH_mean_LVZ_profile_Pds[i][_i],'ok',ms=3,markerfacecolor='none')
 		pefil_pds.plot(_i/factor_Pds,RF_DEPTH_mean_1_profile_Pds[i][_i],'ok',ms=3,markerfacecolor='none')
 		pefil_pds.plot(_i/factor_Pds,RF_DEPTH_mean_520_profile_Pds[i][_i],'ok',ms=3,markerfacecolor='none')
 		pefil_pds.plot(_i/factor_Pds,RF_DEPTH_mean_2_profile_Pds[i][_i],'ok',ms=3,markerfacecolor='none')
+		pefil_pds.plot(_i/factor_Pds,RF_DEPTH_mean_LVZ_700_profile_Pds[i][_i],'ok',ms=3,markerfacecolor='none')
 
+		pefil_pds.errorbar(_i/factor_Pds,RF_DEPTH_mean_LVZ_profile_Pds[i][_i], yerr=RF_DEPTH_std_LVZ_profile_Pds[i][_i], ecolor='k',elinewidth=1,capsize=1,capthick=1)
 		pefil_pds.errorbar(_i/factor_Pds,RF_DEPTH_mean_1_profile_Pds[i][_i], yerr=RF_DEPTH_std_1_profile_Pds[i][_i], ecolor='k',elinewidth=1,capsize=1,capthick=1)
 		pefil_pds.errorbar(_i/factor_Pds,RF_DEPTH_mean_520_profile_Pds[i][_i], yerr=RF_DEPTH_std_520_profile_Pds[i][_i], ecolor='k',elinewidth=1,capsize=1,capthick=1)
 		pefil_pds.errorbar(_i/factor_Pds,RF_DEPTH_mean_2_profile_Pds[i][_i], yerr=RF_DEPTH_std_2_profile_Pds[i][_i], ecolor='k',elinewidth=1,capsize=1,capthick=1)
+		pefil_pds.errorbar(_i/factor_Pds,RF_DEPTH_mean_LVZ_700_profile_Pds[i][_i], yerr=RF_DEPTH_std_LVZ_700_profile_Pds[i][_i], ecolor='k',elinewidth=1,capsize=1,capthick=1)
 
 		pefil_pds.yaxis.set_ticks_position('both')
 

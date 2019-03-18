@@ -625,6 +625,16 @@ for _k in range(BOOTSTRAP_INTERATOR):
 			lst_depth_pp_660_Pds = [c for x,c in enumerate(camadas_terra_10_km) if 660-DEPTH_RANGE <= c <= 660+DEPTH_RANGE]
 			lst_660_depth_Pds = lst_depth_pp_660_Pds[lst_depth_amp_660_Pds.index(max(lst_depth_amp_660_Pds))]
 			lst_660_amp_Pds = lst_depth_amp_660_Pds.index(max(lst_depth_amp_660_Pds))
+
+
+			######## Estimating LVZ below the 660-km discontinuity  ########
+
+			#LVZ below the 660-km
+
+			lst_depth_amp_LVZ_700_Pds = [RF_STACKING_BOOTSTRAP_Pds[x] for x,c in enumerate(camadas_terra_10_km) if 700-(DEPTH_RANGE*2) <= c <= 700+(DEPTH_RANGE*2)]
+			lst_depth_pp_LVZ_700_Pds = [c for x,c in enumerate(camadas_terra_10_km) if 700-(DEPTH_RANGE*2) <= c <= 700+(DEPTH_RANGE*2)]
+			lst_LVZ_700_depth_Pds = lst_depth_pp_LVZ_700_Pds[lst_depth_amp_LVZ_700_Pds.index(min(lst_depth_amp_LVZ_700_Pds))]
+			lst_LVZ_700_amp_Pds = lst_depth_amp_LVZ_700_Pds.index(min(lst_depth_amp_LVZ_700_Pds))
 				
 			######################################################################################################################################################
 
@@ -670,6 +680,18 @@ for _k in range(BOOTSTRAP_INTERATOR):
 
 			print('660 km Pds Depth = '+str(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['660_mean']))
 
+
+			if abs(lst_LVZ_700_amp_Pds) > 0:
+
+				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['LVZ_700_mean'] = lst_LVZ_700_depth_Pds
+				
+			else: 
+
+				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['LVZ_700_mean'] = np.nan
+				
+			print('LVZ 700 Pds = '+str(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['LVZ_700_mean']))
+
+
 			######## Estimating MTZ thickness and difference between MTZ and Model thickness ########
 
 			if  lst_410_amp_Pds > 0  and lst_660_depth_Pds > 0:
@@ -702,6 +724,9 @@ RF_DEPTH_std_1_Pds = []
 RF_DEPTH_mean_2_Pds = []
 RF_DEPTH_std_2_Pds = []
 
+RF_DEPTH_mean_LVZ_700_Pds = []
+RF_DEPTH_std_LVZ_700_Pds = []
+
 thickness_MTZ_Pds = []
 thickness_MTZ_Pds_std = []
 
@@ -715,6 +740,8 @@ RF_BOOTSTRAP_DEPTH_mean_1_Pds = []
 RF_BOOTSTRAP_DEPTH_mean_520_Pds = []
 
 RF_BOOTSTRAP_DEPTH_mean_2_Pds = []
+
+RF_BOOTSTRAP_DEPTH_mean_LVZ_700_Pds = []
 
 len_RF_stacking_Pds = []
 RF_stacking_Pds = []
@@ -764,7 +791,6 @@ for i,j in enumerate(RF_data_raw_Pds):
 
 			RF_DEPTH_mean_LVZ_Pds.append(np.nan)
 			RF_DEPTH_std_LVZ_Pds.append(np.nan)
-
 
 		
 		#Analysing stacked data amplitude in d410Pds
@@ -838,6 +864,30 @@ for i,j in enumerate(RF_data_raw_Pds):
 			RF_DEPTH_mean_2_Pds.append(np.nan)
 			RF_DEPTH_std_2_Pds.append(np.nan)
 
+		#Analysing stacked data amplitude in LVZ below 700 km
+
+		flat_mean_LVZ_700_Pds = [float(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['LVZ_700_mean']) for _k in range(BOOTSTRAP_INTERATOR)]
+		RF_BOOTSTRAP_DEPTH_mean_LVZ_700_Pds.append(flat_mean_LVZ_700_Pds)
+
+		lst_stacking_data_LVZ_700_Pds = [stacking_Pds_data[x] for x,c in enumerate(camadas_terra_10_km) if 700-(DEPTH_RANGE*2) <= c <= 700-(DEPTH_RANGE*2)]
+		LVZ_700_candidate = [abs(np.nanmean(flat_mean_LVZ_700_Pds) - c) for x,c in enumerate(camadas_terra_10_km) if 700-(DEPTH_RANGE*2) <= c <= 700-(DEPTH_RANGE*2)]
+		BOOTSTRAP_DATA_LVZ_700_std_lst = [BOOTSTRAP_DATA_Pds_std[x] for x,c in enumerate(camadas_terra_10_km) if 700-(DEPTH_RANGE*2) <= c <= 700-(DEPTH_RANGE*2)]
+
+		amp_LVZ_700 = lst_stacking_data_LVZ_700_Pds[LVZ_700_candidate.index(min(LVZ_700_candidate))]
+
+		BOOTSTRAP_DATA_LVZ_700_std_amp = BOOTSTRAP_DATA_LVZ_700_std_lst[LVZ_700_candidate.index(min(LVZ_700_candidate))]
+		
+		if  abs(amp_LVZ_700)-(BOOTSTRAP_DATA_LVZ_700_std_amp*CONFIDENCE_BOUND) > 0:
+			
+			RF_DEPTH_mean_LVZ_700_Pds.append(np.nanmean(flat_mean_LVZ_700_Pds))
+			RF_DEPTH_std_LVZ_700_Pds.append(np.nanstd(flat_mean_LVZ_700_Pds)*CONFIDENCE_BOUND)
+
+		else: 
+
+			RF_DEPTH_mean_LVZ_700_Pds.append(np.nan)
+			RF_DEPTH_std_LVZ_700_Pds.append(np.nan)
+
+
 		#Analysing stacked data amplitude to calculate MTZ THICKNESS Pds
 
 
@@ -906,6 +956,7 @@ SELECTED_BINNED_DATA_dic = {
 	'mean_LVZ_Pds':[],'std_LVZ_Pds':[],
 	'mean_520_Pds':[],'std_520_Pds':[],
 	'mean_2_Pds':[],'std_2_Pds':[],
+	'mean_LVZ_700_Pds':[],'std_LVZ_700_Pds':[],
 
 	'mtz_thickness_Pds':[],'mtz_thickness_Pds_std':[],
 
@@ -915,6 +966,8 @@ SELECTED_BINNED_DATA_dic = {
 	'RF_BOOTSTRAP_DEPTH_mean_LVZ_Pds':[],
 	'RF_BOOTSTRAP_DEPTH_mean_520_Pds':[],
 	'RF_BOOTSTRAP_DEPTH_mean_2_Pds':[],
+	'RF_BOOTSTRAP_DEPTH_mean_LVZ_700_Pds':[]
+
 
 	}
 
@@ -929,6 +982,7 @@ for i,j in enumerate(RF_BOOTSTRAP_DATA_Pds):
 
 	SELECTED_BINNED_DATA_dic['RF_BOOTSTRAP_DEPTH_mean_2_Pds'].append(RF_BOOTSTRAP_DEPTH_mean_2_Pds[i])
 
+	SELECTED_BINNED_DATA_dic['RF_BOOTSTRAP_DEPTH_mean_LVZ_700_Pds'].append(RF_BOOTSTRAP_DEPTH_mean_LVZ_700_Pds[i])
 
 	SELECTED_BINNED_DATA_dic['data_Pds'].append(RF_stacking_Pds[i])
 	SELECTED_BINNED_DATA_dic['data_Pds_std'].append(RF_BOOTSTRAP_DATA_Pds_std[i])
@@ -951,6 +1005,9 @@ for i,j in enumerate(RF_BOOTSTRAP_DATA_Pds):
 	
 	SELECTED_BINNED_DATA_dic['mean_2_Pds'].append(float(RF_DEPTH_mean_2_Pds[i]))
 	SELECTED_BINNED_DATA_dic['std_2_Pds'].append(float(RF_DEPTH_std_2_Pds[i]))
+
+	SELECTED_BINNED_DATA_dic['mean_LVZ_700_Pds'].append(float(RF_DEPTH_mean_LVZ_700_Pds[i]))
+	SELECTED_BINNED_DATA_dic['std_LVZ_700_Pds'].append(float(RF_DEPTH_std_LVZ_700_Pds[i]))
 
 	SELECTED_BINNED_DATA_dic['mtz_thickness_Pds'].append(float(thickness_MTZ_Pds[i]))
 	SELECTED_BINNED_DATA_dic['mtz_thickness_Pds_std'].append(float(thickness_MTZ_Pds_std[i]))
