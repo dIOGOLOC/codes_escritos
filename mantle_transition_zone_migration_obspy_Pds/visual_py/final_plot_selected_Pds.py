@@ -467,7 +467,7 @@ fig.savefig(RESULTS_FOLDER+'LVZ_ATOP_410_KM.'+EXT_FIG,dpi=DPI_FIG)
 
 ########################################################################################################################################################################
 
-print('Plotting Figure: LVZ below 660 km')
+print('Plotting Figure: LVZ 700 km')
 
 fig, ax = plt.subplots(nrows=1, ncols=1, subplot_kw={'projection': ccrs.Mercator(central_longitude=PROJECT_LON, globe=None)},figsize=(10,10))
 
@@ -506,11 +506,11 @@ ax.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor=
 
 sm_410 = plt.cm.ScalarMappable(cmap=tmap,norm=norm_410)
 sm_410._A = []
-cbar_410 = fig.colorbar(sm_410,ax=ax,orientation='horizontal',shrink=0.8,label='LVZ atop 410 km')
+cbar_410 = fig.colorbar(sm_410,ax=ax,orientation='horizontal',shrink=0.8,label='LVZ 700 km')
 
 cbar_410.set_ticks(np.arange(650, 750+INTER_DEPTH, INTER_DEPTH))
 cbar_410.set_ticklabels(np.arange(650, 750+INTER_DEPTH, INTER_DEPTH))
 
-fig.savefig(RESULTS_FOLDER+'LVZ_BELOW_660_KM.'+EXT_FIG,dpi=DPI_FIG)
+fig.savefig(RESULTS_FOLDER+'LVZ_700_KM.'+EXT_FIG,dpi=DPI_FIG)
 
 print('Ending Final Plot CODE')

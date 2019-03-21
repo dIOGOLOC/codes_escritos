@@ -204,7 +204,7 @@ def plot_mosaic_MTZ(mosaic_lst,mosaic_lst_name,mosaic_lst_label):
 
 			for i,j in enumerate(lons[k]):
 				if math.isnan(mosaic_lst[k][i]) == False:
-					retangulo_660 = Circle(radius=DIST_GRID_PP,xy=(lons[k][i], lats[k][i]),color=tmap(norm_660(mosaic_lst[k][i])), ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+					retangulo_660 = Circle(radius=DIST_GRID_PP,xy=(lons[k][i], lats[k][i]),color=tmap(norm_660(mosaic_lst[k][i])), ec='k',linewidth=0.2,transform=ccrs.Geodetic(),zorder=2)
 					ax.add_patch(retangulo_660)
 				else: 
 					pass
@@ -262,7 +262,7 @@ def plot_mosaic_660(mosaic_lst,mosaic_lst_name,mosaic_lst_label):
 
 			for i,j in enumerate(lons[k]):
 				if math.isnan(mosaic_lst[k][i]) == False:
-					retangulo_660 = Circle(radius=DIST_GRID_PP,xy=(lons[k][i],lats[k][i]),color=tmap(norm_660(mosaic_lst[k][i])), ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+					retangulo_660 = Circle(radius=DIST_GRID_PP,xy=(lons[k][i],lats[k][i]),color=tmap(norm_660(mosaic_lst[k][i])), ec='k',linewidth=0.2,transform=ccrs.Geodetic(),zorder=2)
 					ax.add_patch(retangulo_660)
 				else: 
 					pass
@@ -321,7 +321,7 @@ def plot_mosaic_410(mosaic_lst,mosaic_lst_name,mosaic_lst_label):
 
 			for i,j in enumerate(lons[k]):
 				if math.isnan(mosaic_lst[k][i]) == False:
-					retangulo_660 = Circle(radius=DIST_GRID_PP,xy=(lons[k][i], lats[k][i]),color=tmap(norm_660(mosaic_lst[k][i])), ec='None',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
+					retangulo_660 = Circle(radius=DIST_GRID_PP,xy=(lons[k][i], lats[k][i]),color=tmap(norm_660(mosaic_lst[k][i])), ec='k',linewidth=0.2,transform=ccrs.Geodetic(),zorder=2)
 					ax.add_patch(retangulo_660)
 				else: 
 					pass
