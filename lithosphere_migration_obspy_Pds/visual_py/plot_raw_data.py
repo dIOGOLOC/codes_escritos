@@ -16,7 +16,6 @@ import matplotlib
 from matplotlib.cm import get_cmap
 from mpl_toolkits.mplot3d import Axes3D
 import shapefile
-from fatiando import gridder, utils
 import scipy.io
 import matplotlib.cm as cm
 from matplotlib.ticker import MultipleLocator, FormatStrFormatter
@@ -56,15 +55,16 @@ sta_long = sta_dic['sta_long']
 sta_data = sta_dic['sta_data']
 sta_time = sta_dic['sta_time']
 
-
 RF_stack_data = [sum(i)/len(sta_data) for i in zip(*sta_data)]
+
 plt.figure(figsize = (30,10))
 for i, j in enumerate(sta_data): 
 	plt.plot(sta_time[i],j,'gray',linewidth=0.5,label='RF data')
 	plt.plot(sta_time[0],RF_stack_data,'k',linewidth=2,label='RF stack')
+	plt.axhline(y=0, xmin=sta_time[0][0], xmax=sta_time[0][-1],c='k')
 	plt.text(50,max(RF_stack_data),'N = '+str(len(sta_data)))
 	plt.title('Receiver Functions')
-	plt.xlim(0,100)
+	plt.xlim(0,25)
 	#plt.ylim(-	0.1,0.1)
 plt.show()
 

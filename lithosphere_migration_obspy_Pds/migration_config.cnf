@@ -120,10 +120,10 @@ VMAX = 0.01
 MP_PROCESSES = 8
 
 #minimum depth of the migration
-MIN_DEPTH = 100
+MIN_DEPTH = 0
 
 #maximum depth of the migration
-MAX_DEPTH = 300
+MAX_DEPTH = 200
 
 #depth interval of the migration
 INTER_DEPTH = 5
@@ -139,23 +139,23 @@ FILTER_BY_SHAPEFILE = False
 SHAPEFILE_GRID = /home/diogo/dados_doutorado/parnaiba_basin/SIG_dados/shapes/bacia_parnaiba/bacia_parnaiba.shp
 
 # grid bin per degree
-GRID_PP_MULT = 4
+GRID_PP_MULT = 5
 
 # grid bin radius (degree)
-DIST_GRID_PP = 0.15
+DIST_GRID_PP = 0.1
 
 # Receiver Function Frequency (Hz)
 RF_FREQUENCY = 0.5	
 
 
 #number of piercing points per bin
-NUMBER_PP_PER_BIN = 10
+NUMBER_PP_PER_BIN = 5
 
 #number of stations RF per bin
 NUMBER_STA_PER_BIN = 1
 
 #Depth Target
-DEPTH_TARGET = 170
+DEPTH_TARGET = 100
 
 #Number of interations to compute bootstrapping
 BOOTSTRAP_INTERATOR = 200

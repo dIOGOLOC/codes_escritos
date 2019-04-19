@@ -16,17 +16,15 @@ import cartopy.crs as ccrs
 from cartopy.io.shapereader import Reader
 import cartopy.feature as cfeature
 import shapefile
-from fatiando import gridder
+import verde as vd
 from scipy.stats import mode
 from matplotlib.ticker import MultipleLocator, FormatStrFormatter
 import json
 import random
 from matplotlib.colors import Normalize
 from numpy import ma
-from matplotlib import cbook
 import collections
-from matplotlib.collections import PatchCollection
-
+import pyproj
 from shapely.geometry import Polygon, MultiPoint, Point
 from scipy import interpolate
 from mpl_toolkits.axes_grid1 import make_axes_locatable
@@ -231,7 +229,11 @@ area = (LLCRNRLON_SMALL,URCRNRLON_SMALL, LLCRNRLAT_SMALL, URCRNRLAT_SMALL)
 
 shape = (abs(abs(URCRNRLON_SMALL) - abs(LLCRNRLON_SMALL))*GRID_PP_MULT, abs(abs(URCRNRLAT_SMALL) - abs(LLCRNRLAT_SMALL))*GRID_PP_MULT)
 
-grdx, grdy = gridder.regular(area, shape)
+grdx, grdy = vd.grid_coordinates(region=area,shape=shape)
+
+
+grdx = [item for sublist in grdx for item in sublist]
+grdy = [item for sublist in grdy for item in sublist]
 
 if FILTER_BY_SHAPEFILE == True:
 	polygon = shapefile.Reader(SHAPEFILE_GRID) 
@@ -584,8 +586,8 @@ for _k in range(BOOTSTRAP_INTERATOR):
 
 			#LVZ atop 100 km
 
-			lst_depth_amp_LVZ_Pds = [RF_STACKING_BOOTSTRAP_Pds[x] for x,c in enumerate(camadas_terra_10_km) if 100-(DEPTH_RANGE*2) <= c <= 100+(DEPTH_RANGE*2)]
-			lst_depth_pp_LVZ_Pds = [c for x,c in enumerate(camadas_terra_10_km) if 100-(DEPTH_RANGE*2) <= c <= 100+(DEPTH_RANGE*2)]
+			lst_depth_amp_LVZ_Pds = [RF_STACKING_BOOTSTRAP_Pds[x] for x,c in enumerate(camadas_terra_10_km) if 100-(DEPTH_RANGE) <= c <= 100+(DEPTH_RANGE)]
+			lst_depth_pp_LVZ_Pds = [c for x,c in enumerate(camadas_terra_10_km) if 100-(DEPTH_RANGE) <= c <= 100+(DEPTH_RANGE)]
 			lst_LVZ_depth_Pds = lst_depth_pp_LVZ_Pds[lst_depth_amp_LVZ_Pds.index(min(lst_depth_amp_LVZ_Pds))]
 			lst_LVZ_amp_Pds = lst_depth_amp_LVZ_Pds.index(min(lst_depth_amp_LVZ_Pds))
 
@@ -600,20 +602,20 @@ for _k in range(BOOTSTRAP_INTERATOR):
 
 			######## Estimating 250 km apparent depth ########
 
-			#250 km Pds
+			#200 km Pds
 
-			lst_depth_amp_250_Pds = [RF_STACKING_BOOTSTRAP_Pds[x] for x,c in enumerate(camadas_terra_10_km) if 250-DEPTH_RANGE <= c <= 250+DEPTH_RANGE]
-			lst_depth_pp_250_Pds = [c for x,c in enumerate(camadas_terra_10_km) if 250-DEPTH_RANGE <= c <= 250+DEPTH_RANGE]
+			lst_depth_amp_250_Pds = [RF_STACKING_BOOTSTRAP_Pds[x] for x,c in enumerate(camadas_terra_10_km) if 200-DEPTH_RANGE <= c <= 200+DEPTH_RANGE]
+			lst_depth_pp_250_Pds = [c for x,c in enumerate(camadas_terra_10_km) if 200-DEPTH_RANGE <= c <= 200+DEPTH_RANGE]
 			lst_250_depth_Pds = lst_depth_pp_250_Pds[lst_depth_amp_250_Pds.index(max(lst_depth_amp_250_Pds))]
 			lst_250_amp_Pds = lst_depth_amp_250_Pds.index(max(lst_depth_amp_250_Pds))
 
 
 			######## Estimating LVZ below the 250-km discontinuity  ########
 
-			#LVZ below the 250-km
+			#LVZ below the 200-km
 
-			lst_depth_amp_LVZ_250_Pds = [RF_STACKING_BOOTSTRAP_Pds[x] for x,c in enumerate(camadas_terra_10_km) if 250-(DEPTH_RANGE*2) <= c <= 250+(DEPTH_RANGE*2)]
-			lst_depth_pp_LVZ_250_Pds = [c for x,c in enumerate(camadas_terra_10_km) if 250-(DEPTH_RANGE*2) <= c <= 250+(DEPTH_RANGE*2)]
+			lst_depth_amp_LVZ_250_Pds = [RF_STACKING_BOOTSTRAP_Pds[x] for x,c in enumerate(camadas_terra_10_km) if 200-(DEPTH_RANGE) <= c <= 200+(DEPTH_RANGE)]
+			lst_depth_pp_LVZ_250_Pds = [c for x,c in enumerate(camadas_terra_10_km) if 200-(DEPTH_RANGE) <= c <= 200+(DEPTH_RANGE)]
 			lst_LVZ_250_depth_Pds = lst_depth_pp_LVZ_250_Pds[lst_depth_amp_LVZ_250_Pds.index(min(lst_depth_amp_LVZ_250_Pds))]
 			lst_LVZ_250_amp_Pds = lst_depth_amp_LVZ_250_Pds.index(min(lst_depth_amp_LVZ_250_Pds))
 				

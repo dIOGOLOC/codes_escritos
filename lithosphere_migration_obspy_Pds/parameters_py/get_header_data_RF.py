@@ -63,8 +63,8 @@ for i,j in enumerate(ev):
 		sta_dic['event_ray'].append(round(float(j.stats.sac.user8),3))
 		sta_dic['sta_lat'].append(round(float(j.stats.sac.stla),3))
 		sta_dic['sta_long'].append(round(float(j.stats.sac.stlo),3))
-		sta_dic['sta_data'].append(j.data[100:2700].tolist())
-		sta_dic['sta_time'].append((j.times()[100:2700]-10).tolist())
+		sta_dic['sta_data'].append(j.data[100:1100].tolist())
+		sta_dic['sta_time'].append((j.times()[100:1100]-10).tolist())
 
 print('Saving RF Header data in JSON file')
 print('\n')
