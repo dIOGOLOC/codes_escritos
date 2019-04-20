@@ -15,7 +15,6 @@ from mpl_toolkits.mplot3d import Axes3D
 import cartopy.crs as ccrs
 from cartopy.io.shapereader import Reader
 import cartopy.feature as cfeature
-from fatiando import gridder, utils
 import scipy.io
 import matplotlib.cm as cm
 from matplotlib.ticker import MultipleLocator, FormatStrFormatter
@@ -28,6 +27,7 @@ import shapefile
 from matplotlib.colors import Normalize
 from matplotlib.patches import Circle,Rectangle
 import math
+import verde as vd
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 
 
@@ -39,10 +39,10 @@ from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 from parameters_py.mgconfig import (
 					RF_DIR,RF_EXT,MODEL_FILE_NPZ,MIN_DEPTH,MAX_DEPTH,INTER_DEPTH,SHAPEFILE_GRID,FILTER_BY_SHAPEFILE,
 					LLCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLON_LARGE,URCRNRLAT_LARGE,LLCRNRLON_SMALL,
-					URCRNRLON_SMALL,LLCRNRLAT_SMALL,URCRNRLAT_SMALL,PROJECT_LAT,PROJECT_LON,GRID_PP_MULT,
+					URCRNRLON_SMALL,LLCRNRLAT_SMALL,URCRNRLAT_SMALL,PROJECT_LAT,PROJECT_LON,GRID_PP_SPACE,
 					BOUNDARY_1_SHP,BOUNDARY_2_SHP,TECTO_SHP,COLORMAP_VEL,COLORMAP_STD,OUTPUT_DIR,
 					EXT_FIG,DPI_FIG,DIST_GRID_PP,NUMBER_STA_PER_BIN,NUMBER_PP_PER_BIN,VMIN,VMAX,
-					DEPTH_RANGE,BOOTSTRAP_INTERATOR,CROSS_SECTION_AXIS,DEPTH_TARGET,
+					DEPTH_RANGE,BOOTSTRAP_INTERATOR,CROSS_SECTION_AXIS,DEPTH_MOHO,DEPTH_LAB
 				   )
 
 
@@ -54,7 +54,7 @@ print('\n')
 
 camadas_terra_10_km = np.arange(MIN_DEPTH,MAX_DEPTH+INTER_DEPTH,INTER_DEPTH)
 
-STA_DIR = OUTPUT_DIR+'MODEL_INTER_DEPTH_'+str(INTER_DEPTH)+'_DEPTH_TARGET_'+str(DEPTH_TARGET)+'/'+'Stations'+'/'
+STA_DIR = OUTPUT_DIR+'MODEL_INTER_DEPTH_'+str(INTER_DEPTH)+'_DEPTH_MOHO_'+str(DEPTH_MOHO)+'_DEPTH_LAB_'+str(DEPTH_LAB)+'/'+'Stations'+'/'
 
 print('Looking for receiver functions data in JSON file in '+STA_DIR)
 print('\n')
@@ -78,8 +78,7 @@ sta_time = sta_dic['sta_time']
 print('Importing selected binned data')
 print('\n')
 
-PP_SELEC_DIR = OUTPUT_DIR+'MODEL_INTER_DEPTH_'+str(INTER_DEPTH)+'_DEPTH_TARGET_'+str(DEPTH_TARGET)+'/'+'SELECTED_BINNED_DATA'+'/'
-
+PP_SELEC_DIR = OUTPUT_DIR+'MODEL_INTER_DEPTH_'+str(INTER_DEPTH)+'_DEPTH_MOHO_'+str(DEPTH_MOHO)+'_DEPTH_LAB_'+str(DEPTH_LAB)+'/'+'SELECTED_BINNED_DATA'+'/'
 
 RESULTS_FOLDER_BINS = PP_SELEC_DIR+'/'+'RESULTS_NUMBER_PP_PER_BIN_'+str(NUMBER_PP_PER_BIN)+'_NUMBER_STA_PER_BIN_'+str(NUMBER_STA_PER_BIN)+'/'
 filename = RESULTS_FOLDER_BINS+'SELECTED_BINNED.json'
@@ -97,51 +96,27 @@ RF_number = SELECTED_BINNED_DATA_dic['len_Pds']
 
 RF_stacking_Pds = SELECTED_BINNED_DATA_dic['data_Pds']
 
-#Estimates 350 LVZ:
+#Estimates MOHO:
 
-RF_DEPTH_mean_LVZ_Pds = SELECTED_BINNED_DATA_dic['mean_LVZ_Pds']
-RF_DEPTH_std_LVZ_Pds = SELECTED_BINNED_DATA_dic['std_LVZ_Pds']
+RF_DEPTH_mean_MOHO_Pds = SELECTED_BINNED_DATA_dic['mean_MOHO_Pds']
+RF_DEPTH_std_MOHO_Pds = SELECTED_BINNED_DATA_dic['std_MOHO_Pds']
 
-#Estimates P410s:
+#Estimates LAB:
 
-RF_DEPTH_mean_1_Pds = SELECTED_BINNED_DATA_dic['mean_1_Pds']
-RF_DEPTH_std_1_Pds = SELECTED_BINNED_DATA_dic['std_1_Pds']
-
-#Estimates P520s:
-
-RF_DEPTH_mean_520_Pds = SELECTED_BINNED_DATA_dic['mean_520_Pds']
-RF_DEPTH_std_520_Pds = SELECTED_BINNED_DATA_dic['std_520_Pds']
-
-#Estimates P660s:
-
-RF_DEPTH_mean_2_Pds = SELECTED_BINNED_DATA_dic['mean_2_Pds']
-RF_DEPTH_std_2_Pds = SELECTED_BINNED_DATA_dic['std_2_Pds']
-
-#Estimates 700 LVZ:
-
-RF_DEPTH_mean_LVZ_700_Pds = SELECTED_BINNED_DATA_dic['mean_LVZ_700_Pds']
-RF_DEPTH_std_LVZ_700_Pds = SELECTED_BINNED_DATA_dic['std_LVZ_700_Pds']
-
-#Estimates MTZ Pds:
-
-RF_DEPTH_mtz_thickness_Pds = SELECTED_BINNED_DATA_dic['mtz_thickness_Pds']
-RF_DEPTH_mtz_thickness_Pds_std = SELECTED_BINNED_DATA_dic['mtz_thickness_Pds_std']
+RF_DEPTH_mean_LAB_Pds = SELECTED_BINNED_DATA_dic['mean_LAB_Pds']
+RF_DEPTH_std_LAB_Pds = SELECTED_BINNED_DATA_dic['std_LAB_Pds']
 
 #############################################################################################################################3
 
+region = (LLCRNRLON_SMALL,URCRNRLON_SMALL, LLCRNRLAT_SMALL, URCRNRLAT_SMALL)
 
-area = (LLCRNRLON_SMALL,URCRNRLON_SMALL, LLCRNRLAT_SMALL, URCRNRLAT_SMALL)
+grdx, grdy = vd.grid_coordinates(region=region,spacing=(GRID_PP_SPACE,GRID_PP_SPACE))
 
-shape = (int(abs(abs(URCRNRLON_SMALL) - abs(LLCRNRLON_SMALL))*GRID_PP_MULT),int(abs(abs(URCRNRLAT_SMALL) - abs(LLCRNRLAT_SMALL))*GRID_PP_MULT))
+rows = grdx
+cols = grdy
 
-grdx, grdy = gridder.regular(area, shape)
+PP_FIGURE = OUTPUT_DIR+'MODEL_INTER_DEPTH_'+str(INTER_DEPTH)+'_DEPTH_MOHO_'+str(DEPTH_MOHO)+'_DEPTH_LAB_'+str(DEPTH_LAB)+'/'+'Figures'+'/'
 
-shape_new = (int(len(set(grdx))),int(len(set(grdy))))
-
-rows = np.array(grdx).reshape(shape_new)
-cols = np.array(grdy).reshape(shape_new)
-
-PP_FIGURE = OUTPUT_DIR+'MODEL_INTER_DEPTH_'+str(INTER_DEPTH)+'_DEPTH_TARGET_'+str(DEPTH_TARGET)+'/'+'Figures'+'/'
 RESULTS_FOLDER = PP_FIGURE+'/'+'RESULTS_NUMBER_PP_PER_BIN_'+str(NUMBER_PP_PER_BIN)+'_NUMBER_STA_PER_BIN_'+str(NUMBER_STA_PER_BIN)+'/'
 os.makedirs(RESULTS_FOLDER,exist_ok=True)
 
@@ -160,35 +135,15 @@ if CROSS_SECTION_AXIS == 'x':
 
 	RF_data_profile_Pds = [[]]*len(rows[:,0])
 
-	#Estimates 350 LVZ:
+	#Estimates MOHO:
 
-	RF_DEPTH_mean_LVZ_profile_Pds = [[]]*len(rows[:,0])
-	RF_DEPTH_std_LVZ_profile_Pds = [[]]*len(rows[:,0])
+	RF_DEPTH_mean_MOHO_profile_Pds = [[]]*len(rows[:,0])
+	RF_DEPTH_std_MOHO_profile_Pds = [[]]*len(rows[:,0])
 
-	#Estimates P410s:
+	#Estimates LAB:
 
-	RF_DEPTH_mean_1_profile_Pds = [[]]*len(rows[:,0])
-	RF_DEPTH_std_1_profile_Pds = [[]]*len(rows[:,0])
-
-	#Estimates P520s:
-
-	RF_DEPTH_mean_520_profile_Pds = [[]]*len(rows[:,0])
-	RF_DEPTH_std_520_profile_Pds = [[]]*len(rows[:,0])
-
-	#Estimates P660s:
-
-	RF_DEPTH_mean_2_profile_Pds = [[]]*len(rows[:,0])
-	RF_DEPTH_std_2_profile_Pds = [[]]*len(rows[:,0])
-
-	#Estimates 700 LVZ:
-
-	RF_DEPTH_mean_LVZ_700_profile_Pds = [[]]*len(rows[:,0])
-	RF_DEPTH_std_LVZ_700_profile_Pds = [[]]*len(rows[:,0])
-
-	#Estimates MTZ Pds:
-
-	RF_DEPTH_mtz_thickness_profile_Pds = [[]]*len(rows[:,0]) 
-	RF_DEPTH_mtz_thickness_profile_Pds_std = [[]]*len(rows[:,0]) 
+	RF_DEPTH_mean_LAB_profile_Pds = [[]]*len(rows[:,0])
+	RF_DEPTH_std_LAB_profile_Pds = [[]]*len(rows[:,0])
 
 	for i,j in enumerate(rows[:,0]):
 
@@ -205,38 +160,15 @@ if CROSS_SECTION_AXIS == 'x':
 
 		RF_data_profile_Pds[i] = [RF_stacking_Pds[lat_lon.index(l)] if l in lat_lon else np.zeros_like(RF_stacking_Pds[k]) for k,l in enumerate(grid_column)]
 
-		#Estimates 350 LVZ:
+		#Estimates MOHO:
 
-		RF_DEPTH_mean_LVZ_profile_Pds[i] = [RF_DEPTH_mean_LVZ_Pds[lat_lon.index(l)] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
-		RF_DEPTH_std_LVZ_profile_Pds[i] = [RF_DEPTH_std_LVZ_Pds[lat_lon.index(l)] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
+		RF_DEPTH_mean_MOHO_profile_Pds[i] = [RF_DEPTH_mean_MOHO_Pds[lat_lon.index(l)] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
+		RF_DEPTH_std_MOHO_profile_Pds[i] = [RF_DEPTH_std_MOHO_Pds[lat_lon.index(l)] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
 
+		#Estimates LAB:
 
-		#Estimates P410s:
-
-		RF_DEPTH_mean_1_profile_Pds[i] = [RF_DEPTH_mean_1_Pds[lat_lon.index(l)] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
-		RF_DEPTH_std_1_profile_Pds[i] = [RF_DEPTH_std_1_Pds[lat_lon.index(l)] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
-
-		#Estimates P520s:
-
-		RF_DEPTH_mean_520_profile_Pds[i] = [RF_DEPTH_mean_520_Pds[lat_lon.index(l)] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
-		RF_DEPTH_std_520_profile_Pds[i] = [RF_DEPTH_std_520_Pds[lat_lon.index(l)] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
-
-
-		#Estimates P660s:
-
-		RF_DEPTH_mean_2_profile_Pds[i] = [RF_DEPTH_mean_2_Pds[lat_lon.index(l)] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
-		RF_DEPTH_std_2_profile_Pds[i] = [RF_DEPTH_std_2_Pds[lat_lon.index(l)] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
-
-		#Estimates 700 LVZ:
-
-		RF_DEPTH_mean_LVZ_700_profile_Pds[i] = [RF_DEPTH_mean_LVZ_700_Pds[lat_lon.index(l)] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
-		RF_DEPTH_std_LVZ_700_profile_Pds[i] = [RF_DEPTH_std_LVZ_700_Pds[lat_lon.index(l)] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
-
-
-		#Estimates MTZ Pds:
-
-		RF_DEPTH_mtz_thickness_profile_Pds[i] = [RF_DEPTH_mtz_thickness_Pds[lat_lon.index(l)] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
-		RF_DEPTH_mtz_thickness_profile_Pds_std[i] = [RF_DEPTH_mtz_thickness_Pds_std[lat_lon.index(l)] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
+		RF_DEPTH_mean_LAB_profile_Pds[i] = [RF_DEPTH_mean_LAB_Pds[lat_lon.index(l)] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
+		RF_DEPTH_std_LAB_profile_Pds[i] = [RF_DEPTH_std_LAB_Pds[lat_lon.index(l)] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
 
 else:
 
@@ -249,35 +181,16 @@ else:
 
 	RF_data_profile_Pds = [[]]*len(rows[0,:])
 
-	#Estimates P410s:
+	#Estimates MOHO:
 
-	RF_DEPTH_mean_1_profile_Pds = [[]]*len(rows[0,:])
-	RF_DEPTH_std_1_profile_Pds = [[]]*len(rows[0,:])
+	RF_DEPTH_mean_MOHO_profile_Pds = [[]]*len(rows[0,:])
+	RF_DEPTH_std_MOHO_profile_Pds = [[]]*len(rows[0,:])
 
-	#Estimates 350 LVZ:
+	#Estimates LAB:
 
-	RF_DEPTH_mean_LVZ_profile_Pds = [[]]*len(rows[0,:])
-	RF_DEPTH_std_LVZ_profile_Pds = [[]]*len(rows[0,:])
+	RF_DEPTH_mean_LAB_profile_Pds = [[]]*len(rows[0,:])
+	RF_DEPTH_std_LAB_profile_Pds = [[]]*len(rows[0,:])
 
-	#Estimates P520s:
-
-	RF_DEPTH_mean_520_profile_Pds = [[]]*len(rows[0,:])
-	RF_DEPTH_std_520_profile_Pds = [[]]*len(rows[0,:])
-
-	#Estimates P660s:
-
-	RF_DEPTH_mean_2_profile_Pds = [[]]*len(rows[0,:])
-	RF_DEPTH_std_2_profile_Pds = [[]]*len(rows[0,:])
-
-	#Estimates 700 LVZ:
-
-	RF_DEPTH_mean_LVZ_700_profile_Pds = [[]]*len(rows[0,:])
-	RF_DEPTH_std_LVZ_700_profile_Pds = [[]]*len(rows[0,:])
-
-	#Estimates MTZ Pds:
-
-	RF_DEPTH_mtz_thickness_profile_Pds = [[]]*len(rows[0,:])
-	RF_DEPTH_mtz_thickness_profile_Pds_std = [[]]*len(rows[0,:])
 
 	for i,j in enumerate(rows[0,:]):
 		
@@ -293,36 +206,16 @@ else:
 
 		RF_data_profile_Pds[i] = [RF_stacking_Pds[lat_lon.index(l)] if l in lat_lon else np.zeros_like(RF_stacking_Pds[k]) for k,l in enumerate(grid_column)]
 
-		#Estimates 350 LVZ:
+		#Estimates MOHO:
 
-		RF_DEPTH_mean_LVZ_profile_Pds[i] = [RF_DEPTH_mean_LVZ_Pds[lat_lon.index(l)] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
-		RF_DEPTH_std_LVZ_profile_Pds[i] = [RF_DEPTH_std_LVZ_Pds[lat_lon.index(l)]  if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
+		RF_DEPTH_mean_MOHO_profile_Pds[i] = [RF_DEPTH_mean_MOHO_Pds[lat_lon.index(l)] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
+		RF_DEPTH_std_MOHO_profile_Pds[i] = [RF_DEPTH_std_MOHO_Pds[lat_lon.index(l)]  if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
 
 
-		#Estimates P410s:
+		#Estimates LAB:
 
-		RF_DEPTH_mean_1_profile_Pds[i] = [RF_DEPTH_mean_1_Pds[lat_lon.index(l)] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
-		RF_DEPTH_std_1_profile_Pds[i] = [RF_DEPTH_std_1_Pds[lat_lon.index(l)]  if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
-
-		#Estimates P520s:
-
-		RF_DEPTH_mean_520_profile_Pds[i] = [RF_DEPTH_mean_520_Pds[lat_lon.index(l)] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
-		RF_DEPTH_std_520_profile_Pds[i] = [RF_DEPTH_std_520_Pds[lat_lon.index(l)]  if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
-
-		#Estimates P660s:
-
-		RF_DEPTH_mean_2_profile_Pds[i] = [RF_DEPTH_mean_2_Pds[lat_lon.index(l)] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
-		RF_DEPTH_std_2_profile_Pds[i] = [RF_DEPTH_std_2_Pds[lat_lon.index(l)] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
-
-		#Estimates 700 LVZ:
-
-		RF_DEPTH_mean_LVZ_700_profile_Pds[i] = [RF_DEPTH_mean_LVZ_700_Pds[lat_lon.index(l)] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
-		RF_DEPTH_std_LVZ_700_profile_Pds[i] = [RF_DEPTH_std_LVZ_700_Pds[lat_lon.index(l)]  if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
-
-		#Estimates MTZ Pds:
-
-		RF_DEPTH_mtz_thickness_profile_Pds[i] = [RF_DEPTH_mtz_thickness_Pds[lat_lon.index(l)] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
-		RF_DEPTH_mtz_thickness_profile_Pds_std[i] = [RF_DEPTH_mtz_thickness_Pds_std[lat_lon.index(l)] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
+		RF_DEPTH_mean_LAB_profile_Pds[i] = [RF_DEPTH_mean_LAB_Pds[lat_lon.index(l)] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
+		RF_DEPTH_std_LAB_profile_Pds[i] = [RF_DEPTH_std_LAB_Pds[lat_lon.index(l)]  if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
 
 print('Plotting cross-sections according to the '+CROSS_SECTION_AXIS+' direction')
 for i,j in enumerate(RF_data_profile_Pds):
@@ -336,19 +229,16 @@ for i,j in enumerate(RF_data_profile_Pds):
 	gs = gridspec.GridSpec(4, 3)
 	gs.update(wspace=0.2, hspace=0.5)
 
-	MTZ_thickness = fig.add_subplot(gs[1,1:])
-	diff_MTZ_thickness = fig.add_subplot(gs[0,1:],sharex=MTZ_thickness)
-
-	pefil_pds = fig.add_subplot(gs[2:4,1:],sharex=MTZ_thickness)
+	pefil_pds = fig.add_subplot(gs[0:4,1:])
 
 	#_____________________________________________
 
-	map_MTZ_thickness =  fig.add_subplot(gs[0:2,0],projection=ccrs.PlateCarree())
+	map_MOHO_thickness =  fig.add_subplot(gs[0:2,0],projection=ccrs.PlateCarree())
 
 	#_____________________________________________
 
-	apparent_410 = fig.add_subplot(gs[2,0])
-	apparent_660 = fig.add_subplot(gs[3,0],sharex=apparent_410)
+	apparent_MOHO = fig.add_subplot(gs[2,0])
+	apparent_LAB = fig.add_subplot(gs[3,0],sharex=apparent_MOHO)
 
 
 	#######################################################################
@@ -357,7 +247,7 @@ for i,j in enumerate(RF_data_profile_Pds):
 
 	colormap_std = plt.get_cmap(COLORMAP_STD)
 
-	colormap_segmentation = INTER_DEPTH/100
+	colormap_segmentation = INTER_DEPTH/10
 	n=41
 	x = 0.5
 	upper = plt.cm.seismic(np.linspace(0, x, n)[::-1])
@@ -366,63 +256,63 @@ for i,j in enumerate(RF_data_profile_Pds):
 	colors = np.vstack((lower, white,upper))
 	tmap = matplotlib.colors.LinearSegmentedColormap.from_list('map_white', colors)
 
-	map_MTZ_thickness.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
-	map_MTZ_thickness.yaxis.set_ticks_position('both')
-	map_MTZ_thickness.xaxis.set_ticks_position('both')
+	map_MOHO_thickness.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
+	map_MOHO_thickness.yaxis.set_ticks_position('both')
+	map_MOHO_thickness.xaxis.set_ticks_position('both')
 
-	map_MTZ_thickness.set_xticks(np.arange(LLCRNRLON_LARGE,URCRNRLON_LARGE,4), crs=ccrs.PlateCarree())
-	map_MTZ_thickness.set_yticks(np.arange(LLCRNRLAT_LARGE,URCRNRLAT_LARGE,4), crs=ccrs.PlateCarree())
-	map_MTZ_thickness.tick_params(labelbottom=False,labeltop=True,labelleft=True,labelright=True)
+	map_MOHO_thickness.set_xticks(np.arange(LLCRNRLON_LARGE,URCRNRLON_LARGE,4), crs=ccrs.PlateCarree())
+	map_MOHO_thickness.set_yticks(np.arange(LLCRNRLAT_LARGE,URCRNRLAT_LARGE,4), crs=ccrs.PlateCarree())
+	map_MOHO_thickness.tick_params(labelbottom=False,labeltop=True,labelleft=True,labelright=True)
 
-	map_MTZ_thickness.grid(True,which='major',color='gray',linewidth=1,linestyle='--')
+	map_MOHO_thickness.grid(True,which='major',color='gray',linewidth=1,linestyle='--')
 
 	reader_1_SHP = Reader(BOUNDARY_1_SHP)
 	shape_1_SHP = list(reader_1_SHP.geometries())
 	plot_shape_1_SHP = cfeature.ShapelyFeature(shape_1_SHP, ccrs.PlateCarree())
-	map_MTZ_thickness.add_feature(plot_shape_1_SHP, facecolor='none', edgecolor='k',linewidth=3)
+	map_MOHO_thickness.add_feature(plot_shape_1_SHP, facecolor='none', edgecolor='k',linewidth=3)
 
 	reader_2_SHP = Reader(BOUNDARY_2_SHP)
 	shape_2_SHP = list(reader_2_SHP.geometries())
 	plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
-	map_MTZ_thickness.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
+	map_MOHO_thickness.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 
-	bounds = np.arange(200, 300+colormap_segmentation, colormap_segmentation)
-	norm_map_MTZ_thickness = mpl.colors.BoundaryNorm(boundaries=bounds, ncolors=colormap.N)
+	bounds = np.arange(30, 50+colormap_segmentation, colormap_segmentation)
+	norm_map_MOHO_thickness = mpl.colors.BoundaryNorm(boundaries=bounds, ncolors=colormap.N)
 
 	for t,y in enumerate(lons):
-		if math.isnan(RF_DEPTH_mtz_thickness_Pds[t]) == False:
-			if RF_DEPTH_mtz_thickness_Pds_std[t] < 10:
-				circulo_410 = Circle(radius=DIST_GRID_PP,xy=(lons[t], lats[t]),color=tmap(norm_map_MTZ_thickness(RF_DEPTH_mtz_thickness_Pds[t])),ec='k',linewidth=0.5,linestyle='-',transform=ccrs.Geodetic(),zorder=2)
-				map_MTZ_thickness.add_patch(circulo_410)
+		if math.isnan(RF_DEPTH_mean_MOHO_Pds[t]) == False:
+			if RF_DEPTH_std_MOHO_Pds[t] < INTER_DEPTH:
+				circulo_MOHO = Circle(radius=DIST_GRID_PP,xy=(lons[t], lats[t]),color=tmap(norm_map_MOHO_thickness(RF_DEPTH_mean_MOHO_Pds[t])),ec='k',linewidth=0.5,linestyle='-',transform=ccrs.Geodetic(),zorder=2)
+				map_MOHO_thickness.add_patch(circulo_MOHO)
 			else:
-				circulo_410 = Circle(radius=DIST_GRID_PP,xy=(lons[t], lats[t]),color=tmap(norm_map_MTZ_thickness(RF_DEPTH_mtz_thickness_Pds[t])),  ec='k',linewidth=0.5,linestyle=':',transform=ccrs.Geodetic(),zorder=2)
-				map_MTZ_thickness.add_patch(circulo_410)
+				circulo_MOHO = Circle(radius=DIST_GRID_PP,xy=(lons[t], lats[t]),color=tmap(norm_map_MOHO_thickness(RF_DEPTH_mean_MOHO_Pds[t])),  ec='k',linewidth=0.5,linestyle=':',transform=ccrs.Geodetic(),zorder=2)
+				map_MOHO_thickness.add_patch(circulo_MOHO)
 		else:
 			pass
 
 	for x,c in enumerate(AB_lon[i]):
-		circulo_410_profile = Circle(radius=DIST_GRID_PP,xy=(AB_lon[i][x], AB_lat[i][x]),fc='None',ec='k',transform=ccrs.Geodetic(),zorder=10)
-		map_MTZ_thickness.add_patch(circulo_410_profile)
+		circulo_MOHO_profile = Circle(radius=DIST_GRID_PP,xy=(AB_lon[i][x], AB_lat[i][x]),fc='None',ec='k',transform=ccrs.Geodetic(),zorder=10)
+		map_MOHO_thickness.add_patch(circulo_MOHO_profile)
 
-	map_MTZ_thickness.set_title('MTZ Thickness', y=1.1)
+	map_MOHO_thickness.set_title('MOHO Thickness', y=1.1)
 
-	sm_map_MTZ_thickness = plt.cm.ScalarMappable(cmap=tmap,norm=norm_map_MTZ_thickness)
-	sm_map_MTZ_thickness._A = []
-	cbar = fig.colorbar(sm_map_MTZ_thickness,ax=map_MTZ_thickness,orientation='vertical',shrink=0.9,pad=0.1,label='MTZ Thickness (km)')
+	sm_map_MOHO_thickness = plt.cm.ScalarMappable(cmap=tmap,norm=norm_map_MOHO_thickness)
+	sm_map_MOHO_thickness._A = []
+	cbar = fig.colorbar(sm_map_MOHO_thickness,ax=map_MOHO_thickness,orientation='vertical',shrink=0.9,pad=0.1,label='MOHO Thickness (km)')
 
-	cbar.set_ticks(np.arange(200, 300+INTER_DEPTH, INTER_DEPTH))
-	cbar.set_ticklabels(np.arange(200, 300+INTER_DEPTH, INTER_DEPTH))
+	cbar.set_ticks(np.arange(30, 50+INTER_DEPTH, INTER_DEPTH))
+	cbar.set_ticklabels(np.arange(30, 50+INTER_DEPTH, INTER_DEPTH))
 
 	#### Profile  ####
 	
-	majorLocatorY = MultipleLocator(50)
-	minorLocatorY = MultipleLocator(10)
+	majorLocatorY = MultipleLocator(10)
+	minorLocatorY = MultipleLocator(5)
 
 	grid_Pds = np.array(RF_data_profile_Pds[i])
-	extent_Pds = [0,len(RF_data_profile_Pds[i]),800,300]
+	extent_Pds = [0,len(RF_data_profile_Pds[i]),MAX_DEPTH,MIN_DEPTH]
 
 
-	im = pefil_pds.imshow(grid_Pds.T,extent=extent_Pds,interpolation='bicubic', cmap='seismic',vmin=VMIN,vmax=VMAX)
+	im = pefil_pds.imshow(grid_Pds.T,extent=extent_Pds,interpolation='hamming', cmap='seismic',vmin=VMIN,vmax=VMAX)
 	pefil_pds.set_aspect('auto')
 	axins = inset_axes(pefil_pds,
                    width="10%",  # width = 10% of parent_bbox width
@@ -434,18 +324,11 @@ for i,j in enumerate(RF_data_profile_Pds):
                    )
 	plt.colorbar(im, cax=axins, orientation="horizontal", ticklocation='top')
 	for _i, _j in enumerate(RF_data_profile_Pds[i]):
-		pefil_pds.plot(_i,RF_DEPTH_mean_LVZ_profile_Pds[i][_i],'ok',ms=3,markerfacecolor='none')
-		pefil_pds.plot(_i,RF_DEPTH_mean_1_profile_Pds[i][_i],'ok',ms=3,markerfacecolor='none')
-		pefil_pds.plot(_i,RF_DEPTH_mean_520_profile_Pds[i][_i],'ok',ms=3,markerfacecolor='none')
-		pefil_pds.plot(_i,RF_DEPTH_mean_2_profile_Pds[i][_i],'ok',ms=3,markerfacecolor='none')
-		pefil_pds.plot(_i,RF_DEPTH_mean_LVZ_700_profile_Pds[i][_i],'ok',ms=3,markerfacecolor='none')
+		pefil_pds.plot(_i,RF_DEPTH_mean_MOHO_profile_Pds[i][_i],'ok',ms=3,markerfacecolor='none')
+		pefil_pds.plot(_i,RF_DEPTH_mean_LAB_profile_Pds[i][_i],'ok',ms=3,markerfacecolor='none')
 
-
-		pefil_pds.errorbar(_i,RF_DEPTH_mean_LVZ_profile_Pds[i][_i], yerr=RF_DEPTH_std_LVZ_profile_Pds[i][_i], ecolor='k',elinewidth=1,capsize=1,capthick=1)
-		pefil_pds.errorbar(_i,RF_DEPTH_mean_1_profile_Pds[i][_i], yerr=RF_DEPTH_std_1_profile_Pds[i][_i], ecolor='k',elinewidth=1,capsize=1,capthick=1)
-		pefil_pds.errorbar(_i,RF_DEPTH_mean_520_profile_Pds[i][_i], yerr=RF_DEPTH_std_520_profile_Pds[i][_i], ecolor='k',elinewidth=1,capsize=1,capthick=1)
-		pefil_pds.errorbar(_i,RF_DEPTH_mean_2_profile_Pds[i][_i], yerr=RF_DEPTH_std_2_profile_Pds[i][_i], ecolor='k',elinewidth=1,capsize=1,capthick=1)
-		pefil_pds.errorbar(_i,RF_DEPTH_mean_LVZ_700_profile_Pds[i][_i], yerr=RF_DEPTH_std_LVZ_700_profile_Pds[i][_i], ecolor='k',elinewidth=1,capsize=1,capthick=1)
+		pefil_pds.errorbar(_i,RF_DEPTH_mean_MOHO_profile_Pds[i][_i], yerr=RF_DEPTH_std_MOHO_profile_Pds[i][_i], ecolor='k',elinewidth=1,capsize=1,capthick=1)
+		pefil_pds.errorbar(_i,RF_DEPTH_mean_LAB_profile_Pds[i][_i], yerr=RF_DEPTH_std_LAB_profile_Pds[i][_i], ecolor='k',elinewidth=1,capsize=1,capthick=1)
 
 		if CROSS_SECTION_AXIS == 'y':
 			pefil_pds.text(_i,820,"{0:.1f}".format(AB_lon[i][_i]),rotation=-45,fontsize=10)
@@ -464,77 +347,42 @@ for i,j in enumerate(RF_data_profile_Pds):
 	pefil_pds.yaxis.set_label_position("right")
 	pefil_pds.tick_params(labelright=True)
 
-	#### Figure Apparent  410 km Pds  ####
+	#### Figure Apparent  MOHO  ####
 
 	for _i, _j in enumerate(RF_data_profile_Pds[i]):
-		apparent_410.plot(_i,RF_DEPTH_mean_1_profile_Pds[i][_i]-410,marker='o',markerfacecolor='none',markeredgecolor='dimgray')
+		apparent_MOHO.plot(_i,RF_DEPTH_mean_MOHO_profile_Pds[i][_i],marker='o',markerfacecolor='none',markeredgecolor='dimgray')
 
-		apparent_410.errorbar(_i,RF_DEPTH_mean_1_profile_Pds[i][_i]-410, yerr=RF_DEPTH_std_1_profile_Pds[i][_i], ecolor='dimgray',elinewidth=1,capsize=2,capthick=1)
+		apparent_MOHO.errorbar(_i,RF_DEPTH_mean_MOHO_profile_Pds[i][_i], yerr=RF_DEPTH_std_MOHO_profile_Pds[i][_i], ecolor='dimgray',elinewidth=1,capsize=2,capthick=1)
 
-		apparent_410.set_title('diff 410 km')
-		apparent_410.yaxis.set_ticks_position('both')
-		apparent_410.yaxis.set_major_locator(MultipleLocator(25))
-		apparent_410.yaxis.set_minor_locator(MultipleLocator(10))
-		apparent_410.grid(True,which='major',color='gray',linewidth=1,linestyle='--')
-		apparent_410.tick_params(labelleft=True,labelright=True)
-		apparent_410.yaxis.set_label_position("right")
-		apparent_410.set_xticks([])
-		apparent_410.set_ylim(50,-50)
-
-
-	#### Figure Apparent  660 km Pds  ####
+		apparent_MOHO.set_title('MOHO')
+		apparent_MOHO.yaxis.set_ticks_position('both')
+		apparent_MOHO.yaxis.set_major_locator(MultipleLocator(10))
+		apparent_MOHO.yaxis.set_minor_locator(MultipleLocator(5))
+		apparent_MOHO.grid(True,which='major',color='gray',linewidth=1,linestyle='--')
+		apparent_MOHO.tick_params(labelleft=True,labelright=True)
+		apparent_MOHO.yaxis.set_label_position("right")
+		apparent_MOHO.set_xticks([])
+		apparent_MOHO.set_ylim(60,20)
 
 
-	for _i, _j in enumerate(RF_DEPTH_mean_2_profile_Pds[i]):
-		apparent_660.plot(_i,RF_DEPTH_mean_2_profile_Pds[i][_i]-660,marker='o',markerfacecolor='none',markeredgecolor='dimgray')
+	#### Figure Apparent  LAB  ####
 
-		apparent_660.errorbar(_i,RF_DEPTH_mean_2_profile_Pds[i][_i]-660, yerr=RF_DEPTH_std_2_profile_Pds[i][_i], ecolor='dimgray',elinewidth=1,capsize=2,capthick=1)
+
+	for _i, _j in enumerate(RF_data_profile_Pds[i]):
+		apparent_LAB.plot(_i,RF_DEPTH_mean_LAB_profile_Pds[i][_i],marker='o',markerfacecolor='none',markeredgecolor='dimgray')
+
+		apparent_LAB.errorbar(_i,RF_DEPTH_mean_LAB_profile_Pds[i][_i], yerr=RF_DEPTH_std_LAB_profile_Pds[i][_i], ecolor='dimgray',elinewidth=1,capsize=2,capthick=1)
 		
-		apparent_660.set_ylim(50,-50)
-		apparent_660.set_title('diff 660 km ')
-		apparent_660.yaxis.set_ticks_position('both')
-		apparent_660.yaxis.set_major_locator(MultipleLocator(25))
-		apparent_660.yaxis.set_minor_locator(MultipleLocator(10))
-		apparent_660.grid(True,which='major',color='gray',linewidth=1,linestyle='--')
-		apparent_660.tick_params(labelleft=True,labelright=True)
-		apparent_660.yaxis.set_label_position("right")
-		apparent_660.set_xticks([])
+		apparent_LAB.set_title('LAB ')
+		apparent_LAB.yaxis.set_ticks_position('both')
+		apparent_LAB.yaxis.set_major_locator(MultipleLocator(10))
+		apparent_LAB.yaxis.set_minor_locator(MultipleLocator(5))
+		apparent_LAB.grid(True,which='major',color='gray',linewidth=1,linestyle='--')
+		apparent_LAB.tick_params(labelleft=True,labelright=True)
+		apparent_LAB.yaxis.set_label_position("right")
+		apparent_LAB.set_xticks([])
+		apparent_LAB.set_ylim(200,150)
 
-
-	#### Figure MTZ Apparent thickness  ####
-
-	for _i, _j in enumerate(RF_DEPTH_mtz_thickness_profile_Pds[i]):
-		MTZ_thickness.plot(_i,RF_DEPTH_mtz_thickness_profile_Pds[i][_i]-250,marker='o',markerfacecolor='none',markeredgecolor='gray')
-
-	for _i, _j in enumerate(RF_DEPTH_mtz_thickness_profile_Pds[i]):
-		MTZ_thickness.errorbar(_i,RF_DEPTH_mtz_thickness_profile_Pds[i][_i]-250, yerr=RF_DEPTH_mtz_thickness_profile_Pds_std[i][_i], ecolor='gray',elinewidth=1,capsize=2,capthick=1)
-	
-	MTZ_thickness.set_ylim(50,-50)
-	MTZ_thickness.yaxis.set_label_position("right")
-	MTZ_thickness.set_title('diff MTZ Thickness')
-	MTZ_thickness.yaxis.set_ticks_position('both')
-	MTZ_thickness.yaxis.set_major_locator(MultipleLocator(25))
-	MTZ_thickness.yaxis.set_minor_locator(MultipleLocator(10))
-	MTZ_thickness.grid(True,which='major',color='gray',linewidth=1,linestyle='--')
-	MTZ_thickness.tick_params(labelleft=True,labelright=True)
-
-
-	#### Figure diff MTZ Apparent thickness  ####
-
-	for _i, _j in enumerate(RF_DEPTH_mean_LVZ_profile_Pds[i]):
-		diff_MTZ_thickness.plot(_i,RF_DEPTH_mean_LVZ_profile_Pds[i][_i]-350,marker='o',markerfacecolor='none',markeredgecolor='gray')
-
-	for _i, _j in enumerate(RF_DEPTH_mean_LVZ_profile_Pds[i]):
-		diff_MTZ_thickness.errorbar(_i,RF_DEPTH_mean_LVZ_profile_Pds[i][_i]-350, yerr=RF_DEPTH_std_LVZ_profile_Pds[i][_i], ecolor='gray',elinewidth=1,capsize=2,capthick=1)
-	
-	diff_MTZ_thickness.set_ylim(50,-50)
-	diff_MTZ_thickness.yaxis.set_label_position("right")
-	diff_MTZ_thickness.set_title('diff LVZ')
-	diff_MTZ_thickness.yaxis.set_ticks_position('both')
-	diff_MTZ_thickness.yaxis.set_major_locator(MultipleLocator(25))
-	diff_MTZ_thickness.yaxis.set_minor_locator(MultipleLocator(10))
-	diff_MTZ_thickness.grid(True,which='major',color='gray',linewidth=1,linestyle='--')
-	diff_MTZ_thickness.tick_params(labelleft=True,labelright=True)
 
 	fig.savefig(RESULTS_FOLDER+'SELECTED_BINNED_DATA_'+CROSS_SECTION_AXIS+'_CROSS_SECTION_Pds_Ppds_PROFILE_'+str(i+1)+'_COLOR.'+EXT_FIG,dpi=DPI_FIG)
 print('Ending the Cross-section CODE')

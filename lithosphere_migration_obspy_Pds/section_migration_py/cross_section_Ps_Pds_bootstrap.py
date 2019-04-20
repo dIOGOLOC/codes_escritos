@@ -14,7 +14,6 @@ from mpl_toolkits.mplot3d import Axes3D
 import cartopy.crs as ccrs
 from cartopy.io.shapereader import Reader
 import cartopy.feature as cfeature
-from fatiando import gridder, utils
 import scipy.io
 import matplotlib.cm as cm
 from matplotlib.ticker import MultipleLocator, FormatStrFormatter
@@ -33,15 +32,14 @@ from parameters_py.mgconfig import (
 					URCRNRLON_SMALL,LLCRNRLAT_SMALL,URCRNRLAT_SMALL,PROJECT_LAT,PROJECT_LON,
 					BOUNDARY_1_SHP,BOUNDARY_2_SHP,OUTPUT_DIR,		
 					EXT_FIG,DPI_FIG,DIST_GRID_PP,DEPTH_RANGE,COLORMAP_VEL,
-					NUMBER_PP_PER_BIN,NUMBER_STA_PER_BIN,DEPTH_TARGET
+					NUMBER_PP_PER_BIN,NUMBER_STA_PER_BIN,DEPTH_MOHO,DEPTH_LAB
 				   )
 
 
 print('Starting Cross section CODE')
 print('\n')
 
-STA_DIR = OUTPUT_DIR+'MODEL_INTER_DEPTH_'+str(INTER_DEPTH)+'_DEPTH_TARGET_'+str(DEPTH_TARGET)+'/'+'Stations'+'/'
-
+STA_DIR = OUTPUT_DIR+'MODEL_INTER_DEPTH_'+str(INTER_DEPTH)+'_DEPTH_MOHO_'+str(DEPTH_MOHO)+'_DEPTH_LAB_'+str(DEPTH_LAB)+'/'+'Stations'+'/'
 
 print('Looking for receiver functions data in JSON file in '+STA_DIR)
 print('\n')
@@ -65,7 +63,7 @@ sta_time = sta_dic['sta_time']
 print('Importing selected binned data')
 print('\n')
 
-PP_SELEC_DIR = OUTPUT_DIR+'MODEL_INTER_DEPTH_'+str(INTER_DEPTH)+'_DEPTH_TARGET_'+str(DEPTH_TARGET)+'/'+'SELECTED_BINNED_DATA'+'/'
+PP_SELEC_DIR = OUTPUT_DIR+'MODEL_INTER_DEPTH_'+str(INTER_DEPTH)+'_DEPTH_MOHO_'+str(DEPTH_MOHO)+'_DEPTH_LAB_'+str(DEPTH_LAB)+'/'+'SELECTED_BINNED_DATA'+'/'
 
 RESULTS_FOLDER_BINS = PP_SELEC_DIR+'/'+'RESULTS_NUMBER_PP_PER_BIN_'+str(NUMBER_PP_PER_BIN)+'_NUMBER_STA_PER_BIN_'+str(NUMBER_STA_PER_BIN)+'/'
 filename = RESULTS_FOLDER_BINS+'SELECTED_BINNED.json'
@@ -82,34 +80,15 @@ RF_stacking_Pds_std = SELECTED_BINNED_DATA_dic['data_Pds_std']
 
 RF_stacking_Pds_BOOTSTRAP = SELECTED_BINNED_DATA_dic['data_BOOTSTRAP_Pds']
 
-RF_BOOTSTRAP_DEPTH_mean_LVZ_Pds = SELECTED_BINNED_DATA_dic['RF_BOOTSTRAP_DEPTH_mean_LVZ_Pds']
+RF_BOOTSTRAP_DEPTH_mean_MOHO_Pds = SELECTED_BINNED_DATA_dic['RF_BOOTSTRAP_DEPTH_mean_MOHO_Pds']
 
-RF_BOOTSTRAP_DEPTH_mean_1_Pds = SELECTED_BINNED_DATA_dic['RF_BOOTSTRAP_DEPTH_mean_1_Pds']
+RF_BOOTSTRAP_DEPTH_mean_LAB_Pds = SELECTED_BINNED_DATA_dic['RF_BOOTSTRAP_DEPTH_mean_LAB_Pds']
 
-RF_BOOTSTRAP_DEPTH_mean_520_Pds = SELECTED_BINNED_DATA_dic['RF_BOOTSTRAP_DEPTH_mean_520_Pds']
+RF_DEPTH_mean_MOHO_Pds = SELECTED_BINNED_DATA_dic['mean_MOHO_Pds']
+RF_DEPTH_std_MOHO_Pds = SELECTED_BINNED_DATA_dic['std_MOHO_Pds']
 
-RF_BOOTSTRAP_DEPTH_mean_2_Pds = SELECTED_BINNED_DATA_dic['RF_BOOTSTRAP_DEPTH_mean_2_Pds']
-
-RF_BOOTSTRAP_DEPTH_mean_LVZ_700_Pds = SELECTED_BINNED_DATA_dic['RF_BOOTSTRAP_DEPTH_mean_LVZ_700_Pds']
-
-
-RF_DEPTH_mean_LVZ_Pds = SELECTED_BINNED_DATA_dic['mean_LVZ_Pds']
-RF_DEPTH_std_LVZ_Pds = SELECTED_BINNED_DATA_dic['std_LVZ_Pds']
-
-RF_DEPTH_mean_1_Pds = SELECTED_BINNED_DATA_dic['mean_1_Pds']
-RF_DEPTH_std_1_Pds = SELECTED_BINNED_DATA_dic['std_1_Pds']
-
-RF_DEPTH_mean_520_Pds = SELECTED_BINNED_DATA_dic['mean_520_Pds']
-RF_DEPTH_std_520_Pds = SELECTED_BINNED_DATA_dic['std_520_Pds']
-
-RF_DEPTH_mean_2_Pds = SELECTED_BINNED_DATA_dic['mean_2_Pds']
-RF_DEPTH_std_2_Pds = SELECTED_BINNED_DATA_dic['std_2_Pds']
-
-RF_DEPTH_mean_LVZ_700_Pds = SELECTED_BINNED_DATA_dic['mean_LVZ_700_Pds']
-RF_DEPTH_std_LVZ_700_Pds = SELECTED_BINNED_DATA_dic['std_LVZ_700_Pds']
-
-RF_DEPTH_mtz_thickness_Pds = SELECTED_BINNED_DATA_dic['mtz_thickness_Pds']
-RF_DEPTH_mtz_thickness_Pds_std = SELECTED_BINNED_DATA_dic['mtz_thickness_Pds_std']
+RF_DEPTH_mean_LAB_Pds = SELECTED_BINNED_DATA_dic['mean_LAB_Pds']
+RF_DEPTH_std_LAB_Pds = SELECTED_BINNED_DATA_dic['std_LAB_Pds']
 
 print('Calculating earth model layers')
 print('\n')
@@ -145,23 +124,22 @@ shape_2_SHP = list(reader_2_SHP.geometries())
 plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
 ax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 
-norm_410 = mpl.colors.Normalize(vmin=200,vmax=300,clip=True)
+norm_MOHO = mpl.colors.Normalize(vmin=30,vmax=50,clip=True)
 
 for i,j in enumerate(lons):
-#	if math.isnan(RF_DEPTH_mtz_thickness_Pds[i]) == False and math.isnan(RF_DEPTH_mean_1_Pds[i]) == False  and math.isnan(RF_DEPTH_mean_1_Pds[i]) == False and  math.isnan(RF_DEPTH_mean_LVZ_Pds[i]) == False and math.isnan(RF_DEPTH_mean_520_Pds[i]) == False:
-	if math.isnan(RF_DEPTH_mtz_thickness_Pds[i]) == False and math.isnan(RF_DEPTH_mean_1_Pds[i]) == False  and math.isnan(RF_DEPTH_mean_1_Pds[i]) == False and  math.isnan(RF_DEPTH_mean_LVZ_Pds[i]) == False:
-		circulo_410 = Circle(radius=DIST_GRID_PP,xy=(lons[i],lats[i]),color=colormap(norm_410(RF_DEPTH_mtz_thickness_Pds[i])), ec='k',transform=ccrs.Geodetic(),zorder=3)
-		ax.add_patch(circulo_410)
-		circulo_410.pickable()
-		circulo_410.set_picker(True)
+	if math.isnan(RF_DEPTH_mean_MOHO_Pds[i]) == False and math.isnan(RF_DEPTH_mean_LAB_Pds[i]) == False:
+		circulo_MOHO = Circle(radius=DIST_GRID_PP,xy=(lons[i],lats[i]),color=colormap(norm_MOHO(RF_DEPTH_mean_MOHO_Pds[i])), ec='k',transform=ccrs.Geodetic(),zorder=3)
+		ax.add_patch(circulo_MOHO)
+		circulo_MOHO.pickable()
+		circulo_MOHO.set_picker(True)
 
 ax.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
 
 #______________________________________________________________________
 
-sm_410 = plt.cm.ScalarMappable(cmap=colormap,norm=norm_410)
-sm_410._A = []
-fig.colorbar(sm_410,ax=ax,orientation='horizontal',shrink=0.8)
+sm_MOHO = plt.cm.ScalarMappable(cmap=colormap,norm=norm_MOHO)
+sm_MOHO._A = []
+fig.colorbar(sm_MOHO,ax=ax,orientation='horizontal',shrink=0.8)
 
 plt.title('Pick four points for bootstrapping cross-section and them close the windows', y=1.08)
 
@@ -194,7 +172,7 @@ cid = fig.canvas.mpl_connect('pick_event', onpick1)
 
 plt.show()
 
-PP_FIGURE = OUTPUT_DIR+'MODEL_INTER_DEPTH_'+str(INTER_DEPTH)+'_DEPTH_TARGET_'+str(DEPTH_TARGET)+'/'+'Figures'+'/'
+PP_FIGURE = OUTPUT_DIR+'MODEL_INTER_DEPTH_'+str(INTER_DEPTH)+'_DEPTH_MOHO_'+str(DEPTH_MOHO)+'_DEPTH_LAB_'+str(DEPTH_LAB)+'/'+'Figures'+'/'
 
 RESULTS_FOLDER = PP_FIGURE+'/'+'RESULTS_NUMBER_PP_PER_BIN_'+str(NUMBER_PP_PER_BIN)+'_NUMBER_STA_PER_BIN_'+str(NUMBER_STA_PER_BIN)+'/'
 os.makedirs(RESULTS_FOLDER,exist_ok=True)
@@ -213,59 +191,27 @@ RF_lon_profile = []
 RF_data_profile_Pds = []
 RF_data_profile_Pds_std = []
 
-#350 LVZ
+#MOHO
 
-RF_DEPTH_mean_LVZ_profile_Pds = []
-RF_DEPTH_std_LVZ_profile_Pds = []
+RF_DEPTH_mean_MOHO_profile_Pds = []
+RF_DEPTH_std_MOHO_profile_Pds = []
 
-#P410s
+#LAB
 
-RF_DEPTH_mean_1_profile_Pds = []
-RF_DEPTH_std_1_profile_Pds = []
-
-#P520s
-
-RF_DEPTH_mean_520_profile_Pds = []
-RF_DEPTH_std_520_profile_Pds = []
-
-#P660s
-
-RF_DEPTH_mean_2_profile_Pds = []
-RF_DEPTH_std_2_profile_Pds = []
-
-#700 LVZ
-
-RF_DEPTH_mean_LVZ_700_profile_Pds = []
-RF_DEPTH_std_LVZ_700_profile_Pds = []
-
-#MTZ Pds
-
-RF_DEPTH_mtz_thickness_profile_Pds = [] 
-RF_DEPTH_mtz_thickness_profile_Pds_std = []
+RF_DEPTH_mean_LAB_profile_Pds = []
+RF_DEPTH_std_LAB_profile_Pds = []
 
 #Bootstrap Data Receiver Functions Pds
 
 RF_stacking_Pds_BOOTSTRAP_profile = []
 
-#Bootstrap Data Mean 350 LVZ
+#Bootstrap Data Mean MOHO
 
-RF_BOOTSTRAP_DEPTH_mean_LVZ_Pds_profile = []
+RF_BOOTSTRAP_DEPTH_mean_MOHO_Pds_profile = []
 
-#Bootstrap Data Mean P410s
+#Bootstrap Data Mean LAB
 
-RF_BOOTSTRAP_DEPTH_mean_1_Pds_profile = []
-
-#Bootstrap Data Mean P520s
-
-RF_BOOTSTRAP_DEPTH_mean_520_Pds_profile = []
-
-#Bootstrap Data Mean P660s
-
-RF_BOOTSTRAP_DEPTH_mean_2_Pds_profile = []
-
-#Bootstrap Data Mean 700 LVZ
-
-RF_BOOTSTRAP_DEPTH_mean_LVZ_700_Pds_profile = []
+RF_BOOTSTRAP_DEPTH_mean_LAB_Pds_profile = []
 
 lat_lon = [(lons[k],lats[k]) for k,l in enumerate(lats)]
 
@@ -283,60 +229,27 @@ for i,j in enumerate(lon_click):
 	RF_data_profile_Pds.append(RF_stacking_Pds[idx])
 	RF_data_profile_Pds_std.append(RF_stacking_Pds_std[idx])
 
-	#350 LVZ
+	#MOHO
 	
-	RF_DEPTH_mean_LVZ_profile_Pds.append(RF_DEPTH_mean_LVZ_Pds[idx])
-	RF_DEPTH_std_LVZ_profile_Pds.append(RF_DEPTH_std_LVZ_Pds[idx])
+	RF_DEPTH_mean_MOHO_profile_Pds.append(RF_DEPTH_mean_MOHO_Pds[idx])
+	RF_DEPTH_std_MOHO_profile_Pds.append(RF_DEPTH_std_MOHO_Pds[idx])
 
-	#P410s
+	#LAB
 	
-	RF_DEPTH_mean_1_profile_Pds.append(RF_DEPTH_mean_1_Pds[idx])
-	RF_DEPTH_std_1_profile_Pds.append(RF_DEPTH_std_1_Pds[idx])
-
-	#P520s
-	
-	RF_DEPTH_mean_520_profile_Pds.append(RF_DEPTH_mean_520_Pds[idx])
-	RF_DEPTH_std_520_profile_Pds.append(RF_DEPTH_std_520_Pds[idx])
-
-	#P660s
-	
-	RF_DEPTH_mean_2_profile_Pds.append(RF_DEPTH_mean_2_Pds[idx])
-	RF_DEPTH_std_2_profile_Pds.append(RF_DEPTH_std_2_Pds[idx])
-
-	#700 LVZ
-	
-	RF_DEPTH_mean_LVZ_700_profile_Pds.append(RF_DEPTH_mean_LVZ_700_Pds[idx])
-	RF_DEPTH_std_LVZ_700_profile_Pds.append(RF_DEPTH_std_LVZ_700_Pds[idx])
-	
-	#MTZ Pds
-
-	RF_DEPTH_mtz_thickness_profile_Pds.append(RF_DEPTH_mtz_thickness_Pds[idx])
-	RF_DEPTH_mtz_thickness_profile_Pds_std.append(RF_DEPTH_mtz_thickness_Pds_std[idx])
+	RF_DEPTH_mean_LAB_profile_Pds.append(RF_DEPTH_mean_LAB_Pds[idx])
+	RF_DEPTH_std_LAB_profile_Pds.append(RF_DEPTH_std_LAB_Pds[idx])
 
 	#Bootstrap Data Receiver Functions Pds
 	
 	RF_stacking_Pds_BOOTSTRAP_profile.append(RF_stacking_Pds_BOOTSTRAP[idx])
  
-	#Bootstrap Data Mean 350 LVZ
+	#Bootstrap Data Mean MOHO
 	
-	RF_BOOTSTRAP_DEPTH_mean_LVZ_Pds_profile.append(RF_BOOTSTRAP_DEPTH_mean_LVZ_Pds[idx])
+	RF_BOOTSTRAP_DEPTH_mean_MOHO_Pds_profile.append(RF_BOOTSTRAP_DEPTH_mean_MOHO_Pds[idx])
 
-	#Bootstrap Data Mean P410s
+	#Bootstrap Data Mean LAB
 	
-	RF_BOOTSTRAP_DEPTH_mean_1_Pds_profile.append(RF_BOOTSTRAP_DEPTH_mean_1_Pds[idx])
-
-	#Bootstrap Data Mean P520s
-	
-	RF_BOOTSTRAP_DEPTH_mean_520_Pds_profile.append(RF_BOOTSTRAP_DEPTH_mean_520_Pds[idx])
-
-	#Bootstrap Data Mean P660s
-
-	RF_BOOTSTRAP_DEPTH_mean_2_Pds_profile.append(RF_BOOTSTRAP_DEPTH_mean_2_Pds[idx])
-
-	#Bootstrap Data Mean 700 LVZ
-	
-	RF_BOOTSTRAP_DEPTH_mean_LVZ_700_Pds_profile.append(RF_BOOTSTRAP_DEPTH_mean_LVZ_700_Pds[idx])
-
+	RF_BOOTSTRAP_DEPTH_mean_LAB_Pds_profile.append(RF_BOOTSTRAP_DEPTH_mean_LAB_Pds[idx])
 
 print('Plotting the Final Figure')
 
@@ -384,15 +297,15 @@ tmap = matplotlib.colors.LinearSegmentedColormap.from_list('map_white', colors)
 
 colormap_segmentation = INTER_DEPTH/10
 
-bounds = np.arange(200, 300+colormap_segmentation, colormap_segmentation)
-norm_410 = mpl.colors.BoundaryNorm(boundaries=bounds, ncolors=colormap.N)
+bounds = np.arange(30, 50+colormap_segmentation, colormap_segmentation)
+norm_MOHO = mpl.colors.BoundaryNorm(boundaries=bounds, ncolors=colormap.N)
 
 for i,j in enumerate(lons):
-	if math.isnan(RF_DEPTH_mtz_thickness_Pds[i]) == False:
-		circulo_410 = Circle(radius=DIST_GRID_PP,xy=(lons[i],lats[i]),color=tmap(norm_410(RF_DEPTH_mtz_thickness_Pds[i])), ec='None',transform=ccrs.Geodetic(),zorder=3)
-		newax.add_patch(circulo_410)
-		circulo_410.pickable()
-		circulo_410.set_picker(True)
+	if math.isnan(RF_DEPTH_mean_MOHO_Pds[i]) == False:
+		circulo_MOHO = Circle(radius=DIST_GRID_PP,xy=(lons[i],lats[i]),color=tmap(norm_MOHO(RF_DEPTH_mean_MOHO_Pds[i])), ec='None',transform=ccrs.Geodetic(),zorder=3)
+		newax.add_patch(circulo_MOHO)
+		circulo_MOHO.pickable()
+		circulo_MOHO.set_picker(True)
 
 for i,j in enumerate(lon_click):
 	retangulo_PICK = Circle(radius=DIST_GRID_PP*2,xy=(lon_click[i],lat_click[i]),color='r', ec='k',linewidth=1,transform=ccrs.Geodetic(),zorder=5)
@@ -406,7 +319,7 @@ newax.axis('off')
 for _i, _j in enumerate(RF_data_profile_Pds):
 		pds_grid = fig.add_subplot(gs[0:3, _i*2:_i*2+1])
 
-		pds_grid_410_660 = fig.add_subplot(gs[0:3, _i*2+1])
+		pds_grid_MOHO_LAB = fig.add_subplot(gs[0:3, _i*2+1])
 
 		factor_Pds = 1
 
@@ -424,20 +337,11 @@ for _i, _j in enumerate(RF_data_profile_Pds):
 		max_x = [max(a) for a in zip(*x_data_Pds)]
 		pds_grid.fill_betweenx(y=camadas_terra_10_km,x1=min_x, x2=max_x, facecolor='whitesmoke',alpha=0.3, interpolate=True, zorder=5)
 		
-		if math.isnan(RF_DEPTH_mean_1_profile_Pds[i]) == False:
-			pds_grid.text(-0.0095,RF_DEPTH_mean_1_profile_Pds[_i],str(round(RF_DEPTH_mean_1_profile_Pds[_i]))+'±'+str(round(RF_DEPTH_std_1_profile_Pds[_i])),zorder=40,fontsize=9, fontweight='bold',ha='left',bbox={'facecolor':'white','edgecolor':'none','pad':1})
+		if math.isnan(RF_DEPTH_mean_MOHO_profile_Pds[i]) == False:
+			pds_grid.text(-0.0095,RF_DEPTH_mean_MOHO_profile_Pds[_i],str(round(RF_DEPTH_mean_MOHO_profile_Pds[_i]))+'±'+str(round(RF_DEPTH_std_MOHO_profile_Pds[_i])),zorder=40,fontsize=9, fontweight='bold',ha='left',bbox={'facecolor':'white','edgecolor':'none','pad':1})
 		
-		if math.isnan(RF_DEPTH_mean_520_profile_Pds[i]) == False and math.isnan(RF_DEPTH_std_520_profile_Pds[i]) == False:
-			pds_grid.text(-0.0095,RF_DEPTH_mean_520_profile_Pds[_i],str(round(RF_DEPTH_mean_520_profile_Pds[_i]))+'±'+str(round(RF_DEPTH_std_520_profile_Pds[_i])),zorder=41,fontsize=9, fontweight='bold',ha='left',bbox={'facecolor':'white','edgecolor':'none','pad':1})
-
-		if math.isnan(RF_DEPTH_mean_2_profile_Pds[i]) == False:
-			pds_grid.text(-0.0095,RF_DEPTH_mean_2_profile_Pds[_i],str(round(RF_DEPTH_mean_2_profile_Pds[_i]))+'±'+str(round(RF_DEPTH_std_2_profile_Pds[_i])),zorder=42,fontsize=9, fontweight='bold',ha='left',bbox={'facecolor':'white','edgecolor':'none','pad':1})
-
-		if math.isnan(RF_DEPTH_mean_LVZ_profile_Pds[i]) == False and math.isnan(RF_DEPTH_std_LVZ_profile_Pds[i]) == False:
-			pds_grid.text(0.001,RF_DEPTH_mean_LVZ_profile_Pds[_i],str(round(RF_DEPTH_mean_LVZ_profile_Pds[_i]))+'±'+str(round(RF_DEPTH_std_LVZ_profile_Pds[_i])),zorder=42,fontsize=9, fontweight='bold',ha='left',bbox={'facecolor':'white','edgecolor':'none','pad':1})
-
-		if math.isnan(RF_DEPTH_mean_LVZ_700_profile_Pds[i]) == False and math.isnan(RF_DEPTH_std_LVZ_700_profile_Pds[i]) == False:
-			pds_grid.text(0.001,RF_DEPTH_mean_LVZ_700_profile_Pds[_i],str(round(RF_DEPTH_mean_LVZ_700_profile_Pds[_i]))+'±'+str(round(RF_DEPTH_std_LVZ_700_profile_Pds[_i])),zorder=42,fontsize=9, fontweight='bold',ha='left',bbox={'facecolor':'white','edgecolor':'none','pad':1})
+		if math.isnan(RF_DEPTH_mean_LAB_profile_Pds[i]) == False:
+			pds_grid.text(-0.0095,RF_DEPTH_mean_LAB_profile_Pds[_i],str(round(RF_DEPTH_mean_LAB_profile_Pds[_i]))+'±'+str(round(RF_DEPTH_std_LAB_profile_Pds[_i])),zorder=42,fontsize=9, fontweight='bold',ha='left',bbox={'facecolor':'white','edgecolor':'none','pad':1})
 
 		RF_data_factor_Pds = [l for k, l in enumerate(_j)]
 		pds_grid.plot(RF_data_factor_Pds,camadas_terra_10_km,'k',linewidth=2, zorder=30)
@@ -458,13 +362,13 @@ for _i, _j in enumerate(RF_data_profile_Pds):
 
 		pds_grid.fill_betweenx(camadas_terra_10_km,RF_data_factor_Pds,0,where=np.array(RF_data_factor_Pds)>=0,alpha=0.5, facecolor='dimgrey',interpolate=True, zorder=19)
 		pds_grid.fill_betweenx(camadas_terra_10_km,RF_data_factor_Pds,0,where=np.array(RF_data_factor_Pds)<=0,alpha=0.5, facecolor='lightgrey', interpolate=True, zorder=20)
-		pds_grid.set_xlim(-0.01,0.01)
+		#pds_grid.set_xlim(-0.01,0.01)
 		pds_grid.xaxis.label.set_size(24)
 		pds_grid.yaxis.label.set_size(24)
 
 	
 		pds_grid.set_title('Lat = '+str(round(RF_lat_profile[_i],1))+' - Lon = '+str(round(RF_lon_profile[_i],1)))
-		pds_grid.set_ylim(799,301)
+		pds_grid.set_ylim(199,1)
 
 		if _i == 0:
 			pds_grid.set_ylabel('Depth (km)',fontsize=15)
@@ -472,49 +376,34 @@ for _i, _j in enumerate(RF_data_profile_Pds):
 		if _i != 0:
 			pds_grid.axes.axes.yaxis.set_ticklabels([])
 
-		#### Plot 350 LVZ ####
+		#### Plot MOHO ####
 
-		pds_grid_410_660.hist(RF_BOOTSTRAP_DEPTH_mean_LVZ_Pds_profile[_i],bins=10,orientation='horizontal',color='k')
+		pds_grid_MOHO_LAB.hist(RF_BOOTSTRAP_DEPTH_mean_MOHO_Pds_profile[_i],bins=10,orientation='horizontal',color='k')
 
-		#### Plot Depth 410 Pds ####
+		#### Plot LAB ####
 
-		pds_grid_410_660.hist(RF_BOOTSTRAP_DEPTH_mean_1_Pds_profile[_i],bins=10,orientation='horizontal',color='k')
+		pds_grid_MOHO_LAB.hist(RF_BOOTSTRAP_DEPTH_mean_LAB_Pds_profile[_i],bins=10,orientation='horizontal',color='k')
 
-		#### Plot Depth 520 Pds ####
-
-		pds_grid_410_660.hist(RF_BOOTSTRAP_DEPTH_mean_520_Pds_profile[_i],bins=10,orientation='horizontal',color='k')
-
-		#### Plot Depth 660 Pds ####
-
-		pds_grid_410_660.hist(RF_BOOTSTRAP_DEPTH_mean_2_Pds_profile[_i],bins=10,orientation='horizontal',color='k')
-
-		#### Plot 700 LVZ ####
-
-		pds_grid_410_660.hist(RF_BOOTSTRAP_DEPTH_mean_LVZ_700_Pds_profile[_i],bins=10,orientation='horizontal',color='k')
-
-		pds_grid_410_660.yaxis.set_ticks_position('both')
-		pds_grid_410_660.yaxis.set_ticks_position('both')
-		pds_grid_410_660.yaxis.set_major_locator(majorLocatorY)
-		pds_grid_410_660.yaxis.set_minor_locator(minorLocatorY)
-		pds_grid_410_660.grid(True,which='major',linestyle='None')
-		pds_grid_410_660.set_xlabel('Population')
-		pds_grid_410_660.set_xlim(0,100)
-		pds_grid_410_660.set_ylim(799,301)
+		pds_grid_MOHO_LAB.yaxis.set_ticks_position('both')
+		pds_grid_MOHO_LAB.yaxis.set_ticks_position('both')
+		pds_grid_MOHO_LAB.yaxis.set_major_locator(majorLocatorY)
+		pds_grid_MOHO_LAB.yaxis.set_minor_locator(minorLocatorY)
+		pds_grid_MOHO_LAB.grid(True,which='major',linestyle='None')
+		pds_grid_MOHO_LAB.set_xlabel('Population')
+		pds_grid_MOHO_LAB.set_xlim(0,100)
+		pds_grid_MOHO_LAB.set_ylim(199,1)
 
 
 		if _i != 3:
-			pds_grid_410_660.axes.axes.yaxis.set_ticklabels([])
+			pds_grid_MOHO_LAB.axes.axes.yaxis.set_ticklabels([])
 
 		if _i == 3:
-			pds_grid_410_660.set_ylabel('Depth (km)',fontsize=15)
-			pds_grid_410_660.yaxis.set_label_position("right")
-			pds_grid_410_660.tick_params(labelright=True,labelleft=False,labelsize=10)
-
-
-		pds_grid_410_660.text(5,790,' MTZ = '+str(round(RF_DEPTH_mtz_thickness_profile_Pds[_i]))+'±'+str(round(RF_DEPTH_mtz_thickness_profile_Pds_std[_i])),zorder=40,fontsize=8, fontweight='bold',bbox={'facecolor':'white','edgecolor':'none','pad':1})		
+			pds_grid_MOHO_LAB.set_ylabel('Depth (km)',fontsize=15)
+			pds_grid_MOHO_LAB.yaxis.set_label_position("right")
+			pds_grid_MOHO_LAB.tick_params(labelright=True,labelleft=False,labelsize=10)
 
 plt.show()
 
-fig.savefig(RESULTS_FOLDER+'SELECTED_BINNED_DATA_CROSS_SECTION_Pds_Ppds_bootstrap.'+EXT_FIG,dpi=DPI_FIG)
+fig.savefig(RESULTS_FOLDER+'SELECTED_BINNED_DATA_CROSS_SECTION_bootstrap.'+EXT_FIG,dpi=DPI_FIG)
 
 print('Ending the Cross section CODE')

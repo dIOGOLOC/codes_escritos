@@ -36,10 +36,10 @@ import math
 
 from parameters_py.mgconfig import (
 					RF_EXT,MODEL_FILE_NPZ,MIN_DEPTH,MAX_DEPTH,INTER_DEPTH,SHAPEFILE_GRID,FILTER_BY_SHAPEFILE,
-					NUMBER_PP_PER_BIN,DEPTH_TARGET,RF_FREQUENCY,
+					NUMBER_PP_PER_BIN,DEPTH_MOHO,DEPTH_LAB,RF_FREQUENCY,
 					LLCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLON_LARGE,URCRNRLAT_LARGE,
 					LLCRNRLON_SMALL,URCRNRLON_SMALL,LLCRNRLAT_SMALL,URCRNRLAT_SMALL,
-					PROJECT_LAT,PROJECT_LON,GRID_PP_MULT,BOUNDARY_1_SHP,BOUNDARY_2_SHP,
+					PROJECT_LAT,PROJECT_LON,GRID_PP_SPACE,BOUNDARY_1_SHP,BOUNDARY_2_SHP,
 					EXT_FIG,DPI_FIG,DIST_GRID_PP,NUMBER_STA_PER_BIN,OUTPUT_DIR,CONFIDENCE_BOUND,
 					DEPTH_RANGE,BOOTSTRAP_INTERATOR,COLORMAP_STD,COLORMAP_VEL
 				   )
@@ -52,44 +52,37 @@ print('\n')
 
 print('Importing earth model from obspy.taup.TauPyModel')
 print('Importing earth model from : '+MODEL_FILE_NPZ)
+print('\n')
+
 model_10_km = TauPyModel(model=MODEL_FILE_NPZ)
 
 
 for i,j in enumerate(model_10_km.model.s_mod.v_mod.layers):
-	if j[1] == 100:
-		Vp_depth_1 = j[3]
-		Vs_depth_1 = j[5]
+	if j[1] == DEPTH_MOHO:
+		Vp_depth_MOHO = j[3]
+		Vs_depth_MOHO = j[5]
 
-print('100 km earth model Vp : '+str(Vp_depth_1))
-print('100 km earth model Vs : '+str(Vs_depth_1))
+print('----')
+print('Moho earth model Vp : '+str(Vp_depth_MOHO))
+print('Moho km earth model Vs : '+str(Vs_depth_MOHO))
 print('----')
 
 #====================================================
 		
 for i,j in enumerate(model_10_km.model.s_mod.v_mod.layers):
-	if j[1] == 250:
-		Vp_depth_2 = j[3]
-		Vs_depth_2 = j[5]
+	if j[1] == DEPTH_LAB:
+		Vp_depth_LAB = j[3]
+		Vs_depth_LAB = j[5]
 
-print('250 km earth model Vp : '+str(Vp_depth_2))
-print('250 km earth model Vs : '+str(Vs_depth_2))
+print('LAB earth model Vp : '+str(Vp_depth_LAB))
+print('LAB earth model Vs : '+str(Vs_depth_LAB))
 print('----')
 
-#====================================================
-print('Target Depth = '+str(DEPTH_TARGET))
-
-for i,j in enumerate(model_10_km.model.s_mod.v_mod.layers):
-	if j[1] == DEPTH_TARGET:
-		Vp_depth_DEPTH_TARGET = j[3]
-		Vs_depth_DEPTH_TARGET = j[5]
-
-print('Target Depth earth model Vp : '+str(Vp_depth_DEPTH_TARGET))
-print('Target Depth earth model Vs : '+str(Vs_depth_DEPTH_TARGET))
 #====================================================
 
 print('\n')
 
-STA_DIR = OUTPUT_DIR+'MODEL_INTER_DEPTH_'+str(INTER_DEPTH)+'_DEPTH_TARGET_'+str(DEPTH_TARGET)+'/'+'Stations'+'/'
+STA_DIR = OUTPUT_DIR+'MODEL_INTER_DEPTH_'+str(INTER_DEPTH)+'_DEPTH_MOHO_'+str(DEPTH_MOHO)+'_DEPTH_LAB_'+str(DEPTH_LAB)+'/'+'Stations'+'/'
 
 print('Looking for Receiver Functions data in JSON file in '+STA_DIR)
 print('\n')
@@ -117,106 +110,75 @@ camadas_terra_10_km = np.arange(MIN_DEPTH,MAX_DEPTH+INTER_DEPTH,INTER_DEPTH)
 print('Importing Pds piercing points to each PHASE')
 print('\n')
 
-PHASES = 'P100s','P'+str(DEPTH_TARGET)+'s','P250s'
+PHASES = 'P'+str(DEPTH_MOHO)+'s','P'+str(DEPTH_LAB)+'s'
 
 print('Importing Pds Piercing Points for '+PHASES[0])
 print('\n')
 
-PP_DIR = OUTPUT_DIR+'MODEL_INTER_DEPTH_'+str(INTER_DEPTH)+'_DEPTH_TARGET_'+str(DEPTH_TARGET)+'/'+'Piercing_Points'+'/'
+PP_DIR = OUTPUT_DIR+'MODEL_INTER_DEPTH_'+str(INTER_DEPTH)+'_DEPTH_MOHO_'+str(DEPTH_MOHO)+'_DEPTH_LAB_'+str(DEPTH_LAB)+'/'+'Piercing_Points'+'/'
 
+filename_MOHO = PP_DIR+'PP_'+PHASES[0]+'_dic.json'
 
-filename_1 = PP_DIR+'PP_'+PHASES[0]+'_dic.json'
+PP_MOHO_dic = json.load(open(filename_MOHO))
 
-PP_1_dic = json.load(open(filename_1))
-
-
-PP_time_1 = PP_1_dic['time']
-PP_lat_1 = PP_1_dic['lat']
-PP_lon_1 = PP_1_dic['lon']
-PP_depth_1 = PP_1_dic['depth']
-
+PP_time_MOHO = PP_MOHO_dic['time']
+PP_lat_MOHO = PP_MOHO_dic['lat']
+PP_lon_MOHO = PP_MOHO_dic['lon']
+PP_depth_MOHO = PP_MOHO_dic['depth']
 
 print('Importing Pds Piercing Points for '+PHASES[1])
 print('\n')
 
-filename_med = PP_DIR+'PP_'+PHASES[1]+'_dic.json'
+filename_LAB = PP_DIR+'PP_'+PHASES[1]+'_dic.json'
 
-PP_med_dic = json.load(open(filename_med))
+PP_LAB_dic = json.load(open(filename_LAB))
 
-PP_time_med = PP_med_dic['time']
-PP_lat_med = PP_med_dic['lat']
-PP_lon_med = PP_med_dic['lon']
-PP_depth_med = PP_med_dic['depth']
+PP_time_LAB = PP_LAB_dic['time']
+PP_lat_LAB = PP_LAB_dic['lat']
+PP_lon_LAB = PP_LAB_dic['lon']
+PP_depth_LAB = PP_LAB_dic['depth']
 
-
-print('Importing Pds Piercing Points for '+PHASES[2])
+print('MOHO Piercing Points')
 print('\n')
 
-filename_2 = PP_DIR+'PP_'+PHASES[2]+'_dic.json'
+pp_MOHO_lat  = [[]]*len(PP_lon_MOHO)
+pp_MOHO_long  = [[]]*len(PP_lon_MOHO)
+pp_MOHO_time  = [[]]*len(PP_lon_MOHO)
 
-PP_2_dic = json.load(open(filename_2))
-
-PP_time_2 = PP_2_dic['time']
-PP_lat_2 = PP_2_dic['lat']
-PP_lon_2 = PP_2_dic['lon']
-PP_depth_2 = PP_2_dic['depth'] 
-
-print('P100s Piercing Points')
-print('\n')
-
-pp_1_lat  = [[]]*len(PP_lon_1)
-pp_1_long  = [[]]*len(PP_lon_1)
-
-
-for i,j in enumerate(PP_lon_1):
+for i,j in enumerate(PP_lon_MOHO):
 	for k,l in enumerate(j):
-		if LLCRNRLON_LARGE<= l <= URCRNRLON_LARGE and PP_depth_1[i][k] == 100:
-				pp_1_lat[i] = PP_lat_1[i][k]
-				pp_1_long[i] = l
+		if LLCRNRLON_LARGE<= l <= URCRNRLON_LARGE and PP_depth_MOHO[i][k] == DEPTH_MOHO:
+				pp_MOHO_lat[i] = PP_lat_MOHO[i][k]
+				pp_MOHO_long[i] = l
+				pp_MOHO_time[i] = PP_time_MOHO[i][-1] - PP_time_MOHO[i][k]
 
-pp_1_lat = [i for i in pp_1_lat if type(i) == float ]
-pp_1_long = [i for i in pp_1_long if type(i) == float ]
+pp_MOHO_lat = [i for i in pp_MOHO_lat if type(i) == float]
+pp_MOHO_long = [i for i in pp_MOHO_long if type(i) == float]
+pp_MOHO_time = [i for i in pp_MOHO_time if type(i) == float]
 
-print('P'+str(DEPTH_TARGET)+'s Piercing Points')
+print('LAB Piercing Points')
 print('\n')
 
-pp_med_lat  = [[]]*len(PP_lon_med)
-pp_med_long  = [[]]*len(PP_lon_med)
-pp_time_DEPTH_TARGET  = [[]]*len(PP_lon_med)
+pp_LAB_lat  = [[]]*len(PP_lon_LAB)
+pp_LAB_long  = [[]]*len(PP_lon_LAB)
+pp_LAB_time  = [[]]*len(PP_lon_LAB)
 
-for i,j in enumerate(PP_lon_med):
+for i,j in enumerate(PP_lon_LAB):
 	for k,l in enumerate(j):
-		if LLCRNRLON_LARGE <= l <= URCRNRLON_LARGE and PP_depth_med[i][k] == DEPTH_TARGET:
-				pp_med_lat[i] = PP_lat_med[i][k]
-				pp_med_long[i] = l
-				pp_time_DEPTH_TARGET[i] = PP_time_med[i][-1] - PP_time_med[i][k]
+		if LLCRNRLON_LARGE <= l <= URCRNRLON_LARGE and PP_depth_LAB[i][k] == DEPTH_LAB:
+			if PP_lon_LAB[i][k]  != [] and PP_lat_LAB[i][k] != []:
+				pp_LAB_lat[i] = PP_lat_LAB[i][k]
+				pp_LAB_long[i] = l
+				pp_LAB_time[i] = PP_time_LAB[i][-1] - PP_time_LAB[i][k]
 
-pp_med_lat = [i for i in pp_med_lat if type(i) == float ]
-pp_med_long = [i for i in pp_med_long if type(i) == float ]
-pp_time_DEPTH_TARGET = [i for i in pp_time_DEPTH_TARGET if type(i) == float ]
-
-print('P250s Piercing Points')
-print('\n')
-
-pp_2_lat  = [[]]*len(PP_lon_2)
-pp_2_long  = [[]]*len(PP_lon_2)
-
-
-for i,j in enumerate(PP_lon_2):
-	for k,l in enumerate(j):
-		if LLCRNRLON_LARGE <= l <= URCRNRLON_LARGE and PP_depth_2[i][k] == 250:
-			if PP_lon_2[i][k]  != [] and PP_lat_2[i][k] != []:
-				pp_2_lat[i] = PP_lat_2[i][k]
-				pp_2_long[i] = l
-
-pp_2_lat = [i for i in pp_2_lat if type(i) == float ]
-pp_2_long = [i for i in pp_2_long if type(i) == float ]
-
+pp_LAB_lat = [i for i in pp_LAB_lat if type(i) == float]
+pp_LAB_long = [i for i in pp_LAB_long if type(i) == float]
+pp_LAB_time = [i for i in pp_LAB_time if type(i) == float]
 
 print('Calculating MEAN FIRST FRESNEL ZONE RADIUS')
-print('DEPTH TARGET MEAN TIME: '+str(np.mean(pp_time_DEPTH_TARGET)))
+print('DEPTH LAB MEAN TIME: '+str(np.mean(pp_LAB_time)))
 
-FRESNEL_ZONE_RADIUS_km = (Vp_depth_DEPTH_TARGET/2)* np.sqrt(np.mean(pp_time_DEPTH_TARGET) / RF_FREQUENCY)
+FRESNEL_ZONE_RADIUS_km = (Vp_depth_LAB/2)* np.sqrt(np.mean(pp_LAB_time) / RF_FREQUENCY)
 FRESNEL_ZONE_RADIUS = kilometer2degrees(FRESNEL_ZONE_RADIUS_km)
 
 print('MEAN FIRST FRESNEL ZONE RADIUS : '+str(FRESNEL_ZONE_RADIUS))
@@ -225,12 +187,9 @@ print('\n')
 print('Creating GRID POINTS')
 print('\n')
 
-area = (LLCRNRLON_SMALL,URCRNRLON_SMALL, LLCRNRLAT_SMALL, URCRNRLAT_SMALL)
+region = (LLCRNRLON_SMALL,URCRNRLON_SMALL, LLCRNRLAT_SMALL, URCRNRLAT_SMALL)
 
-shape = (abs(abs(URCRNRLON_SMALL) - abs(LLCRNRLON_SMALL))*GRID_PP_MULT, abs(abs(URCRNRLAT_SMALL) - abs(LLCRNRLAT_SMALL))*GRID_PP_MULT)
-
-grdx, grdy = vd.grid_coordinates(region=area,shape=shape)
-
+grdx, grdy = vd.grid_coordinates(region=region,spacing=(GRID_PP_SPACE,GRID_PP_SPACE))
 
 grdx = [item for sublist in grdx for item in sublist]
 grdy = [item for sublist in grdy for item in sublist]
@@ -257,20 +216,20 @@ if FILTER_BY_SHAPEFILE == True:
 print('Filtering GRID POINTS')
 print('\n')
 
-dist_pp_grid_med = [[]]*len(grdx)
+dist_pp_grid_LAB = [[]]*len(grdx)
 for i,j in enumerate(grdx):
-    dist_pp_grid_med[i] = [np.sqrt((j - pp_med_long[k])**2 + (grdy[i] - l)**2) for k,l in enumerate(pp_med_lat)]
-    dist_pp_grid_med[i] = [np.sqrt((j - pp_med_long[k])**2 + (grdy[i] - l)**2) for k,l in enumerate(pp_med_lat)]
+    dist_pp_grid_LAB[i] = [np.sqrt((j - pp_LAB_long[k])**2 + (grdy[i] - l)**2) for k,l in enumerate(pp_LAB_lat)]
+    dist_pp_grid_LAB[i] = [np.sqrt((j - pp_LAB_long[k])**2 + (grdy[i] - l)**2) for k,l in enumerate(pp_LAB_lat)]
 
 
-grid_sel_med = []
-for i,j in enumerate(dist_pp_grid_med):
+grid_sel_LAB = []
+for i,j in enumerate(dist_pp_grid_LAB):
 	vect_j = np.array(j)
 	indices = vect_j.argsort()
 	if vect_j[indices[NUMBER_PP_PER_BIN]] <= FRESNEL_ZONE_RADIUS:
-		grid_sel_med.append((grdx[i],grdy[i]))
+		grid_sel_LAB.append((grdx[i],grdy[i]))
 
-grid_sel = grid_sel_med
+grid_sel = grid_sel_LAB
 
 grid_selected = set(map(tuple,grid_sel))
 
@@ -280,28 +239,6 @@ grid_sel_y = []
 for i,j in enumerate(grid_selected):
     grid_sel_x.append(j[0])
     grid_sel_y.append(j[1])
-
-grdx_1 = []
-grdy_1 = []
-grdx_sel_diff = []
-for i,j in enumerate(grdx):
-    grdx_sel_diff.append((j,grdy[i]))
-
-grid_sel_diff = []
-for i,j in enumerate(grid_selected):
-	grid_sel_diff.append((j[0],j[1]))
-
-grid_xy_diff = []
-for i,j in enumerate(grdx_sel_diff):
-	if j not in grid_sel_diff:
-		grid_xy_diff.append(j)			
-	
-grid_x_diff = []
-grid_y_diff = []
-for i,j in enumerate(grid_xy_diff):
-	grid_x_diff.append(j[0])
-	grid_y_diff.append(j[1])
-
 
 ###################################################################################################################
 print('Plotting: Figure Pds Piercing Points')
@@ -314,15 +251,12 @@ fig_PP_Pds, ax = plt.subplots(ncols=1, subplot_kw={'projection': ccrs.Mercator(c
 
 ax.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
 l1, = ax.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.Geodetic())
-l2, = ax.plot(pp_1_long,pp_1_lat, '.',markersize=5,markeredgecolor='k',markerfacecolor='b',transform=ccrs.Geodetic())
-l3, = ax.plot(pp_med_long,pp_med_lat, '.',markersize=5,markeredgecolor='k',markerfacecolor='g',transform=ccrs.Geodetic())
-l4, = ax.plot(pp_2_long,pp_2_lat, '.',markersize=5,markeredgecolor='k',markerfacecolor='r',transform=ccrs.Geodetic())
+l2, = ax.plot(pp_MOHO_long,pp_MOHO_lat, '.',markersize=5,markeredgecolor='k',markerfacecolor='b',transform=ccrs.Geodetic())
+l3, = ax.plot(pp_LAB_long,pp_LAB_lat, '.',markersize=5,markeredgecolor='k',markerfacecolor='g',transform=ccrs.Geodetic())
 
-legend = ax.legend([l1,l2,l3,l4],['Stations','Piercing Points 100 km','Piercing Points '+str(DEPTH_TARGET)+' km','Piercing Points 250 km'],scatterpoints=1, frameon=True,labelspacing=1, loc='lower right',facecolor='w',fontsize='smaller')
+legend = ax.legend([l1,l2,l3],['Stations','Piercing Points MOHO','Piercing Points LAB'],scatterpoints=1, frameon=True,labelspacing=1, loc='lower right',facecolor='w',fontsize='smaller')
 
 legend.get_frame().set_facecolor('white')
-
-
 
 reader_1_SHP = Reader(BOUNDARY_1_SHP)
 shape_1_SHP = list(reader_1_SHP.geometries())
@@ -335,9 +269,7 @@ plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
 ax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 ax.gridlines(draw_labels=True)
 
-#plt.show()
-
-PP_FIGURE = OUTPUT_DIR+'MODEL_INTER_DEPTH_'+str(INTER_DEPTH)+'_DEPTH_TARGET_'+str(DEPTH_TARGET)+'/'+'Figures'+'/'
+PP_FIGURE = OUTPUT_DIR+'MODEL_INTER_DEPTH_'+str(INTER_DEPTH)+'_DEPTH_MOHO_'+str(DEPTH_MOHO)+'_DEPTH_LAB_'+str(DEPTH_LAB)+'/'+'Figures'+'/'
 
 RESULTS_FOLDER = PP_FIGURE+'RESULTS_NUMBER_PP_PER_BIN_'+str(NUMBER_PP_PER_BIN)+'_NUMBER_STA_PER_BIN_'+str(NUMBER_STA_PER_BIN)+'/'
 os.makedirs(RESULTS_FOLDER,exist_ok=True)
@@ -359,14 +291,13 @@ fig_PP_Pds, ax = plt.subplots(ncols=1, subplot_kw={'projection': ccrs.Mercator(c
 
 ax.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
 l1, = ax.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.Geodetic())
-l2, = ax.plot(pp_1_long,pp_1_lat, '.',markersize=5,markeredgecolor='k',markerfacecolor='b',transform=ccrs.Geodetic())
-l3, = ax.plot(pp_med_long,pp_med_lat, '.',markersize=5,markeredgecolor='k',markerfacecolor='g',transform=ccrs.Geodetic())
-l4, = ax.plot(pp_2_long,pp_2_lat, '.',markersize=5,markeredgecolor='k',markerfacecolor='r',transform=ccrs.Geodetic())
+l2, = ax.plot(pp_MOHO_long,pp_MOHO_lat, '.',markersize=5,markeredgecolor='k',markerfacecolor='b',transform=ccrs.Geodetic())
+l3, = ax.plot(pp_LAB_long,pp_LAB_lat, '.',markersize=5,markeredgecolor='k',markerfacecolor='g',transform=ccrs.Geodetic())
 
 for i,j in enumerate(grdx):
 	circulo = Circle(radius=DIST_GRID_PP,xy=(grdx[i], grdy[i]),color='None', ec='k',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
 	ax.add_patch(circulo)
-legend = ax.legend([l1,l2,l3,l4,circulo],['Stations','Piercing Points 100 km','Piercing Points '+str(DEPTH_TARGET)+' km','Piercing Points 250 km','Selected Grid'],scatterpoints=1, frameon=True,labelspacing=1, loc='lower right',facecolor='w',fontsize='smaller')
+legend = ax.legend([l1,l2,l3,circulo],['Stations','Piercing Points MOHO','Piercing Points LAB','Selected Grid'],scatterpoints=1, frameon=True,labelspacing=1, loc='lower right',facecolor='w',fontsize='smaller')
 
 legend.get_frame().set_facecolor('white')
 
@@ -380,8 +311,6 @@ shape_2_SHP = list(reader_2_SHP.geometries())
 plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
 ax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 ax.gridlines(draw_labels=True)
-
-#plt.show()
 
 fig_PP_Pds.savefig(RESULTS_FOLDER+'PP_Pds.'+EXT_FIG,dpi=DPI_FIG)
 
@@ -398,13 +327,13 @@ fig_PP, ax = plt.subplots(ncols=1, subplot_kw={'projection': ccrs.Mercator(centr
 
 ax.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
 l1, = ax.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.Geodetic())
-l3, = ax.plot(pp_med_long,pp_med_lat, 'X',markersize=5,markeredgecolor='k',markerfacecolor='k',alpha=0.5,transform=ccrs.Geodetic())
+l3, = ax.plot(pp_LAB_long,pp_LAB_lat, 'X',markersize=5,markeredgecolor='k',markerfacecolor='k',alpha=0.5,transform=ccrs.Geodetic())
 
 for i,j in enumerate(grdx):
 	circulo = Circle(radius=DIST_GRID_PP,xy=(grdx[i], grdy[i]),color='None', ec='k',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
 	ax.add_patch(circulo)
-for i,j in enumerate(pp_med_long):
-	circulo_fresnel = Circle(radius=FRESNEL_ZONE_RADIUS, xy=(pp_med_long[i],pp_med_lat[i]), color='gray',linewidth=0,alpha=0.2,transform=ccrs.Geodetic(),zorder=1)
+for i,j in enumerate(pp_LAB_long):
+	circulo_fresnel = Circle(radius=FRESNEL_ZONE_RADIUS, xy=(pp_LAB_long[i],pp_LAB_lat[i]), color='gray',linewidth=0,alpha=0.2,transform=ccrs.Geodetic(),zorder=1)
 	ax.add_patch(circulo_fresnel)
 
 reader_1_SHP = Reader(BOUNDARY_1_SHP)
@@ -417,14 +346,14 @@ shape_2_SHP = list(reader_2_SHP.geometries())
 plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
 ax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 
-legend = ax.legend([l1,l3,circulo,circulo_fresnel],['Stations','Piercing Points '+str(DEPTH_TARGET)+' km','Selected Grid','Piercing Points Fresnel Zone'],scatterpoints=1, frameon=True,labelspacing=1, loc='lower right',facecolor='w',fontsize='smaller')
+legend = ax.legend([l1,l3,circulo,circulo_fresnel],['Stations','Piercing Points LAB','Selected Grid','Piercing Points Fresnel Zone'],scatterpoints=1, frameon=True,labelspacing=1, loc='lower right',facecolor='w',fontsize='smaller')
 ax.gridlines(draw_labels=True)
 legend.get_frame().set_facecolor('white')
 
 
 #plt.show()
 
-fig_PP.savefig(RESULTS_FOLDER+'PP_MED_Pds.'+EXT_FIG,dpi=DPI_FIG)
+fig_PP.savefig(RESULTS_FOLDER+'PP_LAB_Pds.'+EXT_FIG,dpi=DPI_FIG)
 
 
 ##########################################################################################################################################
@@ -432,7 +361,7 @@ fig_PP.savefig(RESULTS_FOLDER+'PP_MED_Pds.'+EXT_FIG,dpi=DPI_FIG)
 print('Importing depths and times of Pds conversion  dataset')
 print('\n')
 
-PdS_DIR = OUTPUT_DIR+'MODEL_INTER_DEPTH_'+str(INTER_DEPTH)+'_DEPTH_TARGET_'+str(DEPTH_TARGET)+'/'+'Phases'+'/'
+PdS_DIR = OUTPUT_DIR+'MODEL_INTER_DEPTH_'+str(INTER_DEPTH)+'_DEPTH_MOHO_'+str(DEPTH_MOHO)+'_DEPTH_LAB_'+str(DEPTH_LAB)+'/'+'Phases'+'/'
 
 filename_Pds = PdS_DIR+'Pds_dic.json'
 
@@ -474,8 +403,8 @@ for i,j in enumerate(RF_amplitude_time_Pds):
 print('Filtering migrated data per grid data raw')
 print('\n')
 
-dados_grid_lat = pp_med_lat
-dados_grid_lon = pp_med_long
+dados_grid_lat = pp_LAB_lat
+dados_grid_lon = pp_LAB_long
 
 number_PP_per_bin_raw = [[]]*len(grdx)
 
@@ -534,8 +463,8 @@ fig_PP.savefig(RESULTS_FOLDER+'NUMBER_PP_PER_BIN.'+EXT_FIG,dpi=DPI_FIG)
 print('Filtering migrated data per selected grid data')
 print('\n')
 
-dados_grid_lat = pp_med_lat
-dados_grid_lon = pp_med_long
+dados_grid_lat = pp_LAB_lat
+dados_grid_lon = pp_LAB_long
 
 RF_data_raw_Pds = [[]]*len(grid_sel_x)
 RF_amplitude_depth_raw_Pds = [[]]*len(grid_sel_x)
@@ -582,87 +511,42 @@ for _k in range(BOOTSTRAP_INTERATOR):
 
 			RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['RF_DATA'] = RF_STACKING_BOOTSTRAP_Pds
 
-			######## Estimating LVZ atop the 100-km discontinuity  ########
+			######## Estimating MOHO apparent depth ########
 
-			#LVZ atop 100 km
+			lst_depth_amp_MOHO_Pds = [RF_STACKING_BOOTSTRAP_Pds[x] for x,c in enumerate(camadas_terra_10_km) if DEPTH_MOHO-DEPTH_RANGE <= c <= DEPTH_MOHO+DEPTH_RANGE]
+			lst_depth_pp_MOHO_Pds = [c for x,c in enumerate(camadas_terra_10_km) if DEPTH_MOHO-DEPTH_RANGE <= c <= DEPTH_MOHO+DEPTH_RANGE]
+			lst_MOHO_depth_Pds = lst_depth_pp_MOHO_Pds[lst_depth_amp_MOHO_Pds.index(max(lst_depth_amp_MOHO_Pds))]
+			lst_MOHO_amp_Pds = lst_depth_amp_MOHO_Pds.index(max(lst_depth_amp_MOHO_Pds))
 
-			lst_depth_amp_LVZ_Pds = [RF_STACKING_BOOTSTRAP_Pds[x] for x,c in enumerate(camadas_terra_10_km) if 100-(DEPTH_RANGE) <= c <= 100+(DEPTH_RANGE)]
-			lst_depth_pp_LVZ_Pds = [c for x,c in enumerate(camadas_terra_10_km) if 100-(DEPTH_RANGE) <= c <= 100+(DEPTH_RANGE)]
-			lst_LVZ_depth_Pds = lst_depth_pp_LVZ_Pds[lst_depth_amp_LVZ_Pds.index(min(lst_depth_amp_LVZ_Pds))]
-			lst_LVZ_amp_Pds = lst_depth_amp_LVZ_Pds.index(min(lst_depth_amp_LVZ_Pds))
+			######## Estimating LAB apparent depth ########
 
-			######## Estimating 100 km apparent depth ########
+			lst_depth_amp_LAB_Pds = [RF_STACKING_BOOTSTRAP_Pds[x] for x,c in enumerate(camadas_terra_10_km) if DEPTH_LAB-(DEPTH_RANGE*2) <= c <= DEPTH_LAB+(DEPTH_RANGE*2)]
+			lst_depth_pp_LAB_Pds = [c for x,c in enumerate(camadas_terra_10_km) if DEPTH_LAB-(DEPTH_RANGE*2) <= c <= DEPTH_LAB+(DEPTH_RANGE*2)]
+			lst_LAB_depth_Pds = lst_depth_pp_LAB_Pds[lst_depth_amp_LAB_Pds.index(min(lst_depth_amp_LAB_Pds))]
+			lst_LAB_amp_Pds = lst_depth_amp_LAB_Pds.index(min(lst_depth_amp_LAB_Pds))
 
-			#100 km Pds
-
-			lst_depth_amp_100_Pds = [RF_STACKING_BOOTSTRAP_Pds[x] for x,c in enumerate(camadas_terra_10_km) if 100-DEPTH_RANGE <= c <= 100+DEPTH_RANGE]
-			lst_depth_pp_100_Pds = [c for x,c in enumerate(camadas_terra_10_km) if 100-DEPTH_RANGE <= c <= 100+DEPTH_RANGE]
-			lst_100_depth_Pds = lst_depth_pp_100_Pds[lst_depth_amp_100_Pds.index(max(lst_depth_amp_100_Pds))]
-			lst_100_amp_Pds = lst_depth_amp_100_Pds.index(max(lst_depth_amp_100_Pds))
-
-			######## Estimating 250 km apparent depth ########
-
-			#200 km Pds
-
-			lst_depth_amp_250_Pds = [RF_STACKING_BOOTSTRAP_Pds[x] for x,c in enumerate(camadas_terra_10_km) if 200-DEPTH_RANGE <= c <= 200+DEPTH_RANGE]
-			lst_depth_pp_250_Pds = [c for x,c in enumerate(camadas_terra_10_km) if 200-DEPTH_RANGE <= c <= 200+DEPTH_RANGE]
-			lst_250_depth_Pds = lst_depth_pp_250_Pds[lst_depth_amp_250_Pds.index(max(lst_depth_amp_250_Pds))]
-			lst_250_amp_Pds = lst_depth_amp_250_Pds.index(max(lst_depth_amp_250_Pds))
-
-
-			######## Estimating LVZ below the 250-km discontinuity  ########
-
-			#LVZ below the 200-km
-
-			lst_depth_amp_LVZ_250_Pds = [RF_STACKING_BOOTSTRAP_Pds[x] for x,c in enumerate(camadas_terra_10_km) if 200-(DEPTH_RANGE) <= c <= 200+(DEPTH_RANGE)]
-			lst_depth_pp_LVZ_250_Pds = [c for x,c in enumerate(camadas_terra_10_km) if 200-(DEPTH_RANGE) <= c <= 200+(DEPTH_RANGE)]
-			lst_LVZ_250_depth_Pds = lst_depth_pp_LVZ_250_Pds[lst_depth_amp_LVZ_250_Pds.index(min(lst_depth_amp_LVZ_250_Pds))]
-			lst_LVZ_250_amp_Pds = lst_depth_amp_LVZ_250_Pds.index(min(lst_depth_amp_LVZ_250_Pds))
-				
 			######################################################################################################################################################
 
-			if abs(lst_LVZ_amp_Pds) > 0:
+			if lst_MOHO_amp_Pds > 0:
 
-				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['LVZ_mean'] = lst_LVZ_depth_Pds
+				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['MOHO_mean'] = lst_MOHO_depth_Pds
 				
 			else: 
 
-				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['LVZ_mean'] = np.nan
+				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['MOHO_mean'] = np.nan
 				
-			print('LVZ Pds = '+str(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['LVZ_mean']))
+			print('MOHO Depth = '+str(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['MOHO_mean']))
 
 
-			if lst_100_amp_Pds > 0:
+			if abs(lst_LAB_amp_Pds) > 0:
 
-				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['100_mean'] = lst_100_depth_Pds
-				
-			else: 
-
-				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['100_mean'] = np.nan
-				
-			print('100 Pds Depth = '+str(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['100_mean']))
-
-
-			if lst_250_depth_Pds > 0:
-
-				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['250_mean'] = lst_250_depth_Pds
-			
-			else:
-
-				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['250_mean'] = np.nan
-
-			print('250 km Pds Depth = '+str(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['250_mean']))
-
-
-			if abs(lst_LVZ_250_amp_Pds) > 0:
-
-				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['LVZ_250_mean'] = lst_LVZ_250_depth_Pds
+				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['LAB_mean'] = lst_LAB_depth_Pds
 				
 			else: 
 
-				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['LVZ_250_mean'] = np.nan
+				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['LAB_mean'] = np.nan
 				
-			print('LVZ 250 Pds = '+str(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['LVZ_250_mean']))
+			print('LAB Depth = '+str(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['LAB_mean']))
 	
 ###################################################################################################################
 
@@ -671,29 +555,18 @@ print('Allocating results and Stacking Pds data')
 RF_lat = []
 RF_lon = []
 
-RF_DEPTH_mean_LVZ_Pds = []
-RF_DEPTH_std_LVZ_Pds = []
+RF_DEPTH_mean_MOHO_Pds = []
+RF_DEPTH_std_MOHO_Pds = []
 
-RF_DEPTH_mean_1_Pds = []
-RF_DEPTH_std_1_Pds = []
-
-RF_DEPTH_mean_2_Pds = []
-RF_DEPTH_std_2_Pds = []
-
-RF_DEPTH_mean_LVZ_250_Pds = []
-RF_DEPTH_std_LVZ_250_Pds = []
-
+RF_DEPTH_mean_LAB_Pds = []
+RF_DEPTH_std_LAB_Pds = []
 
 RF_BOOTSTRAP_DATA_Pds = []
 RF_BOOTSTRAP_DATA_Pds_std = []
 
-RF_BOOTSTRAP_DEPTH_mean_LVZ_Pds = []
+RF_BOOTSTRAP_DEPTH_mean_MOHO_Pds = []
 
-RF_BOOTSTRAP_DEPTH_mean_1_Pds = []
-
-RF_BOOTSTRAP_DEPTH_mean_2_Pds = []
-
-RF_BOOTSTRAP_DEPTH_mean_LVZ_250_Pds = []
+RF_BOOTSTRAP_DEPTH_mean_LAB_Pds = []
 
 len_RF_stacking_Pds = []
 RF_stacking_Pds = []
@@ -721,98 +594,52 @@ for i,j in enumerate(RF_data_raw_Pds):
 		BOOTSTRAP_DATA_Pds_std = [np.std(i)*CONFIDENCE_BOUND for i in BOOTSTRAP_DATA_Pds_per_depth]
 		RF_BOOTSTRAP_DATA_Pds_std.append(BOOTSTRAP_DATA_Pds_std)
 
-		#Analysing stacked data amplitude in LVZ atop 100 km
+		#Analysing stacked data amplitude in MOHO
 
-		flat_mean_LVZ_Pds = [float(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['LVZ_mean']) for _k in range(BOOTSTRAP_INTERATOR)]
-		RF_BOOTSTRAP_DEPTH_mean_LVZ_Pds.append(flat_mean_LVZ_Pds)
+		flat_mean_MOHO_Pds = [float(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['MOHO_mean']) for _k in range(BOOTSTRAP_INTERATOR)]
+		RF_BOOTSTRAP_DEPTH_mean_MOHO_Pds.append(flat_mean_MOHO_Pds)
 
-		lst_stacking_data_LVZ_Pds = [stacking_Pds_data[x] for x,c in enumerate(camadas_terra_10_km) if 400-(DEPTH_RANGE*2) <= c <= 400-(DEPTH_RANGE*2)]
-		LVZ_candidate = [abs(np.nanmean(flat_mean_LVZ_Pds) - c) for x,c in enumerate(camadas_terra_10_km) if 400-(DEPTH_RANGE*2) <= c <= 400-(DEPTH_RANGE*2)]
-		BOOTSTRAP_DATA_LVZ_std_lst = [BOOTSTRAP_DATA_Pds_std[x] for x,c in enumerate(camadas_terra_10_km) if 400-(DEPTH_RANGE*2) <= c <= 400-(DEPTH_RANGE*2)]
+		lst_stacking_data_MOHO_Pds = [stacking_Pds_data[x] for x,c in enumerate(camadas_terra_10_km) if DEPTH_MOHO-DEPTH_RANGE <= c <= DEPTH_MOHO+DEPTH_RANGE]
+		MOHO_candidate = [abs(np.nanmean(flat_mean_MOHO_Pds) - c) for x,c in enumerate(camadas_terra_10_km) if DEPTH_MOHO-DEPTH_RANGE <= c <= DEPTH_MOHO+DEPTH_RANGE]	
+		BOOTSTRAP_DATA_MOHO_std_lst = [BOOTSTRAP_DATA_Pds_std[x] for x,c in enumerate(camadas_terra_10_km) if DEPTH_MOHO-DEPTH_RANGE <= c <= DEPTH_MOHO+DEPTH_RANGE]
 
-		amp_LVZ = lst_stacking_data_LVZ_Pds[LVZ_candidate.index(min(LVZ_candidate))]
-
-		BOOTSTRAP_DATA_LVZ_std_amp = BOOTSTRAP_DATA_LVZ_std_lst[LVZ_candidate.index(min(LVZ_candidate))]
-		
-		if  abs(amp_LVZ)-(BOOTSTRAP_DATA_LVZ_std_amp*CONFIDENCE_BOUND) > 0:
-			
-			RF_DEPTH_mean_LVZ_Pds.append(np.nanmean(flat_mean_LVZ_Pds))
-			RF_DEPTH_std_LVZ_Pds.append(np.nanstd(flat_mean_LVZ_Pds)*CONFIDENCE_BOUND)
-
-		else: 
-
-			RF_DEPTH_mean_LVZ_Pds.append(np.nan)
-			RF_DEPTH_std_LVZ_Pds.append(np.nan)
-
-		#Analysing stacked data amplitude in d100Pds
-
-		flat_mean_1_Pds = [float(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['100_mean']) for _k in range(BOOTSTRAP_INTERATOR)]
-		RF_BOOTSTRAP_DEPTH_mean_1_Pds.append(flat_mean_1_Pds)
-
-		lst_stacking_data_100_Pds = [stacking_Pds_data[x] for x,c in enumerate(camadas_terra_10_km) if 100-DEPTH_RANGE <= c <= 100+DEPTH_RANGE]
-		d100Pds_candidate = [abs(np.nanmean(flat_mean_1_Pds) - c) for x,c in enumerate(camadas_terra_10_km) if 100-DEPTH_RANGE <= c <= 100+DEPTH_RANGE]	
-		BOOTSTRAP_DATA_100_std_lst = [BOOTSTRAP_DATA_Pds_std[x] for x,c in enumerate(camadas_terra_10_km) if 100-DEPTH_RANGE <= c <= 100+DEPTH_RANGE]
-
-		amp_d100Pds = lst_stacking_data_100_Pds[d100Pds_candidate.index(min(d100Pds_candidate))]
-		BOOTSTRAP_DATA_100_std_amp = BOOTSTRAP_DATA_100_std_lst[d100Pds_candidate.index(min(d100Pds_candidate))]
+		amp_MOHO_Pds = lst_stacking_data_MOHO_Pds[MOHO_candidate.index(min(MOHO_candidate))]
+		BOOTSTRAP_DATA_MOHO_std_amp = BOOTSTRAP_DATA_MOHO_std_lst[MOHO_candidate.index(min(MOHO_candidate))]
 
 		
-		if  amp_d100Pds-(BOOTSTRAP_DATA_100_std_amp*CONFIDENCE_BOUND) > 0:
+		if  amp_MOHO_Pds-(BOOTSTRAP_DATA_MOHO_std_amp*CONFIDENCE_BOUND) > 0:
 				
-			RF_DEPTH_mean_1_Pds.append(np.nanmean(flat_mean_1_Pds))
-			RF_DEPTH_std_1_Pds.append(np.nanstd(flat_mean_1_Pds)*CONFIDENCE_BOUND)
+			RF_DEPTH_mean_MOHO_Pds.append(np.nanmean(flat_mean_MOHO_Pds))
+			RF_DEPTH_std_MOHO_Pds.append(np.nanstd(flat_mean_MOHO_Pds)*CONFIDENCE_BOUND)
 
 		else: 
 
-			RF_DEPTH_mean_1_Pds.append(np.nan)
-			RF_DEPTH_std_1_Pds.append(np.nan)
+			RF_DEPTH_mean_MOHO_Pds.append(np.nan)
+			RF_DEPTH_std_MOHO_Pds.append(np.nan)
 
 
-		#Analysing stacked data amplitude in d250Pds
+		#Analysing stacked data amplitude in LAB
 
-		flat_mean_2_Pds = [float(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['250_mean']) for _k in range(BOOTSTRAP_INTERATOR)]
-		RF_BOOTSTRAP_DEPTH_mean_2_Pds.append(flat_mean_2_Pds)
+		flat_mean_LAB_Pds = [float(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['LAB_mean']) for _k in range(BOOTSTRAP_INTERATOR)]
+		RF_BOOTSTRAP_DEPTH_mean_LAB_Pds.append(flat_mean_LAB_Pds)
 
-		lst_stacking_data_250_Pds = [stacking_Pds_data[x] for x,c in enumerate(camadas_terra_10_km) if 250-DEPTH_RANGE <= c <= 250+DEPTH_RANGE]
-		d250Pds_candidate = [abs(np.nanmean(flat_mean_2_Pds) - c) for x,c in enumerate(camadas_terra_10_km) if 250-DEPTH_RANGE <= c <= 250+DEPTH_RANGE]
-		BOOTSTRAP_DATA_Pds_250_lst = [BOOTSTRAP_DATA_Pds_std[x] for x,c in enumerate(camadas_terra_10_km) if 250-DEPTH_RANGE <= c <= 250+DEPTH_RANGE]
+		lst_stacking_data_LAB_Pds = [stacking_Pds_data[x] for x,c in enumerate(camadas_terra_10_km) if DEPTH_LAB-(DEPTH_RANGE*2) <= c <= DEPTH_LAB-(DEPTH_RANGE*2)]
+		LAB_candidate = [abs(np.nanmean(flat_mean_LAB_Pds) - c) for x,c in enumerate(camadas_terra_10_km) if DEPTH_LAB-(DEPTH_RANGE*2) <= c <= DEPTH_LAB-(DEPTH_RANGE*2)]
+		BOOTSTRAP_DATA_LAB_std_lst = [BOOTSTRAP_DATA_Pds_std[x] for x,c in enumerate(camadas_terra_10_km) if DEPTH_LAB-(DEPTH_RANGE*2) <= c <= DEPTH_LAB-(DEPTH_RANGE*2)]
 
-		amp_d250Pds = lst_stacking_data_250_Pds[d250Pds_candidate.index(min(d250Pds_candidate))]
-		BOOTSTRAP_DATA_250_std_amp = BOOTSTRAP_DATA_Pds_250_lst[d250Pds_candidate.index(min(d250Pds_candidate))]
+		amp_LAB_Pds = lst_stacking_data_LAB_Pds[LAB_candidate.index(min(LAB_candidate))]
 
-
-		if  amp_d250Pds-(BOOTSTRAP_DATA_250_std_amp*CONFIDENCE_BOUND) > 0:
-
-			RF_DEPTH_mean_2_Pds.append(np.nanmean(flat_mean_2_Pds))
-			RF_DEPTH_std_2_Pds.append(np.nanstd(flat_mean_2_Pds)*CONFIDENCE_BOUND)
-
-		else: 
-
-			RF_DEPTH_mean_2_Pds.append(np.nan)
-			RF_DEPTH_std_2_Pds.append(np.nan)
-
-		#Analysing stacked data amplitude in LVZ below 250 km
-
-		flat_mean_LVZ_250_Pds = [float(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['LVZ_250_mean']) for _k in range(BOOTSTRAP_INTERATOR)]
-		RF_BOOTSTRAP_DEPTH_mean_LVZ_250_Pds.append(flat_mean_LVZ_250_Pds)
-
-		lst_stacking_data_LVZ_250_Pds = [stacking_Pds_data[x] for x,c in enumerate(camadas_terra_10_km) if 200-(DEPTH_RANGE*2) <= c <= 250-(DEPTH_RANGE*2)]
-		LVZ_250_candidate = [abs(np.nanmean(flat_mean_LVZ_250_Pds) - c) for x,c in enumerate(camadas_terra_10_km) if 250-(DEPTH_RANGE*2) <= c <= 250-(DEPTH_RANGE*2)]
-		BOOTSTRAP_DATA_LVZ_250_std_lst = [BOOTSTRAP_DATA_Pds_std[x] for x,c in enumerate(camadas_terra_10_km) if 250-(DEPTH_RANGE*2) <= c <= 250-(DEPTH_RANGE*2)]
-
-		amp_LVZ_250 = lst_stacking_data_LVZ_250_Pds[LVZ_250_candidate.index(min(LVZ_250_candidate))]
-
-		BOOTSTRAP_DATA_LVZ_250_std_amp = BOOTSTRAP_DATA_LVZ_250_std_lst[LVZ_250_candidate.index(min(LVZ_250_candidate))]
+		BOOTSTRAP_DATA_LAB_std_amp = BOOTSTRAP_DATA_LAB_std_lst[LAB_candidate.index(min(LAB_candidate))]
 		
-		if  abs(amp_LVZ_250)-(BOOTSTRAP_DATA_LVZ_250_std_amp*CONFIDENCE_BOUND) > 0:
+		if  abs(amp_LAB_Pds)-(BOOTSTRAP_DATA_LAB_std_amp*CONFIDENCE_BOUND) > 0:
 			
-			RF_DEPTH_mean_LVZ_250_Pds.append(np.nanmean(flat_mean_LVZ_250_Pds))
-			RF_DEPTH_std_LVZ_250_Pds.append(np.nanstd(flat_mean_LVZ_250_Pds)*CONFIDENCE_BOUND)
+			RF_DEPTH_mean_LAB_Pds.append(np.nanmean(flat_mean_LAB_Pds))
+			RF_DEPTH_std_LAB_Pds.append(np.nanstd(flat_mean_LAB_Pds)*CONFIDENCE_BOUND)
 
 		else: 
 
-			RF_DEPTH_mean_LVZ_250_Pds.append(np.nan)
-			RF_DEPTH_std_LVZ_250_Pds.append(np.nan)
+			RF_DEPTH_mean_LAB_Pds.append(np.nan)
+			RF_DEPTH_std_LAB_Pds.append(np.nan)
 
 #############################################################################################################################################################################################
 
@@ -825,12 +652,12 @@ fig_PP, ax = plt.subplots(ncols=1, subplot_kw={'projection': ccrs.Mercator(centr
 
 ax.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
 l1, = ax.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.Geodetic())
-l3, = ax.plot(pp_med_long,pp_med_lat, 'X',markersize=5,markeredgecolor='k',markerfacecolor='k',alpha=0.5,transform=ccrs.Geodetic())
+l3, = ax.plot(pp_LAB_long,pp_LAB_lat, 'X',markersize=5,markeredgecolor='k',markerfacecolor='k',alpha=0.5,transform=ccrs.Geodetic())
 for i,j in enumerate(RF_lon):
 	circulo = Circle(radius=DIST_GRID_PP,xy=(RF_lon[i], RF_lat[i]),color='None', ec='k',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
 	ax.add_patch(circulo)
-for i,j in enumerate(pp_med_long):
-	circulo_fresnel = Circle(radius=FRESNEL_ZONE_RADIUS, xy=(pp_med_long[i],pp_med_lat[i]), color='gray',linewidth=0,alpha=0.2,transform=ccrs.Geodetic(),zorder=1)
+for i,j in enumerate(pp_LAB_long):
+	circulo_fresnel = Circle(radius=FRESNEL_ZONE_RADIUS, xy=(pp_LAB_long[i],pp_LAB_lat[i]), color='gray',linewidth=0,alpha=0.2,transform=ccrs.Geodetic(),zorder=1)
 	ax.add_patch(circulo_fresnel)
 
 reader_1_SHP = Reader(BOUNDARY_1_SHP)
@@ -845,7 +672,7 @@ ax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 ax.gridlines(draw_labels=True)
 
 #ax.set_title('Figure: Final Grid and Ppds Average Piercing Points',ha='center',va='top',y=1.08)
-legend = ax.legend([l1,l3,circulo,circulo_fresnel],['Stations','Piercing Points '+str(DEPTH_TARGET),'Selected Grid','Piercing Points Fresnel Zone'],scatterpoints=1,labelspacing=1, loc='lower right',facecolor='w',fontsize='smaller')
+legend = ax.legend([l1,l3,circulo,circulo_fresnel],['Stations','Piercing Points LAB','Selected Grid','Piercing Points Fresnel Zone'],scatterpoints=1,labelspacing=1, loc='lower right',facecolor='w',fontsize='smaller')
 legend.get_frame().set_facecolor('white')
 
 #plt.show()
@@ -857,7 +684,7 @@ fig_PP.savefig(RESULTS_FOLDER+'PP_FINAL_GRID.'+EXT_FIG,dpi=DPI_FIG)
 print('Saving Selected Piercing Points in JSON file')
 print('\n')
 
-PP_SELEC_DIR = OUTPUT_DIR+'MODEL_INTER_DEPTH_'+str(INTER_DEPTH)+'_DEPTH_TARGET_'+str(DEPTH_TARGET)+'/'+'SELECTED_BINNED_DATA'+'/'
+PP_SELEC_DIR = OUTPUT_DIR+'MODEL_INTER_DEPTH_'+str(INTER_DEPTH)+'_DEPTH_MOHO_'+str(DEPTH_MOHO)+'_DEPTH_LAB_'+str(DEPTH_LAB)+'/'+'SELECTED_BINNED_DATA'+'/'
 
 os.makedirs(PP_SELEC_DIR,exist_ok=True)
 
@@ -865,51 +692,36 @@ SELECTED_BINNED_DATA_dic = {
 
 	'lat':[],'lon':[],
 	'len_Pds':[],
-	'mean_1_Pds':[],'std_1_Pds':[],
-	'mean_LVZ_Pds':[],'std_LVZ_Pds':[],
-	'mean_2_Pds':[],'std_2_Pds':[],
-	'mean_LVZ_250_Pds':[],'std_LVZ_250_Pds':[],
+	'mean_MOHO_Pds':[],'std_MOHO_Pds':[],
+	'mean_LAB_Pds':[],'std_LAB_Pds':[],
 
 	'data_Pds':[],'data_BOOTSTRAP_Pds':[],'data_Pds_std':[],
 
-	'RF_BOOTSTRAP_DEPTH_mean_1_Pds':[],
-	'RF_BOOTSTRAP_DEPTH_mean_LVZ_Pds':[],
-	'RF_BOOTSTRAP_DEPTH_mean_2_Pds':[],
-	'RF_BOOTSTRAP_DEPTH_mean_LVZ_250_Pds':[]
+	'RF_BOOTSTRAP_DEPTH_mean_MOHO_Pds':[],
+	'RF_BOOTSTRAP_DEPTH_mean_LAB_Pds':[],
 
 	}
 
 for i,j in enumerate(RF_BOOTSTRAP_DATA_Pds):
 	SELECTED_BINNED_DATA_dic['data_BOOTSTRAP_Pds'].append(j)
 
-	SELECTED_BINNED_DATA_dic['RF_BOOTSTRAP_DEPTH_mean_LVZ_Pds'].append(RF_BOOTSTRAP_DEPTH_mean_LVZ_Pds[i])
+	SELECTED_BINNED_DATA_dic['RF_BOOTSTRAP_DEPTH_mean_MOHO_Pds'].append(RF_BOOTSTRAP_DEPTH_mean_MOHO_Pds[i])
 
-	SELECTED_BINNED_DATA_dic['RF_BOOTSTRAP_DEPTH_mean_1_Pds'].append(RF_BOOTSTRAP_DEPTH_mean_1_Pds[i])
-
-	SELECTED_BINNED_DATA_dic['RF_BOOTSTRAP_DEPTH_mean_2_Pds'].append(RF_BOOTSTRAP_DEPTH_mean_2_Pds[i])
-
-	SELECTED_BINNED_DATA_dic['RF_BOOTSTRAP_DEPTH_mean_LVZ_250_Pds'].append(RF_BOOTSTRAP_DEPTH_mean_LVZ_250_Pds[i])
+	SELECTED_BINNED_DATA_dic['RF_BOOTSTRAP_DEPTH_mean_LAB_Pds'].append(RF_BOOTSTRAP_DEPTH_mean_LAB_Pds[i])
 
 	SELECTED_BINNED_DATA_dic['data_Pds'].append(RF_stacking_Pds[i])
 	SELECTED_BINNED_DATA_dic['data_Pds_std'].append(RF_BOOTSTRAP_DATA_Pds_std[i])
-
 
 	SELECTED_BINNED_DATA_dic['lat'].append(float("%.4f" % round(RF_lat[i],4)))
 	SELECTED_BINNED_DATA_dic['lon'].append(float("%.4f" % round(RF_lon[i],4)))
 
 	SELECTED_BINNED_DATA_dic['len_Pds'].append(len_RF_stacking_Pds[i])
 
-	SELECTED_BINNED_DATA_dic['mean_LVZ_Pds'].append(float(RF_DEPTH_mean_LVZ_Pds[i]))
-	SELECTED_BINNED_DATA_dic['std_LVZ_Pds'].append(float(RF_DEPTH_std_LVZ_Pds[i]))
+	SELECTED_BINNED_DATA_dic['mean_MOHO_Pds'].append(float(RF_DEPTH_mean_MOHO_Pds[i]))
+	SELECTED_BINNED_DATA_dic['std_MOHO_Pds'].append(float(RF_DEPTH_std_MOHO_Pds[i]))
 
-	SELECTED_BINNED_DATA_dic['mean_1_Pds'].append(float(RF_DEPTH_mean_1_Pds[i]))
-	SELECTED_BINNED_DATA_dic['std_1_Pds'].append(float(RF_DEPTH_std_1_Pds[i]))
-	
-	SELECTED_BINNED_DATA_dic['mean_2_Pds'].append(float(RF_DEPTH_mean_2_Pds[i]))
-	SELECTED_BINNED_DATA_dic['std_2_Pds'].append(float(RF_DEPTH_std_2_Pds[i]))
-
-	SELECTED_BINNED_DATA_dic['mean_LVZ_250_Pds'].append(float(RF_DEPTH_mean_LVZ_250_Pds[i]))
-	SELECTED_BINNED_DATA_dic['std_LVZ_250_Pds'].append(float(RF_DEPTH_std_LVZ_250_Pds[i]))
+	SELECTED_BINNED_DATA_dic['mean_LAB_Pds'].append(float(RF_DEPTH_mean_LAB_Pds[i]))
+	SELECTED_BINNED_DATA_dic['std_LAB_Pds'].append(float(RF_DEPTH_std_LAB_Pds[i]))
 	
 RESULTS_FOLDER_BINS = PP_SELEC_DIR+'/'+'RESULTS_NUMBER_PP_PER_BIN_'+str(NUMBER_PP_PER_BIN)+'_NUMBER_STA_PER_BIN_'+str(NUMBER_STA_PER_BIN)+'/'
 os.makedirs(RESULTS_FOLDER_BINS,exist_ok=True)

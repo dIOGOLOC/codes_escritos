@@ -41,7 +41,7 @@ RF_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/data_MTZ_YES_PP
 RF_EXT = .eqr
 
 #Directory of the earth models
-MODEL_FILE_NPZ = /home/diogo/diogo_git/codes_escritos/mantle_transition_zone_migration_obspy/velocity_model/iasp91_5.npz
+MODEL_FILE_NPZ = /home/diogo/diogo_git/codes_escritos/mantle_transition_zone_migration_obspy/velocity_model/iasp91_2.npz
 
 # dir of OUTPUTs
 OUTPUT_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/Lithosphere_Migration_YES_PP_obspy_Pds/
@@ -77,15 +77,15 @@ PROJECT_LON = -46
 
 LLCRNRLON_LARGE=-52
 LLCRNRLAT_LARGE=-13
-URCRNRLON_LARGE=-38
+URCRNRLON_LARGE=-37
 URCRNRLAT_LARGE=1
 
 #lower and upper corner (lat/lon) of the small map
 
-LLCRNRLON_SMALL=-49.5
-LLCRNRLAT_SMALL=-12
-URCRNRLON_SMALL=-40.5
-URCRNRLAT_SMALL=-1.8
+LLCRNRLON_SMALL=-50.5
+LLCRNRLAT_SMALL=-7
+URCRNRLON_SMALL=-39
+URCRNRLAT_SMALL=-2
 
 #figures extention and dpi
 EXT_FIG=pdf
@@ -98,7 +98,7 @@ INITIAL_DATE_EVENT = 2014-01-01T00:00:00
 FINAL_DATE_EVENT = 2018-10-01T00:00:00
 
 #CROSS-SECTION AXIS DIRECTION (x or y):
-CROSS_SECTION_AXIS  = y
+CROSS_SECTION_AXIS  = x
 
 #Colormap to velocity map (see https://matplotlib.org/examples/color/colormaps_reference.html)
 COLORMAP_VEL = seismic_r
@@ -107,10 +107,10 @@ COLORMAP_VEL = seismic_r
 COLORMAP_STD = Greys
 
 #Minimum Amplitude in cross-section color
-VMIN = -0.01
+VMIN = -0.2
 
 #Maximum Amplitude in cross-section color
-VMAX = 0.01
+VMAX = 0.2
 
 #==================
 [time]
@@ -126,7 +126,7 @@ MIN_DEPTH = 0
 MAX_DEPTH = 200
 
 #depth interval of the migration
-INTER_DEPTH = 5
+INTER_DEPTH = 2
 
 # ==========
 [migration]
@@ -138,15 +138,14 @@ FILTER_BY_SHAPEFILE = False
 #Shapefile containing lines or polygons representing grid boundary
 SHAPEFILE_GRID = /home/diogo/dados_doutorado/parnaiba_basin/SIG_dados/shapes/bacia_parnaiba/bacia_parnaiba.shp
 
-# grid bin per degree
-GRID_PP_MULT = 5
+#grid bin spacing
+GRID_PP_SPACE = 0.2
 
-# grid bin radius (degree)
+#grid bin radius (degree)
 DIST_GRID_PP = 0.1
 
-# Receiver Function Frequency (Hz)
+#Receiver Function Frequency (Hz)
 RF_FREQUENCY = 0.5	
-
 
 #number of piercing points per bin
 NUMBER_PP_PER_BIN = 5
@@ -154,14 +153,17 @@ NUMBER_PP_PER_BIN = 5
 #number of stations RF per bin
 NUMBER_STA_PER_BIN = 1
 
-#Depth Target
-DEPTH_TARGET = 100
+#Depth MOHO
+DEPTH_MOHO = 40
+
+#Depth LAB
+DEPTH_LAB = 150
 
 #Number of interations to compute bootstrapping
 BOOTSTRAP_INTERATOR = 200
 
 #Depth range (+/-) that we will use to find the maximum amplitude
-DEPTH_RANGE = 30
+DEPTH_RANGE = 20
 
 #Number of confidence bound (CONFIDENCE_BOUND*standard deviation)
 CONFIDENCE_BOUND = 1

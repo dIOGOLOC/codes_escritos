@@ -142,8 +142,8 @@ FILTER_BY_SHAPEFILE = config.getboolean('migration', 'FILTER_BY_SHAPEFILE')
 #Shapefile containing lines or polygons representing grid boundary
 SHAPEFILE_GRID = config.get('migration', 'SHAPEFILE_GRID') 
 
-#GRID POINTS multiplyer
-GRID_PP_MULT = config.getfloat('migration', 'GRID_PP_MULT') 
+#GRID POINTS SPACE
+GRID_PP_SPACE = config.getfloat('migration', 'GRID_PP_SPACE') 
 
 # distance between grid points and piercing points for each depth (degree)
 DIST_GRID_PP = config.getfloat('migration', 'DIST_GRID_PP')
@@ -160,8 +160,11 @@ NUMBER_STA_PER_BIN = config.getint('migration', 'NUMBER_STA_PER_BIN')
 #Number of interations to compute bootstrapping
 BOOTSTRAP_INTERATOR = config.getint('migration', 'BOOTSTRAP_INTERATOR')  
 
-#Depth Target
-DEPTH_TARGET = config.getint('migration', 'DEPTH_TARGET') 
+#Depth MOHO
+DEPTH_MOHO = config.getint('migration', 'DEPTH_MOHO') 
+
+#Depth LAB
+DEPTH_LAB = config.getint('migration', 'DEPTH_LAB')
 
 #Number that multiply the difference between the cross-section points
 DEPTH_RANGE = config.getfloat('migration', 'DEPTH_RANGE') 
