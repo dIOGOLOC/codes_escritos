@@ -12,9 +12,9 @@ v0.1
 
 Requirements
 ------------
-The code is developped on Ubuntu with Python Python 3.6.
+The code is developped on Ubuntu with Python Python 3.7.
 
-In addition to [Python 3.6](https://www.python.org/downloads/release/python-365/), you need
+In addition to [Python 3.7](https://www.python.org/downloads/release/python-370/), you need
 to install the following packages: 
 
 - [numpy](http://www.numpy.org/)
@@ -32,7 +32,7 @@ Brief explanation about the main code:
 
 **First of all, you must to get information of your the stations:**
 
-1) *python get_EVENT_STATION_INFORMATION.py*
+1) *python get_STATION_EVENT_INFORMATION.py*
 
 **To check your dataset:**
 
@@ -40,7 +40,7 @@ Brief explanation about the main code:
 
 **After that, you need to create your XML file:**
 
-3) *python create_XML_FILE.py*
+3) *python create_XML_network.py*
 
 **Then, you can plot events data to compare the response of your stations:**
 
