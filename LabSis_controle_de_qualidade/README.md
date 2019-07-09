@@ -42,17 +42,13 @@ Brief explanation about the main code:
 
 **Finally, you estimating and plotting the probabilistic power spectral densities of your data in the following scenarios.**
 
-If you want to estimate and plot a small percentage of your dataset to check a statistical noise level (suggestion: 20%):
-
-5) *python estimate_plot_PPSD_PERCENTAGE.py*
-
 If you want to estimate, save and plot the whole dataset to check the noise level:
 
-6) *python estimate_plot_PPSD_TOTAL.py*
+4) *python estimate_plot_PPSD_TOTAL.py*
 
 If you want to estimate, save and plot a specific time window of your dataset to check the noise level:
 
-7) *python estimate_plot_PPSD_WINDOWED.py*
+5) *python estimate_plot_PPSD_WINDOWED.py*
 
 
 How to update
@@ -62,7 +58,7 @@ updates.
 
 ToDo list
 -------------
-- Create a code to check the orientation of the sensor.
+- ...
 
 References
 ----------
