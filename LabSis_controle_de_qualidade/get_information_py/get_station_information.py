@@ -22,11 +22,11 @@ Nominal Response Library (NRL) includes:
 
 An example of STA_CSV_FILE is shown bellow:
 
-NAME;LAT;LON;ELEV;SENSOR_KEYS;DATALOGGER_KEYS
-9FE7;-5.8402;-35.1962;19.46;Sercel/Mark Products,L-4C,5500 Ohms,8905 Ohms;REF TEK,RT 130 & 130-SMA,1,100
-9FF5;-5.8402;-35.1962;19.46;Sercel/Mark Products,L-4C,5500 Ohms,8905 Ohms;REF TEK,RT 130 & 130-SMA,1,100
-9FF9;-5.8402;-35.1962;19.46;Sercel/Mark Products,L-4C,5500 Ohms,8905 Ohms;REF TEK,RT 130 & 130-SMA,1,100
-A031;-5.8402;-35.1962;19.46;Sercel/Mark Products,L-4C,5500 Ohms,8905 Ohms;REF TEK,RT 130 & 130-SMA,1,100
+NAME;LAT;LON;ELEV;SENSOR_KEYS;DATALOGGER_KEYS;ACCER_KEYS
+PFBR;-4.3939;-41.4457;0;Geotech,KS2000,2000,120;Geotech,Smart24,1,20,100,100,Linear Phase;
+NBMO;-3.3107;-40.0413;0;REF TEK,RT 151,A,120;REF TEK,RT 130 & 130-SMA,1,100;
+NBPB;-5.5459;-39.5836;0;REF TEK,RT 151,A,120;REF TEK,RT 130 & 130-SMA,1,100;
+NBPS;-4.3939;-41.4457;0;REF TEK,RT 151,A,120;REF TEK,RT 130 & 130-SMA,1,100;
 
 SENSOR_KEYS and DATALOGGER_KEYS are located in http://ds.iris.edu/NRL, and are used to create the XML file:
 response = nrl.get_response( # doctest: +SKIP
@@ -51,16 +51,16 @@ print('\n')
 
 sta_lat_lon = np.genfromtxt(STA_CSV_FILE,skip_header=1,usecols=[1,2,3],delimiter=';')
 
-sta_name =  np.genfromtxt(STA_CSV_FILE,dtype='str',skip_header=1,usecols=[0,4,5],delimiter=';')
+sta_name =  np.genfromtxt(STA_CSV_FILE,dtype='str',skip_header=1,usecols=[0,4,5,6],delimiter=';')
 
 sta_event = {
-
 		'KSTNM':[],
 		'STLA':[],
 		'STLO':[],
 		'STEL':[],
 		'SENSOR_KEYS':[],
-		'DATALOGGER_KEYS':[]
+		'DATALOGGER_KEYS':[],
+		'ACCER_KEYS':[]
 	    }
 
 for i,j in enumerate(sta_name):
@@ -70,11 +70,13 @@ for i,j in enumerate(sta_name):
 	sta_event['KSTNM'].append(j[0])
 	sta_event['SENSOR_KEYS'].append(j[1])
 	sta_event['DATALOGGER_KEYS'].append(j[2])
+	sta_event['ACCER_KEYS'].append(j[3])
 
 print('Number of Stations: '+str(len(sta_event['KSTNM'])))
 for i,j in enumerate(sta_event['KSTNM']):
 	print('Station: '+j)
 	print('SENSOR_KEYS: '+sta_event['SENSOR_KEYS'][i])
+	print('ACCER_KEYS: '+sta_event['ACCER_KEYS'][i])
 	print('DATALOGGER_KEYS: '+sta_event['DATALOGGER_KEYS'][i])
 	print('\n')
 

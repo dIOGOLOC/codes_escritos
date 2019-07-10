@@ -16,11 +16,11 @@ from multiprocessing import Pool
 # Generating DATA availability
 # ==============================
 
-from visual_py.data_availability import get_date_file,plot_data_mosaic
+from visual_py.data_availability import get_date_file_via_client,plot_data_mosaic
 
 
 from parameters_py.config import (
-					CHANNEL_CODE,OUTPUT_JSON_FILE_DIR,DIR_DATA,OUTPUT_FIGURE_DIR
+					CHANNEL_CODE,OUTPUT_JSON_FILE_DIR,DIR_DATA,OUTPUT_FIGURE_DIR,OUTPUT_PSD_DIR
 				   )
 				   
 
@@ -57,7 +57,7 @@ print('STATION NAME = '+sta_name)
 os.makedirs(OUTPUT_JSON_FILE_DIR,exist_ok=True)
 
 result_dic = {'kstnm':[],'data':[]}
-result_dic['data'] = get_date_file(directory_data=DIR_DATA)
+result_dic['data'] = get_date_file_via_client(directory_data=OUTPUT_PSD_DIR+'2019'+'/'+sta_name+'/'+CHANNEL_CODE+'.PPSD/')
 result_dic['kstnm'] = sta_name
 
 with open(OUTPUT_JSON_FILE_DIR+'TIME_dic.json', 'w') as fp:

@@ -14,7 +14,7 @@ import random
 # Generating DATA availability
 # ==============================
 
-from PSD_py.PSD_save import calc_PSD
+from PSD_py.PSD_save import calc_PSD_client
 
 from visual_py.plot_PSD_DATA import plot_PPSD_TOTAL_data
 
@@ -44,10 +44,10 @@ input_list_day = sta_dic['data']["input_list"]
 #  Get PPSD Data 
 # ==============
 
-print('Get Data for calculating PPSD for each station')
+print('Get Data for calculating PPSD via Client Arclink')
 print('\n')
 
-calc_PSD_result = calc_PSD(input_list_day,kstnm)
+calc_PSD_result = calc_PSD_client(kstnm)
 
 
 

@@ -7,7 +7,7 @@ seismological data based on [ObsPy](https://github.com/obspy/obspy/wiki).
 
 Version
 ---------
-v0.1
+v0.2
 
 Requirements
 ------------
@@ -28,27 +28,55 @@ to install the following packages:
 Brief explanation about the main code:
 ---------------------------------------
 
+*DATASET VIA HD*
+
 **First of all, you must to get information of your the stations:**
 
-1) *python get_EVENT_STATION_INFORMATION.py*
+1) *python get_STATION_INFORMATION.py*
 
-**To check your dataset:**
+**You need to create your XML file:**
 
-2) *python get_plot_DATA_AVAILABILITY.py*
+2) *python create_XML_network.py*
 
-**After that, you need to create your XML file:**
+**To check and pre-process your dataset:**
 
-3) *python create_XML_FILE.py*
+3) *python get_plot_DATA_AVAILABILITY.py*
 
-**Finally, you estimating and plotting the probabilistic power spectral densities of your data in the following scenarios.**
-
-If you want to estimate, save and plot the whole dataset to check the noise level:
+**Estimating the probabilistic power spectral densities of your data.**
 
 4) *python estimate_plot_PPSD_TOTAL.py*
 
-If you want to estimate, save and plot a specific time window of your dataset to check the noise level:
+**Plotting the probabilistic power spectral densities of your data.**
 
 5) *python estimate_plot_PPSD_WINDOWED.py*
+
+---------------------------------------
+---------------------------------------
+
+*DATASET VIA CLIENT:*
+
+**First of all, you must to get information of your the stations:**
+
+1) *python get_STATION_INFORMATION.py*
+
+**You need to create your XML file:**
+
+2) *python create_XML_network.py*
+
+**Estimating the probabilistic power spectral densities of your data.**
+
+3) *python estimate_plot_PPSD_TOTAL_via_client.py*
+
+**Plotting the probabilistic power spectral densities of your data.**
+
+4) *python estimate_plot_PPSD_WINDOWED.py*
+
+**If you want to check your dataset:**
+
+PLUS: *python get_plot_DATA_AVAILABILITY_via_client.py*
+
+**VIA CLIENT**
+
 
 
 How to update
@@ -63,15 +91,6 @@ ToDo list
 References
 ----------
 
-- M. Beyreuther, R. Barsch, L. Krischer, T. Megies, Y. Behr and J. Wassermann (2010).
-ObsPy: A Python Toolbox for Seismology.
-*SRL*, **81(3)**, 530-533. DOI: 10.1785/gssrl.81.3.530
-
-
-- L. Krischer, T. Megies, R. Barsch, M. Beyreuther, T. Lecocq, C. Caudron, J. Wassermann (2015).
-ObsPy: a bridge for seismology into the scientific Python ecosystem.
-*Computational Science & Discovery*, **8(1)**, 014003. DOI: 10.1088/1749-4699/8/1/014003
-
 - McNamara, D. E. and Buland, R. P. (2004).
 Ambient Noise Levels in the Continental United States.
 *Bulletin of the Seismological Society of America*, **94 (4)**, 1517-1527.
@@ -81,6 +100,16 @@ Observations and Modeling of Seismic Background Noise.
 *U.S. Geological Survey open-file report*, **93-322**, Albuquerque, N.M.
 
 
+- M. Beyreuther, R. Barsch, L. Krischer, T. Megies, Y. Behr and J. Wassermann (2010).
+ObsPy: A Python Toolbox for Seismology.
+*SRL*, **81(3)**, 530-533. DOI: 10.1785/gssrl.81.3.530
+
+
+- L. Krischer, T. Megies, R. Barsch, M. Beyreuther, T. Lecocq, C. Caudron, J. Wassermann (2015).
+ObsPy: a bridge for seismology into the scientific Python ecosystem.
+*Computational Science & Discovery*, **8(1)**, 014003. DOI: 10.1088/1749-4699/8/1/014003
+
+
 Inspiration
 ----------
-The code logo is from ([Labsis](http://www.labsis.ufrn.br/)). 
+The code is for ([Labsis](http://www.labsis.ufrn.br/)). 

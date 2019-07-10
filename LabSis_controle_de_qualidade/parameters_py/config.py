@@ -64,9 +64,6 @@ OUTPUT_FIGURE_DIR = config.get('paths', 'OUTPUT_FIGURE_DIR')
 #Directory to save PSD
 OUTPUT_PSD_DIR = config.get('paths', 'OUTPUT_PSD_DIR')
 
-#Directory to save EVENT data
-OUTPUT_EV_DIR = config.get('paths', 'OUTPUT_EV_DIR')
-
 #Directory to save XML File
 OUTPUT_XML_FILE_DIR = config.get('paths', 'OUTPUT_XML_FILE_DIR')
 
@@ -80,6 +77,9 @@ STA_CSV_FILE  =  config.get('paths', 'STA_CSV_FILE')
 
 #Name of the Network
 NETWORK_CODE = config.get('xml', 'NETWORK_CODE')
+
+#Name of the Channel
+CHANNEL_CODE = config.get('xml', 'CHANNEL_CODE')
 
 #Name of the deployer
 SOURCE = config.get('xml', 'SOURCE')
@@ -95,6 +95,22 @@ START_DATE = config.get('xml', 'START_DATE')
 
 #Sampling Rate of the seismogram
 SAMPLING_RATE = config.getfloat('xml', 'SAMPLING_RATE')
+
+# --------
+# Client
+# --------
+
+#The user name is used for identification with the ArcLink server.
+USER = config.get('Client', 'USER')
+
+#Host name of the remote ArcLink server (default host is 'webdc.eu').
+HOST = config.get('Client', 'HOST')
+
+#Port of the remote ArcLink server (default port is 18002).
+PORT = config.getint('Client', 'PORT') 
+
+#A string containing the name of the institution of the requesting person (default is an 'Anonymous').
+INSTITUTION = config.get('Client', 'HOST')
 
 # --------
 # PPSD

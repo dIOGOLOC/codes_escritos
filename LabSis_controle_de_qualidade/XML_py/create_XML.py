@@ -70,75 +70,254 @@ stla = sta_dic['STLA']
 stlo = sta_dic['STLO']
 stel = sta_dic['STEL']
 sensor_keys = sta_dic['SENSOR_KEYS']
+accer_keys = sta_dic['ACCER_KEYS']
 datalogger_keys = sta_dic['DATALOGGER_KEYS']
 
 for i,j in enumerate(kstnm):
-    print('Importing '+j+' station parameters')
-    print('\n')
+	print('Importing '+j+' station parameters')
+	print('\n')
 
-    sta = Station(
-        # This is the station code according to the SEED standard.
-        code=j,
-        latitude=float(stla[i]),
-        longitude=float(stla[i]),
-        elevation=float(stel[i]),
-        creation_date=obspy.UTCDateTime(START_DATE),
-        site=Site(name=NETWORK_DESCRIPTION))
-    
-    cha_HHZ = Channel(
-        # This is the channel code according to the SEED standard.
-        code="HHZ",
-        # This is the location code according to the SEED standard.
-        location_code=LOCATION,
-        # Note that these coordinates can differ from the station coordinates.
-        latitude=float(stla[i]),
-        longitude=float(stla[i]),
-        elevation=float(stel[i]),
-        depth=0.0,
-        azimuth=0.0,
-        dip=-90.0,
-        sample_rate=SAMPLING_RATE)
+	if len(sensor_keys[i]) != 0 and len(accer_keys[i]) == 0:
 
-    cha_HHE = Channel(
-        # This is the channel code according to the SEED standard.
-        code="HHE",
-        # This is the location code according to the SEED standard.
-        location_code=LOCATION,
-        # Note that these coordinates can differ from the station coordinates.
-        latitude=float(stla[i]),
-        longitude=float(stla[i]),
-        elevation=float(stel[i]),
-        depth=0.0,
-        azimuth=90.0,
-        dip=0.0,
-        sample_rate=SAMPLING_RATE)
+	    sta = Station(
+		# This is the station code according to the SEED standard.
+		code=j,
+		latitude=float(stla[i]),
+		longitude=float(stla[i]),
+		elevation=float(stel[i]),
+		creation_date=obspy.UTCDateTime(START_DATE),
+		site=Site(name=NETWORK_DESCRIPTION))
+	    
+	    cha_HHZ = Channel(
+		# This is the channel code according to the SEED standard.
+		code="HHZ",
+		# This is the location code according to the SEED standard.
+		location_code=LOCATION,
+		# Note that these coordinates can differ from the station coordinates.
+		latitude=float(stla[i]),
+		longitude=float(stla[i]),
+		elevation=float(stel[i]),
+		depth=0.0,
+		azimuth=0.0,
+		dip=-90.0,
+		sample_rate=SAMPLING_RATE)
 
-    cha_HHN = Channel(
-        # This is the channel code according to the SEED standard.
-        code="HHN",
-        # This is the location code according to the SEED standard.
-        location_code=LOCATION,
-        # Note that these coordinates can differ from the station coordinates.
-        latitude=float(stla[i]),
-        longitude=float(stla[i]),
-        elevation=float(stel[i]),
-        depth=0.0,
-        azimuth=0.0,
-        dip=0.0,
-        sample_rate=SAMPLING_RATE)
-    
-    # Now tie it all together.
+	    cha_HHE = Channel(
+		# This is the channel code according to the SEED standard.
+		code="HHE",
+		# This is the location code according to the SEED standard.
+		location_code=LOCATION,
+		# Note that these coordinates can differ from the station coordinates.
+		latitude=float(stla[i]),
+		longitude=float(stla[i]),
+		elevation=float(stel[i]),
+		depth=0.0,
+		azimuth=90.0,
+		dip=0.0,
+		sample_rate=SAMPLING_RATE)
 
-    response = nrl.get_response(sensor_keys = sensor_keys[i].split(','),datalogger_keys = datalogger_keys[i].split(','))
+	    cha_HHN = Channel(
+		# This is the channel code according to the SEED standard.
+		code="HHN",
+		# This is the location code according to the SEED standard.
+		location_code=LOCATION,
+		# Note that these coordinates can differ from the station coordinates.
+		latitude=float(stla[i]),
+		longitude=float(stla[i]),
+		elevation=float(stel[i]),
+		depth=0.0,
+		azimuth=0.0,
+		dip=0.0,
+		sample_rate=SAMPLING_RATE)
+	    
+	    # Now tie it all together.
 
-    cha_HHZ.response = response
-    cha_HHN.response = response
-    cha_HHE.response = response
-    channel_sta = [cha_HHZ,cha_HHN,cha_HHE]
-    for k in channel_sta:
-        sta.channels.append(k)
-    net.stations.append(sta)
+	    response = nrl.get_response(sensor_keys = sensor_keys[i].split(','),datalogger_keys = datalogger_keys[i].split(','))
 
+	    cha_HHZ.response = response
+	    cha_HHN.response = response
+	    cha_HHE.response = response
+	    channel_sta = [cha_HHZ,cha_HHN,cha_HHE]
+	    for k in channel_sta:
+	    	sta.channels.append(k)
+	    net.stations.append(sta)
+
+	if len(sensor_keys[i]) == 0 and len(accer_keys[i]) != 0:
+
+	    sta = Station(
+		# This is the station code according to the SEED standard.
+		code=j,
+		latitude=float(stla[i]),
+		longitude=float(stla[i]),
+		elevation=float(stel[i]),
+		creation_date=obspy.UTCDateTime(START_DATE),
+		site=Site(name=NETWORK_DESCRIPTION))
+	    
+	    cha_HNZ = Channel(
+		# This is the channel code according to the SEED standard.
+		code="HNZ",
+		# This is the location code according to the SEED standard.
+		location_code=LOCATION,
+		# Note that these coordinates can differ from the station coordinates.
+		latitude=float(stla[i]),
+		longitude=float(stla[i]),
+		elevation=float(stel[i]),
+		depth=0.0,
+		azimuth=0.0,
+		dip=-90.0,
+		sample_rate=SAMPLING_RATE)
+
+	    cha_HNE = Channel(
+		# This is the channel code according to the SEED standard.
+		code="HNE",
+		# This is the location code according to the SEED standard.
+		location_code=LOCATION,
+		# Note that these coordinates can differ from the station coordinates.
+		latitude=float(stla[i]),
+		longitude=float(stla[i]),
+		elevation=float(stel[i]),
+		depth=0.0,
+		azimuth=90.0,
+		dip=0.0,
+		sample_rate=SAMPLING_RATE)
+
+	    cha_HNN = Channel(
+		# This is the channel code according to the SEED standard.
+		code="HNN",
+		# This is the location code according to the SEED standard.
+		location_code=LOCATION,
+		# Note that these coordinates can differ from the station coordinates.
+		latitude=float(stla[i]),
+		longitude=float(stla[i]),
+		elevation=float(stel[i]),
+		depth=0.0,
+		azimuth=0.0,
+		dip=0.0,
+		sample_rate=SAMPLING_RATE)
+	    
+	    # Now tie it all together.
+
+	    response = nrl.get_response(sensor_keys = accer_keys[i].split(','),datalogger_keys = datalogger_keys[i].split(','))
+
+	    cha_HNZ.response = response
+	    cha_HNN.response = response
+	    cha_HNE.response = response
+	    channel_sta = [cha_HNZ,cha_HNN,cha_HNE]
+	    for k in channel_sta:
+	    	sta.channels.append(k)
+	    net.stations.append(sta)
+
+	if len(sensor_keys[i]) != 0 and len(accer_keys[i]) != 0:
+
+	    sta = Station(
+		# This is the station code according to the SEED standard.
+		code=j,
+		latitude=float(stla[i]),
+		longitude=float(stla[i]),
+		elevation=float(stel[i]),
+		creation_date=obspy.UTCDateTime(START_DATE),
+		site=Site(name=NETWORK_DESCRIPTION))
+	    
+	    cha_HNZ = Channel(
+		# This is the channel code according to the SEED standard.
+		code="HNZ",
+		# This is the location code according to the SEED standard.
+		location_code=LOCATION,
+		# Note that these coordinates can differ from the station coordinates.
+		latitude=float(stla[i]),
+		longitude=float(stla[i]),
+		elevation=float(stel[i]),
+		depth=0.0,
+		azimuth=0.0,
+		dip=-90.0,
+		sample_rate=SAMPLING_RATE)
+
+	    cha_HNE = Channel(
+		# This is the channel code according to the SEED standard.
+		code="HNE",
+		# This is the location code according to the SEED standard.
+		location_code=LOCATION,
+		# Note that these coordinates can differ from the station coordinates.
+		latitude=float(stla[i]),
+		longitude=float(stla[i]),
+		elevation=float(stel[i]),
+		depth=0.0,
+		azimuth=90.0,
+		dip=0.0,
+		sample_rate=SAMPLING_RATE)
+
+	    cha_HNN = Channel(
+		# This is the channel code according to the SEED standard.
+		code="HNN",
+		# This is the location code according to the SEED standard.
+		location_code=LOCATION,
+		# Note that these coordinates can differ from the station coordinates.
+		latitude=float(stla[i]),
+		longitude=float(stla[i]),
+		elevation=float(stel[i]),
+		depth=0.0,
+		azimuth=0.0,
+		dip=0.0,
+		sample_rate=SAMPLING_RATE)
+
+	    cha_HHZ = Channel(
+		# This is the channel code according to the SEED standard.
+		code="HHZ",
+		# This is the location code according to the SEED standard.
+		location_code=LOCATION,
+		# Note that these coordinates can differ from the station coordinates.
+		latitude=float(stla[i]),
+		longitude=float(stla[i]),
+		elevation=float(stel[i]),
+		depth=0.0,
+		azimuth=0.0,
+		dip=-90.0,
+		sample_rate=SAMPLING_RATE)
+
+	    cha_HHE = Channel(
+		# This is the channel code according to the SEED standard.
+		code="HHE",
+		# This is the location code according to the SEED standard.
+		location_code=LOCATION,
+		# Note that these coordinates can differ from the station coordinates.
+		latitude=float(stla[i]),
+		longitude=float(stla[i]),
+		elevation=float(stel[i]),
+		depth=0.0,
+		azimuth=90.0,
+		dip=0.0,
+		sample_rate=SAMPLING_RATE)
+
+	    cha_HHN = Channel(
+		# This is the channel code according to the SEED standard.
+		code="HHN",
+		# This is the location code according to the SEED standard.
+		location_code=LOCATION,
+		# Note that these coordinates can differ from the station coordinates.
+		latitude=float(stla[i]),
+		longitude=float(stla[i]),
+		elevation=float(stel[i]),
+		depth=0.0,
+		azimuth=0.0,
+		dip=0.0,
+		sample_rate=SAMPLING_RATE)
+	    
+	    # Now tie it all together.
+
+	    response = nrl.get_response(sensor_keys = sensor_keys[i].split(','),datalogger_keys = datalogger_keys[i].split(','))
+	    response_accer = nrl.get_response(sensor_keys = accer_keys[i].split(','),datalogger_keys = datalogger_keys[i].split(','))
+
+	    cha_HNZ.response = response_accer
+	    cha_HNN.response = response_accer
+	    cha_HNE.response = response_accer
+
+	    cha_HHZ.response = response
+	    cha_HHN.response = response
+	    cha_HHE.response = response
+	    channel_sta = [cha_HHZ,cha_HHN,cha_HHE,cha_HNZ,cha_HNN,cha_HNE]
+	    for k in channel_sta:
+	    	sta.channels.append(k)
+	    net.stations.append(sta)
 
 inv.networks.append(net)  
 os.makedirs(OUTPUT_XML_FILE_DIR,exist_ok=True)

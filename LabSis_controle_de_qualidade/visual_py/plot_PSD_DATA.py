@@ -7,9 +7,10 @@ import os
 import glob
 from obspy.signal import PPSD
 from obspy.imaging.cm import pqlx
+from obspy import UTCDateTime
 
 from parameters_py.config import (
-					OUTPUT_FIGURE_DIR,TIME_OF_WEEKDAY_DAY,TIME_OF_WEEKDAY_START_HOUR,TIME_OF_WEEKDAY_FINAL_HOUR
+					OUTPUT_FIGURE_DIR,INITIAL_DATE,FINAL_DATE,TIME_OF_WEEKDAY_DAY,TIME_OF_WEEKDAY_START_HOUR,TIME_OF_WEEKDAY_FINAL_HOUR
 				   )
 
 # ==================================
@@ -27,9 +28,12 @@ def plot_PPSD_TOTAL_data(date_lst):
 def plot_PPSD_WINDOWED_data(date_lst):
     os.chdir(date_lst)
     files = sorted(glob.glob('*.npz'))
+    print(files)
     ppsd = PPSD.load_npz(files[0])
+    print(ppsd) 
+
     [ppsd.add_npz(i) for i in files[1:]]
-    ppsd.calculate_histogram(time_of_weekday=[(TIME_OF_WEEKDAY_DAY, TIME_OF_WEEKDAY_START_HOUR, TIME_OF_WEEKDAY_FINAL_HOUR)])
+    ppsd.calculate_histogram(starttime=UTCDateTime(INITIAL_DATE),endtime=UTCDateTime(FINAL_DATE),time_of_weekday=[(TIME_OF_WEEKDAY_DAY, TIME_OF_WEEKDAY_START_HOUR, TIME_OF_WEEKDAY_FINAL_HOUR)])    
     folder_output = OUTPUT_FIGURE_DIR+'WINDOWED_'+str(int(TIME_OF_WEEKDAY_START_HOUR))+'_'+str(int(TIME_OF_WEEKDAY_FINAL_HOUR))+'/'+ppsd.station+'/'
     os.makedirs(folder_output,exist_ok=True)
     ppsd.plot(cmap=pqlx,filename=folder_output+ppsd.network+'.'+ppsd.station+'.'+ppsd.channel+'.'+str(ppsd.times_processed[0].year)+'.pdf')

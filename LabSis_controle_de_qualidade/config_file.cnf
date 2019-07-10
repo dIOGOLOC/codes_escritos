@@ -22,57 +22,73 @@
 #======
 
 # directory of raw files
-DIR_DATA = /home/diogo/dados_doutorado/PFBR/HHZ.D/
+DIR_DATA = /home/sysop/seiscomp3/var/lib/archive/2019/NB/NBPB/HHE.D/
 
 #Directory to save JSON Files
-OUTPUT_JSON_FILE_DIR = /home/diogo/dados_doutorado/teste_PQLX/JSON_FILES/
+OUTPUT_JSON_FILE_DIR = /home/sysop/Documentos/teste_lab_nbpb/JSON_FILES/
 
 #Directory to save Figures
-OUTPUT_FIGURE_DIR = /home/diogo/dados_doutorado/teste_PQLX/FIGURES/
+OUTPUT_FIGURE_DIR = /home/sysop/Documentos/teste_lab_nbpb/FIGURES/
 
 #Directory to save PSD
-OUTPUT_PSD_DIR = /home/diogo/dados_doutorado/teste_PQLX/PPSD/
-
-#Directory to save EVENT data
-OUTPUT_EV_DIR = /home/diogo/dados_doutorado/teste_PQLX/EVENTS/
+OUTPUT_PSD_DIR = /home/sysop/Documentos/teste_lab_nbpb/PPSD/
 
 #Directory to save XML File
-OUTPUT_XML_FILE_DIR = /home/diogo/dados_doutorado/teste_PQLX/XML_FILES/
+OUTPUT_XML_FILE_DIR = /home/sysop/Documentos/teste_lab_nbpb/XML_FILES/
 
 #STA CSV FILE path
-STA_CSV_FILE  = /home/diogo/dados_doutorado/teste_PQLX/station_coordinates/STA_LAT_LON.txt
+STA_CSV_FILE  = /home/sysop/Documentos/teste_lab_nbpb/station_coordinates/STA_LAT_LON.txt
 
 #=====
 [xml]
 #=====
 
 #Name of the Network
-NETWORK_CODE = LS
+NETWORK_CODE = NB
+
+#Name of the Channel
+CHANNEL_CODE = HHE
 
 #Name of the deployer
 SOURCE = LabSis UFRN
 
 #Lotation code
-LOCATION = 00
+LOCATION = 
 
 #Description of the Network
 NETWORK_DESCRIPTION = 
 
-#Start date of the Network
-START_DATE = 2018,1,1
+#Start date of the Network for XML
+START_DATE = 2019,1,1
 
 #Sampling Rate of the seismogram
 SAMPLING_RATE = 100
+
+#======
+[Client]
+#======
+
+#The user name is used for identification with the ArcLink server.
+USER = Labsis
+
+#Host name of the remote ArcLink server (default host is 'webdc.eu').
+HOST = 10.3.225.19
+
+#Port of the remote ArcLink server (default port is 18002).
+PORT = 18001 
+
+#A string containing the name of the institution of the requesting person (default is an 'Anonymous').
+INSTITUTION = UFRN
 
 #======
 [PPSD]
 #======
 
 #Initial date of the Data
-INITIAL_DATE = 2018,12,1
+INITIAL_DATE = 2019,1,1
 
 #Final date of the data
-FINAL_DATE = 2019,3,1
+FINAL_DATE = 2019,7,1
 
 #Percentage fo the days to process and plot the PPSD?
 DAY_PERCENTAGE = 2
@@ -83,5 +99,5 @@ DAY_PERCENTAGE = 2
 #only individual spectra that have a starttime in between 10pm and 12am are used in the stack for all days of week
 #time_of_weekday=[(TIME_OF_WEEKDAY_DAY, TIME_OF_WEEKDAY_START_HOUR, TIME_OF_WEEKDAY_FINAL_HOUR)])
 TIME_OF_WEEKDAY_DAY = -1
-TIME_OF_WEEKDAY_START_HOUR = 0
-TIME_OF_WEEKDAY_FINAL_HOUR = 3
+TIME_OF_WEEKDAY_START_HOUR = 11
+TIME_OF_WEEKDAY_FINAL_HOUR = 15
