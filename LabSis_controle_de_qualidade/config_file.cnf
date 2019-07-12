@@ -22,7 +22,7 @@
 #======
 
 # directory of raw files
-DIR_DATA = /home/sysop/seiscomp3/var/lib/archive/2019/NB/NBPB/HHE.D/
+DIR_DATA = /home/sysop/seiscomp3/var/lib/archive/2019/NB/NBCL/HHZ.D/
 
 #Directory to save JSON Files
 OUTPUT_JSON_FILE_DIR = /home/sysop/Documentos/teste_lab_nbpb/JSON_FILES/
@@ -47,7 +47,7 @@ STA_CSV_FILE  = /home/sysop/Documentos/teste_lab_nbpb/station_coordinates/STA_LA
 NETWORK_CODE = NB
 
 #Name of the Channel
-CHANNEL_CODE = HHE
+CHANNEL_CODE = HHZ
 
 #Name of the deployer
 SOURCE = LabSis UFRN
@@ -85,10 +85,10 @@ INSTITUTION = UFRN
 #======
 
 #Initial date of the Data
-INITIAL_DATE = 2019,1,1
+INITIAL_DATE = 2019,5,1
 
 #Final date of the data
-FINAL_DATE = 2019,7,1
+FINAL_DATE = 2019,8,1
 
 #Percentage fo the days to process and plot the PPSD?
 DAY_PERCENTAGE = 2
