@@ -1,0 +1,103 @@
+###############################################################################
+#
+# This is an example of configuration file, wherein global paths and parameters
+# related to the analysis of quality of seismological data are defined. At least 
+# one file should reside in the folder in which you intend to run your scripts. 
+# The configuration file(s) can have any name, as long as the extension is 'cnf':
+# e.g., 'analysis.cnf', 'caninana_config.cnf', 'myconfig.cnf', 'test.cnf'...
+#
+# The parameters are divided in several sections:
+# - [paths]                : default paths to input/output folders
+# - [xml]                  : parameters to create xml file
+# - [PPSD]                 : parameters to estimate PPSD data
+#
+# Before using the scripts, you should at least make sure that the paths in 
+# section [paths] are consistent with your own files and folders organization. 
+#
+###############################################################################
+
+
+#======
+[paths]
+#======
+
+# directory of raw files
+DIR_DATA = /home/sysop/seiscomp3/var/lib/archive/2019/NB/NBCL/HHZ.D/
+
+#Directory to save JSON Files
+OUTPUT_JSON_FILE_DIR = /home/sysop/Documentos/teste_lab_nbpb/JSON_FILES/
+
+#Directory to save Figures
+OUTPUT_FIGURE_DIR = /home/sysop/Documentos/teste_lab_nbpb/FIGURES/
+
+#Directory to save PSD
+OUTPUT_PSD_DIR = /home/sysop/Documentos/teste_lab_nbpb/PPSD/
+
+#Directory to save XML File
+OUTPUT_XML_FILE_DIR = /home/sysop/Documentos/teste_lab_nbpb/XML_FILES/
+
+#STA CSV FILE path
+STA_CSV_FILE  = /home/sysop/Documentos/teste_lab_nbpb/station_coordinates/STA_LAT_LON.txt
+
+#=====
+[xml]
+#=====
+
+#Name of the Network
+NETWORK_CODE = NB
+
+#Name of the Channel
+CHANNEL_CODE = HHZ
+
+#Name of the deployer
+SOURCE = LabSis UFRN
+
+#Lotation code
+LOCATION = 
+
+#Description of the Network
+NETWORK_DESCRIPTION = 
+
+#Start date of the Network for XML
+START_DATE = 2019,1,1
+
+#Sampling Rate of the seismogram
+SAMPLING_RATE = 100
+
+#======
+[Client]
+#======
+
+#The user name is used for identification with the ArcLink server.
+USER = Labsis
+
+#Host name of the remote ArcLink server (default host is 'webdc.eu').
+HOST = 10.3.225.19
+
+#Port of the remote ArcLink server (default port is 18002).
+PORT = 18001 
+
+#A string containing the name of the institution of the requesting person (default is an 'Anonymous').
+INSTITUTION = UFRN
+
+#======
+[PPSD]
+#======
+
+#Initial date of the Data
+INITIAL_DATE = 2019,5,1
+
+#Final date of the data
+FINAL_DATE = 2019,8,1
+
+#Percentage fo the days to process and plot the PPSD?
+DAY_PERCENTAGE = 2
+
+#Restricts the data that is included in the stack by time of day and weekday. 
+#Monday is 1, Sunday is 7, -1 for any day of week. 
+#For example, using time_of_weekday=[(-1, 22, 24)] 
+#only individual spectra that have a starttime in between 10pm and 12am are used in the stack for all days of week
+#time_of_weekday=[(TIME_OF_WEEKDAY_DAY, TIME_OF_WEEKDAY_START_HOUR, TIME_OF_WEEKDAY_FINAL_HOUR)])
+TIME_OF_WEEKDAY_DAY = -1
+TIME_OF_WEEKDAY_START_HOUR = 11
+TIME_OF_WEEKDAY_FINAL_HOUR = 15
