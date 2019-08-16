@@ -3,7 +3,7 @@
 </p>
 
 This project is dedicated to provide a Python framework for analysing the quality of
-seismological data based on [ObsPy](https://github.com/obspy/obspy/wiki).
+seismological data archived in  based on [ObsPy](https://github.com/obspy/obspy/wiki).
 
 Version
 ---------
@@ -11,7 +11,7 @@ v0.2
 
 Requirements
 ------------
-The code is developped on Ubuntu with Python Python 3.7.
+The code is developped on Ubuntu with Python 3.7.
 
 In addition to [Python 3.7](https://docs.python.org/3/), you need
 to install the following packages: 
@@ -22,8 +22,23 @@ to install the following packages:
 - [json](https://docs.python.org/3/library/json.html)
 - [os](https://docs.python.org/3/library/os.html)
 
-*I suggest to use the [Anaconda Cloud](https://anaconda.org/) to install your packages.
+***I suggest to use the [Anaconda Cloud](https://anaconda.org/) to install your packages.***
 
+
+**Few tips to install packages in UBUNTU:**
+
+**Download the *.sh* file in [Anaconda Cloud](https://anaconda.org/) and enter the following command to install Anaconda3:**
+
+```
+bash ~/Downloads/Anaconda3-2019.07-Linux-x86_64.sh _(File location)_
+```
+
+**After installing Anaconda, enter the following command to install Obspy via Anaconda:**
+
+```
+conda config --add channels conda-forge
+conda install obspy
+```
 
 Brief explanation about the main code:
 ---------------------------------------
@@ -129,4 +144,4 @@ ObsPy: a bridge for seismology into the scientific Python ecosystem.
 
 Inspiration
 ----------
-The code is for ([Labsis](http://www.labsis.ufrn.br/)). 
+The code is for [Labsis](http://www.labsis.ufrn.br/). 
