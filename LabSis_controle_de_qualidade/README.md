@@ -146,6 +146,9 @@ $ python get_plot_DATA_AVAILABILITY_via_client.py
 ---------------------------------------
 ---------------------------------------
 
+Stand-alone Option
+-------------
+
 *If you want a fast solution, you can use stand-alone  codes in the folder Standalone_scripts_py.*
 
 
