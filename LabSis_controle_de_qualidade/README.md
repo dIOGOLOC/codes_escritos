@@ -25,7 +25,7 @@ to install the following packages:
 > I suggest to use the [Anaconda Cloud](https://anaconda.org/) to install your packages.
 
 
-***Short cut to install the required packages on UBUNTU:***
+***Shortcuts to install the required packages on UBUNTU:***
 
 > Download the '.sh' file in [Anaconda Cloud](https://anaconda.org/) and enter the following command to install Anaconda3:
 
@@ -48,7 +48,7 @@ Brief explanation about the main code:
 
 - You should start reading the configuration file (config_file.cnf), which contains global parameters and detailed instructions.
 
-- You should create your own 'STA_LAT_LON.txt' file, which is the main archive to create the XML file (see more [here](https://docs.obspy.org/tutorial/code_snippets/stationxml_file_from_scratch.html).
+- You should create your own 'STA_LAT_LON.txt' file, which is the main archive to create the XML file (see more about XML file [here](https://docs.obspy.org/tutorial/code_snippets/stationxml_file_from_scratch.html)).
 
 - For creating your own 'STA_LAT_LON.txt' file with your stations, you should pay attention in the following parameters:
 
@@ -60,13 +60,16 @@ Brief explanation about the main code:
 	- DATALOGGER_KEYS (NRL parameters of the station data logger)
 	- ACCER_KEYS (NRL parameters, if the station has another sensor, like a accelerograph) .
 
-> The SENSOR_KEYS, DATALOGGER_KEYS and ACCER_KEYS are filled according to Nominal Response Library keys (see more [here](http://docs.obspy.org/packages/obspy.clients.nrl.html) to know how to access these parameters). Examples
-	- sensor_keys=['Streckeisen', 'STS-1', '360 seconds'],
-    - datalogger_keys=['REF TEK', 'RT 130 & 130-SMA', '1', '200'])
+> The SENSOR_KEYS, DATALOGGER_KEYS and ACCER_KEYS are filled according to Nominal Response Library keys (see [here](http://docs.obspy.org/packages/obspy.clients.nrl.html) how to fill these parameters). 
 
+```
+Examples:
+	sensor_keys=['Streckeisen', 'STS-1', '360 seconds'],
+    datalogger_keys=['REF TEK', 'RT 130 & 130-SMA', '1', '200'])
+```
 > If the same station has two sensors, you must to fill SENSOR_KEYS and ACCER_KEYS, else let ACCER_KEYS empty.
 
-> The program will process the stations that were discriminated in the 'STA_LAT_LON.txt'. So, you can comment (use '%') the line with useless stations.
+> The program will process stations that were discriminated in the 'STA_LAT_LON.txt', so you can comment (use '%') the line with useless stations.
 
 - After the program creates the XML file, we estimate the Probabilistic Power Spectral Densities via Obspy (more information [here](https://docs.obspy.org/tutorial/code_snippets/probabilistic_power_spectral_density.html)).  
 
