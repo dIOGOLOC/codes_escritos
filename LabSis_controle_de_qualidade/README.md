@@ -71,7 +71,7 @@ Examples:
 
 > The program will process stations that were discriminated in the 'STA_LAT_LON.txt', so you can comment (use '%') the line with useless stations.
 
-- After the program creates the XML file, we estimate the Probabilistic Power Spectral Densities via Obspy (more information [here](https://docs.obspy.org/tutorial/code_snippets/probabilistic_power_spectral_density.html)).  
+- After the program creates the XML file, we estimate the completeness of the dataset and the Probabilistic Power Spectral Densities of the data via Obspy (more information [here](https://docs.obspy.org/tutorial/code_snippets/probabilistic_power_spectral_density.html)).  
 
 *DATASET VIA HD*
 
