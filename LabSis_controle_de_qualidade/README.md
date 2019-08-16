@@ -11,7 +11,7 @@ v0.2
 
 Requirements
 ------------
-The code is developped on Ubuntu with Python 3.7.
+The code is developped on Ubuntu with Python 3.7. I think that is not a problem use in other systems.
 
 In addition to [Python 3.7](https://docs.python.org/3/), you need
 to install the following packages: 
@@ -25,9 +25,9 @@ to install the following packages:
 > I suggest to use the [Anaconda Cloud](https://anaconda.org/) to install your packages.
 
 
-**Few tips to install packages in UBUNTU:**
+***Short cut to install the required packages on UBUNTU:***
 
-> Download the *.sh* file in [Anaconda Cloud](https://anaconda.org/) and enter the following command to install Anaconda3:
+> Download the '.sh' file in [Anaconda Cloud](https://anaconda.org/) and enter the following command to install Anaconda3:
 
 ```shell
 $ bash ~/Downloads/Anaconda3-2019.07-Linux-x86_64.sh (File location)
@@ -40,10 +40,35 @@ $ conda config --add channels conda-forge
 $ conda install obspy
 ```
 
+> The another required packages are pre-installed with [Anaconda Cloud](https://anaconda.org/).
 
 
 Brief explanation about the main code:
 ---------------------------------------
+
+- You should start reading the configuration file (config_file.cnf), which contains global parameters and detailed instructions.
+
+- You should create your own 'STA_LAT_LON.txt' file, which is the main archive to create the XML file (see more [here](https://docs.obspy.org/tutorial/code_snippets/stationxml_file_from_scratch.html).
+
+- For creating your own 'STA_LAT_LON.txt' file with your stations, you should pay attention in the following parameters:
+
+	- NAME (name of the station)
+	- LAT (latitude of the station)
+	- LON (longitude of the station)
+	- ELEV (elevation of the station)
+	- SENSOR_KEYS (NRL parameters of the station sensor)
+	- DATALOGGER_KEYS (NRL parameters of the station data logger)
+	- ACCER_KEYS (NRL parameters, if the station has another sensor, like a accelerograph) .
+
+> The SENSOR_KEYS, DATALOGGER_KEYS and ACCER_KEYS are filled according to Nominal Response Library keys (see more [here](http://docs.obspy.org/packages/obspy.clients.nrl.html) to know how to access these parameters). Examples
+	- sensor_keys=['Streckeisen', 'STS-1', '360 seconds'],
+    - datalogger_keys=['REF TEK', 'RT 130 & 130-SMA', '1', '200'])
+
+> If the same station has two sensors, you must to fill SENSOR_KEYS and ACCER_KEYS, else let ACCER_KEYS empty.
+
+> The program will process the stations that were discriminated in the 'STA_LAT_LON.txt'. So, you can comment (use '%') the line with useless stations.
+
+- After the program creates the XML file, we estimate the Probabilistic Power Spectral Densities via Obspy (more information [here](https://docs.obspy.org/tutorial/code_snippets/probabilistic_power_spectral_density.html)).  
 
 *DATASET VIA HD*
 
