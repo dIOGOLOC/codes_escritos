@@ -62,8 +62,8 @@ Brief explanation about the main code:
 
 ```
 Examples:
-	sensor_keys=['Streckeisen', 'STS-1', '360 seconds'],
-    datalogger_keys=['REF TEK', 'RT 130 & 130-SMA', '1', '200'])
+	* sensor_keys=['Streckeisen', 'STS-1', '360 seconds'],
+    * datalogger_keys=['REF TEK', 'RT 130 & 130-SMA', '1', '200']
 ```
 > If the same station has two sensors, you must to fill SENSOR_KEYS and ACCER_KEYS, else let ACCER_KEYS empty.
 
@@ -75,7 +75,7 @@ Examples:
 $ python get_STATION_INFORMATION.py
 ```
 
-- You need to create your XML file:
+- After that you need to create your XML file:
 
 ```shell
 $ python create_XML_network.py
