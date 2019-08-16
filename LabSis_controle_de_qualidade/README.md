@@ -22,57 +22,59 @@ to install the following packages:
 - [json](https://docs.python.org/3/library/json.html)
 - [os](https://docs.python.org/3/library/os.html)
 
-***I suggest to use the [Anaconda Cloud](https://anaconda.org/) to install your packages.***
+> I suggest to use the [Anaconda Cloud](https://anaconda.org/) to install your packages.
 
 
 **Few tips to install packages in UBUNTU:**
 
-**Download the *.sh* file in [Anaconda Cloud](https://anaconda.org/) and enter the following command to install Anaconda3:**
+> Download the *.sh* file in [Anaconda Cloud](https://anaconda.org/) and enter the following command to install Anaconda3:
 
-```
-bash ~/Downloads/Anaconda3-2019.07-Linux-x86_64.sh _(File location)_
+```shell
+$ bash ~/Downloads/Anaconda3-2019.07-Linux-x86_64.sh (File location)
 ```
 
-**After installing Anaconda, enter the following command to install Obspy via Anaconda:**
+> After installing Anaconda, enter the following command to install Obspy via Anaconda:
 
+```shell
+$ conda config --add channels conda-forge
+$ conda install obspy
 ```
-conda config --add channels conda-forge
-conda install obspy
-```
+
+
 
 Brief explanation about the main code:
 ---------------------------------------
 
 *DATASET VIA HD*
 
-1) **First of all, you must to get information of your the stations:**
+- First of all, you must to get information of your the stations:
 
-```
-python get_STATION_INFORMATION.py
-```
-
-2) **You need to create your XML file:**
-
-```
-python create_XML_network.py
+```shell
+$ python get_STATION_INFORMATION.py
 ```
 
-3) **To check and pre-process your dataset:**
+- You need to create your XML file:
 
-```
-python get_plot_DATA_AVAILABILITY.py
-```
-
-4) **Estimating the probabilistic power spectral densities of your data.**
-
-```
-python estimate_plot_PPSD_TOTAL.py
+```shell
+$ python create_XML_network.py
 ```
 
-5) Plotting the probabilistic power spectral densities of your data.**
+- To check and pre-process your dataset:
 
+```shell
+$ python get_plot_DATA_AVAILABILITY.py
 ```
-python estimate_plot_PPSD_WINDOWED.py
+
+- Estimating the probabilistic power spectral densities of your data.
+
+```shell
+$ python estimate_plot_PPSD_TOTAL.py
+```
+
+- Plotting the probabilistic power spectral densities of your data.**
+
+```shell
+$ python estimate_plot_PPSD_WINDOWED.py
 ```
 
 ---------------------------------------
@@ -80,36 +82,36 @@ python estimate_plot_PPSD_WINDOWED.py
 
 *DATASET VIA CLIENT:*
 
-1) **First of all, you must to get information of your the stations:**
+- First of all, you must to get information of your the stations:
 
-```
-python get_STATION_INFORMATION.py
-```
-
-2) **You need to create your XML file:**
-
-```
-python create_XML_network.py
+```shell
+$ python get_STATION_INFORMATION.py
 ```
 
-3) **Estimating the probabilistic power spectral densities of your data.**
+- You need to create your XML file:
 
-```
-python estimate_plot_PPSD_TOTAL_via_client.py
-```
-
-4) **Plotting the probabilistic power spectral densities of your data.**
-
-```
-python estimate_plot_PPSD_WINDOWED.py
+```shell
+$ python create_XML_network.py
 ```
 
-**If you want to check your dataset:**
+- Estimating the probabilistic power spectral densities of your data.
+
+```shell
+$ python estimate_plot_PPSD_TOTAL_via_client.py
+```
+
+- Plotting the probabilistic power spectral densities of your data.
+
+```shell
+$ python estimate_plot_PPSD_WINDOWED.py
+```
+
+**If you want to check your dataset completeness:**
 
 PLUS: 
 
-```
-python get_plot_DATA_AVAILABILITY_via_client.py
+```shell
+$ python get_plot_DATA_AVAILABILITY_via_client.py
 ```
 
 How to update
@@ -118,7 +120,7 @@ The code is still experimental so you should regularly check for (and pull) upda
 
 ToDo list
 -------------
-- Daily PQLX frequency plot.
+- Daily PQLX frequency plot. 🔨🔨🔨
 
 References
 ----------
