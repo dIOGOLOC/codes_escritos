@@ -30,63 +30,80 @@ Brief explanation about the main code:
 
 *DATASET VIA HD*
 
-**First of all, you must to get information of your the stations:**
+1) **First of all, you must to get information of your the stations:**
 
-1) *python get_STATION_INFORMATION.py*
+```
+python get_STATION_INFORMATION.py
+```
 
-**You need to create your XML file:**
+2) **You need to create your XML file:**
 
-2) *python create_XML_network.py*
+```
+python create_XML_network.py
+```
 
-**To check and pre-process your dataset:**
+3) **To check and pre-process your dataset:**
 
-3) *python get_plot_DATA_AVAILABILITY.py*
+```
+python get_plot_DATA_AVAILABILITY.py
+```
 
-**Estimating the probabilistic power spectral densities of your data.**
+4) **Estimating the probabilistic power spectral densities of your data.**
 
-4) *python estimate_plot_PPSD_TOTAL.py*
+```
+python estimate_plot_PPSD_TOTAL.py
+```
 
-**Plotting the probabilistic power spectral densities of your data.**
+5) Plotting the probabilistic power spectral densities of your data.**
 
-5) *python estimate_plot_PPSD_WINDOWED.py*
+```
+python estimate_plot_PPSD_WINDOWED.py
+```
 
 ---------------------------------------
 ---------------------------------------
 
 *DATASET VIA CLIENT:*
 
-**First of all, you must to get information of your the stations:**
+1) **First of all, you must to get information of your the stations:**
 
-1) *python get_STATION_INFORMATION.py*
+```
+python get_STATION_INFORMATION.py
+```
 
-**You need to create your XML file:**
+2) **You need to create your XML file:**
 
-2) *python create_XML_network.py*
+```
+python create_XML_network.py
+```
 
-**Estimating the probabilistic power spectral densities of your data.**
+3) **Estimating the probabilistic power spectral densities of your data.**
 
-3) *python estimate_plot_PPSD_TOTAL_via_client.py*
+```
+python estimate_plot_PPSD_TOTAL_via_client.py
+```
 
-**Plotting the probabilistic power spectral densities of your data.**
+4) **Plotting the probabilistic power spectral densities of your data.**
 
-4) *python estimate_plot_PPSD_WINDOWED.py*
+```
+python estimate_plot_PPSD_WINDOWED.py
+```
 
 **If you want to check your dataset:**
 
-PLUS: *python get_plot_DATA_AVAILABILITY_via_client.py*
+PLUS: 
 
-**VIA CLIENT**
-
-
+```
+python get_plot_DATA_AVAILABILITY_via_client.py
+```
 
 How to update
 -------------
-The code is still experimental so you should regularly check for (and pull) 
-updates.
+The code is still experimental so you should regularly check for (and pull) updates.
 
 ToDo list
 -------------
-- ...
+- Daily PQLX frequency plot.
 
 References
 ----------
