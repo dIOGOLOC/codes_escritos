@@ -22,19 +22,19 @@
 #======
 
 # directory of raw RF files
-DIR_SAC = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/rede_BP_BB/event_data_YES_PP/
+DIR_SAC = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/rede_RSISNE/event_data_YES_PP/
 
 # directory of selected RF files
-DIR_SEL_SAC =  /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/rede_BP_BB/selected_event_data_YES_PP/
+DIR_SEL_SAC =  /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/rede_RSISNE/selected_event_data_YES_PP/
 
 #Directory to save JSON Files
-OUTPUT_JSON_FILE_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/rede_BP_BB/
+OUTPUT_JSON_FILE_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/rede_RSISNE/JSON_FILES/
 
 #STA CSV FILE path
-STA_CSV_FILE  = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/rede_BP_BB/sta_coord/cood_rede_BB_sensor_type.txt
+STA_CSV_FILE  = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/rede_RSISNE/sta_coord/cood_rede_RSISNE_sensor_type.txt
 
 #Gaussian Filter
-GAUSSIAN_FILTER = 0.5
+GAUSSIAN_FILTER = 1.0
 
 #RADIAL RF EXTENSION
 RADIAL_EXT = .eqr
@@ -48,10 +48,10 @@ TRANSVERSAL_EXT = .eqt
 #=========
 
 #Trace check (minimium amplitude of trace)
-CODA_TRACE_CHECK_AMP_MIN = -0.05
+CODA_TRACE_CHECK_AMP_MIN = -0.15
 
 #Trace check (maximum amplitude of trace)
-CODA_TRACE_CHECK_AMP_MAX = 0.25
+CODA_TRACE_CHECK_AMP_MAX = 0.4
 
 #Trace check (min of the maximum amplitude of trace)
 ZERO_AMP_MIN = 0.1
@@ -60,13 +60,13 @@ ZERO_AMP_MIN = 0.1
 CODA_TRACE_CHECK = 50
 
 #Trace check (coda MAXIMUM AMPLITUDE)
-CODA_TRACE_MAX_AMP = 0.04
+CODA_TRACE_MAX_AMP = 0.15
 
 #Trace check (coda MINIMUM AMPLITUDE)
-CODA_TRACE_MIN_AMP = -0.04
+CODA_TRACE_MIN_AMP = -0.15
 
 #min percent recoveries of the observed radial component
-RF_PERCENT = 80
+RF_PERCENT = 75
 
 #Minimum event distance 
 EV_GCARC_MIN = 30
@@ -81,7 +81,7 @@ EV_MAGNITUDE_MB = 5.0
 CUT_BEFORE_P = 10
 
 #Time to trim the seismogram after P-wave arrival
-CUT_AFTER_P = 260
+CUT_AFTER_P = 100
 
 #Sampling Rate of the traces
 SAMPLING_RATE = 10

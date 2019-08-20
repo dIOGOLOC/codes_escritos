@@ -17,7 +17,7 @@ from obspy.clients.nrl import NRL
 from obspy.core.inventory import Inventory, Network, Station, Channel, Site
 
 from parameters_py.config import (
-					DIR_DATA,SOURCE,NETWORK_CODE,NETWORK_DESCRIPTION,START_DATE,SAMPLING_RATE,LOCATION,
+					SOURCE,NETWORK_CODE,NETWORK_DESCRIPTION,START_DATE,SAMPLING_RATE,LOCATION,
                     OUTPUT_XML_FILE_DIR,OUTPUT_JSON_FILE_DIR
                     
 				   )

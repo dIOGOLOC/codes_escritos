@@ -10,7 +10,6 @@ import matplotlib
 from matplotlib.cm import get_cmap
 from mpl_toolkits.mplot3d import Axes3D
 import shapefile
-from fatiando import gridder, utils
 import scipy.io
 import matplotlib.cm as cm
 from matplotlib.ticker import MultipleLocator, FormatStrFormatter
@@ -26,11 +25,9 @@ import matplotlib.gridspec as gridspec
 from shapely.geometry import Polygon, MultiPoint, Point
 import shapefile
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
-
-
-
-
-
+import cartopy.crs as ccrs
+import cartopy.feature as cfeature
+import verde as vd
 
 
 
@@ -42,12 +39,64 @@ from parameters_py.mgconfig import (
 					DEPTH_RANGE,BOOTSTRAP_INTERATOR,COLORMAP_STD,COLORMAP_VEL,DEPTH_TARGET
 				   )
 
+
+#Function to grid data by FATIANDO A TERRA:
+def spacing(area, shape):
+	"""
+	Returns the spacing between grid nodes
+
+	Parameters:
+
+	* area
+		``(x1, x2, y1, y2)``: Borders of the grid
+	* shape
+		Shape of the regular grid, ie ``(ny, nx)``.
+
+	Returns:
+
+	* ``[dy, dx]``
+	Spacing the y and x directions
+
+	"""
+	x1, x2, y1, y2 = area
+	ny, nx = shape
+	dx = float(x2 - x1)/float(nx - 1)
+	dy = float(y2 - y1)/float(ny - 1)
+	return [dy, dx]
+
+def regular(area, shape):
+	
+	ny, nx = shape
+	x1, x2, y1, y2 = area
+	dy, dx = spacing(area, shape)
+	x_range = np.arange(x1, x2, dx)
+	y_range = np.arange(y1, y2, dy)
+
+	# Need to make sure that the number of points in the grid is correct because
+	# of rounding errors in arange. Sometimes x2 and y2 are included, sometimes
+	# not
+
+	if len(x_range) < nx:
+	
+		x_range = np.append(x_range, x2)
+	if len(y_range) < ny:
+		y_range = np.append(y_range, y2)
+	assert len(x_range) == nx, "Failed! x_range doesn't have nx points"
+	assert len(y_range) == ny, "Failed! y_range doesn't have ny points"
+	xcoords, ycoords = [mat.ravel() for mat in np.meshgrid(x_range, y_range)]
+
+	return [xcoords, ycoords]
+
+print('Starting Receiver Functions migration code to estimate the depths of the Mantle discontinuities')
+print('\n')
+
+print('Importing depths and times of Pds conversion  dataset')
+print('\n')
+
 print('Importing earth model from obspy.taup.TauPyModel')
 print('Importing earth model from : '+MODEL_FILE_NPZ)
 model_10_km = TauPyModel(model=MODEL_FILE_NPZ)
-print('\n')
 
-print('Calculating FIRST FRESNEL ZONE RADIUS')
 
 for i,j in enumerate(model_10_km.model.s_mod.v_mod.layers):
 	if j[1] == 410:
@@ -90,12 +139,7 @@ print('Target Depth earth model Vp : '+str(Vp_depth_DEPTH_TARGET))
 print('Target Depth earth model Vs : '+str(Vs_depth_DEPTH_TARGET))
 #====================================================
 
-FRESNEL_ZONE_RADIUS_km = (Vp_depth_DEPTH_TARGET/2)* np.sqrt((((2*DEPTH_TARGET)/Vp_depth_DEPTH_TARGET) / RF_FREQUENCY))
-FRESNEL_ZONE_RADIUS = kilometer2degrees(FRESNEL_ZONE_RADIUS_km)
-print('FIRST FRESNEL ZONE RADIUS : '+str(FRESNEL_ZONE_RADIUS))
-
 print('\n')
-
 
 STA_DIR = OUTPUT_DIR+'MODEL_INTER_DEPTH_'+str(INTER_DEPTH)+'_DEPTH_TARGET_'+str(DEPTH_TARGET)+'/'+'Stations'+'/'
 
@@ -111,14 +155,229 @@ event_long = sta_dic['event_long']
 event_dist = sta_dic['event_dist']
 event_gcarc = sta_dic['event_gcarc']
 event_sta = sta_dic['event_sta']
+event_mag = sta_dic['event_mag']
 event_ray = sta_dic['event_ray']
 sta_lat = sta_dic['sta_lat']
 sta_long = sta_dic['sta_long']
 sta_data = sta_dic['sta_data']
 sta_time = sta_dic['sta_time']
 
-###################################################################################################################
+print('Creating the Earth layered model')
+print('\n')
 
+camadas_terra_10_km = np.arange(MIN_DEPTH,MAX_DEPTH+INTER_DEPTH,INTER_DEPTH)
+
+print('Importing Pds piercing points to each PHASE')
+print('\n')
+
+PHASES = 'P410s','P'+str(DEPTH_TARGET)+'s','P660s'
+
+print('Importing Pds Piercing Points for '+PHASES[0])
+print('\n')
+
+PP_DIR = OUTPUT_DIR+'MODEL_INTER_DEPTH_'+str(INTER_DEPTH)+'_DEPTH_TARGET_'+str(DEPTH_TARGET)+'/'+'Piercing_Points'+'/'
+
+
+filename_1 = PP_DIR+'PP_'+PHASES[0]+'_dic.json'
+
+PP_1_dic = json.load(open(filename_1))
+
+
+PP_time_1 = PP_1_dic['time']
+PP_lat_1 = PP_1_dic['lat']
+PP_lon_1 = PP_1_dic['lon']
+PP_depth_1 = PP_1_dic['depth']
+
+
+print('Importing Pds Piercing Points for '+PHASES[1])
+print('\n')
+
+filename_med = PP_DIR+'PP_'+PHASES[1]+'_dic.json'
+
+PP_med_dic = json.load(open(filename_med))
+
+PP_time_med = PP_med_dic['time']
+PP_lat_med = PP_med_dic['lat']
+PP_lon_med = PP_med_dic['lon']
+PP_depth_med = PP_med_dic['depth']
+
+
+print('Importing Pds Piercing Points for '+PHASES[2])
+print('\n')
+
+filename_2 = PP_DIR+'PP_'+PHASES[2]+'_dic.json'
+
+PP_2_dic = json.load(open(filename_2))
+
+PP_time_2 = PP_2_dic['time']
+PP_lat_2 = PP_2_dic['lat']
+PP_lon_2 = PP_2_dic['lon']
+PP_depth_2 = PP_2_dic['depth'] 
+
+print('P410s Piercing Points')
+print('\n')
+
+pp_1_lat  = [[]]*len(PP_lon_1)
+pp_1_long  = [[]]*len(PP_lon_1)
+
+
+for i,j in enumerate(PP_lon_1):
+	for k,l in enumerate(j):
+		if LLCRNRLON_LARGE<= l <= URCRNRLON_LARGE and PP_depth_1[i][k] == 410:
+				pp_1_lat[i] = PP_lat_1[i][k]
+				pp_1_long[i] = l
+
+
+pp_1_lat = [i for i in pp_1_lat if type(i) == float ]
+pp_1_long = [i for i in pp_1_long if type(i) == float ]
+
+
+print('P'+str(DEPTH_TARGET)+'s Piercing Points')
+print('\n')
+
+pp_med_lat  = [[]]*len(PP_lon_med)
+pp_med_long  = [[]]*len(PP_lon_med)
+pp_time_DEPTH_TARGET  = [[]]*len(PP_lon_med)
+
+for i,j in enumerate(PP_lon_med):
+	for k,l in enumerate(j):
+		if LLCRNRLON_LARGE <= l <= URCRNRLON_LARGE and PP_depth_med[i][k] == DEPTH_TARGET:
+				pp_med_lat[i] = PP_lat_med[i][k]
+				pp_med_long[i] = l
+				pp_time_DEPTH_TARGET[i] = PP_time_med[i][-1] - PP_time_med[i][k]
+
+pp_med_lat = [i for i in pp_med_lat if type(i) == float ]
+pp_med_long = [i for i in pp_med_long if type(i) == float ]
+pp_time_DEPTH_TARGET = [i for i in pp_time_DEPTH_TARGET if type(i) == float ]
+
+print('P660s Piercing Points')
+print('\n')
+
+pp_2_lat  = [[]]*len(PP_lon_2)
+pp_2_long  = [[]]*len(PP_lon_2)
+
+for i,j in enumerate(PP_lon_2):
+	for k,l in enumerate(j):
+		if LLCRNRLON_LARGE <= l <= URCRNRLON_LARGE and PP_depth_2[i][k] == 660:
+			if PP_lon_2[i][k]  != [] and PP_lat_2[i][k] != []:
+				pp_2_lat[i] = PP_lat_2[i][k]
+				pp_2_long[i] = l
+
+pp_2_lat = [i for i in pp_2_lat if type(i) == float ]
+pp_2_long = [i for i in pp_2_long if type(i) == float ]
+
+
+print('Calculating MEAN FIRST FRESNEL ZONE RADIUS')
+print('DEPTH TARGET MEAN TIME: '+str(np.mean(pp_time_DEPTH_TARGET)))
+
+FRESNEL_ZONE_RADIUS_km = (Vp_depth_DEPTH_TARGET/2)* np.sqrt(np.mean(pp_time_DEPTH_TARGET) / RF_FREQUENCY)
+FRESNEL_ZONE_RADIUS = kilometer2degrees(FRESNEL_ZONE_RADIUS_km)
+print('MEAN FIRST FRESNEL ZONE RADIUS : '+str(FRESNEL_ZONE_RADIUS))
+print('\n')
+
+print('Creating GRID POINTS')
+print('\n')
+
+area = (LLCRNRLON_SMALL,URCRNRLON_SMALL, LLCRNRLAT_SMALL, URCRNRLAT_SMALL)
+
+shape = (abs(abs(URCRNRLON_SMALL) - abs(LLCRNRLON_SMALL))*GRID_PP_MULT, abs(abs(URCRNRLAT_SMALL) - abs(LLCRNRLAT_SMALL))*GRID_PP_MULT)
+
+grdx, grdy = regular(area, shape)
+
+#grdx, grdy = vd.base.BaseGridder.grid(region=[LLCRNRLON_SMALL,URCRNRLON_SMALL, LLCRNRLAT_SMALL, URCRNRLAT_SMALL],shape=shape)
+
+
+if FILTER_BY_SHAPEFILE == True:
+	polygon = shapefile.Reader(SHAPEFILE_GRID) 
+	polygon = polygon.shapes()  
+	shpfilePoints = []
+	for shape in polygon:
+		shpfilePoints = shape.points 
+	polygon = shpfilePoints 
+	poly = Polygon(polygon)
+	
+	pontos = [Point(grdx[i],grdy[i]) for i,j in enumerate(grdx)]
+	inside_points = np.array(MultiPoint(pontos).intersection(poly))
+	
+	grdx = []
+	grdy = []
+	for i,j in enumerate(inside_points):
+		grdx.append(j[0])
+		grdy.append(j[1])
+
+
+print('Filtering GRID POINTS')
+print('\n')
+
+dist_pp_grid_med = [[]]*len(grdx)
+for i,j in enumerate(grdx):
+    dist_pp_grid_med[i] = [np.sqrt((j - pp_med_long[k])**2 + (grdy[i] - l)**2) for k,l in enumerate(pp_med_lat)]
+    dist_pp_grid_med[i] = [np.sqrt((j - pp_med_long[k])**2 + (grdy[i] - l)**2) for k,l in enumerate(pp_med_lat)]
+
+
+grid_sel_med = []
+for i,j in enumerate(dist_pp_grid_med):
+	vect_j = np.array(j)
+	indices = vect_j.argsort()
+	if vect_j[indices[NUMBER_PP_PER_BIN]] <= FRESNEL_ZONE_RADIUS:
+		grid_sel_med.append((grdx[i],grdy[i]))
+
+grid_sel = grid_sel_med
+
+grid_selected = set(map(tuple,grid_sel))
+
+grid_sel_x = []
+grid_sel_y = []
+
+for i,j in enumerate(grid_selected):
+    grid_sel_x.append(j[0])
+    grid_sel_y.append(j[1])
+
+grdx_1 = []
+grdy_1 = []
+grdx_sel_diff = []
+for i,j in enumerate(grdx):
+    grdx_sel_diff.append((j,grdy[i]))
+
+grid_sel_diff = []
+for i,j in enumerate(grid_selected):
+	grid_sel_diff.append((j[0],j[1]))
+
+grid_xy_diff = []
+for i,j in enumerate(grdx_sel_diff):
+	if j not in grid_sel_diff:
+		grid_xy_diff.append(j)			
+	
+grid_x_diff = []
+grid_y_diff = []
+for i,j in enumerate(grid_xy_diff):
+	grid_x_diff.append(j[0])
+	grid_y_diff.append(j[1])
+
+##########################################################################################################################################
+
+print('Importing depths and times of Pds conversion  dataset')
+print('\n')
+
+PdS_DIR = OUTPUT_DIR+'MODEL_INTER_DEPTH_'+str(INTER_DEPTH)+'_DEPTH_TARGET_'+str(DEPTH_TARGET)+'/'+'Phases'+'/'
+
+filename_Pds = PdS_DIR+'Pds_dic.json'
+
+PdS_Dic = json.load(open(filename_Pds))
+
+depth_str_to_float_Pds = []
+for i,j in enumerate(PdS_Dic['depth']):
+	depth_str_to_float_Pds.append([float(l) for l in j])
+
+Pds_time = PdS_Dic['time']
+Pds_st_lat = PdS_Dic['st_lat']
+Pds_st_lon = PdS_Dic['st_long']
+Pds_ev_lat = PdS_Dic['ev_lat']
+Pds_ev_lon = PdS_Dic['ev_long']
+Pds_depth = depth_str_to_float_Pds
+
+###################################################################################################################
+'''
 print('Plotting: Figure Radial receiver functions stacked in ray parameter')
 print('\n')
 
@@ -271,7 +530,7 @@ ax.tick_params(labelleft=True,labelright=True)
 ax.set_yticklabels(["{0:.0f}".format(time[i]) for i in np.arange(-100,len(time),100)])
 ax.set_xticklabels(["{0:.1f}".format(RP[i]*100) for i in np.arange(0,len(RP),100)])
 plt.show()
-'''
+
 ###################################################################################################################
 
 print('Plotting: Figure Distribution and usual statistics about events used in the study')
@@ -281,40 +540,28 @@ fig = plt.figure(figsize=(5, 10))
 gs = gridspec.GridSpec(5,2)
 gs.update(wspace=0.5,hspace=1)
 
-ax1 = fig.add_subplot(gs[:3,:])
+ax1 = fig.add_subplot(gs[:3,:], projection=ccrs.Orthographic(central_longitude=PROJECT_LON, central_latitude=PROJECT_LAT,))
 
 ax2 = fig.add_subplot(gs[3, 0])
 ax3 = fig.add_subplot(gs[3, 1])
 ax4 = fig.add_subplot(gs[4, 0])
 ax5 = fig.add_subplot(gs[4, 1])
 
-
-
-m = Basemap(resolution='l',projection='ortho',lat_0=PROJECT_LAT, lon_0=PROJECT_LON,ax=ax1)
-
 for lon, lat in zip(sta_long,sta_lat):
-    x,y = m(lon, lat)
-    msize = 6
-    l1, = m.plot(x, y, '^',markersize=msize,markeredgecolor='k',markerfacecolor='w')
+	ax1.plot(lon, lat, '^',markersize=6,markeredgecolor='k',markerfacecolor='w', transform=ccrs.Geodetic())
 
-for lon, lat in zip(evlo_0,evla_0):
-	x,y = m(lon, lat)
-	msize = 4
-	m.plot(x, y, '*',markersize=msize,markeredgecolor='grey',markerfacecolor='whitesmoke')
+for lon, lat in zip(event_long,event_lat):
+	ax1.plot(lon, lat, '*',markersize=6,markeredgecolor='k',markerfacecolor='dimgrey', transform=ccrs.Geodetic())
 
-for lon, lat in zip(event_lon,event_lat):
-    x,y = m(lon, lat)
-    msize = 6
-    m.plot(x, y, '*',markersize=msize,markeredgecolor='k',markerfacecolor='dimgrey')
-    
-#m.tissot(PROJECT_LON, PROJECT_LAT, 30,100,zorder=10,edgecolor='dimgray',linewidth=1,facecolor='none')
-#m.tissot(PROJECT_LON, PROJECT_LAT, 90,100,zorder=10,edgecolor='dimgray',linewidth=1,facecolor='none')
-
-
-m.fillcontinents(color='whitesmoke',lake_color=None)
-m.drawcoastlines(color='dimgray',zorder=10)
-m.drawmeridians(np.arange(0, 360, 20),color='lightgrey')
-m.drawparallels(np.arange(-90, 90, 10),color='lightgrey')
+# draw coastlines and borders
+ax1.add_feature(cfeature.LAND)
+ax1.add_feature(cfeature.COASTLINE)
+ax1.add_feature(cfeature.BORDERS, lw=0.5)
+  
+# draw meridians and parallels
+gl = ax1.gridlines(color='k', linestyle=(0, (1, 1)), 
+                  xlocs=range(0, 390, 20),
+                  ylocs=[-80, -60, -30, 0, 30, 60, 80])
 
 #############
 ax2.hist(event_gcarc,bins=50,orientation='vertical',color='k')
@@ -341,8 +588,50 @@ ax5.set_title("Depth (km)")
 
 
 plt.show()
+
 ###################################################################################################################
+'''
+
 print('Plotting: Figure earth model layers')
+
+grid_camadas_x = grdx
+grid_camadas_y = grdy
+grid_camadas_z = [np.array([-1*i for i in camadas_terra_10_km])]*len(grdy)
+
+
+print('\n')
+
+fig = plt.figure()
+ax = plt.axes(projection='3d')
+
+ax.azim = 95
+ax.elev = 10
+ax.dist = 6
+
+ax.plot(sta_long,sta_lat,'^',markersize=10,markeredgecolor='k',markerfacecolor='grey')
+ax.plot(grid_camadas_x,grid_camadas_y,'.',markersize=10,markeredgecolor='k',markerfacecolor='w')
+ax.plot(grid_sel_x,grid_sel_y,'.',markersize=2,markeredgecolor='k',markerfacecolor='k')
+
+for i, j in enumerate(grid_camadas_z):
+	ax.scatter3D(grid_camadas_x[i],grid_camadas_y[i], grid_camadas_z[i], c='k', marker='o')
+
+ax.set_zlim(-800,0)
+ax.set_xlim(LLCRNRLON_SMALL,URCRNRLON_SMALL)
+ax.set_ylim(LLCRNRLAT_SMALL,URCRNRLAT_SMALL)
+
+ax.set_xlabel('Longitude')
+ax.set_ylabel('Latitude')
+ax.set_zlabel('Depth (km)')
+plt.show()
+
+
+###################################################################################################################
+
+print('Plotting: Figure earth model layers selected')
+
+grid_sel_z = [np.array([-1*i for i in camadas_terra_10_km])]*len(grid_sel_x)
+
+
 print('\n')
 
 fig = plt.figure()
@@ -355,7 +644,9 @@ ax.dist = 6
 ax.plot(sta_long,sta_lat,'^',markersize=10,markeredgecolor='k',markerfacecolor='grey')
 ax.plot(grid_sel_x,grid_sel_y,'.',markersize=2,markeredgecolor='k',markerfacecolor='k')
 
-ax.scatter3D(grid_camadas_x, grid_camadas_y, grid_camadas_z, c='k', marker='o')
+for i, j in enumerate(grid_sel_z):
+	ax.scatter3D(grid_sel_x[i],grid_sel_y[i], grid_sel_z[i], c='k', marker='o')
+
 ax.set_zlim(-800,0)
 ax.set_xlim(LLCRNRLON_SMALL,URCRNRLON_SMALL)
 ax.set_ylim(LLCRNRLAT_SMALL,URCRNRLAT_SMALL)
@@ -365,47 +656,11 @@ ax.set_ylabel('Latitude')
 ax.set_zlabel('Depth (km)')
 plt.show()
 
+
 ###################################################################################################################
 
-print('Plotting: Figure 410 and 660 Pds Piercing Points')
+print('Plotting: Figure 410 and 660 Pds Piercing Points and Ray Traces')
 print('\n')
-
-#Pds 410
-
-PP_410_lat = []
-PP_410_lon = []
-PP_410_depth = []
-for i,j in enumerate(PP_depth_1):
-	for k,l in enumerate(j):
-		if LLCRNRLAT_SMALL <= PP_lat_1[i][k] <= URCRNRLAT_SMALL and LLCRNRLON_SMALL <= PP_lon_1[i][k] <= URCRNRLON_SMALL:
-			PP_410_lat.append(PP_lat_1[i][k])
-			PP_410_lon.append(PP_lon_1[i][k])
-			PP_410_depth.append(-PP_depth_1[i][k])
-
-#Pds 660
-
-PP_660_lat = []
-PP_660_lon = []
-PP_660_depth = []
-for i,j in enumerate(PP_depth_2):
-	for k,l in enumerate(j):
-		if LLCRNRLAT_SMALL <= PP_lat_2[i][k] <= URCRNRLAT_SMALL and LLCRNRLON_SMALL <= PP_lon_2[i][k] <= URCRNRLON_SMALL:
-			PP_660_lat.append(PP_lat_2[i][k])
-			PP_660_lon.append(PP_lon_2[i][k])
-			PP_660_depth.append(-PP_depth_2[i][k])
-
-#Pds Middle Layer
-
-MED_PP_lat = []
-MED_PP_lon = []
-MED_PP_depth = []
-for i,j in enumerate(PP_depth_2):
-	for k,l in enumerate(j):
-		if LLCRNRLAT_SMALL <= PP_lat_med[i][k] <= URCRNRLAT_SMALL and LLCRNRLON_SMALL <= PP_lon_med[i][k] <= URCRNRLON_SMALL:
-			MED_PP_lat.append(PP_lat_med[i][k])
-			MED_PP_lon.append(PP_lon_med[i][k])
-			MED_PP_depth.append(-PP_depth_med[i][k])
-
 
 fig = plt.figure()
 ax = plt.axes(projection='3d')
@@ -433,11 +688,13 @@ ax.plot_surface(x, y, z410,color='None',edgecolor='b')
 
 intp = cbook.simple_linear_interpolation
 
-ax.plot3D(intp(np.array(PP_410_lon),50),intp(np.array(PP_410_lat), 50), intp(np.array(PP_410_depth), 50), c='r',alpha=0.3)
-ax.plot3D(intp(np.array(PP_660_lon),50),intp(np.array(PP_660_lat), 50), intp(np.array(PP_660_depth), 50), c='g',alpha=0.3)
+ax.plot3D(np.array(pp_1_long),np.array(pp_1_lat),np.array(pp_1_depth), c='r',alpha=0.3)
 
-ax.scatter3D(PP_410_lon_POINTS,PP_410_lat_POINTS, PP_410_depth_POINTS,  c='k',marker='X',s=50)
-ax.scatter3D(PP_660_lon_POINTS,PP_660_lat_POINTS, PP_660_depth_POINTS,  c='k',marker='X',s=50)
+#ax.plot3D(intp(np.array(PP_lon_1),50),intp(np.array(PP_lat_1), 50), intp(np.array(PP_depth_1), 50), c='r',alpha=0.3)
+#ax.plot3D(intp(np.array(PP_lon_2),50),intp(np.array(PP_lat_2), 50), intp(np.array(PP_depth_2), 50), c='g',alpha=0.3)
+
+#ax.scatter3D(PP_410_lon_POINTS,PP_410_lat_POINTS, PP_410_depth_POINTS,  c='k',marker='X',s=50)
+#ax.scatter3D(PP_660_lon_POINTS,PP_660_lat_POINTS, PP_660_depth_POINTS,  c='k',marker='X',s=50)
 
 ax.set_zlim(-800,0)
 ax.set_xlim(LLCRNRLON_SMALL,URCRNRLON_SMALL)
@@ -524,4 +781,3 @@ ax.set_zlabel('Depth (km)')
 fig.colorbar(m1,aspect=40,shrink=0.7)
 
 plt.show()
-'''

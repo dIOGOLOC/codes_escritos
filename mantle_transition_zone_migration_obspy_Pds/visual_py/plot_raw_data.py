@@ -16,7 +16,6 @@ import matplotlib
 from matplotlib.cm import get_cmap
 from mpl_toolkits.mplot3d import Axes3D
 import shapefile
-from fatiando import gridder, utils
 import scipy.io
 import matplotlib.cm as cm
 from matplotlib.ticker import MultipleLocator, FormatStrFormatter

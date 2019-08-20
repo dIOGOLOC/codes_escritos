@@ -21,24 +21,26 @@ from visual_py.plot_PSD_DATA import plot_PPSD_TOTAL_data
 
 
 from parameters_py.config import (
-					OUTPUT_JSON_FILE_DIR,DIR_DATA,NETWORK_CODE,OUTPUT_PSD_DIR,DAY_PERCENTAGE
+					OUTPUT_JSON_FILE_DIR,DIR_DATA,OUTPUT_PSD_DIR,
 				   )
 
 # Importing stations list
 
-# ============================
-# Importing stations datetime
-# ============================
-print('\n')
-print('Looking for STATIONS date in JSON file in '+OUTPUT_JSON_FILE_DIR)
-print('\n')
 
-filename_STA = OUTPUT_JSON_FILE_DIR+'TIME_dic.json'
 
-sta_dic = json.load(open(filename_STA))
 
-kstnm = sta_dic['kstnm']
-input_list_day = sta_dic['data']["input_list"]
+
+# ========================================
+# Importing data from raw files directory 
+# ========================================
+'''
+data_lista = []
+
+for root, dirs, files in os.walk(DIR_DATA):
+	for name in files:
+		data_lista.append(os.path.join(root, name))
+
+data_lista = sorted(data_lista)
 
 # ==============
 #  Get PPSD Data 
@@ -47,11 +49,8 @@ input_list_day = sta_dic['data']["input_list"]
 print('Get Data for calculating PPSD for each station')
 print('\n')
 
-calc_PSD_result = calc_PSD(input_list_day,kstnm)
-
-
-
-
+calc_PSD_result = calc_PSD(data_lista)
+'''
 # ===========================
 # Finding stations PPSD data
 # ===========================
@@ -67,6 +66,8 @@ for root, dirs, files in os.walk(OUTPUT_PSD_DIR):
 		if '.PPSD' in datafile_name:
 			datafile_lst.append(datafile_name)
 datafile_lstS = sorted(datafile_lst)
+
+print(datafile_lstS)
 
 # ================
 #  plot PPSD Data 

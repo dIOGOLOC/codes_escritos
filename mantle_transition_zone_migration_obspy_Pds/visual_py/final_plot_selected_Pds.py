@@ -15,7 +15,6 @@ from mpl_toolkits.mplot3d import Axes3D
 import cartopy.crs as ccrs
 from cartopy.io.shapereader import Reader
 import cartopy.feature as cfeature
-from fatiando import gridder, utils
 import scipy.io
 import matplotlib.cm as cm
 from matplotlib.ticker import MultipleLocator, FormatStrFormatter, AutoMinorLocator

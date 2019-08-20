@@ -49,68 +49,29 @@ def select_and_parse_config_file(basedir='.', ext='cnf', verbose=True):
 config = select_and_parse_config_file(basedir='.', ext='cnf', verbose=True)
 
 # -----
-# paths
+# PATH
 # -----
 
-# directory of raw sac files
-DIR_DATA = config.get('paths', 'DIR_DATA')
+#-------
+#INPUTs
+
+# directory of raw files
+DIR_DATA = config.get('PATH', 'DIR_DATA')
+
+# XML File
+XML_FILE = config.get('PATH', 'XML_FILE')
+
+#-------
+#OUTPUTs
 
 #Directory to save JSON Files
-OUTPUT_JSON_FILE_DIR =  config.get('paths', 'OUTPUT_JSON_FILE_DIR')
+OUTPUT_JSON_FILE_DIR = config.get('PATH', 'OUTPUT_JSON_FILE_DIR')
 
 #Directory to save Figures
-OUTPUT_FIGURE_DIR = config.get('paths', 'OUTPUT_FIGURE_DIR')
+OUTPUT_FIGURE_DIR = config.get('PATH', 'OUTPUT_FIGURE_DIR')
 
 #Directory to save PSD
-OUTPUT_PSD_DIR = config.get('paths', 'OUTPUT_PSD_DIR')
-
-#Directory to save XML File
-OUTPUT_XML_FILE_DIR = config.get('paths', 'OUTPUT_XML_FILE_DIR')
-
-#Stations CSV FILE path
-STA_CSV_FILE  =  config.get('paths', 'STA_CSV_FILE')
-
-
-# ---
-# xml
-# ---
-
-#Name of the Network
-NETWORK_CODE = config.get('xml', 'NETWORK_CODE')
-
-#Name of the Channel
-CHANNEL_CODE = config.get('xml', 'CHANNEL_CODE')
-
-#Name of the deployer
-SOURCE = config.get('xml', 'SOURCE')
-
-#Lotation code
-LOCATION = config.get('xml', 'LOCATION')
-
-#Description of the Network
-NETWORK_DESCRIPTION = config.get('xml', 'NETWORK_DESCRIPTION')
-
-#Start date of the Network
-START_DATE = config.get('xml', 'START_DATE')
-
-#Sampling Rate of the seismogram
-SAMPLING_RATE = config.getfloat('xml', 'SAMPLING_RATE')
-
-# --------
-# Client
-# --------
-
-#The user name is used for identification with the ArcLink server.
-USER = config.get('Client', 'USER')
-
-#Host name of the remote ArcLink server (default host is 'webdc.eu').
-HOST = config.get('Client', 'HOST')
-
-#Port of the remote ArcLink server (default port is 18002).
-PORT = config.getint('Client', 'PORT') 
-
-#A string containing the name of the institution of the requesting person (default is an 'Anonymous').
-INSTITUTION = config.get('Client', 'HOST')
+OUTPUT_PSD_DIR = config.get('PATH', 'OUTPUT_PSD_DIR')
 
 # --------
 # PPSD
@@ -122,9 +83,6 @@ INITIAL_DATE = config.get('PPSD', 'INITIAL_DATE')
 #Final date of the data
 FINAL_DATE = config.get('PPSD', 'FINAL_DATE')
 
-# Percentage fo the days to process and plot the PPSD?
-DAY_PERCENTAGE = config.getfloat('PPSD', 'DAY_PERCENTAGE')
-
 #Restricts the data that is included in the stack by time of day and weekday. 
 #Monday is 1, Sunday is 7, -1 for any day of week. 
 #For example, using time_of_weekday=[(-1, 22, 24)] 
@@ -133,3 +91,19 @@ DAY_PERCENTAGE = config.getfloat('PPSD', 'DAY_PERCENTAGE')
 TIME_OF_WEEKDAY_DAY = config.getint('PPSD', 'TIME_OF_WEEKDAY_DAY')
 TIME_OF_WEEKDAY_START_HOUR = config.getfloat('PPSD', 'TIME_OF_WEEKDAY_START_HOUR')
 TIME_OF_WEEKDAY_FINAL_HOUR = config.getfloat('PPSD', 'TIME_OF_WEEKDAY_FINAL_HOUR')
+
+# --------
+# CLIENT
+# --------
+
+#The user name is used for identification with the ArcLink server.
+USER = config.get('CLIENT', 'USER')
+
+#Host name of the remote ArcLink server (default host is 'webdc.eu').
+HOST = config.get('CLIENT', 'HOST')
+
+#Port of the remote ArcLink server (default port is 18002).
+PORT = config.getint('CLIENT', 'PORT') 
+
+#A string containing the name of the institution of the requesting person (default is an 'Anonymous').
+INSTITUTION = config.get('CLIENT', 'HOST')

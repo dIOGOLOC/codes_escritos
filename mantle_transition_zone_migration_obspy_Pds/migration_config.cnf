@@ -35,8 +35,8 @@
 
 
 # dir of receiver functions
-RF_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/data_MTZ_NO_PP/MTZ_data/0.5/
-#RF_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/data_MTZ_YES_PP/MTZ_data/0.5/
+#RF_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/data_MTZ_NO_PP/MTZ_data/0.5/
+RF_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/data_MTZ_YES_PP/MTZ_data/0.5/
 
 # extension of receiver functions
 RF_EXT = .eqr
@@ -46,8 +46,8 @@ MODEL_FILE_NPZ = /home/diogo/diogo_git/codes_escritos/mantle_transition_zone_mig
 #MODEL_FILE_NPZ = /home/diogo/diogo_git/codes_escritos/mantle_transition_zone_migration_obspy/velocity_model/iasp91_5.npz
 
 # dir of OUTPUTs
-OUTPUT_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/Mantle_Transition_Migration_NO_PP_obspy_Pds/
-#OUTPUT_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/Mantle_Transition_Migration_YES_PP_obspy_Pds/
+#OUTPUT_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/Mantle_Transition_Migration_NO_PP_obspy_Pds/
+OUTPUT_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/Mantle_Transition_Migration_YES_PP_obspy_Pds/
 
 #=====
 [maps]
@@ -85,10 +85,10 @@ URCRNRLAT_LARGE=1
 
 #lower and upper corner (lat/lon) of the small map
 
-LLCRNRLON_SMALL=-49.5
+LLCRNRLON_SMALL=-49
 LLCRNRLAT_SMALL=-12
-URCRNRLON_SMALL=-40.5
-URCRNRLAT_SMALL=-1.8
+URCRNRLON_SMALL=-40
+URCRNRLAT_SMALL=-1
 
 #figures extention and dpi
 EXT_FIG=pdf

@@ -32,40 +32,34 @@ from obspy.clients.arclink.client import Client
 
 
 from parameters_py.config import (
-					DIR_DATA,SOURCE,NETWORK_CODE,CHANNEL_CODE,LOCATION,NETWORK_DESCRIPTION,START_DATE,SAMPLING_RATE,LOCATION,
-                    OUTPUT_XML_FILE_DIR,OUTPUT_JSON_FILE_DIR,OUTPUT_PSD_DIR,INITIAL_DATE,FINAL_DATE,
-                    TIME_OF_WEEKDAY_DAY,TIME_OF_WEEKDAY_START_HOUR,TIME_OF_WEEKDAY_FINAL_HOUR,USER,HOST,PORT,INSTITUTION
-                    
+					DIR_DATA,OUTPUT_JSON_FILE_DIR,OUTPUT_PSD_DIR,INITIAL_DATE,FINAL_DATE,XML_FILE                    
 				   )
 
-print('Importing XML file')
+def calc_PSD(data):
+	print('Importing XML file')
+	inv = read_inventory(XML_FILE)
+	print(inv)
 
-inv = read_inventory(OUTPUT_XML_FILE_DIR+NETWORK_CODE+".xml")
-print(inv)
-
-def calc_PSD(data,sta_name):
-    for i,j in enumerate(data):
+	for i,j in enumerate(data):
 	    st = read(j)
 	    st.merge()
 
-	    st[0].stats.station = sta_name
-	    st[0].stats.network = NETWORK_CODE
-	    st[0].stats.location = LOCATION
-		
 	    time_data = st[0].stats.starttime
 	    time_data_year = '{:04}'.format(time_data.year)
 	    time_data_julday = '{:03}'.format(time_data.julday)
 	    time_data_hour = '{:02}'.format(time_data.hour)
 	    time_data_minute = '{:02}'.format(time_data.minute)
 
+	    sta_name = st[0].stats.station
 	    sta_channel = st[0].stats.channel
 	    print('Calculating PPSD: station: '+sta_name+' / channel: '+sta_channel+' / '+str(i+1)+' of '+str(len(data)))
-		
+
 	    ppsd = PPSD(st[0].stats, metadata=inv)
-	    ppsd.add(st) 
-	    os.makedirs(OUTPUT_PSD_DIR+time_data_year+'/'+sta_name+'/'+st[0].stats.channel+'.PPSD'+'/',exist_ok=True)
-	    print(OUTPUT_PSD_DIR+time_data_year+'/'+sta_name+'/'+st[0].stats.channel+'.PPSD'+'/'+NETWORK_CODE+'.'+sta_name+'..'+st[0].stats.channel+'.PPSD'+'.'+time_data_year+'.'+time_data_julday+'.npz')
-	    ppsd.save_npz(OUTPUT_PSD_DIR+time_data_year+'/'+sta_name+'/'+st[0].stats.channel+'.PPSD'+'/'+NETWORK_CODE+'.'+sta_name+'..'+st[0].stats.channel+'.PPSD'+'.'+time_data_year+'.'+time_data_julday+'.npz')
+	    ppsd.add(st)
+
+	    os.makedirs(OUTPUT_PSD_DIR+time_data_year+'/'+sta_name+'/'+sta_channel+'.PPSD'+'/',exist_ok=True)
+	    print(OUTPUT_PSD_DIR+time_data_year+'/'+sta_name+'/'+sta_channel+'.PPSD'+'/'+sta_name+'..'+sta_channel+'.PPSD'+'.'+time_data_year+'.'+time_data_julday+'.npz')
+	    ppsd.save_npz(OUTPUT_PSD_DIR+time_data_year+'/'+sta_name+'/'+sta_channel+'.PPSD'+'/'+sta_name+'..'+sta_channel+'.PPSD'+'.'+time_data_year+'.'+time_data_julday+'.npz')
 
 
 def calc_PSD_client(sta_name):

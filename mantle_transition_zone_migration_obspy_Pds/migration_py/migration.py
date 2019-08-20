@@ -16,7 +16,6 @@ import cartopy.crs as ccrs
 from cartopy.io.shapereader import Reader
 import cartopy.feature as cfeature
 import shapefile
-from fatiando import gridder, utils
 from scipy.stats import mode
 from matplotlib.ticker import MultipleLocator, FormatStrFormatter
 import json
@@ -44,9 +43,58 @@ from parameters_py.mgconfig import (
 					PROJECT_LAT,PROJECT_LON,GRID_PP_MULT,BOUNDARY_1_SHP,BOUNDARY_2_SHP,
 					EXT_FIG,DPI_FIG,DIST_GRID_PP,NUMBER_STA_PER_BIN,OUTPUT_DIR,CONFIDENCE_BOUND,
 					DEPTH_RANGE,BOOTSTRAP_INTERATOR,COLORMAP_STD,COLORMAP_VEL
-				   )
+								   )
 
-print('Starting Receiver Functions migration code to estimate the true depths of the Earth discontinuities')
+
+#Function to grid data by FATIANDO A TERRA:
+def spacing(area, shape):
+	"""
+	Returns the spacing between grid nodes
+
+	Parameters:
+
+	* area
+		``(x1, x2, y1, y2)``: Borders of the grid
+	* shape
+		Shape of the regular grid, ie ``(ny, nx)``.
+
+	Returns:
+
+	* ``[dy, dx]``
+	Spacing the y and x directions
+
+	"""
+	x1, x2, y1, y2 = area
+	ny, nx = shape
+	dx = float(x2 - x1)/float(nx - 1)
+	dy = float(y2 - y1)/float(ny - 1)
+	return [dy, dx]
+
+def regular(area, shape):
+	
+	ny, nx = shape
+	x1, x2, y1, y2 = area
+	dy, dx = spacing(area, shape)
+	x_range = np.arange(x1, x2, dx)
+	y_range = np.arange(y1, y2, dy)
+
+	# Need to make sure that the number of points in the grid is correct because
+	# of rounding errors in arange. Sometimes x2 and y2 are included, sometimes
+	# not
+
+	if len(x_range) < nx:
+	
+		x_range = np.append(x_range, x2)
+	if len(y_range) < ny:
+		y_range = np.append(y_range, y2)
+	assert len(x_range) == nx, "Failed! x_range doesn't have nx points"
+	assert len(y_range) == ny, "Failed! y_range doesn't have ny points"
+	xcoords, ycoords = [mat.ravel() for mat in np.meshgrid(x_range, y_range)]
+
+	return [xcoords, ycoords]
+
+
+print('Starting Receiver Functions migration code to estimate the depths of the Mantle discontinuities')
 print('\n')
 
 print('Importing depths and times of Pds conversion  dataset')
@@ -239,7 +287,7 @@ area = (LLCRNRLON_SMALL,URCRNRLON_SMALL, LLCRNRLAT_SMALL, URCRNRLAT_SMALL)
 
 shape = (abs(abs(URCRNRLON_SMALL) - abs(LLCRNRLON_SMALL))*GRID_PP_MULT, abs(abs(URCRNRLAT_SMALL) - abs(LLCRNRLAT_SMALL))*GRID_PP_MULT)
 
-grdx, grdy = gridder.regular(area, shape)
+grdx, grdy = regular(area, shape)
 
 if FILTER_BY_SHAPEFILE == True:
 	polygon = shapefile.Reader(SHAPEFILE_GRID) 

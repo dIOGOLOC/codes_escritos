@@ -26,22 +26,22 @@
 DIR_DATA = /home/diogo/dados_doutorado/rift_basin/MSEED_DATA/
 
 #Directory to save JSON Files
-OUTPUT_JSON_FILE_DIR = /home/diogo/dados_doutorado/rift_basin/JSON_FILES/
+OUTPUT_JSON_FILE_DIR = /home/diogo/dados_doutorado/teste_PQLX/JSON_FILES/
 
 #Directory to save Figures
-OUTPUT_FIGURE_DIR = /home/diogo/dados_doutorado/rift_basin/FIGURES/
+OUTPUT_FIGURE_DIR = /home/diogo/dados_doutorado/teste_PQLX/FIGURES/
 
 #Directory to save PSD
-OUTPUT_PSD_DIR = /home/diogo/dados_doutorado/rift_basin/PPSD/
+OUTPUT_PSD_DIR = /home/diogo/dados_doutorado/teste_PQLX/PPSD/
 
 #Directory to save EVENT data
-OUTPUT_EV_DIR = /home/diogo/dados_doutorado/rift_basin/EVENTS/
+OUTPUT_EV_DIR = /home/diogo/dados_doutorado/teste_PQLX/EVENTS/
 
 #Directory to save XML File
-OUTPUT_XML_FILE_DIR = /home/diogo/dados_doutorado/rift_basin/XML_FILES/
+OUTPUT_XML_FILE_DIR = /home/diogo/dados_doutorado/teste_PQLX/XML_FILES/
 
 #STA CSV FILE path
-STA_CSV_FILE  = /home/diogo/dados_doutorado/rift_basin/station_coordinates/cood_rede_rift.txt
+STA_CSV_FILE  = /home/diogo/dados_doutorado/teste_PQLX/station_coordinates/cood_rede_rift.txt
 
 #=====
 [xml]
@@ -66,7 +66,7 @@ START_DATE = 2018,1,1
 SAMPLING_RATE = 100
 
 # how many concurrent processes at the multiprocessing?
-MP_PROCESSES = 2
+MP_PROCESSES = 4
 
 #======
 [PPSD]

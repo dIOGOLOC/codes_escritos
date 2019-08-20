@@ -46,46 +46,9 @@ $ conda install obspy
 Brief explanation about the main code:
 ---------------------------------------
 
-- You should start reading the configuration file (config_file.cnf), which contains global parameters and detailed instructions.
-
-- You should create your own 'STA_LAT_LON.txt' file, which is the main archive to create the XML file (see more about XML file [here](https://docs.obspy.org/tutorial/code_snippets/stationxml_file_from_scratch.html)).
-
-- For creating your own 'STA_LAT_LON.txt' file with your stations, you should pay attention in the following parameters:
-
-	- NAME (name of the station)
-	- LAT (latitude of the station)
-	- LON (longitude of the station)
-	- ELEV (elevation of the station)
-	- SENSOR_KEYS (NRL parameters of the station sensor)
-	- DATALOGGER_KEYS (NRL parameters of the station data logger)
-	- ACCER_KEYS (NRL parameters, if the station has another sensor, like a accelerograph) .
-
-> The SENSOR_KEYS, DATALOGGER_KEYS and ACCER_KEYS are filled according to Nominal Response Library keys (see [here](http://docs.obspy.org/packages/obspy.clients.nrl.html) how to fill these parameters). 
-
-```
-Examples:
-	sensor_keys=['Streckeisen', 'STS-1', '360 seconds'],
-    datalogger_keys=['REF TEK', 'RT 130 & 130-SMA', '1', '200'])
-```
-> If the same station has two sensors, you must to fill SENSOR_KEYS and ACCER_KEYS, else let ACCER_KEYS empty.
-
-> The program will process stations that were discriminated in the 'STA_LAT_LON.txt', so you can comment (use '%') the line with useless stations.
-
-- After the program creates the XML file, we estimate the completeness of the dataset and the Probabilistic Power Spectral Densities of the data via Obspy (more information [here](https://docs.obspy.org/tutorial/code_snippets/probabilistic_power_spectral_density.html)).  
+- After the program import the XML file, we estimate the completeness of the dataset and the Probabilistic Power Spectral Densities of the data via Obspy (more information [here](https://docs.obspy.org/tutorial/code_snippets/probabilistic_power_spectral_density.html)).  
 
 *DATASET VIA HD*
-
-- First of all, you must to get information of your the stations:
-
-```shell
-$ python get_STATION_INFORMATION.py
-```
-
-- You need to create your XML file:
-
-```shell
-$ python create_XML_network.py
-```
 
 - To check and pre-process your dataset:
 
@@ -102,7 +65,7 @@ $ python estimate_plot_PPSD_TOTAL.py
 - Plotting the probabilistic power spectral densities of your data.**
 
 ```shell
-$ python estimate_plot_PPSD_WINDOWED.py
+$ python plot_PPSD_WINDOWED.py
 ```
 
 ---------------------------------------
@@ -110,16 +73,12 @@ $ python estimate_plot_PPSD_WINDOWED.py
 
 *DATASET VIA CLIENT:*
 
-- First of all, you must to get information of your the stations:
+- To check and pre-process your dataset:
 
 ```shell
-$ python get_STATION_INFORMATION.py
+$ python get_plot_DATA_AVAILABILITY_via_client.py
 ```
 
-- You need to create your XML file:
-
-```shell
-$ python create_XML_network.py
 ```
 
 - Estimating the probabilistic power spectral densities of your data.
@@ -131,17 +90,8 @@ $ python estimate_plot_PPSD_TOTAL_via_client.py
 - Plotting the probabilistic power spectral densities of your data.
 
 ```shell
-$ python estimate_plot_PPSD_WINDOWED.py
+$ python plot_PPSD_WINDOWED.py
 ```
-
-**If you want to check your dataset completeness:**
-
-PLUS: 
-
-```shell
-$ python get_plot_DATA_AVAILABILITY_via_client.py
-```
-
 
 ---------------------------------------
 ---------------------------------------
