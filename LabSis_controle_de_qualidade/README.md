@@ -53,7 +53,7 @@ Brief explanation about the main code:
 - To check and pre-process your dataset:
 
 ```shell
-$ python get_plot_DATA_AVAILABILITY.py
+$ python plot_DATA_AVAILABILITY.py
 ```
 
 - Estimating the probabilistic power spectral densities of your data.
@@ -76,7 +76,7 @@ $ python plot_PPSD_WINDOWED.py
 - To check and pre-process your dataset:
 
 ```shell
-$ python get_plot_DATA_AVAILABILITY_via_client.py
+$ python plot_DATA_AVAILABILITY_via_client.py
 ```
 
 ```

@@ -27,7 +27,7 @@
 DIR_DATA = /home/diogo/dados_doutorado/teste_PQLX/data_test/
 
 # XML File
-XML_FILE = /home/diogo/dados_doutorado/teste_PQLX/XML_FILE/BP.xml
+XML_FILE = /home/diogo/dados_doutorado/teste_PQLX/XML_FILE/NB.xml
 
 #-------
 #OUTPUTs
@@ -39,7 +39,7 @@ OUTPUT_JSON_FILE_DIR = /home/diogo/dados_doutorado/teste_PQLX/JSON_FILES/
 OUTPUT_FIGURE_DIR = /home/diogo/dados_doutorado/teste_PQLX/FIGURES/
 
 #Directory to save PSD
-OUTPUT_PSD_DIR = /home/diogo/dados_doutorado/teste_PQLX/PPSD/
+OUTPUT_PSD_DIR = /home/diogo/dados_doutorado/teste_PQLX/PSD/
 
 
 #======
@@ -47,10 +47,10 @@ OUTPUT_PSD_DIR = /home/diogo/dados_doutorado/teste_PQLX/PPSD/
 #======
 
 #Initial date of the Data
-INITIAL_DATE = 2016,1,1
+INITIAL_DATE = 2019,1,1
 
 #Final date of the data
-FINAL_DATE = 2016,12,1
+FINAL_DATE = 2020,1,1
 
 #Restricts the data that is included in the stack by time of day and weekday. 
 #Monday is 1, Sunday is 7, -1 for any day of week. 
@@ -58,8 +58,8 @@ FINAL_DATE = 2016,12,1
 #only individual spectra that have a starttime in between 10pm and 12am are used in the stack for all days of week
 #time_of_weekday=[(TIME_OF_WEEKDAY_DAY, TIME_OF_WEEKDAY_START_HOUR, TIME_OF_WEEKDAY_FINAL_HOUR)])
 TIME_OF_WEEKDAY_DAY = -1
-TIME_OF_WEEKDAY_START_HOUR = 11
-TIME_OF_WEEKDAY_FINAL_HOUR = 15
+TIME_OF_WEEKDAY_START_HOUR = 0
+TIME_OF_WEEKDAY_FINAL_HOUR = 23
 
 #======
 [CLIENT]

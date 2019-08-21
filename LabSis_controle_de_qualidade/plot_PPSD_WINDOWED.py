@@ -13,7 +13,7 @@ from visual_py.plot_PSD_DATA import plot_PPSD_WINDOWED_data
 
 
 from parameters_py.config import (
-					OUTPUT_JSON_FILE_DIR,DIR_DATA,NETWORK_CODE,OUTPUT_PSD_DIR,DAY_PERCENTAGE
+					OUTPUT_JSON_FILE_DIR,DIR_DATA,OUTPUT_PSD_DIR
 				   )
 
 # Importing stations list

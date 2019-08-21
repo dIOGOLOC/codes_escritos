@@ -99,6 +99,7 @@ def plot_date_file(FIG_FOLDER_OUTPUT,directory_data,XML_FILE):
         df_sta = df[df['STATION'] == j]
 
         channel_lista = list(set(df_sta['CHANNEL']))
+        channel_lista = sorted(channel_lista)
 
         # ==========================================================
         # Calculating datetime between INITIAL_DATE and  FINAL_DATE
@@ -192,8 +193,8 @@ def plot_date_file(FIG_FOLDER_OUTPUT,directory_data,XML_FILE):
         cbar.ax.set_xticklabels(['0%','50%','100%'])
         
         os.makedirs(FIG_FOLDER_OUTPUT,exist_ok=True)
-        fig.savefig(FIG_FOLDER_OUTPUT+j+'_'+'COMPLETENESS.pdf',dpi=500)
-        plt.show()
+        fig.savefig(FIG_FOLDER_OUTPUT+j+'_'+'COMPLETENESS_'+str(obspy.UTCDateTime(INITIAL_DATE).year)+'_'+str(obspy.UTCDateTime(INITIAL_DATE).month)+'_'+str(obspy.UTCDateTime(INITIAL_DATE).day)+'_'+str(obspy.UTCDateTime(FINAL_DATE).year)+'_'+str(obspy.UTCDateTime(FINAL_DATE).month)+'_'+str(obspy.UTCDateTime(FINAL_DATE).day)+'.pdf',dpi=500)
+        #plt.show()
     
 def get_date_file_via_client(FIG_FOLDER_OUTPUT,STATION_NAME):
     
