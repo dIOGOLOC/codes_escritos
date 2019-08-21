@@ -132,7 +132,7 @@ for i,j in enumerate(kstnm):
 	    
 	    # Now tie it all together.
 
-	    response = nrl.get_response(sensor_keys = sensor_keys[i].split('*'),datalogger_keys = datalogger_keys[i].split('*'))
+	    response = nrl.get_response(sensor_keys = sensor_keys[i].split(','),datalogger_keys = datalogger_keys[i].split(','))
 
 	    cha_HHZ.response = response
 	    cha_HHN.response = response
@@ -197,7 +197,7 @@ for i,j in enumerate(kstnm):
 	    
 	    # Now tie it all together.
 
-	    response = nrl.get_response(sensor_keys = accer_keys[i].split('*'),datalogger_keys = datalogger_keys[i].split('*'))
+	    response = nrl.get_response(sensor_keys = accer_keys[i].split(','),datalogger_keys = datalogger_keys[i].split(','))
 
 	    cha_HNZ.response = response
 	    cha_HNN.response = response
@@ -304,8 +304,8 @@ for i,j in enumerate(kstnm):
 	    
 	    # Now tie it all together.
 
-	    response = nrl.get_response(sensor_keys = sensor_keys[i].split('*'),datalogger_keys = datalogger_keys[i].split('*'))
-	    response_accer = nrl.get_response(sensor_keys = accer_keys[i].split('*'),datalogger_keys = datalogger_keys[i].split('*'))
+	    response = nrl.get_response(sensor_keys = sensor_keys[i].split(','),datalogger_keys = datalogger_keys[i].split(','))
+	    response_accer = nrl.get_response(sensor_keys = accer_keys[i].split(','),datalogger_keys = datalogger_keys[i].split(','))
 
 	    cha_HNZ.response = response_accer
 	    cha_HNN.response = response_accer

@@ -21,20 +21,20 @@
 #======
 
 #STA CSV FILE path
-STA_CSV_FILE  = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/rede_BP_BB/sta_coord/STA_LAT_LON.txt
+STA_CSV_FILE  = /home/diogo/dados_doutorado/teste_PQLX/sta_coord/STA_LAT_LON.txt
 
 #Directory to save XML File
-OUTPUT_XML_FILE_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/rede_BP_BB/XML_FILE/
+OUTPUT_XML_FILE_DIR = /home/diogo/dados_doutorado/teste_PQLX/XML_FILE/
 
 #Directory to save JSON Files
-OUTPUT_JSON_FILE_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/rede_BP_BB/JSON_FILES/
+OUTPUT_JSON_FILE_DIR = /home/diogo/dados_doutorado/teste_PQLX/JSON_FILES/
 
 #=====
 [XML]
 #=====
 
 #Name of the Network
-NETWORK_CODE = BP
+NETWORK_CODE = NB
 
 #Name of the deployer
 SOURCE = LabSis UFRN
@@ -43,10 +43,10 @@ SOURCE = LabSis UFRN
 LOCATION = 
 
 #Description of the Network
-NETWORK_DESCRIPTION = Station sponsored by BP energy do Brasil
+NETWORK_DESCRIPTION = Station installed by LabSis
 
 #Start date of the Network for XML
-START_DATE = 2015,1,1
+START_DATE = 2011,1,1
 
 #Sampling Rate of the seismogram
 SAMPLING_RATE = 100
