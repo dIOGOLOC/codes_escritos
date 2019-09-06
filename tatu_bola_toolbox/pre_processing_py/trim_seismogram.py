@@ -30,11 +30,12 @@ def cut_data_by_event(kstnm,stla,stlo,ev_timeUTC,ev_julday,ev_year,ev_month,ev_d
 				arrivals = model.get_travel_times(source_depth_in_km=ev_depth, distance_in_degree=gcarc, phase_list=["P"])
 				arr = arrivals[0]
 				#Reference time
+				event_time = op.UTCDateTime(ev_timeUTC)
 				starttime = (op.UTCDateTime(ev_timeUTC)+arr.time)-CUT_BEFORE_P
 				endtime = (op.UTCDateTime(ev_timeUTC)+arr.time)+CUT_AFTER_P	
 
 				#Creating Event Directory 
-				event_directory = DIR_EVENT+kstnm+'/'+'{:04}'.format(starttime.year)+'/'+'{:03}'.format(starttime.julday)+'/'+'{:04}'.format(starttime.year)+'.'+'{:03}'.format(starttime.julday)+'.'+'{:02}'.format(starttime.hour)+'.'+'{:02}'.format(starttime.minute)+'.'+'{:02}'.format(starttime.second)+'.'+'{:03}'.format(starttime.microsecond)[:3]			
+				event_directory = DIR_EVENT+kstnm+'/'+'{:04}'.format(event_time.year)+'/'+'{:03}'.format(event_time.julday)+'/'+'{:04}'.format(event_time.year)+'.'+'{:03}'.format(event_time.julday)+'.'+'{:02}'.format(event_time.hour)+'.'+'{:02}'.format(event_time.minute)+'.'+'{:02}'.format(event_time.second)+'.'+'{:03}'.format(event_time.microsecond)[:3]			
 				os.makedirs(event_directory, exist_ok=True)
 				
 				#########################################################################################################################################################
@@ -52,7 +53,7 @@ def cut_data_by_event(kstnm,stla,stlo,ev_timeUTC,ev_julday,ev_year,ev_month,ev_d
 						}
 
 				sacHHX = op.io.sac.sactrace.SACTrace(data=HHX[0].data, **headerHHX)
-				sacHHX.write(event_directory+'/'+knetwk+'.'+kstnm+'.'+'{:04}'.format(starttime.year)+'.'+'{:03}'.format(starttime.julday)+'.'+'{:02}'.format(starttime.hour)+'.'+'{:02}'.format(starttime.minute)+'.'+'{:02}'.format(starttime.second)+'.'+'{:03}'.format(starttime.microsecond)[:3]+'.'+NAME_SUFFIX_E)
+				sacHHX.write(event_directory+'/'+knetwk+'.'+kstnm+'.'+'{:04}'.format(event_time.year)+'.'+'{:03}'.format(event_time.julday)+'.'+'{:02}'.format(event_time.hour)+'.'+'{:02}'.format(event_time.minute)+'.'+'{:02}'.format(event_time.second)+'.'+'{:03}'.format(event_time.microsecond)[:3]+'.'+NAME_SUFFIX_E)
 				
 				#########################################################################################################################################################
 				#Component N
@@ -68,7 +69,7 @@ def cut_data_by_event(kstnm,stla,stlo,ev_timeUTC,ev_julday,ev_year,ev_month,ev_d
 						}
 
 				sacHHY = op.io.sac.sactrace.SACTrace(data=HHY[0].data, **headerHHY)
-				sacHHY.write(event_directory+'/'+knetwk+'.'+kstnm+'.'+'{:03}'.format(starttime.year)+'.'+'{:03}'.format(starttime.julday)+'.'+'{:02}'.format(starttime.hour)+'.'+'{:02}'.format(starttime.minute)+'.'+'{:02}'.format(starttime.second)+'.'+'{:03}'.format(starttime.microsecond)[:3]+'.'+NAME_SUFFIX_N)
+				sacHHY.write(event_directory+'/'+knetwk+'.'+kstnm+'.'+'{:04}'.format(event_time.year)+'.'+'{:03}'.format(event_time.julday)+'.'+'{:02}'.format(event_time.hour)+'.'+'{:02}'.format(event_time.minute)+'.'+'{:02}'.format(event_time.second)+'.'+'{:03}'.format(event_time.microsecond)[:3]+'.'+NAME_SUFFIX_N)
 
 
 				#########################################################################################################################################################
@@ -86,7 +87,7 @@ def cut_data_by_event(kstnm,stla,stlo,ev_timeUTC,ev_julday,ev_year,ev_month,ev_d
 						}
 
 				sacHHZ = op.io.sac.sactrace.SACTrace(data=HHZ[0].data, **headerHHZ)
-				sacHHZ.write(event_directory+'/'+knetwk+'.'+kstnm+'.'+'{:04}'.format(starttime.year)+'.'+'{:03}'.format(starttime.julday)+'.'+'{:02}'.format(starttime.hour)+'.'+'{:02}'.format(starttime.minute)+'.'+'{:02}'.format(starttime.second)+'.'+'{:03}'.format(starttime.microsecond)[:3]+'.'+NAME_SUFFIX_Z)
+				sacHHZ.write(event_directory+'/'+knetwk+'.'+kstnm+'.'+'{:04}'.format(event_time.year)+'.'+'{:03}'.format(event_time.julday)+'.'+'{:02}'.format(event_time.hour)+'.'+'{:02}'.format(event_time.minute)+'.'+'{:02}'.format(event_time.second)+'.'+'{:03}'.format(event_time.microsecond)[:3]+'.'+NAME_SUFFIX_Z)
 				
 			return 'Data OK with this event = '+DIR_SAC+kstnm+'/'+ev_year+'/'+ev_julday
 		except: 

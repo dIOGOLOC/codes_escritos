@@ -26,19 +26,19 @@
 DIR_RAW_DATA = /media/diogo/BP-PABIP/DADOS/
 
 # directory of raw sac files
-DIR_SAC = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/sac_data/
+DIR_SAC = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/rede_AR/sac_data/
 
 #Directory to save seismograms
-DIR_EVENT = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/event_data_YES_PP/
+DIR_EVENT = /home/diogo/dados_doutorado/data_event_dorsal_ana/
 
 #Directory to save filterd seismograms
-DIR_EVENT_NO_PP = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/event_data_NO_PP/
+DIR_EVENT_NO_PP = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/rede_AR/event_data_NO_PP/
 
 #Stations CSV FILE path
-STA_CSV_FILE  = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/sta_coord/cood_rede_BB_sensor_type.txt
+STA_CSV_FILE  = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/rede_AR/sta_coord/cood_rede_AR.txt
 
 #Directory to save JSON Files
-OUTPUT_JSON_FILE_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/redeBP-BB/JSON_FILES/
+OUTPUT_JSON_FILE_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/rede_AR/JSON_FILES/
 
 #=====
 [copy]
@@ -50,20 +50,20 @@ FILE_TYPE = SAC
 FILE_SUFFIX = sac
 
 #Do want to remove the mean of your data? (information in https://docs.obspy.org/packages/autogen/obspy.core.trace.Trace.detrend.html#obspy.core.trace.Trace.detrend)
-FILTERS_RMEAN = True
+FILTERS_RMEAN = False
 RMEAN_TYPE = demean
 
 #Do want to remove the trend of your data? (information in https://docs.obspy.org/packages/autogen/obspy.core.trace.Trace.detrend.html#obspy.core.trace.Trace.detrend)
-FILTERS_DETREND = True
+FILTERS_DETREND = False
 DETREND_TYPE = simple
 
 #Do want to use taper in your data? (information in https://docs.obspy.org/master/packages/autogen/obspy.core.trace.Trace.taper.html)
-FILTERS_TAPER = True
+FILTERS_TAPER = False
 TAPER_TYPE = hamming
 TAPER_MAX_PERCENTAGE = 0.05
 
 #Do want to use filter in your data? (help in https://docs.obspy.org/tutorial/code_snippets/filtering_seismograms.html)
-FILTER = True
+FILTER = False
 LOWPASS_FREQ = 4
 LOWPASS_CORNER = 4
 LOWPASS_ZEROPHASE = True
@@ -76,7 +76,7 @@ HIGHPASS_ZEROPHASE = True
 #Do want to interpolate your data?
 #This operation is performed in place on the actual data arrays. The raw data is not accessible anymore afterwards. 
 #Be careful when downsampling data and make sure to apply an appropriate anti-aliasing lowpass filter before interpolating in case it’s necessary.
-INTERPOLATE = False
+INTERPOLATE = True
 SAMPLING_RATE = 10
 
 #=====
@@ -84,7 +84,7 @@ SAMPLING_RATE = 10
 #=====
 
 # how many concurrent processes at the multiprocessing?
-MP_PROCESSES = 8
+MP_PROCESSES = 4
 
 #Taup_time model to calculate travel times
 TAUPY_MODEL = iasp91 
@@ -99,16 +99,22 @@ EV_GCARC_MAX = 95
 EV_MAGNITUDE_MB = 5
 
 #Date event initial  (exemple: 2008-01-01T00:00:00)
-INITIAL_DATE_EVENT = 2014-01-01T00:00:00
+INITIAL_DATE_EVENT = 2014-11-01T00:00:00
 
 #Date event final  (exemple: 2008-01-01T00:00:00)
-FINAL_DATE_EVENT = 2018-10-01T00:00:00
+FINAL_DATE_EVENT = 2018-01-01T00:00:00
+
+#Latitude/Longitude delimiter
+LATITUDE_MIN = -50
+LATITUDE_MAX = 10
+LONGITUDE_MIN = -30
+LONGITUDE_MAX = -10
 
 #Time to trim the seismogram before P-wave arrival
 CUT_BEFORE_P = 10
 
 #Time to trim the seismogram after P-wave arrival
-CUT_AFTER_P = 260
+CUT_AFTER_P = 7200
 
 #Component name E
 KCMPNM_E = HHE
@@ -120,7 +126,7 @@ KCMPNM_N = HHN
 KCMPNM_Z = HHZ
 
 #Network name
-knetwk = NB
+knetwk = BD
 
 #Component N sac file name suffix
 NAME_SUFFIX_N = N

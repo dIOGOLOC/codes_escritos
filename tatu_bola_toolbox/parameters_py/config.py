@@ -132,6 +132,12 @@ EV_GCARC_MIN = config.getfloat('trim', 'EV_GCARC_MIN')
 #Maximum event distance 
 EV_GCARC_MAX = config.getfloat('trim', 'EV_GCARC_MAX')
 
+#Latitude/Longitude delimiter
+LATITUDE_MIN = config.getfloat('trim', 'LATITUDE_MIN')
+LATITUDE_MAX = config.getfloat('trim', 'LATITUDE_MAX')
+LONGITUDE_MIN = config.getfloat('trim', 'LONGITUDE_MIN')
+LONGITUDE_MAX = config.getfloat('trim', 'LONGITUDE_MAX') 
+
 #Minimum event magnitude 
 EV_MAGNITUDE_MB = config.getfloat('trim', 'EV_MAGNITUDE_MB')
 
