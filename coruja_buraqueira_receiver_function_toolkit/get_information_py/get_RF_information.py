@@ -12,8 +12,8 @@ import shutil
 
 from parameters_py.config import (
 					DIR_SAC,OUTPUT_JSON_FILE_DIR,GAUSSIAN_FILTER,RADIAL_EXT,TRANSVERSAL_EXT,RF_PERCENT,CODA_TRACE_CHECK_AMP_MIN,CODA_TRACE_CHECK_AMP_MAX,
-					EV_GCARC_MIN,EV_GCARC_MAX,EV_MAGNITUDE_MB,CUT_BEFORE_P,CUT_AFTER_P,SAMPLING_RATE,CODA_TRACE_CHECK,DIR_SEL_SAC,ZERO_AMP_MIN,
-					CODA_TRACE_MAX_AMP,CODA_TRACE_MIN_AMP
+					EV_GCARC_MIN,EV_GCARC_MAX,EV_MAGNITUDE_MB,CUT_BEFORE_P,CUT_AFTER_P,SAMPLING_RATE,CODA_TRACE_CHECK,DIR_SEL_SAC,ZERO_AMP_MIN,ZERO_AMP_MAX,
+					CODA_TRACE_CHECK_MULT
 				   )
 
 
@@ -85,7 +85,7 @@ for i,j in enumerate(datalistS):
 
 	if len(data_RF[0].data) > CUT_AFTER_P*SAMPLING_RATE and data_RF[0].stats.sac.mag > EV_MAGNITUDE_MB:
 
-		print('Station: '+data_RF[0].stats.sac.kstnm)
+		print('Station: '+data_RF[0].stats.sac.kstnm+'/ Event lat = '+str(data_RF[0].stats.sac.evla)+'/ Event lon = '+str(data_RF[0].stats.sac.evlo))
 
 		#RF P-arrival amplitudes check
 		P_arrival_start = round((CUT_BEFORE_P*SAMPLING_RATE)-SAMPLING_RATE)
@@ -93,32 +93,37 @@ for i,j in enumerate(datalistS):
 		P_arrival_end = round((CUT_BEFORE_P*SAMPLING_RATE)+SAMPLING_RATE)
 		
 		amp_mid = data_RF[0].data[P_arrival_mid]
+		
 		#RF Coda amplitudes check
 		amp_Coda = data_RF[0].data[int((CODA_TRACE_CHECK+CUT_BEFORE_P)*SAMPLING_RATE):int(CUT_AFTER_P*SAMPLING_RATE)]
 
-		mean_amp_Coda = np.mean(amp_Coda)
-		std_amp_Coda = np.std(amp_Coda)
-		
-		#Gaussian Filter
-		if data_RF[0].stats.sac.user0 == GAUSSIAN_FILTER and data_RF[0].stats.sac.user5 > RF_PERCENT:
-			#Reconstruction value 
-			#data_RF[0].stats.sac.user5 > RF_PERCENT and
-			
-			#Minimum amplitude threshold
-			#min(data_RF[0].data) > CODA_TRACE_CHECK_AMP_MIN and
+		amp_Coda_mask = np.ma.masked_outside(amp_Coda,CODA_TRACE_CHECK_AMP_MIN,CODA_TRACE_CHECK_AMP_MAX)
 
-			#Maximum amplitude threshold 
-			#max(data_RF[0].data) < CODA_TRACE_CHECK_AMP_MAX and
+		mean_amp_Coda = np.mean(amp_Coda_mask)
+		std_amp_Coda = abs(np.std(amp_Coda_mask))
+
+		if (
+			#Gaussian Filter
+			data_RF[0].stats.sac.user0 == GAUSSIAN_FILTER and
+
+			#Reconstruction value 
+			data_RF[0].stats.sac.user5 >= RF_PERCENT and
+
+			#Minimum data amplitude threshold 
+	 		data_RF[0].data.min() >= -ZERO_AMP_MIN and
+
+	 		#Maximum data amplitude threshold 
+	 		data_RF[0].data.max() <= ZERO_AMP_MAX and
 
 			#Maximum coda amplitude threshold 
-			#and amp_Coda.max() < CODA_TRACE_MAX_AMP
-	 		#amp_Coda.max() < mean_amp_Coda + 2*std_amp_Coda and
+	 		amp_Coda.max() <= mean_amp_Coda + CODA_TRACE_CHECK_MULT*std_amp_Coda and
 
 			#Minimum coda amplitude threshold 
-			#amp_Coda.min() > mean_amp_Coda - 2*std_amp_Coda and
+			amp_Coda.min() >= mean_amp_Coda - CODA_TRACE_CHECK_MULT*std_amp_Coda and
 
 			#Origin amplitude larger than zero
-			#amp_mid > ZERO_AMP_MIN and all(elem > 0 for elem in data_RF[0].data[P_arrival_start:P_arrival_end]):
+			ZERO_AMP_MIN <= amp_mid <= ZERO_AMP_MAX and all(elem > 0 for elem in data_RF[0].data[P_arrival_start:P_arrival_end])
+			):
 				
 				RF_directory = DIR_SEL_SAC+str(GAUSSIAN_FILTER)+'/'+data_RF[0].stats.sac.kstnm+'/'
 				os.makedirs(RF_directory,exist_ok=True)

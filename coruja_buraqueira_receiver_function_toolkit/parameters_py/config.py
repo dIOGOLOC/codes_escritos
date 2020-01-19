@@ -77,23 +77,23 @@ TRANSVERSAL_EXT = config.get('paths', 'TRANSVERSAL_EXT')
 # quality
 # --------
 
-#Trace check (minimium amplitude of trace)
+#Trace check (coda amplitude starts in (seconds))
+CODA_TRACE_CHECK = config.getfloat('quality', 'CODA_TRACE_CHECK')
+
+#Trace check (coda minimium amplitude of trace)
 CODA_TRACE_CHECK_AMP_MIN = config.getfloat('quality', 'CODA_TRACE_CHECK_AMP_MIN')
 
-#Trace check (maximum amplitude of trace)
+#Trace check (coda maximum amplitude of trace)
 CODA_TRACE_CHECK_AMP_MAX = config.getfloat('quality', 'CODA_TRACE_CHECK_AMP_MAX')
+
+#Trace check (Standard Deviation Multiplier)
+CODA_TRACE_CHECK_MULT = config.getfloat('quality', 'CODA_TRACE_CHECK_MULT')
 
 #Trace check (minimium amplitude of trace)
 ZERO_AMP_MIN = config.getfloat('quality', 'ZERO_AMP_MIN')
 
-#Trace check (coda amplitude starts in (seconds))
-CODA_TRACE_CHECK = config.getfloat('quality', 'CODA_TRACE_CHECK')
-
-#Trace check (coda MAXIMUM AMPLITUDE)
-CODA_TRACE_MAX_AMP = config.getfloat('quality', 'CODA_TRACE_MAX_AMP')
-
-#Trace check (coda MINIMUM AMPLITUDE)
-CODA_TRACE_MIN_AMP = config.getfloat('quality', 'CODA_TRACE_MIN_AMP')
+#Trace check (minimium amplitude of trace)
+ZERO_AMP_MAX = config.getfloat('quality', 'ZERO_AMP_MAX')
 
 
 #Percent recoveries of the observed radial component

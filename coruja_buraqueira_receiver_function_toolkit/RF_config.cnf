@@ -22,16 +22,16 @@
 #======
 
 # directory of raw RF files
-DIR_SAC = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/rede_RSISNE/event_data_NO_PP/
+DIR_SAC = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/rede_BP_BB/event_data_NO_PP/
 
 # directory of selected RF files
 DIR_SEL_SAC =  /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/data_low_QC_artigo_GJI/selected_event_data_NO_PP/
 
 #Directory to save JSON Files
-OUTPUT_JSON_FILE_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/data_low_QC_artigo_GJI/selected_event_data_NO_PP/rede_RSISNE/JSON_FILES/
+OUTPUT_JSON_FILE_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/data_low_QC_artigo_GJI/selected_event_data_NO_PP/rede_BP_BB/JSON_FILES/
 
 #STA CSV FILE path
-STA_CSV_FILE  = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/rede_RSISNE/sta_coord/cood_rede_RSISNE_sensor_type.txt
+STA_CSV_FILE  = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/rede_BP_BB/sta_coord/cood_rede_BB_sensor_type.txt
 
 #Gaussian Filter
 GAUSSIAN_FILTER = 0.5
@@ -47,26 +47,26 @@ TRANSVERSAL_EXT = .eqt
 [quality]
 #=========
 
-#Trace check (minimium amplitude of trace)
-CODA_TRACE_CHECK_AMP_MIN = -0.1
+#Trace check (coda amplitude starts in (seconds))
+CODA_TRACE_CHECK = 40
 
-#Trace check (maximum amplitude of trace)
-CODA_TRACE_CHECK_AMP_MAX = 0.25
+#Trace check (coda minimium amplitude of trace)
+CODA_TRACE_CHECK_AMP_MIN = -0.05
 
-#Trace check (min of the maximum amplitude of trace)
+#Trace check (coda maximum amplitude of trace)
+CODA_TRACE_CHECK_AMP_MAX = 0.05
+
+#Trace check (Standard Deviation Multiplier)
+CODA_TRACE_CHECK_MULT = 3
+
+#Trace check (min of the amplitude at origin)
 ZERO_AMP_MIN = 0.1
 
-#Trace check (coda amplitude starts in (seconds))
-CODA_TRACE_CHECK = 50
-
-#Trace check (coda MAXIMUM AMPLITUDE)
-CODA_TRACE_MAX_AMP = 0.05
-
-#Trace check (coda MINIMUM AMPLITUDE)
-CODA_TRACE_MIN_AMP = -0.05
+#Trace check (max of the amplitude at origin)
+ZERO_AMP_MAX = 0.25
 
 #min percent recoveries of the observed radial component
-RF_PERCENT = 80
+RF_PERCENT = 75
 
 #Minimum event distance 
 EV_GCARC_MIN = 30
