@@ -96,8 +96,30 @@ for i,j in enumerate(datalistS):
 		#RF Coda amplitudes check
 		amp_Coda = data_RF[0].data[int((CODA_TRACE_CHECK+CUT_BEFORE_P)*SAMPLING_RATE):int(CUT_AFTER_P*SAMPLING_RATE)]
 
-		if data_RF[0].stats.sac.user0 == GAUSSIAN_FILTER and data_RF[0].stats.sac.user5 > RF_PERCENT and min(data_RF[0].data) > CODA_TRACE_CHECK_AMP_MIN and max(data_RF[0].data) < CODA_TRACE_CHECK_AMP_MAX and amp_Coda.max() < CODA_TRACE_MAX_AMP and amp_Coda.min() > CODA_TRACE_MIN_AMP and amp_mid > ZERO_AMP_MIN and all(elem > 0 for elem in data_RF[0].data[P_arrival_start:P_arrival_end]):
+		mean_amp_Coda = np.mean(amp_Coda)
+		std_amp_Coda = np.std(amp_Coda)
+		
+		#Gaussian Filter
+		if data_RF[0].stats.sac.user0 == GAUSSIAN_FILTER and data_RF[0].stats.sac.user5 > RF_PERCENT:
+			#Reconstruction value 
+			#data_RF[0].stats.sac.user5 > RF_PERCENT and
 			
+			#Minimum amplitude threshold
+			#min(data_RF[0].data) > CODA_TRACE_CHECK_AMP_MIN and
+
+			#Maximum amplitude threshold 
+			#max(data_RF[0].data) < CODA_TRACE_CHECK_AMP_MAX and
+
+			#Maximum coda amplitude threshold 
+			#and amp_Coda.max() < CODA_TRACE_MAX_AMP
+	 		#amp_Coda.max() < mean_amp_Coda + 2*std_amp_Coda and
+
+			#Minimum coda amplitude threshold 
+			#amp_Coda.min() > mean_amp_Coda - 2*std_amp_Coda and
+
+			#Origin amplitude larger than zero
+			#amp_mid > ZERO_AMP_MIN and all(elem > 0 for elem in data_RF[0].data[P_arrival_start:P_arrival_end]):
+				
 				RF_directory = DIR_SEL_SAC+str(GAUSSIAN_FILTER)+'/'+data_RF[0].stats.sac.kstnm+'/'
 				os.makedirs(RF_directory,exist_ok=True)
 				shutil.copy2(j,RF_directory+data_name)

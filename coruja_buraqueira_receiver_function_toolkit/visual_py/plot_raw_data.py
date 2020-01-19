@@ -34,7 +34,7 @@ def plot_station_raw_RF_TRACE(RF_data,RF_data_time,STA):
 	for i, j in enumerate(RF_data): 
 		plt.plot(RF_data_time,j,'gray',linewidth=0.5,label='RF data')
 		plt.plot(RF_data_time,RF_stack_data,'k',linewidth=2,label='RF stack')
-		plt.text(X_LIM_MIN,1,'N = '+str(len(RF_data)))
+		plt.text(-5,0.20,'N = '+str(len(RF_data)))
 		plt.title('Receiver Functions - '+STA)
 		plt.xlim(X_LIM_MIN,X_LIM_MAX)
 
