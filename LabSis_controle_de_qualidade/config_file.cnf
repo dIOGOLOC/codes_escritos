@@ -47,10 +47,10 @@ OUTPUT_PSD_DIR = /home/diogo/dados_doutorado/teste_PQLX/PSD/
 #======
 
 #Initial date of the Data
-INITIAL_DATE = 2019,1,1
+INITIAL_DATE = 2011,1,1
 
 #Final date of the data
-FINAL_DATE = 2020,1,1
+FINAL_DATE = 2012,1,1
 
 #Restricts the data that is included in the stack by time of day and weekday. 
 #Monday is 1, Sunday is 7, -1 for any day of week. 
@@ -58,8 +58,16 @@ FINAL_DATE = 2020,1,1
 #only individual spectra that have a starttime in between 10pm and 12am are used in the stack for all days of week
 #time_of_weekday=[(TIME_OF_WEEKDAY_DAY, TIME_OF_WEEKDAY_START_HOUR, TIME_OF_WEEKDAY_FINAL_HOUR)])
 TIME_OF_WEEKDAY_DAY = -1
-TIME_OF_WEEKDAY_START_HOUR = 0
+TIME_OF_WEEKDAY_START_HOUR = 22
 TIME_OF_WEEKDAY_FINAL_HOUR = 23
+
+#Extracting PSD values for given period in seconds.
+#Selects the period bin whose center period is closest to the specified period. 
+PERIOD_PSD = 100
+
+#Maximum and minimum amplitude of the PSD. 
+AMP_PSD_MIN = -140
+AMP_PSD_MAX = -100
 
 #======
 [CLIENT]

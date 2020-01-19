@@ -92,6 +92,14 @@ TIME_OF_WEEKDAY_DAY = config.getint('PPSD', 'TIME_OF_WEEKDAY_DAY')
 TIME_OF_WEEKDAY_START_HOUR = config.getfloat('PPSD', 'TIME_OF_WEEKDAY_START_HOUR')
 TIME_OF_WEEKDAY_FINAL_HOUR = config.getfloat('PPSD', 'TIME_OF_WEEKDAY_FINAL_HOUR')
 
+#Extracting PSD values for given period in seconds.
+#Selects the period bin whose center period is closest to the specified period. 
+PERIOD_PSD = config.getfloat('PPSD', 'PERIOD_PSD')
+
+#Maximum and minimum amplitude of the PSD. 
+AMP_PSD_MIN = config.getfloat('PPSD', 'AMP_PSD_MIN')
+AMP_PSD_MAX = config.getfloat('PPSD', 'AMP_PSD_MAX')
+
 # --------
 # CLIENT
 # --------

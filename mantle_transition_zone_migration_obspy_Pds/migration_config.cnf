@@ -35,19 +35,16 @@
 
 
 # dir of receiver functions
-#RF_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/data_MTZ_NO_PP/MTZ_data/0.5/
-RF_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/data_MTZ_YES_PP/MTZ_data/0.5/
+RF_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/data_low_QC_artigo_GJI/selected_event_data_NO_PP/0.5/
 
 # extension of receiver functions
 RF_EXT = .eqr
 
 #Directory of the earth models
 MODEL_FILE_NPZ = /home/diogo/diogo_git/codes_escritos/mantle_transition_zone_migration_obspy/velocity_model/iasp91_10.npz
-#MODEL_FILE_NPZ = /home/diogo/diogo_git/codes_escritos/mantle_transition_zone_migration_obspy/velocity_model/iasp91_5.npz
 
 # dir of OUTPUTs
-#OUTPUT_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/Mantle_Transition_Migration_NO_PP_obspy_Pds/
-OUTPUT_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/Mantle_Transition_Migration_YES_PP_obspy_Pds/
+OUTPUT_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/data_low_QC_artigo_GJI/Migration_files_NO_PP/
 
 #=====
 [maps]
@@ -120,7 +117,7 @@ VMAX = 0.01
 #==================
 
 # how many concurrent processes at the multiprocessing?
-MP_PROCESSES = 8
+MP_PROCESSES = 12
 
 #minimum depth of the migration
 MIN_DEPTH = 300

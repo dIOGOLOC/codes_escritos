@@ -189,6 +189,7 @@ PP_lon_1 = PP_1_dic['lon']
 PP_depth_1 = PP_1_dic['depth']
 
 
+
 print('Importing Pds Piercing Points for '+PHASES[1])
 print('\n')
 
@@ -590,7 +591,7 @@ ax5.set_title("Depth (km)")
 plt.show()
 
 ###################################################################################################################
-'''
+
 
 print('Plotting: Figure earth model layers')
 
@@ -655,7 +656,7 @@ ax.set_xlabel('Longitude')
 ax.set_ylabel('Latitude')
 ax.set_zlabel('Depth (km)')
 plt.show()
-
+'''
 
 ###################################################################################################################
 
@@ -674,6 +675,10 @@ ax.plot(sta_long,sta_lat,'^',markersize=10,markeredgecolor='k',markerfacecolor='
 x, y = np.meshgrid(np.arange(LLCRNRLON_SMALL,URCRNRLON_SMALL,1/GRID_PP_MULT),
                       np.arange(LLCRNRLAT_SMALL,URCRNRLAT_SMALL,1/GRID_PP_MULT))
 
+
+pp_1_depth  = 410*np.ones_like(pp_1_lat)
+print()
+
 z = np.zeros_like(x)
 ax.plot_surface(x, y, z,color='None',edgecolor='k')
 
@@ -688,9 +693,11 @@ ax.plot_surface(x, y, z410,color='None',edgecolor='b')
 
 intp = cbook.simple_linear_interpolation
 
-ax.plot3D(np.array(pp_1_long),np.array(pp_1_lat),np.array(pp_1_depth), c='r',alpha=0.3)
+#ax.plot3D(np.array(pp_1_long),np.array(pp_1_lat),np.array(pp_1_depth), c='r',alpha=0.3)
+
 
 #ax.plot3D(intp(np.array(PP_lon_1),50),intp(np.array(PP_lat_1), 50), intp(np.array(PP_depth_1), 50), c='r',alpha=0.3)
+ax.plot3D(np.array(PP_lon_1),np.array(PP_lat_1), np.array(PP_depth_1), c='r',alpha=0.3)
 #ax.plot3D(intp(np.array(PP_lon_2),50),intp(np.array(PP_lat_2), 50), intp(np.array(PP_depth_2), 50), c='g',alpha=0.3)
 
 #ax.scatter3D(PP_410_lon_POINTS,PP_410_lat_POINTS, PP_410_depth_POINTS,  c='k',marker='X',s=50)
