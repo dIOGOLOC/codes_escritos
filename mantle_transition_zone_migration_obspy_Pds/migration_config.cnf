@@ -98,7 +98,7 @@ INITIAL_DATE_EVENT = 2014-01-01T00:00:00
 FINAL_DATE_EVENT = 2018-10-01T00:00:00
 
 #CROSS-SECTION AXIS DIRECTION (x or y):
-CROSS_SECTION_AXIS  = y
+CROSS_SECTION_AXIS  = x
 
 #Colormap to velocity map (see https://matplotlib.org/examples/color/colormaps_reference.html)
 COLORMAP_VEL = seismic_r
