@@ -5,14 +5,15 @@ based on [ObsPy](https://github.com/obspy/obspy/wiki).
 
 Requirements
 ------------
-The code is developped on Ubuntu with Python Python 3.6.
+The code is developped on Ubuntu with Python Python 3.7.
 
-In addition to [Python 3.6](https://www.python.org/downloads/release/python-365/), you need
+In addition to [Python 3.7](https://www.python.org/downloads/release/python-374/), you need
 to use (sometimes install) the following packages:
 
 - [numpy](http://www.numpy.org/)
 - [matplotlib](http://matplotlib.org/)
 - [ObsPy](https://github.com/obspy/obspy/wiki)
+- [Cartopy](https://scitools.org.uk/cartopy/docs/latest/index.html)
 - [json](https://docs.python.org/3/library/json.html)
 - [os](https://docs.python.org/3/library/os.html)
 
@@ -23,9 +24,8 @@ updates.
 
 ToDo list
 -------------
-- Create code about depth estimation --> bootstrap code
-- Create another type of stacking --> phase-weight
-- Improve plots parameters
+- Create another type of stacking
+- Improve plots
 
 References
 ----------

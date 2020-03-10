@@ -35,16 +35,16 @@
 
 
 # dir of receiver functions
-RF_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/data_low_QC_artigo_GJI/selected_event_data_NO_PP/0.5/
+RF_DIR = /home/diogoloc/doc_artigo/data_low_QC_artigo_GJI/selected_event_data_NO_PP/0.5/
 
 # extension of receiver functions
 RF_EXT = .eqr
 
 #Directory of the earth models
-MODEL_FILE_NPZ = /home/diogo/diogo_git/codes_escritos/mantle_transition_zone_migration_obspy/velocity_model/iasp91_10.npz
+MODEL_FILE_NPZ = /home/diogoloc/diogo_git/codes_escritos/mantle_transition_zone_migration_obspy/velocity_model/iasp91_10.npz
 
 # dir of OUTPUTs
-OUTPUT_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/data_low_QC_artigo_GJI/Migration_files_NO_PP/
+OUTPUT_DIR = /home/diogoloc/doc_artigo/data_low_QC_artigo_GJI/Migration_files_NO_PP/
 
 #=====
 [maps]
@@ -60,12 +60,11 @@ OUTPUT_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/data_low_QC
 #   tectonic provinces
 
 
-BOUNDARY_1_SHP = /home/diogo/dados_doutorado/parnaiba_basin/SIG_dados/shapes/bacia_parnaiba/bacia_parnaiba.shp
+BOUNDARY_1_SHP = /home/diogoloc/database_GIS/Brasil/bacia do Parnaíba/bacia_do_parnaiba.shp
 
-BOUNDARY_2_SHP = /home/diogo/dados_doutorado/parnaiba_basin/SIG_dados/shapes/Estados/Brasil.shp
+BOUNDARY_2_SHP = /home/diogoloc/database_GIS/Brasil/Contorno/contorno_estados.shp
 
-TECTO_SHP = /home/diogo/dados_doutorado/parnaiba_basin/SIG_dados/shapes/mapas_interpretacoes/mocitaiba _2017.shp
-#TECTO_SHP = /home/diogo/dados_doutorado/parnaiba_basin/SIG_dados/shapes/F_Mosq_Sard/F_Sardinha_(CPRM).shp
+TECTO_SHP = /home/diogoloc/database_GIS/Brasil/bacia do Parnaíba/bacia_do_parnaiba.shp
 
 # Lat and Lon of large maps and small maps
 # center (lat/lon) of the map
@@ -136,7 +135,7 @@ INTER_DEPTH = 10
 FILTER_BY_SHAPEFILE = False
 
 #Shapefile containing lines or polygons representing grid boundary
-SHAPEFILE_GRID = /home/diogo/dados_doutorado/parnaiba_basin/SIG_dados/shapes/bacia_parnaiba/bacia_parnaiba.shp
+SHAPEFILE_GRID = /home/diogoloc/database_GIS/Brasil/bacia do Parnaíba/bacia_do_parnaiba.shp
 
 # grid bin per degree
 GRID_PP_MULT = 4
