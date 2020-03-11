@@ -17,7 +17,8 @@ from cartopy.io.shapereader import Reader
 import cartopy.feature as cfeature
 import scipy.io
 import matplotlib.cm as cm
-from matplotlib.ticker import MultipleLocator, FormatStrFormatter, AutoMinorLocator
+from matplotlib.ticker import MultipleLocator, FormatStrFormatter, AutoMinorLocator, FixedLocator
+from cartopy.mpl.ticker import LongitudeFormatter, LatitudeFormatter
 import json
 import matplotlib.gridspec as gridspec
 from mpl_toolkits.axes_grid1 import make_axes_locatable
@@ -180,6 +181,11 @@ tmap = matplotlib.colors.LinearSegmentedColormap.from_list('map_white', colors)
 
 #############################################################################################################################################################################################
 
+lon_formatter = LongitudeFormatter()
+lat_formatter = LatitudeFormatter()
+
+#############################################################################################################################################################################################
+
 print('Plotting Figure: Apparent Depth estimates')
 
 fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(10,10))
@@ -209,6 +215,7 @@ ax.set_ylim(360,460)
 ax.set_xlim(610,710)
 ax.set_ylabel('Depth d410 (km)')
 ax.set_xlabel('Depth d660 (km)')
+ax.tick_params(labeltop=True, labelright=True,labelsize=13)
 
 
 sm_410 = plt.cm.ScalarMappable(cmap=tmap,norm=norm_410)
@@ -227,7 +234,7 @@ fig.savefig(RESULTS_FOLDER+'APPARENT_DEPTH_PLOT.'+EXT_FIG,dpi=DPI_FIG)
 
 print('Plotting Figure: Apparent Depth of 410 km and 660 km')
 
-fig, axes = plt.subplots(nrows=1, ncols=2, subplot_kw={'projection': ccrs.Mercator(central_longitude=PROJECT_LON, globe=None)},figsize=(20,10),sharey=True)
+fig, axes = plt.subplots(nrows=1, ncols=2, subplot_kw={'projection': ccrs.Mercator(central_longitude=PROJECT_LON, globe=None)},figsize=(20,10),sharey=False)
 
 ax = axes[0]
 ax2 = axes[1]
@@ -245,7 +252,6 @@ reader_2_SHP = Reader(BOUNDARY_2_SHP)
 shape_2_SHP = list(reader_2_SHP.geometries())
 plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
 ax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
-ax.gridlines(draw_labels=True)
 
 bounds = np.arange(360, 460+colormap_segmentation,colormap_segmentation)
 norm_410 = mpl.colors.BoundaryNorm(boundaries=bounds, ncolors=colormap.N)
@@ -263,6 +269,13 @@ for i,j in enumerate(lons):
 
 ax.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree(),label='Stations')
 
+ax.set_xticks(np.arange(LLCRNRLON_LARGE,URCRNRLON_LARGE+0,3), crs=ccrs.PlateCarree())
+ax.set_yticks(np.arange(LLCRNRLAT_LARGE,URCRNRLAT_LARGE+0,3), crs=ccrs.PlateCarree())
+ax.grid(color='grey', linestyle='--', linewidth=1)
+ax.xaxis.set_major_formatter(lon_formatter)
+ax.yaxis.set_major_formatter(lat_formatter)
+ax.tick_params(labeltop=True, labelright=True,labelsize=15)
+
 
 #660 km
 
@@ -277,7 +290,6 @@ reader_2_SHP = Reader(BOUNDARY_2_SHP)
 shape_2_SHP = list(reader_2_SHP.geometries())
 plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
 ax2.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
-ax2.gridlines(draw_labels=True)
 
 bounds = np.arange(610, 710+colormap_segmentation, colormap_segmentation)
 norm_660 = mpl.colors.BoundaryNorm(boundaries=bounds, ncolors=colormap.N)
@@ -295,6 +307,12 @@ for i,j in enumerate(lons):
 		pass
 
 ax2.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree(),label='Stations')
+ax2.set_xticks(np.arange(LLCRNRLON_LARGE,URCRNRLON_LARGE+0,3), crs=ccrs.PlateCarree())
+ax2.set_yticks(np.arange(LLCRNRLAT_LARGE,URCRNRLAT_LARGE+0,3), crs=ccrs.PlateCarree())
+ax2.grid(color='grey', linestyle='--', linewidth=1)
+ax2.xaxis.set_major_formatter(lon_formatter)
+ax2.yaxis.set_major_formatter(lat_formatter)
+ax2.tick_params(labeltop=True, labelright=True,labelsize=15)
 
 #______________________________________________________________________
 
@@ -325,7 +343,6 @@ fig, ax = plt.subplots(nrows=1, ncols=1, subplot_kw={'projection': ccrs.Mercator
 #Pds phase
 
 ax.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
-ax.gridlines(draw_labels=True)
 
 reader_1_SHP = Reader(BOUNDARY_1_SHP)
 shape_1_SHP = list(reader_1_SHP.geometries())
@@ -353,6 +370,12 @@ for i,j in enumerate(lons):
 
 
 ax.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
+ax.set_xticks(np.arange(LLCRNRLON_LARGE,URCRNRLON_LARGE+0,3), crs=ccrs.PlateCarree())
+ax.set_yticks(np.arange(LLCRNRLAT_LARGE,URCRNRLAT_LARGE+0,3), crs=ccrs.PlateCarree())
+ax.grid(color='grey', linestyle='--', linewidth=1)
+ax.xaxis.set_major_formatter(lon_formatter)
+ax.yaxis.set_major_formatter(lat_formatter)
+ax.tick_params(labeltop=True, labelright=True,labelsize=15)
 
 #______________________________________________________________________
 
@@ -386,7 +409,6 @@ reader_2_SHP = Reader(BOUNDARY_2_SHP)
 shape_2_SHP = list(reader_2_SHP.geometries())
 plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
 ax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
-ax.gridlines(draw_labels=True)
 
 bounds = np.arange(470, 570+colormap_segmentation, colormap_segmentation)
 norm_410 = mpl.colors.BoundaryNorm(boundaries=bounds, ncolors=colormap.N)
@@ -403,6 +425,12 @@ for i,j in enumerate(lons):
 		pass
 
 ax.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
+ax.set_xticks(np.arange(LLCRNRLON_LARGE,URCRNRLON_LARGE+0,3), crs=ccrs.PlateCarree())
+ax.set_yticks(np.arange(LLCRNRLAT_LARGE,URCRNRLAT_LARGE+0,3), crs=ccrs.PlateCarree())
+ax.grid(color='grey', linestyle='--', linewidth=1)
+ax.xaxis.set_major_formatter(lon_formatter)
+ax.yaxis.set_major_formatter(lat_formatter)
+ax.tick_params(labeltop=True, labelright=True,labelsize=15)
 
 #______________________________________________________________________
 
@@ -435,7 +463,6 @@ reader_2_SHP = Reader(BOUNDARY_2_SHP)
 shape_2_SHP = list(reader_2_SHP.geometries())
 plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
 ax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
-ax.gridlines(draw_labels=True)
 
 bounds = np.arange(300, 400+colormap_segmentation, colormap_segmentation)
 norm_410 = mpl.colors.BoundaryNorm(boundaries=bounds, ncolors=colormap.N)
@@ -452,6 +479,12 @@ for i,j in enumerate(lons):
 		pass
 
 ax.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
+ax.set_xticks(np.arange(LLCRNRLON_LARGE,URCRNRLON_LARGE+0,3), crs=ccrs.PlateCarree())
+ax.set_yticks(np.arange(LLCRNRLAT_LARGE,URCRNRLAT_LARGE+0,3), crs=ccrs.PlateCarree())
+ax.grid(color='grey', linestyle='--', linewidth=1)
+ax.xaxis.set_major_formatter(lon_formatter)
+ax.yaxis.set_major_formatter(lat_formatter)
+ax.tick_params(labeltop=True, labelright=True,labelsize=15)
 
 #______________________________________________________________________
 
@@ -483,7 +516,6 @@ reader_2_SHP = Reader(BOUNDARY_2_SHP)
 shape_2_SHP = list(reader_2_SHP.geometries())
 plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
 ax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
-ax.gridlines(draw_labels=True)
 
 bounds = np.arange(650, 750+colormap_segmentation, colormap_segmentation)
 norm_410 = mpl.colors.BoundaryNorm(boundaries=bounds, ncolors=colormap.N)
@@ -500,6 +532,12 @@ for i,j in enumerate(lons):
 		pass
 
 ax.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
+ax.set_xticks(np.arange(LLCRNRLON_LARGE,URCRNRLON_LARGE+0,3), crs=ccrs.PlateCarree())
+ax.set_yticks(np.arange(LLCRNRLAT_LARGE,URCRNRLAT_LARGE+0,3), crs=ccrs.PlateCarree())
+ax.grid(color='grey', linestyle='--', linewidth=1)
+ax.xaxis.set_major_formatter(lon_formatter)
+ax.yaxis.set_major_formatter(lat_formatter)
+ax.tick_params(labeltop=True, labelright=True,labelsize=15)
 
 #______________________________________________________________________
 

@@ -17,7 +17,8 @@ from cartopy.io.shapereader import Reader
 import cartopy.feature as cfeature
 import scipy.io
 import matplotlib.cm as cm
-from matplotlib.ticker import MultipleLocator, FormatStrFormatter
+from matplotlib.ticker import MultipleLocator, FormatStrFormatter, AutoMinorLocator, FixedLocator
+from cartopy.mpl.ticker import LongitudeFormatter, LatitudeFormatter
 import json
 import matplotlib.gridspec as gridspec
 from mpl_toolkits.axes_grid1 import make_axes_locatable
@@ -378,8 +379,6 @@ for i,j in enumerate(RF_data_profile_Pds):
 
 	fig = plt.figure(figsize=(30, 10))
 
-	fig.suptitle('Cross section for Pds')
-
 	gs = gridspec.GridSpec(4, 3)
 	gs.update(wspace=0.2, hspace=0.5)
 
@@ -417,9 +416,9 @@ for i,j in enumerate(RF_data_profile_Pds):
 	map_MTZ_thickness.yaxis.set_ticks_position('both')
 	map_MTZ_thickness.xaxis.set_ticks_position('both')
 
-	map_MTZ_thickness.set_xticks(np.arange(LLCRNRLON_LARGE,URCRNRLON_LARGE,4), crs=ccrs.PlateCarree())
-	map_MTZ_thickness.set_yticks(np.arange(LLCRNRLAT_LARGE,URCRNRLAT_LARGE,4), crs=ccrs.PlateCarree())
-	map_MTZ_thickness.tick_params(labelbottom=False,labeltop=True,labelleft=True,labelright=True)
+	map_MTZ_thickness.set_xticks(np.arange(LLCRNRLON_LARGE,URCRNRLON_LARGE,3), crs=ccrs.PlateCarree())
+	map_MTZ_thickness.set_yticks(np.arange(LLCRNRLAT_LARGE,URCRNRLAT_LARGE,3), crs=ccrs.PlateCarree())
+	map_MTZ_thickness.tick_params(labelbottom=False,labeltop=True,labelleft=True,labelright=True, labelsize=15)
 
 	map_MTZ_thickness.grid(True,which='major',color='gray',linewidth=1,linestyle='--')
 
@@ -451,19 +450,24 @@ for i,j in enumerate(RF_data_profile_Pds):
 		circulo_410_profile = Circle(radius=DIST_GRID_PP,xy=(AB_lon[i][x], AB_lat[i][x]),fc='None',ec='k',transform=ccrs.Geodetic(),zorder=10)
 		map_MTZ_thickness.add_patch(circulo_410_profile)
 
-	map_MTZ_thickness.set_title('MTZ Thickness', y=1.1)
+	map_MTZ_thickness.set_title('MTZ Thickness', y=1.1, fontsize=20)
 
 	sm_map_MTZ_thickness = plt.cm.ScalarMappable(cmap=tmap,norm=norm_map_MTZ_thickness)
 	sm_map_MTZ_thickness._A = []
-	cbar = fig.colorbar(sm_map_MTZ_thickness,ax=map_MTZ_thickness,orientation='vertical',shrink=0.9,pad=0.1,label='MTZ Thickness (km)')
+	cbar = fig.colorbar(sm_map_MTZ_thickness,ax=map_MTZ_thickness,orientation='vertical',shrink=0.9,pad=0.1)
 
-	cbar.set_ticks(np.arange(200, 300+INTER_DEPTH, INTER_DEPTH))
-	cbar.set_ticklabels(np.arange(200, 300+INTER_DEPTH, INTER_DEPTH))
+	cbar.set_ticks(np.arange(200, 300+INTER_DEPTH, INTER_DEPTH*2))
+	cbar.set_ticklabels(np.arange(200, 300+INTER_DEPTH, INTER_DEPTH*2))
+	cbar.ax.tick_params(labelsize=15)
+
 
 	#### Profile  ####
 	
-	majorLocatorY = MultipleLocator(50)
+	majorLocatorY = MultipleLocator(100)
 	minorLocatorY = MultipleLocator(10)
+
+	majorLocatorX = MultipleLocator(4)
+	minorLocatorX = MultipleLocator(1)
 
 	grid_Pds = np.array(RF_data_profile_Pds[i])
 	extent_Pds = [0,len(RF_data_profile_Pds[i]),800,300]
@@ -494,22 +498,24 @@ for i,j in enumerate(RF_data_profile_Pds):
 		pefil_pds.errorbar(_i,RF_DEPTH_mean_2_profile_Pds[i][_i], yerr=RF_DEPTH_std_2_profile_Pds[i][_i], ecolor='k',elinewidth=1,capsize=1,capthick=1)
 		pefil_pds.errorbar(_i,RF_DEPTH_mean_LVZ_700_profile_Pds[i][_i], yerr=RF_DEPTH_std_LVZ_700_profile_Pds[i][_i], ecolor='k',elinewidth=1,capsize=1,capthick=1)
 
-		if CROSS_SECTION_AXIS == 'y':
-			pefil_pds.text(_i,820,"{0:.1f}".format(AB_lon[i][_i]),rotation=-45,fontsize=10)
-			pefil_pds.set_xlabel('Longitude ($^\circ$)',labelpad=30)
+		if CROSS_SECTION_AXIS == 'x':
+			pefil_pds.set_xticks(np.linspace(pefil_pds.get_xlim()[0],pefil_pds.get_xlim()[1],10))
+			pefil_pds.set_xticklabels(np.linspace(LLCRNRLON_SMALL,URCRNRLON_SMALL,10))
+			pefil_pds.set_xlabel('Longitude ($^\circ$)',labelpad=30,fontsize=20)
 		else:
-			pefil_pds.text(_i,820,"{0:.1f}".format(AB_lat[i][_i]),rotation=-45,fontsize=10)
-			pefil_pds.set_xlabel('Latitude ($^\circ$)',labelpad=30)
+			pefil_pds.set_xticks(np.linspace(pefil_pds.get_xlim()[0],pefil_pds.get_xlim()[1],10))
+			pefil_pds.set_xticklabels(np.linspace(LLCRNRLAT_SMALL,URCRNRLAT_SMALL,10))
+			pefil_pds.set_xlabel('Latitude ($^\circ$)',labelpad=30,fontsize=20)
+
 
 	pefil_pds.yaxis.set_ticks_position('both')
 	pefil_pds.yaxis.set_major_locator(majorLocatorY)
 	pefil_pds.yaxis.set_minor_locator(minorLocatorY)
+
 	pefil_pds.grid(True,which='major',color='gray',linewidth=1,linestyle='--')
-	pefil_pds.set_title('Cross-section - Pds')
-	pefil_pds.set_xticks([])
-	pefil_pds.set_ylabel('Depth (km)')
+	pefil_pds.set_ylabel('Depth (km)', fontsize=18)
 	pefil_pds.yaxis.set_label_position("right")
-	pefil_pds.tick_params(labelright=True)
+	pefil_pds.tick_params(labelright=True,labelsize=15)
 
 	#### Figure Apparent  410 km Pds  ####
 
@@ -518,12 +524,12 @@ for i,j in enumerate(RF_data_profile_Pds):
 
 		apparent_410.errorbar(_i,RF_DEPTH_mean_1_profile_Pds[i][_i]-410, yerr=RF_DEPTH_std_1_profile_Pds[i][_i], ecolor='dimgray',elinewidth=1,capsize=2,capthick=1)
 
-		apparent_410.set_title('diff 410 km')
+		apparent_410.set_title('diff 410 km', fontsize=20)
 		apparent_410.yaxis.set_ticks_position('both')
 		apparent_410.yaxis.set_major_locator(MultipleLocator(25))
 		apparent_410.yaxis.set_minor_locator(MultipleLocator(10))
 		apparent_410.grid(True,which='major',color='gray',linewidth=1,linestyle='--')
-		apparent_410.tick_params(labelleft=True,labelright=True)
+		apparent_410.tick_params(labelleft=True,labelright=True,labelsize=15)
 		apparent_410.yaxis.set_label_position("right")
 		apparent_410.set_xticks([])
 		apparent_410.set_ylim(50,-50)
@@ -538,14 +544,15 @@ for i,j in enumerate(RF_data_profile_Pds):
 		apparent_660.errorbar(_i,RF_DEPTH_mean_2_profile_Pds[i][_i]-660, yerr=RF_DEPTH_std_2_profile_Pds[i][_i], ecolor='dimgray',elinewidth=1,capsize=2,capthick=1)
 		
 		apparent_660.set_ylim(50,-50)
-		apparent_660.set_title('diff 660 km ')
+		apparent_660.set_title('diff 660 km ', fontsize=20)
 		apparent_660.yaxis.set_ticks_position('both')
 		apparent_660.yaxis.set_major_locator(MultipleLocator(25))
 		apparent_660.yaxis.set_minor_locator(MultipleLocator(10))
 		apparent_660.grid(True,which='major',color='gray',linewidth=1,linestyle='--')
-		apparent_660.tick_params(labelleft=True,labelright=True)
+		apparent_660.tick_params(labelleft=True,labelright=True,labelsize=15)
 		apparent_660.yaxis.set_label_position("right")
 		apparent_660.set_xticks([])
+
 
 
 	#### Figure MTZ Apparent thickness  ####
@@ -558,12 +565,12 @@ for i,j in enumerate(RF_data_profile_Pds):
 	
 	MTZ_thickness.set_ylim(50,-50)
 	MTZ_thickness.yaxis.set_label_position("right")
-	MTZ_thickness.set_title('diff MTZ Thickness')
+	MTZ_thickness.set_title('diff MTZ Thickness', fontsize=20)
 	MTZ_thickness.yaxis.set_ticks_position('both')
 	MTZ_thickness.yaxis.set_major_locator(MultipleLocator(25))
 	MTZ_thickness.yaxis.set_minor_locator(MultipleLocator(10))
 	MTZ_thickness.grid(True,which='major',color='gray',linewidth=1,linestyle='--')
-	MTZ_thickness.tick_params(labelleft=True,labelright=True)
+	MTZ_thickness.tick_params(labelleft=True,labelright=True,labelbottom=False,labelsize=15)
 
 
 	#### Figure diff MTZ Apparent thickness  ####
@@ -576,12 +583,13 @@ for i,j in enumerate(RF_data_profile_Pds):
 	
 	diff_MTZ_thickness.set_ylim(50,-50)
 	diff_MTZ_thickness.yaxis.set_label_position("right")
-	diff_MTZ_thickness.set_title('diff LVZ')
+	diff_MTZ_thickness.set_title('diff LVZ', fontsize=20)
 	diff_MTZ_thickness.yaxis.set_ticks_position('both')
 	diff_MTZ_thickness.yaxis.set_major_locator(MultipleLocator(25))
 	diff_MTZ_thickness.yaxis.set_minor_locator(MultipleLocator(10))
 	diff_MTZ_thickness.grid(True,which='major',color='gray',linewidth=1,linestyle='--')
-	diff_MTZ_thickness.tick_params(labelleft=True,labelright=True)
+	diff_MTZ_thickness.tick_params(labelleft=True,labelright=True,labelbottom=False,labelsize=15)
+
 
 	fig.savefig(RESULTS_FOLDER+'SELECTED_BINNED_DATA_'+CROSS_SECTION_AXIS+'_CROSS_SECTION_Pds_Ppds_PROFILE_'+str(i+1)+'_COLOR.'+EXT_FIG,dpi=DPI_FIG)
 print('Ending the Cross-section CODE')
