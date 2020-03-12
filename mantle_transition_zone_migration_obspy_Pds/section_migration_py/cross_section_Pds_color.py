@@ -29,12 +29,7 @@ from matplotlib.colors import Normalize
 from matplotlib.patches import Circle,Rectangle
 import math
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
-
-
-
-
-
-
+import verde as vd
 
 from parameters_py.mgconfig import (
 					RF_DIR,RF_EXT,MODEL_FILE_NPZ,MIN_DEPTH,MAX_DEPTH,INTER_DEPTH,SHAPEFILE_GRID,FILTER_BY_SHAPEFILE,
@@ -44,55 +39,6 @@ from parameters_py.mgconfig import (
 					EXT_FIG,DPI_FIG,DIST_GRID_PP,NUMBER_STA_PER_BIN,NUMBER_PP_PER_BIN,VMIN,VMAX,
 					DEPTH_RANGE,BOOTSTRAP_INTERATOR,CROSS_SECTION_AXIS,DEPTH_TARGET,
 				   )
-
-
-#Function to grid data by FATIANDO A TERRA:
-def spacing(area, shape):
-	"""
-	Returns the spacing between grid nodes
-
-	Parameters:
-
-	* area
-		``(x1, x2, y1, y2)``: Borders of the grid
-	* shape
-		Shape of the regular grid, ie ``(ny, nx)``.
-
-	Returns:
-
-	* ``[dy, dx]``
-	Spacing the y and x directions
-
-	"""
-	x1, x2, y1, y2 = area
-	ny, nx = shape
-	dx = float(x2 - x1)/float(nx - 1)
-	dy = float(y2 - y1)/float(ny - 1)
-	return [dy, dx]
-
-def regular(area, shape):
-	
-	ny, nx = shape
-	x1, x2, y1, y2 = area
-	dy, dx = spacing(area, shape)
-	x_range = np.arange(x1, x2, dx)
-	y_range = np.arange(y1, y2, dy)
-
-	# Need to make sure that the number of points in the grid is correct because
-	# of rounding errors in arange. Sometimes x2 and y2 are included, sometimes
-	# not
-
-	if len(x_range) < nx:
-	
-		x_range = np.append(x_range, x2)
-	if len(y_range) < ny:
-		y_range = np.append(y_range, y2)
-	assert len(x_range) == nx, "Failed! x_range doesn't have nx points"
-	assert len(y_range) == ny, "Failed! y_range doesn't have ny points"
-	xcoords, ycoords = [mat.ravel() for mat in np.meshgrid(x_range, y_range)]
-
-	return [xcoords, ycoords]
-
 
 print('Starting Cross section CODE')
 print('\n')
@@ -127,7 +73,6 @@ print('Importing selected binned data')
 print('\n')
 
 PP_SELEC_DIR = OUTPUT_DIR+'MODEL_INTER_DEPTH_'+str(INTER_DEPTH)+'_DEPTH_TARGET_'+str(DEPTH_TARGET)+'/'+'SELECTED_BINNED_DATA'+'/'
-
 
 RESULTS_FOLDER_BINS = PP_SELEC_DIR+'/'+'RESULTS_NUMBER_PP_PER_BIN_'+str(NUMBER_PP_PER_BIN)+'_NUMBER_STA_PER_BIN_'+str(NUMBER_STA_PER_BIN)+'/'
 filename = RESULTS_FOLDER_BINS+'SELECTED_BINNED.json'
@@ -175,24 +120,22 @@ RF_DEPTH_std_LVZ_700_Pds = SELECTED_BINNED_DATA_dic['std_LVZ_700_Pds']
 RF_DEPTH_mtz_thickness_Pds = SELECTED_BINNED_DATA_dic['mtz_thickness_Pds']
 RF_DEPTH_mtz_thickness_Pds_std = SELECTED_BINNED_DATA_dic['mtz_thickness_Pds_std']
 
-#############################################################################################################################3
+###############################################################################################################################################
 
+# create the grid coordinates
 
-area = (LLCRNRLON_SMALL,URCRNRLON_SMALL, LLCRNRLAT_SMALL, URCRNRLAT_SMALL)
+spacing = GRID_PP_MULT
+region = (LLCRNRLON_SMALL, URCRNRLON_SMALL, LLCRNRLAT_SMALL, URCRNRLAT_SMALL)
 
-shape = (int(abs(abs(URCRNRLON_SMALL) - abs(LLCRNRLON_SMALL))*GRID_PP_MULT),int(abs(abs(URCRNRLAT_SMALL) - abs(LLCRNRLAT_SMALL))*GRID_PP_MULT))
+rows, cols = vd.grid_coordinates(region=region, spacing=spacing)
 
-grdx, grdy = regular(area, shape)
-
-shape_new = (int(len(set(grdx))),int(len(set(grdy))))
-
-rows = np.array(grdx).reshape(shape_new)
-cols = np.array(grdy).reshape(shape_new)
+###############################################################################################################################################
 
 PP_FIGURE = OUTPUT_DIR+'MODEL_INTER_DEPTH_'+str(INTER_DEPTH)+'_DEPTH_TARGET_'+str(DEPTH_TARGET)+'/'+'Figures'+'/'
 RESULTS_FOLDER = PP_FIGURE+'/'+'RESULTS_NUMBER_PP_PER_BIN_'+str(NUMBER_PP_PER_BIN)+'_NUMBER_STA_PER_BIN_'+str(NUMBER_STA_PER_BIN)+'/'
 os.makedirs(RESULTS_FOLDER,exist_ok=True)
 
+###############################################################################################################################################
 
 print('Allocating cross-section data')
 print('\n')
@@ -245,8 +188,8 @@ if CROSS_SECTION_AXIS == 'x':
 
 		#Profile lat/lon
 
-		AB_lon[i] = [rows[i,:][k] for k,l in enumerate(rows[i,:])]
-		AB_lat[i] = [cols[i,:][k] for k,l in enumerate(rows[i,:])]
+		AB_lon[i] = sorted([rows[i,:][k] for k,l in enumerate(rows[i,:])])
+		AB_lat[i] = sorted([cols[i,:][k] for k,l in enumerate(rows[i,:])])
 
 
 		#Receiver Functions:
@@ -372,7 +315,9 @@ else:
 		RF_DEPTH_mtz_thickness_profile_Pds[i] = [RF_DEPTH_mtz_thickness_Pds[lat_lon.index(l)] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
 		RF_DEPTH_mtz_thickness_profile_Pds_std[i] = [RF_DEPTH_mtz_thickness_Pds_std[lat_lon.index(l)] if l in lat_lon else np.nan for k,l in enumerate(grid_column)]
 
+
 print('Plotting cross-sections according to the '+CROSS_SECTION_AXIS+' direction')
+
 for i,j in enumerate(RF_data_profile_Pds):
 
 	#Cross section figure
@@ -446,6 +391,7 @@ for i,j in enumerate(RF_data_profile_Pds):
 		else:
 			pass
 
+	
 	for x,c in enumerate(AB_lon[i]):
 		circulo_410_profile = Circle(radius=DIST_GRID_PP,xy=(AB_lon[i][x], AB_lat[i][x]),fc='None',ec='k',transform=ccrs.Geodetic(),zorder=10)
 		map_MTZ_thickness.add_patch(circulo_410_profile)
@@ -466,9 +412,6 @@ for i,j in enumerate(RF_data_profile_Pds):
 	majorLocatorY = MultipleLocator(100)
 	minorLocatorY = MultipleLocator(10)
 
-	majorLocatorX = MultipleLocator(4)
-	minorLocatorX = MultipleLocator(1)
-
 	grid_Pds = np.array(RF_data_profile_Pds[i])
 	extent_Pds = [0,len(RF_data_profile_Pds[i]),800,300]
 
@@ -484,6 +427,7 @@ for i,j in enumerate(RF_data_profile_Pds):
                    borderpad=0,
                    )
 	plt.colorbar(im, cax=axins, orientation="horizontal", ticklocation='top')
+	
 	for _i, _j in enumerate(RF_data_profile_Pds[i]):
 		pefil_pds.plot(_i,RF_DEPTH_mean_LVZ_profile_Pds[i][_i],'ok',ms=3,markerfacecolor='none')
 		pefil_pds.plot(_i,RF_DEPTH_mean_1_profile_Pds[i][_i],'ok',ms=3,markerfacecolor='none')
@@ -506,7 +450,6 @@ for i,j in enumerate(RF_data_profile_Pds):
 			pefil_pds.set_xticks(np.linspace(pefil_pds.get_xlim()[0],pefil_pds.get_xlim()[1],10))
 			pefil_pds.set_xticklabels(np.linspace(LLCRNRLAT_SMALL,URCRNRLAT_SMALL,10))
 			pefil_pds.set_xlabel('Latitude ($^\circ$)',labelpad=30,fontsize=20)
-
 
 	pefil_pds.yaxis.set_ticks_position('both')
 	pefil_pds.yaxis.set_major_locator(majorLocatorY)
@@ -531,8 +474,8 @@ for i,j in enumerate(RF_data_profile_Pds):
 		apparent_410.grid(True,which='major',color='gray',linewidth=1,linestyle='--')
 		apparent_410.tick_params(labelleft=True,labelright=True,labelsize=15)
 		apparent_410.yaxis.set_label_position("right")
-		apparent_410.set_xticks([])
 		apparent_410.set_ylim(50,-50)
+		apparent_410.set_xticks([])
 
 
 	#### Figure Apparent  660 km Pds  ####
@@ -589,7 +532,6 @@ for i,j in enumerate(RF_data_profile_Pds):
 	diff_MTZ_thickness.yaxis.set_minor_locator(MultipleLocator(10))
 	diff_MTZ_thickness.grid(True,which='major',color='gray',linewidth=1,linestyle='--')
 	diff_MTZ_thickness.tick_params(labelleft=True,labelright=True,labelbottom=False,labelsize=15)
-
 
 	fig.savefig(RESULTS_FOLDER+'SELECTED_BINNED_DATA_'+CROSS_SECTION_AXIS+'_CROSS_SECTION_Pds_Ppds_PROFILE_'+str(i+1)+'_COLOR.'+EXT_FIG,dpi=DPI_FIG)
 print('Ending the Cross-section CODE')

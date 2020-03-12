@@ -138,7 +138,7 @@ FILTER_BY_SHAPEFILE = False
 SHAPEFILE_GRID = /home/diogoloc/database_GIS/Brasil/bacia do Parnaíba/bacia_do_parnaiba.shp
 
 # grid bin per degree
-GRID_PP_MULT = 4
+GRID_PP_MULT = 0.25
 
 # grid bin radius (degree)
 DIST_GRID_PP = 0.15
