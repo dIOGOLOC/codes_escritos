@@ -35,16 +35,21 @@
 
 
 # dir of receiver functions
-RF_DIR = /home/diogoloc/doc_artigo/data_low_QC_artigo_GJI/selected_event_data_NO_PP/0.5/
+#RF_DIR = /home/diogoloc/doc_artigo/data_low_QC_artigo_GJI/selected_event_data_NO_PP/0.5/
+#RF_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/data_low_QC_artigo_GJI/selected_event_data_NO_PP/0.5/
+RF_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/data_MTZ_NO_PP/MTZ_data/0.5/
 
 # extension of receiver functions
 RF_EXT = .eqr
 
 #Directory of the earth models
-MODEL_FILE_NPZ = /home/diogoloc/diogo_git/codes_escritos/mantle_transition_zone_migration_obspy/velocity_model/iasp91_10.npz
+#MODEL_FILE_NPZ = /home/diogoloc/diogo_git/codes_escritos/mantle_transition_zone_migration_obspy/velocity_model/iasp91_10.npz
+MODEL_FILE_NPZ = /home/diogo/diogo_git/codes_escritos/mantle_transition_zone_migration_obspy/velocity_model/iasp91_10.npz
 
 # dir of OUTPUTs
-OUTPUT_DIR = /home/diogoloc/doc_artigo/data_low_QC_artigo_GJI/Migration_files_NO_PP/
+#OUTPUT_DIR = /home/diogoloc/doc_artigo/data_low_QC_artigo_GJI/Migration_files_NO_PP/
+#OUTPUT_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/data_low_QC_artigo_GJI/Migration_files_NO_PP/
+OUTPUT_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/Mantle_Transition_Migration_NO_PP_obspy_Pds/
 
 #=====
 [maps]
@@ -60,11 +65,14 @@ OUTPUT_DIR = /home/diogoloc/doc_artigo/data_low_QC_artigo_GJI/Migration_files_NO
 #   tectonic provinces
 
 
-BOUNDARY_1_SHP = /home/diogoloc/database_GIS/Brasil/bacia do Parnaíba/bacia_do_parnaiba.shp
+#BOUNDARY_1_SHP = /home/diogoloc/database_GIS/Brasil/bacia do Parnaíba/bacia_do_parnaiba.shp
+BOUNDARY_1_SHP = /home/diogo/dados_doutorado/parnaiba_basin/SIG_dados/shapes/bacia_parnaiba/bacia_parnaiba.shp
 
-BOUNDARY_2_SHP = /home/diogoloc/database_GIS/Brasil/Contorno/contorno_estados.shp
+#BOUNDARY_2_SHP = /home/diogoloc/database_GIS/Brasil/Contorno/contorno_estados.shp
+BOUNDARY_2_SHP = /home/diogo/dados_doutorado/parnaiba_basin/SIG_dados/shapes/Estados/Brasil.shp
 
-TECTO_SHP = /home/diogoloc/database_GIS/Brasil/bacia do Parnaíba/bacia_do_parnaiba.shp
+#TECTO_SHP = /home/diogoloc/database_GIS/Brasil/bacia do Parnaíba/bacia_do_parnaiba.shp
+TECTO_SHP = /home/diogo/dados_doutorado/parnaiba_basin/SIG_dados/shapes/bacia_parnaiba/bacia_parnaiba.shp
 
 # Lat and Lon of large maps and small maps
 # center (lat/lon) of the map
@@ -135,7 +143,8 @@ INTER_DEPTH = 10
 FILTER_BY_SHAPEFILE = False
 
 #Shapefile containing lines or polygons representing grid boundary
-SHAPEFILE_GRID = /home/diogoloc/database_GIS/Brasil/bacia do Parnaíba/bacia_do_parnaiba.shp
+#SHAPEFILE_GRID = /home/diogoloc/database_GIS/Brasil/bacia do Parnaíba/bacia_do_parnaiba.shp
+SHAPEFILE_GRID = /home/diogo/dados_doutorado/parnaiba_basin/SIG_dados/shapes/bacia_parnaiba/bacia_parnaiba.shp
 
 # grid bin per degree
 GRID_PP_MULT = 0.25
@@ -147,10 +156,10 @@ DIST_GRID_PP = 0.15
 RF_FREQUENCY = 0.24
 
 #number of piercing points per bin
-NUMBER_PP_PER_BIN = 30
+NUMBER_PP_PER_BIN = 10
 
 #number of stations RF per bin
-NUMBER_STA_PER_BIN = 3
+NUMBER_STA_PER_BIN = 1
 
 #Depth Target
 DEPTH_TARGET = 530

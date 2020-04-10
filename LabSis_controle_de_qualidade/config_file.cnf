@@ -24,22 +24,22 @@
 #INPUTs
 
 # directory of raw files
-DIR_DATA = /home/diogo/dados_doutorado/teste_PQLX/data_test/
+DIR_DATA = /home/diogo/dados_posdoc/Sismo_COVID19/data/BL/CNLB/
 
 # XML File
-XML_FILE = /home/diogo/dados_doutorado/teste_PQLX/XML_FILE/NB.xml
+XML_FILE = /home/diogo/dados_posdoc/Sismo_COVID19/XML_FILE/BL.CNLB.xml
 
 #-------
 #OUTPUTs
 
 #Directory to save JSON Files
-OUTPUT_JSON_FILE_DIR = /home/diogo/dados_doutorado/teste_PQLX/JSON_FILES/
+OUTPUT_JSON_FILE_DIR = /home/diogo/dados_posdoc/Sismo_COVID19/JSON_FILES/
 
 #Directory to save Figures
-OUTPUT_FIGURE_DIR = /home/diogo/dados_doutorado/teste_PQLX/FIGURES/
+OUTPUT_FIGURE_DIR = /home/diogo/dados_posdoc/Sismo_COVID19/FIGURES/
 
 #Directory to save PSD
-OUTPUT_PSD_DIR = /home/diogo/dados_doutorado/teste_PQLX/PSD/
+OUTPUT_PSD_DIR = /home/diogo/dados_posdoc/Sismo_COVID19/PSD/
 
 
 #======
@@ -47,10 +47,10 @@ OUTPUT_PSD_DIR = /home/diogo/dados_doutorado/teste_PQLX/PSD/
 #======
 
 #Initial date of the Data
-INITIAL_DATE = 2011,1,1
+INITIAL_DATE = 2020,1,1
 
 #Final date of the data
-FINAL_DATE = 2012,1,1
+FINAL_DATE = 2020,4,1
 
 #Restricts the data that is included in the stack by time of day and weekday. 
 #Monday is 1, Sunday is 7, -1 for any day of week. 
@@ -58,16 +58,16 @@ FINAL_DATE = 2012,1,1
 #only individual spectra that have a starttime in between 10pm and 12am are used in the stack for all days of week
 #time_of_weekday=[(TIME_OF_WEEKDAY_DAY, TIME_OF_WEEKDAY_START_HOUR, TIME_OF_WEEKDAY_FINAL_HOUR)])
 TIME_OF_WEEKDAY_DAY = -1
-TIME_OF_WEEKDAY_START_HOUR = 22
+TIME_OF_WEEKDAY_START_HOUR = 0
 TIME_OF_WEEKDAY_FINAL_HOUR = 23
 
 #Extracting PSD values for given period in seconds.
 #Selects the period bin whose center period is closest to the specified period. 
-PERIOD_PSD = 100
+PERIOD_PSD = 0.1
 
 #Maximum and minimum amplitude of the PSD. 
-AMP_PSD_MIN = -140
-AMP_PSD_MAX = -100
+AMP_PSD_MIN = -150
+AMP_PSD_MAX = -130
 
 #======
 [CLIENT]

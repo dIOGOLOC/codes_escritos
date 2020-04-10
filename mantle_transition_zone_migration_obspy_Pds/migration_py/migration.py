@@ -932,8 +932,9 @@ fig_PP, ax = plt.subplots(ncols=1, subplot_kw={'projection': ccrs.Mercator(centr
 #Figure
 
 ax.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
-l1, = ax.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.Geodetic())
-l3, = ax.plot(pp_med_long,pp_med_lat, 'X',markersize=5,markeredgecolor='k',markerfacecolor='r',alpha=0.5,transform=ccrs.Geodetic())
+l1, = ax.plot(sta_long,sta_lat, '^',markersize=13,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.Geodetic())
+l3, = ax.plot(pp_med_long,pp_med_lat, 'X',markersize=10,markeredgecolor='k',markerfacecolor='r',alpha=0.5,transform=ccrs.Geodetic())
+
 for i,j in enumerate(RF_lon):
 	circulo = Circle(radius=DIST_GRID_PP,xy=(RF_lon[i], RF_lat[i]),color='None', ec='k',linewidth=1,transform=ccrs.Geodetic(),zorder=2)
 	ax.add_patch(circulo)

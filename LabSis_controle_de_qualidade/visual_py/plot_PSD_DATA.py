@@ -32,18 +32,18 @@ from parameters_py.config import (
 def plot_PPSD_TOTAL_data(date_lst):
     os.chdir(date_lst)
     files = sorted(glob.glob('*.npz'))
-    ppsd = PPSD.load_npz(files[0])
+    ppsd = PPSD.load_npz(files[0],allow_pickle=True)
 
-    [ppsd.add_npz(i) for i in files[1:]]
+    [ppsd.add_npz(i,allow_pickle=True) for i in files[1:]]
     os.makedirs(OUTPUT_FIGURE_DIR+'TOTAL/'+ppsd.station+'/',exist_ok=True)
     ppsd.plot(cmap=pqlx,filename=OUTPUT_FIGURE_DIR+'TOTAL/'+ppsd.station+'/'+ppsd.station+'.'+ppsd.channel+'.'+str(ppsd.times_processed[0].year)+'.pdf')
 
 def plot_PPSD_WINDOWED_data(date_lst):
     os.chdir(date_lst)
     files = sorted(glob.glob('*.npz'))
-    ppsd = PPSD.load_npz(files[0])
+    ppsd = PPSD.load_npz(files[0],allow_pickle=True)
 
-    [ppsd.add_npz(i) for i in files[1:]]
+    [ppsd.add_npz(i,allow_pickle=True) for i in files[1:]]
     ppsd.calculate_histogram(starttime=obspy.UTCDateTime(INITIAL_DATE),endtime=obspy.UTCDateTime(FINAL_DATE),time_of_weekday=[(TIME_OF_WEEKDAY_DAY, TIME_OF_WEEKDAY_START_HOUR, TIME_OF_WEEKDAY_FINAL_HOUR)])    
     folder_output = OUTPUT_FIGURE_DIR+'WINDOWED_'+str(int(TIME_OF_WEEKDAY_START_HOUR))+'_'+str(int(TIME_OF_WEEKDAY_FINAL_HOUR))+'/'+ppsd.station+'/'
     os.makedirs(folder_output,exist_ok=True)
@@ -68,7 +68,7 @@ def plot_PPSD_by_period(directory_data):
 		print("Extracting data from PPSD header "+str(i+1)+" of "+str(len(data_lista)))
                 
 		#Reading header from data
-		ppsd = PPSD.load_npz(j)
+		ppsd = PPSD.load_npz(j,allow_pickle=True)
                 
 		#----------------------------
 		#Dataframe starting
@@ -186,6 +186,7 @@ def plot_PPSD_by_period(directory_data):
 			ax[k].tick_params(which='minor', length=4)
 			ax[k].tick_params(which='major', length=10)
 			ax[k].set_ylim(0,24)
+			ax[k].set_yticklabels([' ',' ', '1h', '5h', '9h', '13h', '17h', '21h',' ']) #y axis according to Brazil UTC-3
 			ax[k].set_ylabel(l,fontsize=15)
 			ax[k].grid(b=True, which='major', color='k', linestyle='-')
 			ax[k].grid(b=True, which='minor', color='k', linestyle='-')
@@ -207,4 +208,3 @@ def plot_PPSD_by_period(directory_data):
         
 		os.makedirs(OUTPUT_FIGURE_DIR,exist_ok=True)
 		fig.savefig(OUTPUT_FIGURE_DIR+j+'_'+'PSD_BY_PERIOD_'+str(PERIOD_PSD)+'_'+str(obspy.UTCDateTime(INITIAL_DATE).year)+'_'+str(obspy.UTCDateTime(INITIAL_DATE).month)+'_'+str(obspy.UTCDateTime(INITIAL_DATE).day)+'_'+str(obspy.UTCDateTime(FINAL_DATE).year)+'_'+str(obspy.UTCDateTime(FINAL_DATE).month)+'_'+str(obspy.UTCDateTime(FINAL_DATE).day)+'.pdf',dpi=500)
-        #plt.show()

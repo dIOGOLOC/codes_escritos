@@ -446,10 +446,14 @@ for i,j in enumerate(RF_data_profile_Pds):
 			pefil_pds.set_xticks(np.linspace(pefil_pds.get_xlim()[0],pefil_pds.get_xlim()[1],10))
 			pefil_pds.set_xticklabels(np.linspace(LLCRNRLON_SMALL,URCRNRLON_SMALL,10))
 			pefil_pds.set_xlabel('Longitude ($^\circ$)',labelpad=30,fontsize=20)
+			pefil_pds.set_title('Latitude= '+str(AB_lat[i][0])+'$^\circ$', fontsize=20)
+
 		else:
 			pefil_pds.set_xticks(np.linspace(pefil_pds.get_xlim()[0],pefil_pds.get_xlim()[1],10))
 			pefil_pds.set_xticklabels(np.linspace(LLCRNRLAT_SMALL,URCRNRLAT_SMALL,10))
 			pefil_pds.set_xlabel('Latitude ($^\circ$)',labelpad=30,fontsize=20)
+			pefil_pds.set_title('Longitude = '+str(AB_lon[i][0])+'$^\circ$', fontsize=20)
+
 
 	pefil_pds.yaxis.set_ticks_position('both')
 	pefil_pds.yaxis.set_major_locator(majorLocatorY)
@@ -459,6 +463,7 @@ for i,j in enumerate(RF_data_profile_Pds):
 	pefil_pds.set_ylabel('Depth (km)', fontsize=18)
 	pefil_pds.yaxis.set_label_position("right")
 	pefil_pds.tick_params(labelright=True,labelsize=15)
+
 
 	#### Figure Apparent  410 km Pds  ####
 
