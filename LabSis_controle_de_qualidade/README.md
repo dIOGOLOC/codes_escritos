@@ -7,7 +7,7 @@ seismological data archived in  based on [ObsPy](https://github.com/obspy/obspy/
 
 Version
 ---------
-v0.2
+v0.3
 
 Requirements
 ------------
@@ -108,7 +108,8 @@ The code is still experimental so you should regularly check for (and pull) upda
 
 ToDo list
 -------------
-- Daily PQLX frequency plot. 🔨🔨🔨
+- Event check plot. 🔨🔨🔨
+- station orientation plot. 🔨🔨🔨
 
 References
 ----------
