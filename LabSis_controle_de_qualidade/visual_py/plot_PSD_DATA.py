@@ -36,7 +36,7 @@ def plot_PPSD_TOTAL_data(date_lst):
 
     [ppsd.add_npz(i,allow_pickle=True) for i in files[1:]]
     os.makedirs(OUTPUT_FIGURE_DIR+'TOTAL/'+ppsd.station+'/',exist_ok=True)
-    ppsd.plot(cmap=pqlx,filename=OUTPUT_FIGURE_DIR+'TOTAL/'+ppsd.station+'/'+ppsd.station+'.'+ppsd.channel+'.'+str(ppsd.times_processed[0].year)+'.pdf')
+    ppsd.plot(cmap=pqlx,filename=OUTPUT_FIGURE_DIR+'TOTAL/'+ppsd.station+'/'+ppsd.station+'.'+ppsd.channel+'.pdf')
 
 def plot_PPSD_WINDOWED_data(date_lst):
     os.chdir(date_lst)
@@ -47,7 +47,7 @@ def plot_PPSD_WINDOWED_data(date_lst):
     ppsd.calculate_histogram(starttime=obspy.UTCDateTime(INITIAL_DATE),endtime=obspy.UTCDateTime(FINAL_DATE),time_of_weekday=[(TIME_OF_WEEKDAY_DAY, TIME_OF_WEEKDAY_START_HOUR, TIME_OF_WEEKDAY_FINAL_HOUR)])    
     folder_output = OUTPUT_FIGURE_DIR+'WINDOWED_'+str(int(TIME_OF_WEEKDAY_START_HOUR))+'_'+str(int(TIME_OF_WEEKDAY_FINAL_HOUR))+'/'+ppsd.station+'/'
     os.makedirs(folder_output,exist_ok=True)
-    ppsd.plot(cmap=pqlx,filename=folder_output+ppsd.station+'.'+ppsd.channel+'.'+str(ppsd.times_processed[0].year)+'.pdf')
+    ppsd.plot(cmap=pqlx,filename=folder_output+ppsd.station+'.'+ppsd.channel+'.pdf')
 
 
 def plot_PPSD_by_period(directory_data):
