@@ -160,7 +160,7 @@ def plot_PPSD_by_period(directory_data):
 		#x axis parameters
 
 		days1 = DayLocator(interval=1)   # every day
-		days5 = DayLocator(interval=int(len(datetime_lista)*5/100))   # every day
+		days5 = DayLocator(interval=5)   # every day
 		months = MonthLocator()  # every month
 		yearsFmt = DateFormatter('%Y-%m-%d')
         

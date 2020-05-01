@@ -24,10 +24,10 @@
 #INPUTs
 
 # directory of raw files
-DIR_DATA = /home/diogoloc/dados_posdoc/Sismo_COVID19/data/2020/ON02/
+DIR_DATA = /home/diogoloc/dados_posdoc/Sismo_COVID19/data/ON/ANA01/
 
 # XML File
-XML_FILE = /home/diogoloc/dados_posdoc/Sismo_COVID19/XML_FILE/ON.ON02.xml
+XML_FILE = /home/diogoloc/dados_posdoc/Sismo_COVID19/XML_FILE/ON.ANA01.xml
 
 #-------
 #OUTPUTs
@@ -39,7 +39,7 @@ OUTPUT_JSON_FILE_DIR = /home/diogoloc/dados_posdoc/Sismo_COVID19/JSON_FILES/
 OUTPUT_FIGURE_DIR = /home/diogoloc/dados_posdoc/Sismo_COVID19/FIGURES/
 
 #Directory to save PSD
-OUTPUT_PSD_DIR = /home/diogoloc/dados_posdoc/Sismo_COVID19/PSD/
+OUTPUT_PSD_DIR = /home/diogoloc/dados_posdoc/Sismo_COVID19/PSD/2020/ANA01/
 
 
 #======
@@ -50,7 +50,7 @@ OUTPUT_PSD_DIR = /home/diogoloc/dados_posdoc/Sismo_COVID19/PSD/
 INITIAL_DATE = 2020,1,1
 
 #Final date of the data
-FINAL_DATE = 2020,4,1
+FINAL_DATE = 2020,4,20
 
 #Restricts the data that is included in the stack by time of day and weekday. 
 #Monday is 1, Sunday is 7, -1 for any day of week. 
@@ -59,15 +59,15 @@ FINAL_DATE = 2020,4,1
 #time_of_weekday=[(TIME_OF_WEEKDAY_DAY, TIME_OF_WEEKDAY_START_HOUR, TIME_OF_WEEKDAY_FINAL_HOUR)])
 TIME_OF_WEEKDAY_DAY = -1
 TIME_OF_WEEKDAY_START_HOUR = 0
-TIME_OF_WEEKDAY_FINAL_HOUR = 23
+TIME_OF_WEEKDAY_FINAL_HOUR = 24
 
 #Extracting PSD values for given period in seconds.
 #Selects the period bin whose center period is closest to the specified period. 
 PERIOD_PSD = 0.1
 
 #Maximum and minimum amplitude of the PSD. 
-AMP_PSD_MIN = -150
-AMP_PSD_MAX = -130
+AMP_PSD_MIN = -155
+AMP_PSD_MAX = -145
 
 #======
 [CLIENT]

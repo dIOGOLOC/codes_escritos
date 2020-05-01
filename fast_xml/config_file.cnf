@@ -21,13 +21,13 @@
 #======
 
 #STA CSV FILE path
-STA_CSV_FILE  = /home/diogo/dados_doutorado/teste_PQLX/sta_coord/STA_LAT_LON.txt
+STA_CSV_FILE  = /home/diogoloc/dados_posdoc/Sismo_COVID19_LabSis/sta_coord/STA_LAT_LON_NB_COVID19.txt
 
 #Directory to save XML File
-OUTPUT_XML_FILE_DIR = /home/diogo/dados_doutorado/teste_PQLX/XML_FILE/
+OUTPUT_XML_FILE_DIR = /home/diogoloc/dados_posdoc/Sismo_COVID19_LabSis/XML_FILE/
 
 #Directory to save JSON Files
-OUTPUT_JSON_FILE_DIR = /home/diogo/dados_doutorado/teste_PQLX/JSON_FILES/
+OUTPUT_JSON_FILE_DIR = /home/diogoloc/dados_posdoc/Sismo_COVID19_LabSis/JSON_FILES/
 
 #=====
 [XML]
