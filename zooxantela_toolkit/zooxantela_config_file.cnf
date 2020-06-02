@@ -1,0 +1,117 @@
+###############################################################################
+#
+# This is an example of configuration file, wherein global paths and parameters
+# related to the analysis of quality of seismological data are defined. At least 
+# one file should reside in the folder in which you intend to run your scripts. 
+# The configuration file(s) can have any name, as long as the extension is 'cnf':
+# e.g., 'analysis.cnf', 'caninana_config.cnf', 'myconfig.cnf', 'test.cnf'...
+#
+# The parameters are divided in several sections:
+# - [paths]                : default paths to input/output folders
+# - [xml]                  : parameters to create xml file
+# - [PPSD]                 : parameters to estimate PPSD data
+# - [event]                : parameters to compare event data
+#
+# Before using the scripts, you should at least make sure that the paths in 
+# section [paths] are consistent with your own files and folders organization. 
+#
+###############################################################################
+
+
+#======
+[paths]
+#======
+
+# directory of raw files
+DIR_DATA = /home/diogo/dados_doutorado/rift_basin/MSEED_DATA/
+
+#Directory to save JSON Files
+OUTPUT_JSON_FILE_DIR = /home/diogo/dados_doutorado/teste_PQLX/JSON_FILES/
+
+#Directory to save Figures
+OUTPUT_FIGURE_DIR = /home/diogo/dados_doutorado/teste_PQLX/FIGURES/
+
+#Directory to save PSD
+OUTPUT_PSD_DIR = /home/diogo/dados_doutorado/teste_PQLX/PPSD/
+
+#Directory to save EVENT data
+OUTPUT_EV_DIR = /home/diogo/dados_doutorado/teste_PQLX/EVENTS/
+
+#Directory to save XML File
+OUTPUT_XML_FILE_DIR = /home/diogo/dados_doutorado/teste_PQLX/XML_FILES/
+
+#STA CSV FILE path
+STA_CSV_FILE  = /home/diogo/dados_doutorado/teste_PQLX/station_coordinates/cood_rede_rift.txt
+
+#=====
+[xml]
+#=====
+
+#Name of the Network
+NETWORK_CODE = LS
+
+#Name of the deployer
+SOURCE = LabSis UFRN
+
+#Lotation code
+LOCATION = 00
+
+#Description of the Network
+NETWORK_DESCRIPTION = 
+
+#Start date of the Network
+START_DATE = 2018,1,1
+
+#Sampling Rate of the seismogram
+SAMPLING_RATE = 100
+
+# how many concurrent processes at the multiprocessing?
+MP_PROCESSES = 4
+
+#======
+[PPSD]
+#======
+#Example of the raw data directory
+EXAMPLE_OF_FILE = /home/diogo/dados_doutorado/rift_basin/MSEED_DATA/9FF5/2018/236
+
+#Percentage fo the days to process and plot the PPSD?
+DAY_PERCENTAGE = 2
+
+#Restricts the data that is included in the stack by time of day and weekday. 
+#Monday is 1, Sunday is 7, -1 for any day of week. 
+#For example, using time_of_weekday=[(-1, 22, 24)] 
+#only individual spectra that have a starttime in between 10pm and 12am are used in the stack for all days of week
+#time_of_weekday=[(TIME_OF_WEEKDAY_DAY, TIME_OF_WEEKDAY_START_HOUR, TIME_OF_WEEKDAY_FINAL_HOUR)])
+TIME_OF_WEEKDAY_DAY = -1
+TIME_OF_WEEKDAY_START_HOUR = 0
+TIME_OF_WEEKDAY_FINAL_HOUR = 3
+
+
+#======
+[event]
+#======
+
+#Taup_time model to calculate travel times
+TAUPY_MODEL = iasp91 
+
+#Minimum event distance 
+EV_GCARC_MIN = 0
+
+#Maximum event distance 
+EV_GCARC_MAX = 100
+
+#Minimum event magnitude 
+EV_MAGNITUDE_MB = 7
+
+#Date event initial  (exemple: 2008-01-01T00:00:00)
+INITIAL_DATE_EVENT = 2018-05-01T00:00:00
+
+#Date event final  (exemple: 2008-01-01T00:00:00)
+FINAL_DATE_EVENT = 2018-09-01T00:00:00
+
+#Time to trim the seismogram before P-wave arrival
+CUT_BEFORE_P = 10
+
+#Time to trim the seismogram after P-wave arrival
+CUT_AFTER_P = 40
+

@@ -24,22 +24,22 @@
 #INPUTs
 
 # directory of raw files
-DIR_DATA = /home/diogoloc/dados_posdoc/Sismo_COVID19/data/ON/ANA01/
+DIR_DATA = /home/diogoloc/dados_posdoc/Sismo_COVID19_LabSis/data/NB/NBIT/
 
 # XML File
-XML_FILE = /home/diogoloc/dados_posdoc/Sismo_COVID19/XML_FILE/ON.ANA01.xml
+XML_FILE = /home/diogoloc/dados_posdoc/Sismo_COVID19_LabSis/XML_FILE/NB.NBIT.xml
 
 #-------
 #OUTPUTs
 
 #Directory to save JSON Files
-OUTPUT_JSON_FILE_DIR = /home/diogoloc/dados_posdoc/Sismo_COVID19/JSON_FILES/
+OUTPUT_JSON_FILE_DIR = /home/diogoloc/dados_posdoc/Sismo_COVID19_LabSis/JSON_FILES/
 
 #Directory to save Figures
-OUTPUT_FIGURE_DIR = /home/diogoloc/dados_posdoc/Sismo_COVID19/FIGURES/
+OUTPUT_FIGURE_DIR = /home/diogoloc/dados_posdoc/Sismo_COVID19_LabSis/FIGURES/
 
 #Directory to save PSD
-OUTPUT_PSD_DIR = /home/diogoloc/dados_posdoc/Sismo_COVID19/PSD/2020/ANA01/
+OUTPUT_PSD_DIR = /home/diogoloc/dados_posdoc/Sismo_COVID19_LabSis/PSD/2020/NBIT/
 
 
 #======
