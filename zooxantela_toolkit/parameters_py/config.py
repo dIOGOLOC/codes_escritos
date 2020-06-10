@@ -73,50 +73,36 @@ OUTPUT_XML_FILE_DIR = config.get('paths', 'OUTPUT_XML_FILE_DIR')
 #Stations CSV FILE path
 STA_CSV_FILE  =  config.get('paths', 'STA_CSV_FILE')
 
+#Local events FILE path
+LOCAL_CSV_FILE  = config.get('paths', 'LOCAL_CSV_FILE')
 
-# ---
-# xml
-# ---
+# ----------
+# local_evt
+# ----------
 
-#Name of the Network
-NETWORK_CODE = config.get('xml', 'NETWORK_CODE')
+#Local event start date
+LOCAL_EVENT_START_DATE  = config.get('local_evt', 'LOCAL_EVENT_START_DATE')
 
-#Name of the deployer
-SOURCE = config.get('xml', 'SOURCE')
+#Local event final date
+LOCAL_EVENT_FINAL_DATE  = config.get('local_evt', 'LOCAL_EVENT_FINAL_DATE')
 
-#Lotation code
-LOCATION = config.get('xml', 'LOCATION')
+#Minimum event magnitude 
+LOCAL_EV_MAGNITUDE_MIN = config.getfloat('local_evt', 'LOCAL_EV_MAGNITUDE_MIN')
 
-#Description of the Network
-NETWORK_DESCRIPTION = config.get('xml', 'NETWORK_DESCRIPTION')
+#Shapefile to filter local event data
+SHP_AREA_DELIMITER = config.get('local_evt', 'SHP_AREA_DELIMITER')
 
-#Start date of the Network
-START_DATE = config.get('xml', 'START_DATE')
+#Time to trim the seismogram before P-wave arrival
+CUT_BEFORE_P_LOCAL = config.getfloat('local_evt', 'CUT_BEFORE_P_LOCAL')
 
-#Sampling Rate of the seismogram
-SAMPLING_RATE = config.getfloat('xml', 'SAMPLING_RATE')
+#Time to trim the seismogram after P-wave arrival
+CUT_AFTER_P_LOCAL = config.getfloat('local_evt', 'CUT_AFTER_P_LOCAL')
 
-# how many concurrent processes at the multiprocessing?
-MP_PROCESSES = config.getint('xml', 'MP_PROCESSES')
+#Choose an available host and port to download data (https://docs.obspy.org/packages/obspy.clients.arclink.html):
+USER = config.get('local_evt', 'USER')
+HOST = config.get('local_evt', 'HOST')
+PORT = config.get('local_evt', 'PORT')
 
-# --------
-# PPSD
-# --------
-
-#Example of the raw data directory
-EXAMPLE_OF_FILE = config.get('PPSD', 'EXAMPLE_OF_FILE')
-
-# Percentage fo the days to process and plot the PPSD?
-DAY_PERCENTAGE = config.getfloat('PPSD', 'DAY_PERCENTAGE')
-
-#Restricts the data that is included in the stack by time of day and weekday. 
-#Monday is 1, Sunday is 7, -1 for any day of week. 
-#For example, using time_of_weekday=[(-1, 22, 24)] 
-#only individual spectra that have a starttime in between 10pm and 12am are used in the stack for all days of week
-#time_of_weekday=[(TIME_OF_WEEKDAY_DAY, TIME_OF_WEEKDAY_START_HOUR, TIME_OF_WEEKDAY_FINAL_HOUR)])
-TIME_OF_WEEKDAY_DAY = config.getint('PPSD', 'TIME_OF_WEEKDAY_DAY')
-TIME_OF_WEEKDAY_START_HOUR = config.getfloat('PPSD', 'TIME_OF_WEEKDAY_START_HOUR')
-TIME_OF_WEEKDAY_FINAL_HOUR = config.getfloat('PPSD', 'TIME_OF_WEEKDAY_FINAL_HOUR')
 
 # ------
 # event
@@ -146,6 +132,3 @@ CUT_BEFORE_P = config.getfloat('event', 'CUT_BEFORE_P')
 
 #Time to trim the seismogram after P-wave arrival
 CUT_AFTER_P = config.getfloat('event', 'CUT_AFTER_P')
-
-
-

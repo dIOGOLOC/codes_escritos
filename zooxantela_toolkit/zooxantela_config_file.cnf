@@ -8,8 +8,7 @@
 #
 # The parameters are divided in several sections:
 # - [paths]                : default paths to input/output folders
-# - [xml]                  : parameters to create xml file
-# - [PPSD]                 : parameters to estimate PPSD data
+# - [local_evt]                : parameters to compare local event data
 # - [event]                : parameters to compare event data
 #
 # Before using the scripts, you should at least make sure that the paths in 
@@ -23,69 +22,56 @@
 #======
 
 # directory of raw files
-DIR_DATA = /home/diogo/dados_doutorado/rift_basin/MSEED_DATA/
+DIR_DATA = /home/diogoloc/dados_posdoc/ON_MAR/data/
 
 #Directory to save JSON Files
-OUTPUT_JSON_FILE_DIR = /home/diogo/dados_doutorado/teste_PQLX/JSON_FILES/
+OUTPUT_JSON_FILE_DIR = /home/diogoloc/dados_posdoc/ON_MAR/JSON_FILES/
 
 #Directory to save Figures
-OUTPUT_FIGURE_DIR = /home/diogo/dados_doutorado/teste_PQLX/FIGURES/
+OUTPUT_FIGURE_DIR = /home/diogoloc/dados_posdoc/ON_MAR/FIGURES/
 
 #Directory to save PSD
 OUTPUT_PSD_DIR = /home/diogo/dados_doutorado/teste_PQLX/PPSD/
 
 #Directory to save EVENT data
-OUTPUT_EV_DIR = /home/diogo/dados_doutorado/teste_PQLX/EVENTS/
+OUTPUT_EV_DIR = /home/diogoloc/dados_posdoc/ON_MAR/EVENTS/
 
 #Directory to save XML File
-OUTPUT_XML_FILE_DIR = /home/diogo/dados_doutorado/teste_PQLX/XML_FILES/
+OUTPUT_XML_FILE_DIR = /home/diogoloc/dados_posdoc/Brasil_RSBR_stations/XML_RSBR/
 
 #STA CSV FILE path
-STA_CSV_FILE  = /home/diogo/dados_doutorado/teste_PQLX/station_coordinates/cood_rede_rift.txt
+STA_CSV_FILE  = /home/diogoloc/dados_posdoc/ON_MAR/sta_coord/rsis_lat_lon_elev.txt
 
-#=====
-[xml]
-#=====
+#Local events FILE path
+LOCAL_CSV_FILE  = /home/diogoloc/dados_posdoc/ON_MAR/local_events/boletim2001p.txt
 
-#Name of the Network
-NETWORK_CODE = LS
 
-#Name of the deployer
-SOURCE = LabSis UFRN
+#===========
+[local_evt]
+#===========
 
-#Lotation code
-LOCATION = 00
+#Local event start date
+LOCAL_EVENT_START_DATE = 2019-06-01
 
-#Description of the Network
-NETWORK_DESCRIPTION = 
+#Local event final date
+LOCAL_EVENT_FINAL_DATE = 2020-07-01
 
-#Start date of the Network
-START_DATE = 2018,1,1
+#Minimum event magnitude 
+LOCAL_EV_MAGNITUDE_MIN = 0
 
-#Sampling Rate of the seismogram
-SAMPLING_RATE = 100
+#Shapefile to filter local event data
+SHP_AREA_DELIMITER = /home/diogoloc/SIG_dados/Projeto_ON_MAR/shapefile/area_batimetria/area_mar.shp
 
-# how many concurrent processes at the multiprocessing?
-MP_PROCESSES = 4
+#Time to trim the seismogram before P-wave arrival
+CUT_BEFORE_P_LOCAL = 0
 
-#======
-[PPSD]
-#======
-#Example of the raw data directory
-EXAMPLE_OF_FILE = /home/diogo/dados_doutorado/rift_basin/MSEED_DATA/9FF5/2018/236
+#Time to trim the seismogram after P-wave arrival
+CUT_AFTER_P_LOCAL = 180
 
-#Percentage fo the days to process and plot the PPSD?
-DAY_PERCENTAGE = 2
-
-#Restricts the data that is included in the stack by time of day and weekday. 
-#Monday is 1, Sunday is 7, -1 for any day of week. 
-#For example, using time_of_weekday=[(-1, 22, 24)] 
-#only individual spectra that have a starttime in between 10pm and 12am are used in the stack for all days of week
-#time_of_weekday=[(TIME_OF_WEEKDAY_DAY, TIME_OF_WEEKDAY_START_HOUR, TIME_OF_WEEKDAY_FINAL_HOUR)])
-TIME_OF_WEEKDAY_DAY = -1
-TIME_OF_WEEKDAY_START_HOUR = 0
-TIME_OF_WEEKDAY_FINAL_HOUR = 3
-
+#Choose an available host and port to download data (https://docs.obspy.org/packages/obspy.clients.arclink.html):
+USER = locdiogo@gmail.com
+HOST = rsis1.on.br
+PORT = 18001
 
 #======
 [event]
@@ -114,4 +100,3 @@ CUT_BEFORE_P = 10
 
 #Time to trim the seismogram after P-wave arrival
 CUT_AFTER_P = 40
-

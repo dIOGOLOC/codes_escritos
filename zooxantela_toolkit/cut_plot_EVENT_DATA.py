@@ -47,6 +47,7 @@ stlo = sta_dic['STLO']
 for i in kstnm:
 	print('Station = '+i)
 print('\n')
+
 # ============================================
 #  Importing Event dictionary from JSON file 
 # ============================================
