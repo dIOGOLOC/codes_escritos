@@ -22,19 +22,19 @@
 #======
 
 # directory of raw RF files
-DIR_SAC = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/rede_BP_BB/event_data_NO_PP/
+DIR_SAC = /home/diogoloc/dados_posdoc/ON_MAR/STATION_EVENT/
 
 # directory of selected RF files
-DIR_SEL_SAC =  /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/data_low_QC_artigo_GJI/selected_event_data_NO_PP/
+DIR_SEL_SAC =  /home/diogoloc/dados_posdoc/ON_MAR/RF_SELECT_STATION_EVENT/
 
 #Directory to save JSON Files
-OUTPUT_JSON_FILE_DIR = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/data_low_QC_artigo_GJI/selected_event_data_NO_PP/rede_BP_BB/JSON_FILES/
+OUTPUT_JSON_FILE_DIR = /home/diogoloc/dados_posdoc/ON_MAR/JSON_FILES/
 
 #STA CSV FILE path
-STA_CSV_FILE  = /home/diogo/dados_doutorado/parnaiba_basin/RF_migration/rede_BP_BB/sta_coord/cood_rede_BB_sensor_type.txt
+STA_CSV_FILE  = /home/diogoloc/dados_posdoc/ON_MAR/sta_coord/rsis_lat_lon_elev_download.txt
 
 #Gaussian Filter
-GAUSSIAN_FILTER = 0.5
+GAUSSIAN_FILTER = 2.5
 
 #RADIAL RF EXTENSION
 RADIAL_EXT = .eqr
@@ -51,22 +51,22 @@ TRANSVERSAL_EXT = .eqt
 CODA_TRACE_CHECK = 40
 
 #Trace check (coda minimium amplitude of trace)
-CODA_TRACE_CHECK_AMP_MIN = -0.05
+CODA_TRACE_CHECK_AMP_MIN = -0.2
 
 #Trace check (coda maximum amplitude of trace)
-CODA_TRACE_CHECK_AMP_MAX = 0.05
+CODA_TRACE_CHECK_AMP_MAX = 0.2
 
 #Trace check (Standard Deviation Multiplier)
-CODA_TRACE_CHECK_MULT = 3
+CODA_TRACE_CHECK_MULT = 10
 
-#Trace check (min of the amplitude at origin)
-ZERO_AMP_MIN = 0.1
+#Minimum data amplitude threshold
+ZERO_AMP_MIN = 0.2
 
-#Trace check (max of the amplitude at origin)
-ZERO_AMP_MAX = 0.25
+#Maximum data amplitude threshold 
+ZERO_AMP_MAX = 0.8
 
 #min percent recoveries of the observed radial component
-RF_PERCENT = 75
+RF_PERCENT = 70
 
 #Minimum event distance 
 EV_GCARC_MIN = 30
@@ -75,7 +75,7 @@ EV_GCARC_MIN = 30
 EV_GCARC_MAX = 95
 
 #Minimum event magnitude 
-EV_MAGNITUDE_MB = 5.0
+EV_MAGNITUDE_MB = 5.5
 
 #Time to trim the seismogram before P-wave arrival
 CUT_BEFORE_P = 10
@@ -92,6 +92,6 @@ SAMPLING_RATE = 10
 
 #Plot X limits
 
-X_LIM_MIN = -10
+X_LIM_MIN = -5
 
-X_LIM_MAX = 100
+X_LIM_MAX = 40

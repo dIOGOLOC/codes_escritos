@@ -1,6 +1,5 @@
 '''
-Script to collect information from NEIC (National Earthquake Information Center) 
-csv file downloaded in https://earthquake.usgs.gov/earthquakes/search/
+Script to collect information from stations csv file
 '''
 #Importando módulos
 
@@ -17,33 +16,29 @@ from parameters_py.config import (
 print('Get Station Information')
 print('\n')
 
-sta_lat_lon = np.genfromtxt(STA_CSV_FILE,skip_header=1,usecols=[1,2,3],delimiter=';')
+sta_lat_lon = np.genfromtxt(STA_CSV_FILE,skip_header=1,usecols=[2,3,4],delimiter=';')
 
-sta_name =  np.genfromtxt(STA_CSV_FILE,dtype='str',skip_header=1,usecols=[0,4,5],delimiter=';')
+sta_name =  np.genfromtxt(STA_CSV_FILE,dtype='str',skip_header=1,usecols=[0,1],delimiter=';')
 
 sta_event = {
-
+		'KNETWK':[],
 		'KSTNM':[],
 		'STLA':[],
 		'STLO':[],
-		'STEL':[],
-		'SENSOR_KEYS':[],
-		'DATALOGGER_KEYS':[]
+		'STEL':[]
 	    }
 
 for i,j in enumerate(sta_name):
 	sta_event['STLA'].append(sta_lat_lon[i][0])
 	sta_event['STLO'].append(sta_lat_lon[i][1])
 	sta_event['STEL'].append(sta_lat_lon[i][2])
-	sta_event['KSTNM'].append(j[0])
-	sta_event['SENSOR_KEYS'].append(j[1])
-	sta_event['DATALOGGER_KEYS'].append(j[2])
+	sta_event['KNETWK'].append(j[0])
+	sta_event['KSTNM'].append(j[1])
+
 
 print('Number of Stations: '+str(len(sta_event['KSTNM'])))
 for i,j in enumerate(sta_event['KSTNM']):
 	print('Station: '+j)
-	print('SENSOR_KEYS: '+sta_event['SENSOR_KEYS'][i])
-	print('DATALOGGER_KEYS: '+sta_event['DATALOGGER_KEYS'][i])
 	print('\n')
 
 

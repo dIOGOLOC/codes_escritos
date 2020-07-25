@@ -22,13 +22,16 @@
 #======
 
 # directory of raw files
-DIR_DATA = /home/diogoloc/dados_posdoc/ON_MAR/data/
+DIR_DATA = /home/diogoloc/dados_posdoc/ON_MAR/obs_data_sac/ON/
+
+# directory of raw status files
+DIR_STATUS = /home/diogoloc/dados_posdoc/ON_MAR/obs_data/STATUS_FILE/OBS_Buzios/
 
 #Directory to save JSON Files
 OUTPUT_JSON_FILE_DIR = /home/diogoloc/dados_posdoc/ON_MAR/JSON_FILES/
 
 #Directory to save Figures
-OUTPUT_FIGURE_DIR = /home/diogoloc/dados_posdoc/ON_MAR/FIGURES/
+OUTPUT_FIGURE_DIR = /home/diogoloc/dados_posdoc/ON_MAR/obs_data/Figuras_avaliacao/
 
 #Directory to save PSD
 OUTPUT_PSD_DIR = /home/diogo/dados_doutorado/teste_PQLX/PPSD/
@@ -44,7 +47,6 @@ STA_CSV_FILE  = /home/diogoloc/dados_posdoc/ON_MAR/sta_coord/rsis_lat_lon_elev.t
 
 #Local events FILE path
 LOCAL_CSV_FILE  = /home/diogoloc/dados_posdoc/ON_MAR/local_events/boletim2001p.txt
-
 
 #===========
 [local_evt]
@@ -73,6 +75,9 @@ USER = locdiogo@gmail.com
 HOST = rsis1.on.br
 PORT = 18001
 
+#Number worker processes
+NUM_PROCESS = 6
+
 #======
 [event]
 #======
@@ -100,3 +105,4 @@ CUT_BEFORE_P = 10
 
 #Time to trim the seismogram after P-wave arrival
 CUT_AFTER_P = 40
+

@@ -55,6 +55,9 @@ config = select_and_parse_config_file(basedir='.', ext='cnf', verbose=True)
 # directory of raw sac files
 DIR_DATA = config.get('paths', 'DIR_DATA')
 
+# directory of raw status files
+DIR_STATUS = config.get('paths', 'DIR_STATUS')
+
 #Directory to save JSON Files
 OUTPUT_JSON_FILE_DIR =  config.get('paths', 'OUTPUT_JSON_FILE_DIR')
 
@@ -75,6 +78,7 @@ STA_CSV_FILE  =  config.get('paths', 'STA_CSV_FILE')
 
 #Local events FILE path
 LOCAL_CSV_FILE  = config.get('paths', 'LOCAL_CSV_FILE')
+
 
 # ----------
 # local_evt
@@ -102,6 +106,9 @@ CUT_AFTER_P_LOCAL = config.getfloat('local_evt', 'CUT_AFTER_P_LOCAL')
 USER = config.get('local_evt', 'USER')
 HOST = config.get('local_evt', 'HOST')
 PORT = config.get('local_evt', 'PORT')
+
+#Number worker processes
+NUM_PROCESS = config.getint('local_evt', 'NUM_PROCESS') 
 
 
 # ------

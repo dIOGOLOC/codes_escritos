@@ -45,7 +45,6 @@ for root, dirs, files in os.walk(DIR_SAC):
 datalistST = sorted(datalistT)
 
 
-
 dic_RF = {
 		'dataR':[],
 		'dataR_time':[],
@@ -81,7 +80,6 @@ for i,j in enumerate(datalistS):
 	data_RF_T = obspy.read(datalistST[i])	
 
 	data_name = j.split('/')[-1]
-
 
 	if len(data_RF[0].data) > CUT_AFTER_P*SAMPLING_RATE and data_RF[0].stats.sac.mag > EV_MAGNITUDE_MB:
 
