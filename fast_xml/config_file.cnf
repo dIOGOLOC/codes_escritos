@@ -21,32 +21,32 @@
 #======
 
 #STA CSV FILE path
-STA_CSV_FILE  = /home/diogoloc/dados_posdoc/Sismo_COVID19_LabSis/sta_coord/STA_LAT_LON_NB_COVID19.txt
+STA_CSV_FILE  = /home/diogoloc/dados_posdoc/ON_MAR/sta_coord/OBS_FAST_XML.txt
 
 #Directory to save XML File
-OUTPUT_XML_FILE_DIR = /home/diogoloc/dados_posdoc/Sismo_COVID19_LabSis/XML_FILE/
+OUTPUT_XML_FILE_DIR = /home/diogoloc/dados_posdoc/ON_MAR/XML_OBS/
 
 #Directory to save JSON Files
-OUTPUT_JSON_FILE_DIR = /home/diogoloc/dados_posdoc/Sismo_COVID19_LabSis/JSON_FILES/
+OUTPUT_JSON_FILE_DIR = /home/diogoloc/dados_posdoc/ON_MAR/JSON_FILES/
 
 #=====
 [XML]
 #=====
 
 #Name of the Network
-NETWORK_CODE = NB
+NETWORK_CODE = ON
 
 #Name of the deployer
-SOURCE = LabSis UFRN
+SOURCE = ON lab
 
 #Lotation code
 LOCATION = 
 
 #Description of the Network
-NETWORK_DESCRIPTION = Station installed by LabSis
+NETWORK_DESCRIPTION = Station installed by ON
 
 #Start date of the Network for XML
-START_DATE = 2011,1,1
+START_DATE = 2006,1,1
 
 #Sampling Rate of the seismogram
 SAMPLING_RATE = 100

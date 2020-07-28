@@ -17,7 +17,6 @@ import matplotlib as mpl
 import datetime
 from matplotlib.ticker import MultipleLocator, FormatStrFormatter
 from obspy.signal import PPSD
-from obspy.clients.arclink.client import Client
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 
 

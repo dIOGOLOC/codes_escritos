@@ -3,12 +3,9 @@ Script to collect information from stations
 
 An example of STA_CSV_FILE is shown bellow:
 
-knetwk;kstnm;lat;lon;elev
-ON;ABR01;-17.9646;-38.6959;38.00
-ON;ALF01;-20.6169;-40.7252;22.00
-ON;ANA01;-14.5310;-40.7452;740.70
-ON;CAJ01;-24.8501;-48.2433;372.00
-ON;CAM01;-21.8257;-41.6574;31.00
+LOC;SENSOR;NAME;LAT;LON;ELEV;FDAY;EDAY
+RIO;1456;OBS19;----;----;----;2019-07-27;2020-06-14
+SAOPAULO;1456;OBS23;----;----;----;2019-07-28;2020-06-15;
 '''
 #Importing modules
 
@@ -25,35 +22,40 @@ from parameters_py.config import (
 print('Get Station Information')
 print('\n')
 
-sta_lat_lon = np.genfromtxt(STA_CSV_FILE,skip_header=1,usecols=[2,3,4],delimiter=';')
-
-sta_name =  np.genfromtxt(STA_CSV_FILE,dtype='str',skip_header=1,usecols=[0,1],delimiter=';')
+sta_name =  np.genfromtxt(STA_CSV_FILE,dtype='str',skip_header=1,delimiter=';')
 
 sta_event = {
 
-		'KNETWK':[],
-		'KSTNM':[],
-		'STLA':[],
-		'STLO':[],
-		'STEL':[],
+		'LOC':[],
+		'SENSOR':[],
+		'NAME':[],
+		'LAT':[],
+		'LON':[],
+		'ELEV':[],
+		'FDAY':[],
+		'EDAY':[],
 	    }
 
 for i,j in enumerate(sta_name):
-	sta_event['STLA'].append(sta_lat_lon[i][0])
-	sta_event['STLO'].append(sta_lat_lon[i][1])
-	sta_event['STEL'].append(sta_lat_lon[i][2])
-	sta_event['KNETWK'].append(j[0])
-	sta_event['KSTNM'].append(j[1])
+	sta_event['LOC'].append(j[0])
+	sta_event['SENSOR'].append(j[1])
+	sta_event['NAME'].append(j[2])
+	sta_event['LAT'].append(float(j[3]))
+	sta_event['LON'].append(float(j[4]))
+	sta_event['ELEV'].append(float(j[5]))
+	sta_event['FDAY'].append(j[6])
+	sta_event['EDAY'].append(j[7])
 
 
-print('Number of Stations: '+str(len(sta_event['KSTNM'])))
-for i,j in enumerate(sta_event['KSTNM']):
-	print('Station: '+sta_event['KNETWK'][i]+'.'+j)
-	print('\n')
 
-
+print('Number of Stations: '+str(len(sta_event['NAME'])))
 print('\n')
 
+for i,j in enumerate(sta_event['NAME']):
+	print('Station: '+j)
+	print('\n')
+
+print('\n')
 print('Saving Station Information in JSON file')
 print('\n')
 

@@ -70,8 +70,8 @@ OUTPUT_PSD_DIR = config.get('paths', 'OUTPUT_PSD_DIR')
 #Directory to save EVENT data
 OUTPUT_EV_DIR = config.get('paths', 'OUTPUT_EV_DIR')
 
-#Directory to save XML File
-OUTPUT_XML_FILE_DIR = config.get('paths', 'OUTPUT_XML_FILE_DIR')
+#XML File
+XML_FILE = config.get('paths', 'XML_FILE')
 
 #Stations CSV FILE path
 STA_CSV_FILE  =  config.get('paths', 'STA_CSV_FILE')
@@ -79,6 +79,30 @@ STA_CSV_FILE  =  config.get('paths', 'STA_CSV_FILE')
 #Local events FILE path
 LOCAL_CSV_FILE  = config.get('paths', 'LOCAL_CSV_FILE')
 
+# -----
+# ppsd
+# -----
+
+#Number worker processes
+NUM_PROCESS = config.getint('ppsd', 'NUM_PROCESS') 
+
+#PPSD start date
+INITIAL_DATE = config.get('ppsd', 'INITIAL_DATE')
+
+#PPSD final date
+FINAL_DATE = config.get('ppsd', 'FINAL_DATE')
+
+#Percentage fo the days to process and plot the PPSD?
+DAY_PERCENTAGE = config.getint('ppsd', 'DAY_PERCENTAGE')
+
+#Restricts the data that is included in the stack by time of day and weekday. 
+#Monday is 1, Sunday is 7, -1 for any day of week. 
+#For example, using time_of_weekday=[(-1, 22, 24)] 
+#only individual spectra that have a starttime in between 10pm and 12am are used in the stack for all days of week
+#time_of_weekday=[(TIME_OF_WEEKDAY_DAY, TIME_OF_WEEKDAY_START_HOUR, TIME_OF_WEEKDAY_FINAL_HOUR)])
+TIME_OF_WEEKDAY_DAY = config.getint('ppsd', 'TIME_OF_WEEKDAY_DAY')
+TIME_OF_WEEKDAY_START_HOUR = config.getint('ppsd', 'TIME_OF_WEEKDAY_START_HOUR') 
+TIME_OF_WEEKDAY_FINAL_HOUR = config.getint('ppsd', 'TIME_OF_WEEKDAY_FINAL_HOUR') 
 
 # ----------
 # local_evt
@@ -106,10 +130,6 @@ CUT_AFTER_P_LOCAL = config.getfloat('local_evt', 'CUT_AFTER_P_LOCAL')
 USER = config.get('local_evt', 'USER')
 HOST = config.get('local_evt', 'HOST')
 PORT = config.get('local_evt', 'PORT')
-
-#Number worker processes
-NUM_PROCESS = config.getint('local_evt', 'NUM_PROCESS') 
-
 
 # ------
 # event

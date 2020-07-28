@@ -8,7 +8,8 @@
 #
 # The parameters are divided in several sections:
 # - [paths]                : default paths to input/output folders
-# - [local_evt]                : parameters to compare local event data
+# - [ppsd]            : parameters to estimate PPSD
+# - [local_evt]            : parameters to compare local event data
 # - [event]                : parameters to compare event data
 #
 # Before using the scripts, you should at least make sure that the paths in 
@@ -25,7 +26,7 @@
 DIR_DATA = /home/diogoloc/dados_posdoc/ON_MAR/obs_data_sac/ON/
 
 # directory of raw status files
-DIR_STATUS = /home/diogoloc/dados_posdoc/ON_MAR/obs_data/STATUS_FILE/OBS_Buzios/
+DIR_STATUS = /home/diogoloc/dados_posdoc/ON_MAR/obs_data/STATUS_FILE/OBS_Jubarte/
 
 #Directory to save JSON Files
 OUTPUT_JSON_FILE_DIR = /home/diogoloc/dados_posdoc/ON_MAR/JSON_FILES/
@@ -34,19 +35,46 @@ OUTPUT_JSON_FILE_DIR = /home/diogoloc/dados_posdoc/ON_MAR/JSON_FILES/
 OUTPUT_FIGURE_DIR = /home/diogoloc/dados_posdoc/ON_MAR/obs_data/Figuras_avaliacao/
 
 #Directory to save PSD
-OUTPUT_PSD_DIR = /home/diogo/dados_doutorado/teste_PQLX/PPSD/
+OUTPUT_PSD_DIR = /home/diogoloc/dados_posdoc/ON_MAR/obs_data_PSD/
 
 #Directory to save EVENT data
 OUTPUT_EV_DIR = /home/diogoloc/dados_posdoc/ON_MAR/EVENTS/
 
-#Directory to save XML File
-OUTPUT_XML_FILE_DIR = /home/diogoloc/dados_posdoc/Brasil_RSBR_stations/XML_RSBR/
+#XML File
+XML_FILE = /home/diogoloc/dados_posdoc/ON_MAR/XML_OBS/ON.xml
 
 #STA CSV FILE path
-STA_CSV_FILE  = /home/diogoloc/dados_posdoc/ON_MAR/sta_coord/rsis_lat_lon_elev.txt
+STA_CSV_FILE  = /home/diogoloc/dados_posdoc/ON_MAR/sta_coord/OBS_ZOOXANTELA.txt
 
 #Local events FILE path
 LOCAL_CSV_FILE  = /home/diogoloc/dados_posdoc/ON_MAR/local_events/boletim2001p.txt
+
+#=====
+[ppsd]
+#=====
+
+#Number worker processes
+NUM_PROCESS = 8
+
+#PPSD start date
+INITIAL_DATE = 2019,6,1
+
+#PPSD final date
+FINAL_DATE = 2020,8,1
+
+#Percentage fo the days to process and plot the PPSD?
+DAY_PERCENTAGE = 2
+
+#Restricts the data that is included in the stack by time of day and weekday. 
+#Monday is 1, Sunday is 7, -1 for any day of week. 
+#For example, using time_of_weekday=[(-1, 22, 24)] 
+#only individual spectra that have a starttime in between 10pm and 12am are used in the stack for all days of week
+#time_of_weekday=[(TIME_OF_WEEKDAY_DAY, TIME_OF_WEEKDAY_START_HOUR, TIME_OF_WEEKDAY_FINAL_HOUR)])
+TIME_OF_WEEKDAY_DAY = -1
+TIME_OF_WEEKDAY_START_HOUR = 0
+TIME_OF_WEEKDAY_FINAL_HOUR = 24
+
+
 
 #===========
 [local_evt]
@@ -74,9 +102,6 @@ CUT_AFTER_P_LOCAL = 180
 USER = locdiogo@gmail.com
 HOST = rsis1.on.br
 PORT = 18001
-
-#Number worker processes
-NUM_PROCESS = 6
 
 #======
 [event]
