@@ -24,7 +24,6 @@ from parameters_py.config import (
 			
 def cut_download_data_by_event(knetwk,kstnm,stla,stlo,evla,evlo,evdp,evmag,ev_timeUTC):
 	client = Client(user=USER,host=HOST, port=PORT)
-			
 	#Calculating distance, azimuth and backazimuth
 	dist,az,baz = op.geodetics.gps2dist_azimuth(evla,evlo,stla,stlo)
 	gcarc = op.geodetics.kilometer2degrees(dist/1000)
@@ -43,7 +42,7 @@ def cut_download_data_by_event(knetwk,kstnm,stla,stlo,evla,evlo,evdp,evmag,ev_ti
 	#STREAM 
 
 	#Creating Event Directory 
-	event_directory = OUTPUT_EV_DIR+knetwk+'/'+kstnm+'/'+'{:04}'.format(op.UTCDateTime(ev_timeUTC).year)+'/'+'{:03}'.format(op.UTCDateTime(ev_timeUTC).julday)+'/'+'{:04}'.format(op.UTCDateTime(ev_timeUTC).year)+'.'+'{:03}'.format(op.UTCDateTime(ev_timeUTC).julday)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).hour)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).minute)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).second)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).microsecond)[:3]
+	event_directory = OUTPUT_EV_DIR+'Local/'+knetwk+'/'+kstnm+'/'+'{:04}'.format(op.UTCDateTime(ev_timeUTC).year)+'/'+'{:03}'.format(op.UTCDateTime(ev_timeUTC).julday)+'/'+'{:04}'.format(op.UTCDateTime(ev_timeUTC).year)+'.'+'{:03}'.format(op.UTCDateTime(ev_timeUTC).julday)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).hour)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).minute)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).second)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).microsecond)[:3]
 	os.makedirs(event_directory, exist_ok=True)
 	print('Event Directory - ',event_directory)
 			
@@ -99,8 +98,8 @@ def cut_download_data_by_event(knetwk,kstnm,stla,stlo,evla,evlo,evdp,evmag,ev_ti
 	sacHHZ.write(event_directory+'/'+knetwk+'.'+kstnm+'.'+'{:04}'.format(op.UTCDateTime(ev_timeUTC).year)+'.'+'{:03}'.format(op.UTCDateTime(ev_timeUTC).julday)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).hour)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).minute)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).second)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).microsecond)[:3]+'.Z')
 
 def cut_data_by_local_event(knetwk,kstnm,stla,stlo,evla,evlo,evdp,evmag,ev_timeUTC):
-	data_sta = DIR_DATA+'{:04}'.format(op.UTCDateTime(ev_timeUTC).year)+'/'+knetwk+'/'+kstnm+'/'
-
+	data_sta = DIR_DATA+knetwk+'/'+kstnm+'/'
+	print(data_sta)
 	if os.path.isdir(data_sta) == True:
 
 		#Calculating distance, azimuth and backazimuth
@@ -123,11 +122,11 @@ def cut_data_by_local_event(knetwk,kstnm,stla,stlo,evla,evlo,evdp,evmag,ev_timeU
 			stE.trim(starttime,endtime)		
 
 			#Creating Event Directory 
-			event_directory = OUTPUT_EV_DIR+knetwk+'/'+kstnm+'/'+'{:04}'.format(op.UTCDateTime(ev_timeUTC).year)+'/'+'{:03}'.format(op.UTCDateTime(ev_timeUTC).julday)+'/'+'{:04}'.format(op.UTCDateTime(ev_timeUTC).year)+'.'+'{:03}'.format(op.UTCDateTime(ev_timeUTC).julday)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).hour)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).minute)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).second)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).microsecond)[:3]
+			event_directory = OUTPUT_EV_DIR+'Local/'+knetwk+'/'+kstnm+'/'+'{:04}'.format(op.UTCDateTime(ev_timeUTC).year)+'/'+'{:03}'.format(op.UTCDateTime(ev_timeUTC).julday)+'/'+'{:04}'.format(op.UTCDateTime(ev_timeUTC).year)+'.'+'{:03}'.format(op.UTCDateTime(ev_timeUTC).julday)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).hour)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).minute)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).second)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).microsecond)[:3]
 			os.makedirs(event_directory, exist_ok=True)
 			print('Event Directory - ',event_directory)
 
-			headerHHX = {
+			headerHHE = {
 						'kstnm': kstnm, 'kcmpnm': 'HHE', 
 						'stla': float(stla), 'stlo': float(stlo), 
 						'evdp': float(evdp), 'evla': float(evla), 'evlo': float(evlo), 'mag': float(evmag), 
@@ -137,8 +136,8 @@ def cut_data_by_local_event(knetwk,kstnm,stla,stlo,evla,evlo,evdp,evmag,ev_timeU
 						'delta':stE[0].stats.delta
 						}
 
-			sacHHX = SACTrace(data=stE[0].data, **headerHHX)
-			sacHHX.write(event_directory+'/'+knetwk+'.'+kstnm+'.'+'{:04}'.format(op.UTCDateTime(ev_timeUTC).year)+'.'+'{:03}'.format(op.UTCDateTime(ev_timeUTC).julday)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).hour)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).minute)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).second)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).microsecond)[:3]+'.E')
+			sacHHE = SACTrace(data=stE[0].data, **headerHHE)
+			sacHHE.write(event_directory+'/'+knetwk+'.'+kstnm+'.'+'{:04}'.format(op.UTCDateTime(ev_timeUTC).year)+'.'+'{:03}'.format(op.UTCDateTime(ev_timeUTC).julday)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).hour)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).minute)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).second)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).microsecond)[:3]+'.E')
 									
 			#-----------------------------------
 			#Component N
@@ -176,6 +175,24 @@ def cut_data_by_local_event(knetwk,kstnm,stla,stlo,evla,evlo,evdp,evmag,ev_timeU
 
 			sacHHZ = SACTrace(data=stZ[0].data, **headerHHZ)
 			sacHHZ.write(event_directory+'/'+knetwk+'.'+kstnm+'.'+'{:04}'.format(op.UTCDateTime(ev_timeUTC).year)+'.'+'{:03}'.format(op.UTCDateTime(ev_timeUTC).julday)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).hour)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).minute)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).second)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).microsecond)[:3]+'.Z')
+
+			#-----------------------------------
+			#Component X
+			stX = op.read(data_sta+'HHX.D'+'/'+knetwk+'.'+kstnm+'..HHX.D.'+'{:04}'.format(op.UTCDateTime(ev_timeUTC).year)+'.'+'{:03}'.format(op.UTCDateTime(ev_timeUTC).julday))
+			stX.trim(starttime,endtime)	
+			
+			headerHHX = {
+						'kstnm': kstnm, 'kcmpnm': 'HHX', 
+						'stla': float(stla), 'stlo': float(stlo), 
+						'evdp': float(evdp), 'evla': float(evla), 'evlo': float(evlo), 'mag': float(evmag), 
+						'nzhour': int(starttime.hour),'nzjday': int(starttime.julday), 'nzmin': int(starttime.minute), 'nzmsec': int('{:03}'.format(starttime.microsecond)[:3]),'nzsec': int(starttime.second),'nzyear': int(starttime.year),	
+						'dist': float(dist/1000), 'gcarc': float(gcarc), 'az': float(az), 'baz': float(baz),
+						'o':float(CUT_BEFORE_P_LOCAL),
+						'delta':stX[0].stats.delta
+						}
+
+			sacHHX = SACTrace(data=stX[0].data, **headerHHX)
+			sacHHX.write(event_directory+'/'+knetwk+'.'+kstnm+'.'+'{:04}'.format(op.UTCDateTime(ev_timeUTC).year)+'.'+'{:03}'.format(op.UTCDateTime(ev_timeUTC).julday)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).hour)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).minute)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).second)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).microsecond)[:3]+'.X')
 
 def plot_event_data(direc):
 	os.chdir(direc)

@@ -23,7 +23,7 @@
 #======
 
 # directory of raw files
-DIR_DATA = /home/diogoloc/dados_posdoc/ON_MAR/obs_data_sac/ON/
+DIR_DATA = /home/diogoloc/dados_posdoc/ON_MAR/obs_data_sac/
 
 # directory of raw status files
 DIR_STATUS = /home/diogoloc/dados_posdoc/ON_MAR/obs_data/STATUS_FILE/OBS_Jubarte/
@@ -87,16 +87,16 @@ LOCAL_EVENT_START_DATE = 2019-06-01
 LOCAL_EVENT_FINAL_DATE = 2020-07-01
 
 #Minimum event magnitude 
-LOCAL_EV_MAGNITUDE_MIN = 0
+LOCAL_EV_MAGNITUDE_MIN = 2
 
 #Shapefile to filter local event data
 SHP_AREA_DELIMITER = /home/diogoloc/SIG_dados/Projeto_ON_MAR/shapefile/area_batimetria/area_mar.shp
 
 #Time to trim the seismogram before P-wave arrival
-CUT_BEFORE_P_LOCAL = 0
+CUT_BEFORE_P_LOCAL = 10
 
 #Time to trim the seismogram after P-wave arrival
-CUT_AFTER_P_LOCAL = 180
+CUT_AFTER_P_LOCAL = 100
 
 #Choose an available host and port to download data (https://docs.obspy.org/packages/obspy.clients.arclink.html):
 USER = locdiogo@gmail.com
@@ -114,20 +114,20 @@ TAUPY_MODEL = iasp91
 EV_GCARC_MIN = 0
 
 #Maximum event distance 
-EV_GCARC_MAX = 100
+EV_GCARC_MAX = 90
 
 #Minimum event magnitude 
 EV_MAGNITUDE_MB = 7
 
 #Date event initial  (exemple: 2008-01-01T00:00:00)
-INITIAL_DATE_EVENT = 2018-05-01T00:00:00
+INITIAL_DATE_EVENT = 2019-05-01T00:00:00
 
 #Date event final  (exemple: 2008-01-01T00:00:00)
-FINAL_DATE_EVENT = 2018-09-01T00:00:00
+FINAL_DATE_EVENT = 2020-09-01T00:00:00
 
 #Time to trim the seismogram before P-wave arrival
 CUT_BEFORE_P = 10
 
 #Time to trim the seismogram after P-wave arrival
-CUT_AFTER_P = 40
+CUT_AFTER_P = 100
 

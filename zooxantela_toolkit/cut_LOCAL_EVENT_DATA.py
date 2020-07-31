@@ -65,6 +65,8 @@ evdp = event_dic['evdp']
 mag = event_dic['mag']
 
 print('Number of events = '+str(len(mag)))
+for i,j in enumerate(ev_timeUTC):
+	print(j)
 print('\n')
 
 # ================

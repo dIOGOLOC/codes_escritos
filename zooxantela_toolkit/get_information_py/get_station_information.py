@@ -3,9 +3,9 @@ Script to collect information from stations
 
 An example of STA_CSV_FILE is shown bellow:
 
-LOC;SENSOR;NAME;LAT;LON;ELEV;FDAY;EDAY
-RIO;1456;OBS19;----;----;----;2019-07-27;2020-06-14
-SAOPAULO;1456;OBS23;----;----;----;2019-07-28;2020-06-15;
+LOC;SENSOR;KNETWK;KSTNM;STLA;STLO;STEL;FDAY;EDAY
+RIO;1456;ON;OBS19;----;----;----;2060-01-27;2030-05-14
+SAOPAULO;1456;ON;OBS23;----;----;----;2089-12-28;1920-01-15;
 '''
 #Importing modules
 
@@ -28,10 +28,11 @@ sta_event = {
 
 		'LOC':[],
 		'SENSOR':[],
-		'NAME':[],
-		'LAT':[],
-		'LON':[],
-		'ELEV':[],
+		'KNETWK':[],
+		'KSTNM':[],
+		'STLA':[],
+		'STLO':[],
+		'STEL':[],
 		'FDAY':[],
 		'EDAY':[],
 	    }
@@ -39,19 +40,20 @@ sta_event = {
 for i,j in enumerate(sta_name):
 	sta_event['LOC'].append(j[0])
 	sta_event['SENSOR'].append(j[1])
-	sta_event['NAME'].append(j[2])
-	sta_event['LAT'].append(float(j[3]))
-	sta_event['LON'].append(float(j[4]))
-	sta_event['ELEV'].append(float(j[5]))
-	sta_event['FDAY'].append(j[6])
-	sta_event['EDAY'].append(j[7])
+	sta_event['KNETWK'].append(j[2])
+	sta_event['KSTNM'].append(j[3])
+	sta_event['STLA'].append(float(j[4]))
+	sta_event['STLO'].append(float(j[5]))
+	sta_event['STEL'].append(float(j[6]))
+	sta_event['FDAY'].append(j[7])
+	sta_event['EDAY'].append(j[8])
 
 
 
-print('Number of Stations: '+str(len(sta_event['NAME'])))
+print('Number of Stations: '+str(len(sta_event['KSTNM'])))
 print('\n')
 
-for i,j in enumerate(sta_event['NAME']):
+for i,j in enumerate(sta_event['KSTNM']):
 	print('Station: '+j)
 	print('\n')
 
