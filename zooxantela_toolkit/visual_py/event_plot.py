@@ -8,6 +8,7 @@ and plot a mosaic of event raw and filtered data.
 import os
 import glob
 import obspy as op
+from obspy import read,read_inventory, UTCDateTime, Stream
 from obspy.taup import TauPyModel
 import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
@@ -49,11 +50,11 @@ def cut_data_by_event(knetwk,kstnm,stla,stlo,ev_timeUTC,ev_julday,ev_year,ev_mon
 			event_directory = OUTPUT_EV_DIR+'Regional/'+knetwk+'/'+kstnm+'/'+'{:04}'.format(op.UTCDateTime(ev_timeUTC).year)+'/'+'{:03}'.format(op.UTCDateTime(ev_timeUTC).julday)+'/'+'{:04}'.format(op.UTCDateTime(ev_timeUTC).year)+'.'+'{:03}'.format(op.UTCDateTime(ev_timeUTC).julday)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).hour)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).minute)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).second)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).microsecond)[:3]
 			os.makedirs(event_directory, exist_ok=True)
 
-			stE = op.read(DIR_DATA+knetwk+'/'+kstnm+'/HHE.D'+'/'+knetwk+'.'+kstnm+'..HHE.D.'+'{:04}'.format(op.UTCDateTime(ev_timeUTC).year)+'.'+'{:03}'.format(op.UTCDateTime(ev_timeUTC).julday))
+			stE = read(DIR_DATA+knetwk+'/'+kstnm+'/HHE.D'+'/'+knetwk+'.'+kstnm+'..HHE.D.'+'{:04}'.format(op.UTCDateTime(ev_timeUTC).year)+'.'+'{:03}'.format(op.UTCDateTime(ev_timeUTC).julday))
 			stE.trim(starttime,endtime)		
 
 			headerHHE = {
-						'kstnm': kstnm, 'kcmpnm': 'HHE', 
+						'kstnm': kstnm, 'kcmpnm': 'HHE','knetwk':knetwk,
 						'stla': float(stla), 'stlo': float(stlo), 
 						'evdp': float(ev_depth), 'evla': float(ev_lat), 'evlo': float(ev_long), 'mag': float(ev_mag), 
 						'nzhour': int(starttime.hour), 'nzjday': int(starttime.julday), 'nzmin': int(starttime.minute),'nzmsec': int('{:03}'.format(starttime.microsecond)[:3]), 'nzsec': int(starttime.second), 'nzyear': int(starttime.year),
@@ -73,11 +74,11 @@ def cut_data_by_event(knetwk,kstnm,stla,stlo,ev_timeUTC,ev_julday,ev_year,ev_mon
 			event_directory = OUTPUT_EV_DIR+'Regional/'+knetwk+'/'+kstnm+'/'+'{:04}'.format(op.UTCDateTime(ev_timeUTC).year)+'/'+'{:03}'.format(op.UTCDateTime(ev_timeUTC).julday)+'/'+'{:04}'.format(op.UTCDateTime(ev_timeUTC).year)+'.'+'{:03}'.format(op.UTCDateTime(ev_timeUTC).julday)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).hour)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).minute)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).second)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).microsecond)[:3]
 			os.makedirs(event_directory, exist_ok=True)
 
-			stN = op.read(DIR_DATA+knetwk+'/'+kstnm+'/HHN.D'+'/'+knetwk+'.'+kstnm+'..HHN.D.'+'{:04}'.format(op.UTCDateTime(ev_timeUTC).year)+'.'+'{:03}'.format(op.UTCDateTime(ev_timeUTC).julday))
+			stN = read(DIR_DATA+knetwk+'/'+kstnm+'/HHN.D'+'/'+knetwk+'.'+kstnm+'..HHN.D.'+'{:04}'.format(op.UTCDateTime(ev_timeUTC).year)+'.'+'{:03}'.format(op.UTCDateTime(ev_timeUTC).julday))
 			stN.trim(starttime,endtime)		
 
 			headerHHY = {
-						'kstnm': kstnm, 'kcmpnm': 'HHN',
+						'kstnm': kstnm, 'kcmpnm': 'HHN','knetwk':knetwk,
 						'stla': float(stla), 'stlo': float(stlo),
 						'evdp': float(ev_depth), 'evla': float(ev_lat), 'evlo': float(ev_long), 'mag': float(ev_mag), 
 						'nzhour': int(starttime.hour), 'nzjday': int(starttime.julday), 'nzmin': int(starttime.minute), 'nzmsec': int('{:03}'.format(starttime.microsecond)[:3]),'nzsec': int(starttime.second),'nzyear': int(starttime.year),
@@ -98,11 +99,11 @@ def cut_data_by_event(knetwk,kstnm,stla,stlo,ev_timeUTC,ev_julday,ev_year,ev_mon
 			event_directory = OUTPUT_EV_DIR+'Regional/'+knetwk+'/'+kstnm+'/'+'{:04}'.format(op.UTCDateTime(ev_timeUTC).year)+'/'+'{:03}'.format(op.UTCDateTime(ev_timeUTC).julday)+'/'+'{:04}'.format(op.UTCDateTime(ev_timeUTC).year)+'.'+'{:03}'.format(op.UTCDateTime(ev_timeUTC).julday)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).hour)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).minute)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).second)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).microsecond)[:3]
 			os.makedirs(event_directory, exist_ok=True)
 
-			stZ = op.read(DIR_DATA+knetwk+'/'+kstnm+'/HHZ.D'+'/'+knetwk+'.'+kstnm+'..HHZ.D.'+'{:04}'.format(op.UTCDateTime(ev_timeUTC).year)+'.'+'{:03}'.format(op.UTCDateTime(ev_timeUTC).julday))
+			stZ = read(DIR_DATA+knetwk+'/'+kstnm+'/HHZ.D'+'/'+knetwk+'.'+kstnm+'..HHZ.D.'+'{:04}'.format(op.UTCDateTime(ev_timeUTC).year)+'.'+'{:03}'.format(op.UTCDateTime(ev_timeUTC).julday))
 			stZ.trim(starttime,endtime)	
 			
 			headerHHZ = {
-						'kstnm': kstnm, 'kcmpnm': 'HHZ', 
+						'kstnm': kstnm, 'kcmpnm': 'HHZ','knetwk':knetwk,
 						'stla': float(stla), 'stlo': float(stlo), 
 						'evdp': float(ev_depth), 'evla': float(ev_lat), 'evlo': float(ev_long), 'mag': float(ev_mag), 
 						'nzhour': int(starttime.hour),'nzjday': int(starttime.julday), 'nzmin': int(starttime.minute), 'nzmsec': int('{:03}'.format(starttime.microsecond)[:3]),'nzsec': int(starttime.second),'nzyear': int(starttime.year),	
@@ -122,11 +123,11 @@ def cut_data_by_event(knetwk,kstnm,stla,stlo,ev_timeUTC,ev_julday,ev_year,ev_mon
 			event_directory = OUTPUT_EV_DIR+'Regional/'+knetwk+'/'+kstnm+'/'+'{:04}'.format(op.UTCDateTime(ev_timeUTC).year)+'/'+'{:03}'.format(op.UTCDateTime(ev_timeUTC).julday)+'/'+'{:04}'.format(op.UTCDateTime(ev_timeUTC).year)+'.'+'{:03}'.format(op.UTCDateTime(ev_timeUTC).julday)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).hour)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).minute)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).second)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).microsecond)[:3]
 			os.makedirs(event_directory, exist_ok=True)
 
-			stX = op.read(DIR_DATA+knetwk+'/'+kstnm+'/HHX.D'+'/'+knetwk+'.'+kstnm+'..HHX.D.'+'{:04}'.format(op.UTCDateTime(ev_timeUTC).year)+'.'+'{:03}'.format(op.UTCDateTime(ev_timeUTC).julday))
+			stX = read(DIR_DATA+knetwk+'/'+kstnm+'/HHX.D'+'/'+knetwk+'.'+kstnm+'..HHX.D.'+'{:04}'.format(op.UTCDateTime(ev_timeUTC).year)+'.'+'{:03}'.format(op.UTCDateTime(ev_timeUTC).julday))
 			stX.trim(starttime,endtime)	
 			
 			headerHHX = {
-						'kstnm': kstnm, 'kcmpnm': 'HHX', 
+						'kstnm': kstnm, 'kcmpnm': 'HHX','knetwk':knetwk, 
 						'stla': float(stla), 'stlo': float(stlo), 
 						'evdp': float(ev_depth), 'evla': float(ev_lat), 'evlo': float(ev_long), 'mag': float(ev_mag), 
 						'nzhour': int(starttime.hour),'nzjday': int(starttime.julday), 'nzmin': int(starttime.minute), 'nzmsec': int('{:03}'.format(starttime.microsecond)[:3]),'nzsec': int(starttime.second),'nzyear': int(starttime.year),	
@@ -139,59 +140,70 @@ def cut_data_by_event(knetwk,kstnm,stla,stlo,ev_timeUTC,ev_julday,ev_year,ev_mon
 			sacHHX.write(event_directory+'/'+knetwk+'.'+kstnm+'.'+'{:04}'.format(op.UTCDateTime(ev_timeUTC).year)+'.'+'{:03}'.format(op.UTCDateTime(ev_timeUTC).julday)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).hour)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).minute)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).second)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).microsecond)[:3]+'.X')
 
 
-def plot_event_data(direc):
-	os.chdir(direc)
-	event_date = direc.split('/')[-1]
-	stZ = op.read('*HHZ*')
-	
-	fig, axes = plt.subplots(len(stZ),2, sharex=True,figsize=(20, 15))
+def plot_event_data(event_lst, inv, event_name,folder_name,lf,hf):
+	if len(event_lst) > 1:
+		st = Stream()
+		for i in event_lst:
+			st += read(i)
 
-	cols = ['Raw Data', 'Filterd Data (2 Hz to 10 Hz)']
-	
-	for ax, col in zip(axes[0], cols):
-		ax.set_title(col)
+		st.detrend("linear")
+		st.detrend("demean")
+		st.taper(max_percentage=0.05, type="hann")
 
-	for i,j in enumerate(stZ):
-		axes[i,0].plot(j.times(),j.data,'k')
-		axes[i,0].set_xlim(5,45)
-	axes[i,0].set_xlabel('Time after P (s)')
+		for tr in st:
+			tr.remove_response(inventory=inv,output="VEL",water_level=60)
+		
+		fig, axes = plt.subplots(len(st),2, sharex=True,figsize=(20, 15))
 
-	for i,j in enumerate(stZ):
-		j.filter('bandpass',freqmin=2.0, freqmax=10.0)
-		axes[i,1].set_xlim(5,45)
-		if j.stats.station in ['9FE7','9FF5','9FF9','A031','A062','9F74','9FF3','9FF6','A002','A037','A06A']:
-			axes[i,1].plot(j.times(),[i*(-1) for i in j.data],'k')
-		else:
+		cols = ['Raw Data', 'Filterd Data ('+str(lf)+' Hz to '+str(hf)+' Hz)']
+		
+		for ax, col in zip(axes[0], cols):
+			ax.set_title(col)
+
+		for i,j in enumerate(st):
+			axes[i,0].plot(j.times(),j.data,'k')
+			axes[i,0].set_xlim(5,100)
+		axes[i,0].set_xlabel('Time after P (s)')
+
+		for i,j in enumerate(st):
+			j.filter('bandpass',freqmin=lf, freqmax=hf)
+			axes[i,1].set_xlim(5,100)
 			axes[i,1].plot(j.times(),j.data,'k')
-		axes[i,1].text(45.5,0,j.stats.station)
-		#axes[i,1].set_ylim(-0.000001,0.000001)
-	axes[i,1].set_xlabel('Time after P (s)')
-	fig.suptitle('Event - '+event_date)
-	os.makedirs(OUTPUT_FIGURE_DIR+'EVENTS/',exist_ok=True)
-	fig.savefig(OUTPUT_FIGURE_DIR+'EVENTS/Event - '+event_date+'.pdf')
-	plt.tight_layout()
-	plt.show()
+			axes[i,1].text(100.5,0,j.stats.station)
+		axes[i,1].set_xlabel('Time after P (s)')
+		fig.suptitle('Event - '+event_name)
+		os.makedirs(OUTPUT_FIGURE_DIR+'EVENTS/'+folder_name,exist_ok=True)
+		fig.savefig(OUTPUT_FIGURE_DIR+'EVENTS/'+folder_name+'Event - '+event_name+'.pdf')
+		plt.tight_layout()
 
-def plot_event_dataset(direc):
-	os.chdir(direc)
-	event_date = direc.split('/')[-1]
-	stZ = op.read('*HHZ*')
-	
-	fig, axes = plt.subplots(1,1, sharex=True,figsize=(20, 15))
+	else:
+		st = read(event_lst[0])
+		st.detrend("linear")
+		st.detrend("demean")
+		st.taper(max_percentage=0.05, type="hann")
 
-	for i,j in enumerate(stZ):
-		j.filter('bandpass',freqmin=2.0, freqmax=10.0)
-		axes.set_xlim(5,45)
-		if j.stats.station in ['9FE7','9FF5','9FF9','A031','A062','9F74','9FF3','9FF6','A002','A037','A06A']:
-			axes.plot(j.times(),[i*(-1) for i in j.data],alpha=0.5,label=j.stats.station)
-		else:
-			axes.plot(j.times(),j.data,alpha=0.1,label=j.stats.station)
-		axes.text(45.5,0,j.stats.station)
-		axes.set_ylim(-0.000001,0.000001)
-	axes.set_xlabel('Time after P (s)')
-	axes.legend(loc=0)
-	fig.suptitle('Event - '+event_date)
-	os.makedirs(OUTPUT_FIGURE_DIR+'EVENTS/',exist_ok=True)
-	fig.savefig(OUTPUT_FIGURE_DIR+'EVENTS/Event - '+event_date+'_DATASET.pdf')
-	plt.tight_layout()
-	plt.show()
+		for tr in st:
+			tr.remove_response(inventory=inv,output="VEL",water_level=60)
+		
+		fig, axes = plt.subplots(1,2, sharex=True,figsize=(20, 15))
+
+		cols = ['Raw Data', 'Filterd Data ('+str(lf)+' Hz to '+str(hf)+' Hz)']
+		
+		for i,j in enumerate(st):
+			axes[0].plot(j.times(),j.data,'k')
+			axes[0].set_xlim(5,100)
+		axes[0].set_xlabel('Time after P (s)')
+		axes[0].set_title(cols[0])
+
+		for i,j in enumerate(st):
+			j.filter('bandpass',freqmin=lf, freqmax=hf)
+			axes[1].set_xlim(5,100)
+			axes[1].plot(j.times(),j.data,'k')
+			axes[1].text(100.5,0,j.stats.station)
+		axes[1].set_xlabel('Time after P (s)')
+		axes[1].set_title(cols[1])
+
+		fig.suptitle('Event - '+event_name)
+		os.makedirs(OUTPUT_FIGURE_DIR+'EVENTS/'+folder_name,exist_ok=True)
+		fig.savefig(OUTPUT_FIGURE_DIR+'EVENTS/'+folder_name+'Event - '+event_name+'.pdf')
+		plt.tight_layout()

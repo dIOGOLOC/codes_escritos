@@ -50,7 +50,7 @@ def cut_download_data_by_event(knetwk,kstnm,stla,stlo,evla,evlo,evdp,evmag,ev_ti
 	#Component E
 	stE = client.get_waveforms(knetwk,kstnm,'00','HHE',starttime,endtime)
 	headerHHX = {
-				'kstnm': kstnm, 'kcmpnm': 'HHE', 
+				'kstnm': kstnm, 'kcmpnm': 'HHE','knetwk':knetwk,
 				'stla': float(stla), 'stlo': float(stlo), 
 				'evdp': float(evdp), 'evla': float(evla), 'evlo': float(evlo), 'mag': float(evmag), 
 				'nzhour': int(starttime.hour), 'nzjday': int(starttime.julday), 'nzmin': int(starttime.minute),'nzmsec': int('{:03}'.format(starttime.microsecond)[:3]), 'nzsec': int(starttime.second), 'nzyear': int(starttime.year),
@@ -68,7 +68,7 @@ def cut_download_data_by_event(knetwk,kstnm,stla,stlo,evla,evlo,evdp,evmag,ev_ti
 	stN = client.get_waveforms(knetwk,kstnm,'00','HHN',starttime,endtime)
 
 	headerHHY = {
-				'kstnm': kstnm, 'kcmpnm': 'HHN',
+				'kstnm': kstnm, 'kcmpnm': 'HHN','knetwk':knetwk,
 				'stla': float(stla), 'stlo': float(stlo),
 				'evdp': float(evdp), 'evla': float(evla), 'evlo': float(evlo), 'mag': float(evmag), 
 				'nzhour': int(starttime.hour), 'nzjday': int(starttime.julday), 'nzmin': int(starttime.minute), 'nzmsec': int('{:03}'.format(starttime.microsecond)[:3]),'nzsec': int(starttime.second),'nzyear': int(starttime.year),
@@ -85,7 +85,7 @@ def cut_download_data_by_event(knetwk,kstnm,stla,stlo,evla,evlo,evdp,evmag,ev_ti
 	stZ = client.get_waveforms(knetwk,kstnm,'00','HHZ',starttime,endtime)
 
 	headerHHZ = {
-				'kstnm': kstnm, 'kcmpnm': 'HHZ', 
+				'kstnm': kstnm, 'kcmpnm': 'HHZ','knetwk':knetwk, 
 				'stla': float(stla), 'stlo': float(stlo), 
 				'evdp': float(evdp), 'evla': float(evla), 'evlo': float(evlo), 'mag': float(evmag), 
 				'nzhour': int(starttime.hour),'nzjday': int(starttime.julday), 'nzmin': int(starttime.minute), 'nzmsec': int('{:03}'.format(starttime.microsecond)[:3]),'nzsec': int(starttime.second),'nzyear': int(starttime.year),	
@@ -127,7 +127,7 @@ def cut_data_by_local_event(knetwk,kstnm,stla,stlo,evla,evlo,evdp,evmag,ev_timeU
 			print('Event Directory - ',event_directory)
 
 			headerHHE = {
-						'kstnm': kstnm, 'kcmpnm': 'HHE', 
+						'kstnm': kstnm, 'kcmpnm': 'HHE','knetwk':knetwk, 
 						'stla': float(stla), 'stlo': float(stlo), 
 						'evdp': float(evdp), 'evla': float(evla), 'evlo': float(evlo), 'mag': float(evmag), 
 						'nzhour': int(starttime.hour), 'nzjday': int(starttime.julday), 'nzmin': int(starttime.minute),'nzmsec': int('{:03}'.format(starttime.microsecond)[:3]), 'nzsec': int(starttime.second), 'nzyear': int(starttime.year),
@@ -146,7 +146,7 @@ def cut_data_by_local_event(knetwk,kstnm,stla,stlo,evla,evlo,evdp,evmag,ev_timeU
 			stN.trim(starttime,endtime)		
 
 			headerHHY = {
-						'kstnm': kstnm, 'kcmpnm': 'HHN',
+						'kstnm': kstnm, 'kcmpnm': 'HHN','knetwk':knetwk,
 						'stla': float(stla), 'stlo': float(stlo),
 						'evdp': float(evdp), 'evla': float(evla), 'evlo': float(evlo), 'mag': float(evmag), 
 						'nzhour': int(starttime.hour), 'nzjday': int(starttime.julday), 'nzmin': int(starttime.minute), 'nzmsec': int('{:03}'.format(starttime.microsecond)[:3]),'nzsec': int(starttime.second),'nzyear': int(starttime.year),
@@ -164,7 +164,7 @@ def cut_data_by_local_event(knetwk,kstnm,stla,stlo,evla,evlo,evdp,evmag,ev_timeU
 			stZ.trim(starttime,endtime)	
 			
 			headerHHZ = {
-						'kstnm': kstnm, 'kcmpnm': 'HHZ', 
+						'kstnm': kstnm, 'kcmpnm': 'HHZ','knetwk':knetwk, 
 						'stla': float(stla), 'stlo': float(stlo), 
 						'evdp': float(evdp), 'evla': float(evla), 'evlo': float(evlo), 'mag': float(evmag), 
 						'nzhour': int(starttime.hour),'nzjday': int(starttime.julday), 'nzmin': int(starttime.minute), 'nzmsec': int('{:03}'.format(starttime.microsecond)[:3]),'nzsec': int(starttime.second),'nzyear': int(starttime.year),	
@@ -182,7 +182,7 @@ def cut_data_by_local_event(knetwk,kstnm,stla,stlo,evla,evlo,evdp,evmag,ev_timeU
 			stX.trim(starttime,endtime)	
 			
 			headerHHX = {
-						'kstnm': kstnm, 'kcmpnm': 'HHX', 
+						'kstnm': kstnm, 'kcmpnm': 'HHX','knetwk':knetwk, 
 						'stla': float(stla), 'stlo': float(stlo), 
 						'evdp': float(evdp), 'evla': float(evla), 'evlo': float(evlo), 'mag': float(evmag), 
 						'nzhour': int(starttime.hour),'nzjday': int(starttime.julday), 'nzmin': int(starttime.minute), 'nzmsec': int('{:03}'.format(starttime.microsecond)[:3]),'nzsec': int(starttime.second),'nzyear': int(starttime.year),	
@@ -192,61 +192,4 @@ def cut_data_by_local_event(knetwk,kstnm,stla,stlo,evla,evlo,evdp,evmag,ev_timeU
 						}
 
 			sacHHX = SACTrace(data=stX[0].data, **headerHHX)
-			sacHHX.write(event_directory+'/'+knetwk+'.'+kstnm+'.'+'{:04}'.format(op.UTCDateTime(ev_timeUTC).year)+'.'+'{:03}'.format(op.UTCDateTime(ev_timeUTC).julday)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).hour)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).minute)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).second)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).microsecond)[:3]+'.X')
-
-def plot_event_data(direc):
-	os.chdir(direc)
-	event_date = direc.split('/')[-1]
-	stZ = op.read('*HHZ*')
-	
-	fig, axes = plt.subplots(len(stZ),2, sharex=True,figsize=(20, 15))
-
-	cols = ['Raw Data', 'Filterd Data (2 Hz to 10 Hz)']
-	
-	for ax, col in zip(axes[0], cols):
-		ax.set_title(col)
-
-	for i,j in enumerate(stZ):
-		axes[i,0].plot(j.times(),j.data,'k')
-		axes[i,0].set_xlim(5,45)
-	axes[i,0].set_xlabel('Time after P (s)')
-
-	for i,j in enumerate(stZ):
-		j.filter('bandpass',freqmin=2.0, freqmax=10.0)
-		axes[i,1].set_xlim(5,45)
-		if j.stats.station in ['9FE7','9FF5','9FF9','A031','A062','9F74','9FF3','9FF6','A002','A037','A06A']:
-			axes[i,1].plot(j.times(),[i*(-1) for i in j.data],'k')
-		else:
-			axes[i,1].plot(j.times(),j.data,'k')
-		axes[i,1].text(45.5,0,j.stats.station)
-		#axes[i,1].set_ylim(-0.000001,0.000001)
-	axes[i,1].set_xlabel('Time after P (s)')
-	fig.suptitle('Event - '+event_date)
-	os.makedirs(OUTPUT_FIGURE_DIR+'EVENTS/',exist_ok=True)
-	fig.savefig(OUTPUT_FIGURE_DIR+'EVENTS/Event - '+event_date+'.pdf')
-	plt.tight_layout()
-	plt.show()
-
-def plot_event_dataset(direc):
-	os.chdir(direc)
-	event_date = direc.split('/')[-1]
-	stZ = op.read('*HHZ*')
-	
-	fig, axes = plt.subplots(1,1, sharex=True,figsize=(20, 15))
-
-	for i,j in enumerate(stZ):
-		j.filter('bandpass',freqmin=2.0, freqmax=10.0)
-		axes.set_xlim(5,45)
-		if j.stats.station in ['9FE7','9FF5','9FF9','A031','A062','9F74','9FF3','9FF6','A002','A037','A06A']:
-			axes.plot(j.times(),[i*(-1) for i in j.data],alpha=0.5,label=j.stats.station)
-		else:
-			axes.plot(j.times(),j.data,alpha=0.1,label=j.stats.station)
-		axes.text(45.5,0,j.stats.station)
-		axes.set_ylim(-0.000001,0.000001)
-	axes.set_xlabel('Time after P (s)')
-	axes.legend(loc=0)
-	fig.suptitle('Event - '+event_date)
-	os.makedirs(OUTPUT_FIGURE_DIR+'EVENTS/',exist_ok=True)
-	fig.savefig(OUTPUT_FIGURE_DIR+'EVENTS/Event - '+event_date+'_DATASET.pdf')
-	plt.tight_layout()
-	plt.show()
+			sacHHX.write(event_directory+'/'+knetwk+'.'+kstnm+'.'+'{:04}'.format(op.UTCDateTime(ev_timeUTC).year)+'.'+'{:03}'.format(op.UTCDateTime(ev_timeUTC).julday)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).hour)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).minute)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).second)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).microsecond)[:3]+'.X')			
