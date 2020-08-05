@@ -15,7 +15,7 @@ from matplotlib.ticker import MultipleLocator, FormatStrFormatter
 import matplotlib.pyplot as plt
 
 
-from visual_py.event_plot import plot_event_data
+from visual_py.event_plot import plot_event_data,plot_map_event_data
 
 from parameters_py.config import (
 					OUTPUT_FIGURE_DIR,DIR_DATA,OUTPUT_EV_DIR,DIR_STATUS,NUM_PROCESS,OUTPUT_PSD_DIR,XML_FILE
@@ -44,6 +44,17 @@ for root, dirs, files in os.walk(OUTPUT_EV_DIR+'Local/'):
 
 EVENT_dir = sorted(list(set(EVENT_dir)))
 
+
+EVENT_dir_RSBR = []
+
+for root, dirs, files in os.walk('/home/diogoloc/dados_posdoc/ON_MAR/EVENTS/RSBR/'):
+    for directory in dirs:
+        if len(directory.split('.')) > 5:
+            EVENT_dir_RSBR.append(os.path.join(directory))
+
+EVENT_dir_RSBR = sorted(list(set(EVENT_dir_RSBR)))
+
+
 #--------------------------------------------------------------------------------------------------------------------
 
 HHZ_files = []
@@ -53,8 +64,17 @@ for root, dirs, files in os.walk(OUTPUT_EV_DIR+'Local/'):
         if '.Z' in file:
             HHZ_files.append(os.path.join(root,file))
 
+HHZ_files_RSBR = []
+
+for root, dirs, files in os.walk('/home/diogoloc/dados_posdoc/ON_MAR/EVENTS/RSBR/'):
+    for file in files:
+        if '.Z' in file:
+            HHZ_files_RSBR.append(os.path.join(root,file))
+
+
 #--------------------------------------------------------------------------------------------------------------------
 
+HHZ_files = HHZ_files+HHZ_files_RSBR
 
 lst_events = []
 
@@ -64,11 +84,20 @@ for i in EVENT_dir:
 # ===================
 # Ploting EVENT files
 # ===================
-print('Ploting EVENT files')
+print('Ploting Events')
 start_time = time.time()
 
 for i,j in enumerate(lst_events):
   plot_event_data(j,inv,EVENT_dir[i],'Local_HHZ/',2.0,10.0)
+
+print("--- %.2f execution time (min) ---" % ((time.time() - start_time)/60))
+print('\n')
+
+print('Ploting Station x Event')
+start_time = time.time()
+
+for i,j in enumerate(lst_events):
+  plot_map_event_data(j,inv,EVENT_dir[i],'Local_HHZ/',2.0,10.0)
 
 print("--- %.2f execution time (min) ---" % ((time.time() - start_time)/60))
 print('\n')

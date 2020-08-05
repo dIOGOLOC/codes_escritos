@@ -14,10 +14,20 @@ import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
 from obspy.io.sac.sactrace import SACTrace
 
+import numpy as np
+import pandas as pd
+import geopandas as geopd
+import matplotlib.dates as mdates
+import matplotlib.gridspec as gridspec
+from matplotlib.transforms import offset_copy
+
+import cartopy.crs as ccrs
+import cartopy.feature as cfeature
+from cartopy.io.shapereader import Reader
 
 from parameters_py.config import (
 					DIR_DATA,TAUPY_MODEL,EV_GCARC_MIN,EV_GCARC_MAX,CUT_BEFORE_P,CUT_AFTER_P,XML_FILE,
-					OUTPUT_EV_DIR,OUTPUT_FIGURE_DIR
+					OUTPUT_EV_DIR,OUTPUT_FIGURE_DIR,BOUNDARY_STATES_SHP
 							   )
 # ===============================
 # Function to cut and plot event:
@@ -150,8 +160,8 @@ def plot_event_data(event_lst, inv, event_name,folder_name,lf,hf):
 		st.detrend("demean")
 		st.taper(max_percentage=0.05, type="hann")
 
-		for tr in st:
-			tr.remove_response(inventory=inv,output="VEL",water_level=60)
+		#for tr in st:
+			#tr.remove_response(inventory=inv,output="VEL",water_level=60)
 		
 		fig, axes = plt.subplots(len(st),2, sharex=True,figsize=(20, 15))
 
@@ -182,8 +192,8 @@ def plot_event_data(event_lst, inv, event_name,folder_name,lf,hf):
 		st.detrend("demean")
 		st.taper(max_percentage=0.05, type="hann")
 
-		for tr in st:
-			tr.remove_response(inventory=inv,output="VEL",water_level=60)
+		#for tr in st:
+			#tr.remove_response(inventory=inv,output="VEL",water_level=60)
 		
 		fig, axes = plt.subplots(1,2, sharex=True,figsize=(20, 15))
 
@@ -207,3 +217,105 @@ def plot_event_data(event_lst, inv, event_name,folder_name,lf,hf):
 		os.makedirs(OUTPUT_FIGURE_DIR+'EVENTS/'+folder_name,exist_ok=True)
 		fig.savefig(OUTPUT_FIGURE_DIR+'EVENTS/'+folder_name+'Event - '+event_name+'.pdf')
 		plt.tight_layout()
+
+def plot_map_event_data(event_lst, inv, event_name,folder_name,lf,hf):
+	if len(event_lst) > 1:
+		st = Stream()
+		for i in event_lst:
+			st += read(i)
+
+		st.detrend("linear")
+		st.detrend("demean")
+		st.taper(max_percentage=0.05, type="hann")
+		st.filter('bandpass',freqmin=lf, freqmax=hf)
+
+		#for tr in st:
+			#tr.remove_response(inventory=inv,output="VEL",water_level=60)
+		
+		fig = plt.figure(figsize=(20, 10))
+		event_date = event_name.split('.')
+		print(UTCDateTime(year=int(event_date[0]),julday=int(event_date[1])))
+		fig.suptitle('Dia do Evento - '+UTCDateTime(year=int(event_date[0]),julday=int(event_date[1])).strftime('%d/%m/%Y'),fontsize=20)
+
+		gs = gridspec.GridSpec(len(st), 2)
+		gs.update(hspace=0.2)
+
+		#-------------------------------------------
+
+		map_loc = fig.add_subplot(gs[:,0],projection=ccrs.PlateCarree())
+		
+		LLCRNRLON_LARGE = -50
+		URCRNRLON_LARGE = -35
+		LLCRNRLAT_LARGE = -28
+		URCRNRLAT_LARGE = -16
+
+		BOUNDARY_1_SHP = BOUNDARY_STATES_SHP
+
+		map_loc.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
+		map_loc.yaxis.set_ticks_position('both')
+		map_loc.xaxis.set_ticks_position('both')
+
+		map_loc.set_xticks(np.arange(LLCRNRLON_LARGE,URCRNRLON_LARGE,3), crs=ccrs.PlateCarree())
+		map_loc.set_yticks(np.arange(LLCRNRLAT_LARGE,URCRNRLAT_LARGE,3), crs=ccrs.PlateCarree())
+		map_loc.tick_params(labelbottom=True,labeltop=True,labelleft=True,labelright=True, labelsize=15)
+
+		map_loc.grid(True,which='major',color='gray',linewidth=1,linestyle='--')
+
+		reader_1_SHP = Reader(BOUNDARY_1_SHP)
+		shape_1_SHP = list(reader_1_SHP.geometries())
+		plot_shape_1_SHP = cfeature.ShapelyFeature(shape_1_SHP, ccrs.PlateCarree())
+		map_loc.add_feature(plot_shape_1_SHP, facecolor='none', edgecolor='k',linewidth=3,zorder=-1)
+
+		# Use the cartopy interface to create a matplotlib transform object
+		# for the Geodetic coordinate system. We will use this along with
+		# matplotlib's offset_copy function to define a coordinate system which
+		# translates the text by 25 pixels to the left.
+		geodetic_transform = ccrs.Geodetic()._as_mpl_transform(map_loc)
+		text_transform = offset_copy(geodetic_transform, units='dots', y=0,x=60)
+		text_transform_mag = offset_copy(geodetic_transform, units='dots', y=-15,x=15)
+
+		stlo = [] 
+		stla = [] 
+		station_name = [] 
+		for i,j in enumerate(st):
+		    stlo.append(j.stats.sac.stlo)
+		    stla.append(j.stats.sac.stla)
+		    station_name.append(j.stats.station)
+
+		gcarc_lst = np.array([j.stats.sac.gcarc for i,j in enumerate(st)])
+		gcarc_sort = np.argsort(gcarc_lst)
+
+		map_loc.scatter(stlo, stla, marker='^',s=200,c='k',edgecolors='w', transform=ccrs.Geodetic())
+
+		for i,j in enumerate(station_name):
+		    map_loc.text(stlo[i], stla[i], station_name[i],fontsize=15,
+		            verticalalignment='center', horizontalalignment='right',
+		            transform=text_transform)
+		             
+		map_loc.plot(st[0].stats.sac.evlo, st[0].stats.sac.evla, marker='*', color='red', markersize=15,transform=ccrs.Geodetic())
+		map_loc.text(st[0].stats.sac.evlo, st[0].stats.sac.evla, str(st[0].stats.sac.mag),fontsize=15,
+		            verticalalignment='center', horizontalalignment='right',
+		            transform=text_transform_mag)
+
+		#-------------------------------------------
+
+		minutes = mdates.MinuteLocator()   # every year
+		seconds = mdates.SecondLocator()  # every month
+		years_fmt = mdates.DateFormatter('%H-%M-%S')
+
+		for i,j in enumerate(gcarc_sort):
+			ax = fig.add_subplot(gs[i,1])
+			ax.plot(st[j].times('matplotlib'),st[j].data,color='k')
+
+			ax.set_xlim((st[j].times("utcdatetime")[0]+10).matplotlib_date,st[0].times('matplotlib')[-1])
+			ax.set_yticks([])
+			ax.set_title(st[j].stats.station+' - dist='+str(round(st[j].stats.sac.gcarc,1)),fontsize=10)
+
+			# format the ticks
+			ax.xaxis.set_major_locator(minutes)
+			ax.xaxis.set_major_formatter(years_fmt)
+			ax.xaxis.set_minor_locator(seconds)
+
+		os.makedirs(OUTPUT_FIGURE_DIR+'EVENTS/'+folder_name,exist_ok=True)
+		fig.savefig(OUTPUT_FIGURE_DIR+'EVENTS/'+folder_name+'Stations_Event - '+event_name+'.pdf')
+		#plt.tight_layout()

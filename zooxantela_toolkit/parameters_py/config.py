@@ -79,6 +79,9 @@ STA_CSV_FILE  =  config.get('paths', 'STA_CSV_FILE')
 #Local events FILE path
 LOCAL_CSV_FILE  = config.get('paths', 'LOCAL_CSV_FILE')
 
+#Shapefile  boundary states
+BOUNDARY_STATES_SHP = config.get('paths', 'BOUNDARY_STATES_SHP')
+
 # -----
 # ppsd
 # -----

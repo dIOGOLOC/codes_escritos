@@ -49,6 +49,10 @@ STA_CSV_FILE  = /home/diogoloc/dados_posdoc/ON_MAR/sta_coord/OBS_ZOOXANTELA.txt
 #Local events FILE path
 LOCAL_CSV_FILE  = /home/diogoloc/dados_posdoc/ON_MAR/local_events/boletim2001p.txt
 
+#Shapefile  boundary states
+BOUNDARY_STATES_SHP = /home/diogoloc/SIG_dados/Projeto_ON_MAR/shapefile/brasil_estados/brasil_estados.shp
+
+
 #=====
 [ppsd]
 #=====
