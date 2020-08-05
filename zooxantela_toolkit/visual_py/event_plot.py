@@ -237,8 +237,7 @@ def plot_map_event_data(event_lst, inv, event_name,folder_name,lf,hf):
 		print(UTCDateTime(year=int(event_date[0]),julday=int(event_date[1])))
 		fig.suptitle('Dia do Evento - '+UTCDateTime(year=int(event_date[0]),julday=int(event_date[1])).strftime('%d/%m/%Y'),fontsize=20)
 
-		gs = gridspec.GridSpec(len(st), 2)
-		gs.update(hspace=0.2)
+		gs = gridspec.GridSpec(len(st), 2,wspace=0.1, hspace=0.5)
 
 		#-------------------------------------------
 
@@ -307,15 +306,14 @@ def plot_map_event_data(event_lst, inv, event_name,folder_name,lf,hf):
 			ax = fig.add_subplot(gs[i,1])
 			ax.plot(st[j].times('matplotlib'),st[j].data,color='k')
 
-			ax.set_xlim((st[j].times("utcdatetime")[0]+10).matplotlib_date,st[0].times('matplotlib')[-1])
+			ax.set_xlim((st[j].times("utcdatetime")[0]+10).matplotlib_date,(st[j].times("utcdatetime")[0]+150).matplotlib_date)
 			ax.set_yticks([])
 			ax.set_title(st[j].stats.station+' - dist='+str(round(st[j].stats.sac.gcarc,1)),fontsize=10)
 
 			# format the ticks
 			ax.xaxis.set_major_locator(minutes)
 			ax.xaxis.set_major_formatter(years_fmt)
-			ax.xaxis.set_minor_locator(seconds)
+			#ax.xaxis.set_minor_locator(seconds)
 
 		os.makedirs(OUTPUT_FIGURE_DIR+'EVENTS/'+folder_name,exist_ok=True)
 		fig.savefig(OUTPUT_FIGURE_DIR+'EVENTS/'+folder_name+'Stations_Event - '+event_name+'.pdf')
-		#plt.tight_layout()
