@@ -71,13 +71,14 @@ stlo = sta_dic['STLO']
 stel = sta_dic['STEL']
 sensor_keys = sta_dic['SENSOR_KEYS']
 accer_keys = sta_dic['ACCER_KEYS']
+hydrophone_keys = sta_dic['HYDROPHONE_KEYS']
 datalogger_keys = sta_dic['DATALOGGER_KEYS']
 
 for i,j in enumerate(kstnm):
 	print('Importing '+j+' station parameters')
 	print('\n')
 
-	if len(sensor_keys[i]) != 0 and len(accer_keys[i]) == 0:
+	if len(sensor_keys[i]) != 0 and len(accer_keys[i]) == 0 and len(hydrophone_keys[i]) == 0:
 
 	    sta = Station(
 		# This is the station code according to the SEED standard.
@@ -142,7 +143,7 @@ for i,j in enumerate(kstnm):
 	    	sta.channels.append(k)
 	    net.stations.append(sta)
 
-	if len(sensor_keys[i]) == 0 and len(accer_keys[i]) != 0:
+	if len(sensor_keys[i]) == 0 and len(accer_keys[i]) != 0 and len(hydrophone_keys[i]) == 0:
 
 	    sta = Station(
 		# This is the station code according to the SEED standard.
@@ -207,7 +208,7 @@ for i,j in enumerate(kstnm):
 	    	sta.channels.append(k)
 	    net.stations.append(sta)
 
-	if len(sensor_keys[i]) != 0 and len(accer_keys[i]) != 0:
+	if len(sensor_keys[i]) != 0 and len(accer_keys[i]) != 0 and len(hydrophone_keys[i]) == 0:
 
 	    sta = Station(
 		# This is the station code according to the SEED standard.
@@ -301,7 +302,7 @@ for i,j in enumerate(kstnm):
 		azimuth=0.0,
 		dip=0.0,
 		sample_rate=SAMPLING_RATE)
-	    
+	
 	    # Now tie it all together.
 
 	    response = nrl.get_response(sensor_keys = sensor_keys[i].split('*'),datalogger_keys = datalogger_keys[i].split('*'))
@@ -315,6 +316,89 @@ for i,j in enumerate(kstnm):
 	    cha_HHN.response = response
 	    cha_HHE.response = response
 	    channel_sta = [cha_HHZ,cha_HHN,cha_HHE,cha_HNZ,cha_HNN,cha_HNE]
+	    for k in channel_sta:
+	    	sta.channels.append(k)
+	    net.stations.append(sta)
+
+	if len(sensor_keys[i]) != 0 and len(accer_keys[i]) == 0 and len(hydrophone_keys[i]) != 0:
+
+	    sta = Station(
+		# This is the station code according to the SEED standard.
+		code=j,
+		latitude=float(stla[i]),
+		longitude=float(stla[i]),
+		elevation=float(stel[i]),
+		creation_date=obspy.UTCDateTime(START_DATE),
+		site=Site(name=NETWORK_DESCRIPTION))
+	    
+	    cha_HHX = Channel(
+		# This is the channel code according to the SEED standard.
+		code="HHX",
+		# This is the location code according to the SEED standard.
+		location_code=LOCATION,
+		# Note that these coordinates can differ from the station coordinates.
+		latitude=float(stla[i]),
+		longitude=float(stla[i]),
+		elevation=float(stel[i]),
+		depth=0.0,
+		azimuth=0.0,
+		dip=-90.0,
+		sample_rate=SAMPLING_RATE)
+
+	    cha_HHZ = Channel(
+		# This is the channel code according to the SEED standard.
+		code="HHZ",
+		# This is the location code according to the SEED standard.
+		location_code=LOCATION,
+		# Note that these coordinates can differ from the station coordinates.
+		latitude=float(stla[i]),
+		longitude=float(stla[i]),
+		elevation=float(stel[i]),
+		depth=0.0,
+		azimuth=0.0,
+		dip=-90.0,
+		sample_rate=SAMPLING_RATE)
+
+	    cha_HHE = Channel(
+		# This is the channel code according to the SEED standard.
+		code="HHE",
+		# This is the location code according to the SEED standard.
+		location_code=LOCATION,
+		# Note that these coordinates can differ from the station coordinates.
+		latitude=float(stla[i]),
+		longitude=float(stla[i]),
+		elevation=float(stel[i]),
+		depth=0.0,
+		azimuth=90.0,
+		dip=0.0,
+		sample_rate=SAMPLING_RATE)
+
+	    cha_HHN = Channel(
+		# This is the channel code according to the SEED standard.
+		code="HHN",
+		# This is the location code according to the SEED standard.
+		location_code=LOCATION,
+		# Note that these coordinates can differ from the station coordinates.
+		latitude=float(stla[i]),
+		longitude=float(stla[i]),
+		elevation=float(stel[i]),
+		depth=0.0,
+		azimuth=0.0,
+		dip=0.0,
+		sample_rate=SAMPLING_RATE)
+	
+	    # Now tie it all together.
+
+	    response = nrl.get_response(sensor_keys = sensor_keys[i].split('*'),datalogger_keys = datalogger_keys[i].split('*'))
+	    response_hydro = nrl.get_response(sensor_keys = hydrophone_keys[i].split('*'),datalogger_keys = datalogger_keys[i].split('*'))
+
+	    cha_HHX.response = response_hydro
+
+
+	    cha_HHZ.response = response
+	    cha_HHN.response = response
+	    cha_HHE.response = response
+	    channel_sta = [cha_HHZ,cha_HHN,cha_HHE,cha_HHX]
 	    for k in channel_sta:
 	    	sta.channels.append(k)
 	    net.stations.append(sta)

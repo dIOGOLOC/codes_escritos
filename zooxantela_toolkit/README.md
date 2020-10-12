@@ -34,10 +34,6 @@ Brief explanation about the main code:
 
 **To check your dataset:**
 
-You can plot events data to compare the data of your stations:**
-
-2) *python cut_plot_EVENT_DATA.py*
-
 How to update
 -------------
 The code is still experimental so you should regularly check for (and pull) updates.

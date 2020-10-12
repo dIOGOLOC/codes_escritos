@@ -41,65 +41,70 @@ def cut_download_data_by_event(knetwk,kstnm,stla,stlo,evla,evlo,evdp,evmag,ev_ti
 	########################################################################################################################################################
 	#STREAM 
 
-	#Creating Event Directory 
-	event_directory = OUTPUT_EV_DIR+'Local/'+knetwk+'/'+kstnm+'/'+'{:04}'.format(op.UTCDateTime(ev_timeUTC).year)+'/'+'{:03}'.format(op.UTCDateTime(ev_timeUTC).julday)+'/'+'{:04}'.format(op.UTCDateTime(ev_timeUTC).year)+'.'+'{:03}'.format(op.UTCDateTime(ev_timeUTC).julday)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).hour)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).minute)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).second)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).microsecond)[:3]
-	os.makedirs(event_directory, exist_ok=True)
-	print('Event Directory - ',event_directory)
+	#Creating Event Directory
+
+	try:
 			
-	#-----------------------------------
-	#Component E
-	stE = client.get_waveforms(knetwk,kstnm,'00','HHE',starttime,endtime)
-	headerHHX = {
-				'kstnm': kstnm, 'kcmpnm': 'HHE','knetwk':knetwk,
-				'stla': float(stla), 'stlo': float(stlo), 
-				'evdp': float(evdp), 'evla': float(evla), 'evlo': float(evlo), 'mag': float(evmag), 
-				'nzhour': int(starttime.hour), 'nzjday': int(starttime.julday), 'nzmin': int(starttime.minute),'nzmsec': int('{:03}'.format(starttime.microsecond)[:3]), 'nzsec': int(starttime.second), 'nzyear': int(starttime.year),
-				'cmpaz': 90.0, 'cmpinc': 90.0,'dist': float(dist/1000), 'gcarc': float(gcarc),'az': float(az), 'baz': float(baz), 'user8': float(arr.ray_param/6371),
-				'o':float(CUT_BEFORE_P_LOCAL),
-				'delta':stE[0].stats.delta
-				}
+		#-----------------------------------
+		#Component E
+		stE = client.get_waveforms(knetwk,kstnm,' ','HHE',starttime,endtime)
+		headerHHX = {
+					'kstnm': kstnm, 'kcmpnm': 'HHE','knetwk':knetwk,
+					'stla': float(stla), 'stlo': float(stlo), 
+					'evdp': float(evdp), 'evla': float(evla), 'evlo': float(evlo), 'mag': float(evmag), 
+					'nzhour': int(starttime.hour), 'nzjday': int(starttime.julday), 'nzmin': int(starttime.minute),'nzmsec': int('{:03}'.format(starttime.microsecond)[:3]), 'nzsec': int(starttime.second), 'nzyear': int(starttime.year),
+					'cmpaz': 90.0, 'cmpinc': 90.0,'dist': float(dist/1000), 'gcarc': float(gcarc),'az': float(az), 'baz': float(baz), 'user8': float(arr.ray_param/6371),
+					'o':float(CUT_BEFORE_P_LOCAL),
+					'delta':stE[0].stats.delta
+					}
+		
+		event_directory = OUTPUT_EV_DIR+'Local/'+knetwk+'/'+kstnm+'/'+'{:04}'.format(op.UTCDateTime(ev_timeUTC).year)+'/'+'{:03}'.format(op.UTCDateTime(ev_timeUTC).julday)+'/'+'{:04}'.format(op.UTCDateTime(ev_timeUTC).year)+'.'+'{:03}'.format(op.UTCDateTime(ev_timeUTC).julday)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).hour)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).minute)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).second)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).microsecond)[:3]
+		os.makedirs(event_directory, exist_ok=True)
+		print('Event Directory - ',event_directory)
 
-	sacHHX = SACTrace(data=stE[0].data, **headerHHX)
-	sacHHX.write(event_directory+'/'+knetwk+'.'+kstnm+'.'+'{:04}'.format(op.UTCDateTime(ev_timeUTC).year)+'.'+'{:03}'.format(op.UTCDateTime(ev_timeUTC).julday)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).hour)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).minute)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).second)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).microsecond)[:3]+'.E')
-								
-	#-----------------------------------
-	#Component N
-				
-	stN = client.get_waveforms(knetwk,kstnm,'00','HHN',starttime,endtime)
 
-	headerHHY = {
-				'kstnm': kstnm, 'kcmpnm': 'HHN','knetwk':knetwk,
-				'stla': float(stla), 'stlo': float(stlo),
-				'evdp': float(evdp), 'evla': float(evla), 'evlo': float(evlo), 'mag': float(evmag), 
-				'nzhour': int(starttime.hour), 'nzjday': int(starttime.julday), 'nzmin': int(starttime.minute), 'nzmsec': int('{:03}'.format(starttime.microsecond)[:3]),'nzsec': int(starttime.second),'nzyear': int(starttime.year),
-				'cmpaz': 0.0, 'cmpinc': 90.0, 'dist': float(dist/1000), 'gcarc': float(gcarc), 'az': float(az), 'baz': float(baz), 'user8': float(arr.ray_param/6371),
-				'o':float(CUT_BEFORE_P_LOCAL),
-				'delta':stN[0].stats.delta
-				}
+		sacHHX = SACTrace(data=stE[0].data, **headerHHX)
+		sacHHX.write(event_directory+'/'+knetwk+'.'+kstnm+'.'+'{:04}'.format(op.UTCDateTime(ev_timeUTC).year)+'.'+'{:03}'.format(op.UTCDateTime(ev_timeUTC).julday)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).hour)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).minute)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).second)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).microsecond)[:3]+'.E')
+									
+		#-----------------------------------
+		#Component N
+					
+		stN = client.get_waveforms(knetwk,kstnm,' ','HHN',starttime,endtime)
 
-	sacHHY = SACTrace(data=stN[0].data, **headerHHY)
-	sacHHY.write(event_directory+'/'+knetwk+'.'+kstnm+'.'+'{:04}'.format(op.UTCDateTime(ev_timeUTC).year)+'.'+'{:03}'.format(op.UTCDateTime(ev_timeUTC).julday)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).hour)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).minute)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).second)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).microsecond)[:3]+'.N')
-				
-	#-----------------------------------
-	#Component Z
-	stZ = client.get_waveforms(knetwk,kstnm,'00','HHZ',starttime,endtime)
+		headerHHY = {
+					'kstnm': kstnm, 'kcmpnm': 'HHN','knetwk':knetwk,
+					'stla': float(stla), 'stlo': float(stlo),
+					'evdp': float(evdp), 'evla': float(evla), 'evlo': float(evlo), 'mag': float(evmag), 
+					'nzhour': int(starttime.hour), 'nzjday': int(starttime.julday), 'nzmin': int(starttime.minute), 'nzmsec': int('{:03}'.format(starttime.microsecond)[:3]),'nzsec': int(starttime.second),'nzyear': int(starttime.year),
+					'cmpaz': 0.0, 'cmpinc': 90.0, 'dist': float(dist/1000), 'gcarc': float(gcarc), 'az': float(az), 'baz': float(baz), 'user8': float(arr.ray_param/6371),
+					'o':float(CUT_BEFORE_P_LOCAL),
+					'delta':stN[0].stats.delta
+					}
 
-	headerHHZ = {
-				'kstnm': kstnm, 'kcmpnm': 'HHZ','knetwk':knetwk, 
-				'stla': float(stla), 'stlo': float(stlo), 
-				'evdp': float(evdp), 'evla': float(evla), 'evlo': float(evlo), 'mag': float(evmag), 
-				'nzhour': int(starttime.hour),'nzjday': int(starttime.julday), 'nzmin': int(starttime.minute), 'nzmsec': int('{:03}'.format(starttime.microsecond)[:3]),'nzsec': int(starttime.second),'nzyear': int(starttime.year),	
-				'cmpaz': 0.0, 'cmpinc': 0.0, 'dist': float(dist/1000), 'gcarc': float(gcarc), 'az': float(az), 'baz': float(baz), 'user8': float(arr.ray_param/6371),
-				'o':float(CUT_BEFORE_P_LOCAL),
-				'delta':stZ[0].stats.delta
-						}
+		sacHHY = SACTrace(data=stN[0].data, **headerHHY)
+		sacHHY.write(event_directory+'/'+knetwk+'.'+kstnm+'.'+'{:04}'.format(op.UTCDateTime(ev_timeUTC).year)+'.'+'{:03}'.format(op.UTCDateTime(ev_timeUTC).julday)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).hour)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).minute)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).second)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).microsecond)[:3]+'.N')
+					
+		#-----------------------------------
+		#Component Z
+		stZ = client.get_waveforms(knetwk,kstnm,' ','HHZ',starttime,endtime)
 
-	sacHHZ = SACTrace(data=stZ[0].data, **headerHHZ)
-	sacHHZ.write(event_directory+'/'+knetwk+'.'+kstnm+'.'+'{:04}'.format(op.UTCDateTime(ev_timeUTC).year)+'.'+'{:03}'.format(op.UTCDateTime(ev_timeUTC).julday)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).hour)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).minute)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).second)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).microsecond)[:3]+'.Z')
+		headerHHZ = {
+					'kstnm': kstnm, 'kcmpnm': 'HHZ','knetwk':knetwk, 
+					'stla': float(stla), 'stlo': float(stlo), 
+					'evdp': float(evdp), 'evla': float(evla), 'evlo': float(evlo), 'mag': float(evmag), 
+					'nzhour': int(starttime.hour),'nzjday': int(starttime.julday), 'nzmin': int(starttime.minute), 'nzmsec': int('{:03}'.format(starttime.microsecond)[:3]),'nzsec': int(starttime.second),'nzyear': int(starttime.year),	
+					'cmpaz': 0.0, 'cmpinc': 0.0, 'dist': float(dist/1000), 'gcarc': float(gcarc), 'az': float(az), 'baz': float(baz), 'user8': float(arr.ray_param/6371),
+					'o':float(CUT_BEFORE_P_LOCAL),
+					'delta':stZ[0].stats.delta
+							}
+
+		sacHHZ = SACTrace(data=stZ[0].data, **headerHHZ)
+		sacHHZ.write(event_directory+'/'+knetwk+'.'+kstnm+'.'+'{:04}'.format(op.UTCDateTime(ev_timeUTC).year)+'.'+'{:03}'.format(op.UTCDateTime(ev_timeUTC).julday)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).hour)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).minute)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).second)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).microsecond)[:3]+'.Z')
+	except:
+		print('No event to: '+knetwk+'.'+kstnm)
 
 def cut_data_by_local_event(knetwk,kstnm,stla,stlo,evla,evlo,evdp,evmag,ev_timeUTC):
 	data_sta = DIR_DATA+knetwk+'/'+kstnm+'/'
-	print(data_sta)
 	if os.path.isdir(data_sta) == True:
 
 		#Calculating distance, azimuth and backazimuth

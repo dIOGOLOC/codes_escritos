@@ -107,6 +107,18 @@ TIME_OF_WEEKDAY_DAY = config.getint('ppsd', 'TIME_OF_WEEKDAY_DAY')
 TIME_OF_WEEKDAY_START_HOUR = config.getint('ppsd', 'TIME_OF_WEEKDAY_START_HOUR') 
 TIME_OF_WEEKDAY_FINAL_HOUR = config.getint('ppsd', 'TIME_OF_WEEKDAY_FINAL_HOUR') 
 
+#Extracting PSD values for given period in seconds.
+#Selects the period bin whose center period is closest to the specified period. 
+PERIOD_PSD = config.getfloat('ppsd', 'PERIOD_PSD')
+
+#Maximum and minimum amplitude of the PSD. 
+AMP_PSD_MIN = config.getfloat('ppsd', 'AMP_PSD_MIN')
+AMP_PSD_MAX = config.getfloat('ppsd', 'AMP_PSD_MAX')
+
+#Maximum and minimum amplitude of the PSD (hydrophones). 
+AMP_PSD_HYDROPHONE_MIN = config.getfloat('ppsd', 'AMP_PSD_HYDROPHONE_MIN')
+AMP_PSD_HYDROPHONE_MAX = config.getfloat('ppsd', 'AMP_PSD_HYDROPHONE_MAX')
+
 # ----------
 # local_evt
 # ----------

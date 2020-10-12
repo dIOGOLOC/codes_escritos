@@ -33,6 +33,7 @@ print('\n')
 HHZ_files = []
 HHE_files = []
 HHN_files = []
+HHX_files = []
 
 for root, dirs, files in os.walk(DIR_DATA):
     for file in files:
@@ -42,10 +43,13 @@ for root, dirs, files in os.walk(DIR_DATA):
         	HHE_files.append(os.path.join(root, file))
        	elif "HHN" in file:
        		HHN_files.append(os.path.join(root, file))
+        elif "HHX" in file:
+          HHX_files.append(os.path.join(root, file))
 
 HHZ_files = sorted(HHZ_files)
 HHE_files = sorted(HHE_files)
 HHN_files = sorted(HHN_files)
+HHX_files = sorted(HHX_files)
 
 # =========================
 # Multiprocessing SAC files
@@ -76,6 +80,14 @@ result_HHN = []
 pool = Pool(processes=NUM_PROCESS)
 for result in tqdm(pool.imap_unordered(func=calc_PSD, iterable=HHN_files), total=len(HHN_files)):
 	result_HHN.append(result)
+print('\n')
+#--------------------------------------------------------------------------------------------------------------------
+
+print('Channel: HHX')
+result_HHX = []
+pool = Pool(processes=NUM_PROCESS)
+for result in tqdm(pool.imap_unordered(func=calc_PSD, iterable=HHX_files), total=len(HHX_files)):
+  result_HHX.append(result)
 print('\n')
 #--------------------------------------------------------------------------------------------------------------------
 

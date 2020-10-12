@@ -15,17 +15,11 @@ from matplotlib.ticker import MultipleLocator, FormatStrFormatter
 import matplotlib.pyplot as plt
 
 
-from visual_py.event_plot import plot_event_data,plot_map_event_data
+from visual_py.event_plot import plot_event_data,plot_map_event_data,plot_map_event_data_hydrophone
 
 from parameters_py.config import (
 					OUTPUT_FIGURE_DIR,DIR_DATA,OUTPUT_EV_DIR,DIR_STATUS,NUM_PROCESS,OUTPUT_PSD_DIR,XML_FILE
 					)
-
-# ===================
-# Retrieving XML file
-# ===================
-
-inv = read_inventory(XML_FILE)
 
 # =====================
 # Retrieving .SAC files
@@ -44,17 +38,6 @@ for root, dirs, files in os.walk(OUTPUT_EV_DIR+'Local/'):
 
 EVENT_dir = sorted(list(set(EVENT_dir)))
 
-
-EVENT_dir_RSBR = []
-
-for root, dirs, files in os.walk('/home/diogoloc/dados_posdoc/ON_MAR/EVENTS/RSBR/'):
-    for directory in dirs:
-        if len(directory.split('.')) > 5:
-            EVENT_dir_RSBR.append(os.path.join(directory))
-
-EVENT_dir_RSBR = sorted(list(set(EVENT_dir_RSBR)))
-
-
 #--------------------------------------------------------------------------------------------------------------------
 
 HHZ_files = []
@@ -64,40 +47,73 @@ for root, dirs, files in os.walk(OUTPUT_EV_DIR+'Local/'):
         if '.Z' in file:
             HHZ_files.append(os.path.join(root,file))
 
-HHZ_files_RSBR = []
+lst_eventsZ = []
 
-for root, dirs, files in os.walk('/home/diogoloc/dados_posdoc/ON_MAR/EVENTS/RSBR/'):
-    for file in files:
-        if '.Z' in file:
-            HHZ_files_RSBR.append(os.path.join(root,file))
-
+for i in EVENT_dir:
+  lst_eventsZ.append([k for k in HHZ_files if i in k ])
 
 #--------------------------------------------------------------------------------------------------------------------
 
-HHZ_files = HHZ_files+HHZ_files_RSBR
+HHN_files = []
 
-lst_events = []
+for root, dirs, files in os.walk(OUTPUT_EV_DIR+'Local/'):
+    for file in files:
+        if '.N' in file:
+            HHN_files.append(os.path.join(root,file))
+
+lst_eventsN = []
 
 for i in EVENT_dir:
-  lst_events.append([k for k in HHZ_files if i in k])
+  lst_eventsN.append([k for k in HHN_files if i in k ])
+
+#--------------------------------------------------------------------------------------------------------------------
+
+HHE_files = []
+
+for root, dirs, files in os.walk(OUTPUT_EV_DIR+'Local/'):
+    for file in files:
+        if '.E' in file:
+            HHE_files.append(os.path.join(root,file))
+
+lst_eventsE = []
+
+for i in EVENT_dir:
+  lst_eventsE.append([k for k in HHE_files if i in k ])
+
+#-------------------------------------------------------------------------------------------------------------------
 
 # ===================
 # Ploting EVENT files
 # ===================
-print('Ploting Events')
-start_time = time.time()
-
-for i,j in enumerate(lst_events):
-  plot_event_data(j,inv,EVENT_dir[i],'Local_HHZ/',2.0,10.0)
-
-print("--- %.2f execution time (min) ---" % ((time.time() - start_time)/60))
-print('\n')
 
 print('Ploting Station x Event')
 start_time = time.time()
+'''
+for i,j in enumerate(lst_eventsZ):
+  plot_map_event_data(lst_eventsZ[i],lst_eventsN[i],lst_eventsE[i],EVENT_dir[i],'Local/',4,16.0)
 
-for i,j in enumerate(lst_events):
-  plot_map_event_data(j,inv,EVENT_dir[i],'Local_HHZ/',2.0,10.0)
+#-------------------------------------------------------------------------------------------------------------------
+'''
+HHX_files = []
+
+for root, dirs, files in os.walk(OUTPUT_EV_DIR+'Local/'):
+    for file in files:
+        if '.X' in file:
+            HHX_files.append(os.path.join(root,file))
+
+HHX_files_RSBR = []
+
+lst_eventsX = []
+
+for i in EVENT_dir:
+  lst_eventsX.append([k for k in HHX_files if i in k ])
+
+#--------------------------------------------------------------------------------------------------------------------
+for i,j in enumerate(lst_eventsX):
+    if len(j) != 0:
+        plot_map_event_data_hydrophone(lst_eventsX[i],EVENT_dir[i],'Local/',4,16.0)
+
+#--------------------------------------------------------------------------------------------------------------------
 
 print("--- %.2f execution time (min) ---" % ((time.time() - start_time)/60))
 print('\n')

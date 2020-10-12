@@ -22,7 +22,7 @@ Nominal Response Library (NRL) includes:
 
 An example of STA_CSV_FILE is shown bellow:
 
-NAME;LAT;LON;ELEV;SENSOR_KEYS;DATALOGGER_KEYS;ACCER_KEYS
+NAME;LAT;LON;ELEV;SENSOR_KEYS;DATALOGGER_KEYS;ACCER_KEYS;HYDROPHONE_KEYS
 ACJC;-5.5843;-35.7861;0;Sprengnether (now Eentec)*S6000*640 and 213 Ohms;REF TEK*RT 130 & 130-SMA*1*100;
 NBAN;-9.6687;-36.2749;0;REF TEK*RT 151*A*120;REF TEK*RT 130 & 130-SMA*1*100;REF TEK*RT 131 (also 130-SMA)*131A-02 (also 130-SMA)*SF1500S
 NBBC;-5.5222;-45.2844;0;REF TEK*RT 151*A*120;REF TEK*RT 130 & 130-SMA*1*100;REF TEK*RT 131 (also 130-SMA)*131A-02 (also 130-SMA)*SF1500S
@@ -50,7 +50,7 @@ print('\n')
 
 sta_lat_lon = np.genfromtxt(STA_CSV_FILE,skip_header=1,usecols=[1,2,3],delimiter=';')
 
-sta_name =  np.genfromtxt(STA_CSV_FILE,dtype='str',skip_header=1,usecols=[0,4,5,6],delimiter=';')
+sta_name =  np.genfromtxt(STA_CSV_FILE,dtype='str',skip_header=1,usecols=[0,4,5,6,7],delimiter=';')
 
 sta_event = {
 		'KSTNM':[],
@@ -59,7 +59,8 @@ sta_event = {
 		'STEL':[],
 		'SENSOR_KEYS':[],
 		'DATALOGGER_KEYS':[],
-		'ACCER_KEYS':[]
+		'ACCER_KEYS':[],
+		'HYDROPHONE_KEYS':[]
 	    }
 
 for i,j in enumerate(sta_name):
@@ -70,6 +71,7 @@ for i,j in enumerate(sta_name):
 	sta_event['SENSOR_KEYS'].append(j[1])
 	sta_event['DATALOGGER_KEYS'].append(j[2])
 	sta_event['ACCER_KEYS'].append(j[3])
+	sta_event['HYDROPHONE_KEYS'].append(j[4])
 
 print('Number of Stations: '+str(len(sta_event['KSTNM'])))
 for i,j in enumerate(sta_event['KSTNM']):
@@ -77,6 +79,7 @@ for i,j in enumerate(sta_event['KSTNM']):
 	print('SENSOR_KEYS: '+sta_event['SENSOR_KEYS'][i])
 	print('ACCER_KEYS: '+sta_event['ACCER_KEYS'][i])
 	print('DATALOGGER_KEYS: '+sta_event['DATALOGGER_KEYS'][i])
+	print('HYDROPHONE_KEYS: '+sta_event['HYDROPHONE_KEYS'][i])
 	print('\n')
 
 

@@ -5,6 +5,7 @@ Scritp to estimate probabilistic power spectral densities for each .SAC file
 
 import time
 import os
+import glob
 from tqdm import tqdm
 from multiprocessing import Pool
 from obspy import read,read_inventory, UTCDateTime, Stream
@@ -15,7 +16,7 @@ from matplotlib.ticker import MultipleLocator, FormatStrFormatter
 import matplotlib.pyplot as plt
 
 
-from assessment_py.power_spectral_densities import plot_PSD
+from assessment_py.power_spectral_densities import plot_PPSD_by_period_sensor,plot_PPSD_by_period_hydrophone
 
 from parameters_py.config import (
 					OUTPUT_FIGURE_DIR,DIR_DATA,DIR_STATUS,NUM_PROCESS,OUTPUT_PSD_DIR
@@ -27,48 +28,29 @@ from parameters_py.config import (
 # =====================
 
 print('\n')
-print('Retrieving SAC files')
+print('Retrieving .NPZ files')
 print('\n')
 
-HHZ_dir = []
-HHE_dir = []
-HHN_dir = []
+dirs_PPSD = glob.glob(OUTPUT_PSD_DIR+'*')
 
-for root, dirs, files in os.walk(OUTPUT_PSD_DIR):
-    for directory in dirs:
-        if "HHZ.PPSD" in directory:
-            HHZ_dir.append(os.path.join(root, directory))
-        if "HHE.PPSD" in directory:
-        	HHE_dir.append(os.path.join(root, directory))
-        if "HHN.PPSD" in directory:
-       		HHN_dir.append(os.path.join(root, directory))
-
+NPZ_dirs = sorted([i+'/' for i in dirs_PPSD])
 
 # ===================
 # Ploting .NPZ files
 # ===================
 
-print('Ploting .NPZ files')
 start_time = time.time()
 print('\n')
 #--------------------------------------------------------------------------------------------------------------------
-print('Channel: HHZ')
-for i,j in enumerate(HHZ_dir):
-  plot_PSD(j)
+for i,j in enumerate(NPZ_dirs):
+  plot_PPSD_by_period_sensor(j)
+print('\n')
+#--------------------------------------------------------------------------------------------------------------------
+for i,j in enumerate(NPZ_dirs):
+  plot_PPSD_by_period_hydrophone(j)
 print('\n')
 #--------------------------------------------------------------------------------------------------------------------
 
-print('Channel: HHE')
-for i,j in enumerate(HHE_dir):
-  plot_PSD(j)
-print('\n')
-#--------------------------------------------------------------------------------------------------------------------
-
-print('Channel: HHN')
-for i,j in enumerate(HHN_dir):
-  plot_PSD(j)
-print('\n')
-#--------------------------------------------------------------------------------------------------------------------
 
 print("--- %.2f execution time (min) ---" % ((time.time() - start_time)/60))
 print('\n')
