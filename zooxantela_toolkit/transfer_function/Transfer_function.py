@@ -55,16 +55,16 @@ MSEED_DIR = '/home/diogoloc/dados_posdoc/ON_MAR/obs_data_MSEED/'
 
 STATIONXML_DIR = '/home/diogoloc/dados_posdoc/ON_MAR/XML_OBS/'
 
-TRANSFER_FUNC_OUTPUT = '/home/diogoloc/dados_posdoc/ON_MAR/TRANSFER_FUNC/TESTE/FIGURAS/'    
+TRANSFER_FUNC_OUTPUT = '/home/diogoloc/dados_posdoc/ON_MAR/TRANSFER_FUNC/FIGURAS/'    
 
 JSON_FILES = '/home/diogoloc/dados_posdoc/ON_MAR/TRANSFER_FUNC/JSON_FILES/'
 
-FIRSTDAY = '2019-08-02'
-LASTDAY = '2020-03-06'
+FIRSTDAY = '2019-07-27'
+LASTDAY = '2020-01-27'
 
 NETWORK = 'ON'
 
-STATION = 'OBS20'
+STATION = 'OBS17'
 
 MIN_WINDOWS = 24
 
@@ -368,7 +368,6 @@ files = filelist(basedir=MSEED_DIR+NETWORK+'/'+STATION+'/',interval_period_date=
 print('Total of miniseed files = '+str(len(files)))
 print('\n')
 
-'''
 print('==================================================================')
 print('Opening miniseed files and calculating the spectrogram of each day')
 print('==================================================================')
@@ -384,7 +383,7 @@ with Pool(processes=num_processes) as p:
 
 print("--- %.2f execution time (min) ---" % ((time.time() - start_time)/60))
 print('\n')
-'''
+
 
 #-------------------------------------------------------------------------------
 daily_lst_spec = [[]]*len(INTERVAL_PERIOD_DATE)
@@ -1044,7 +1043,7 @@ for i,j in enumerate(tqdm(last_daily_lst_data)):
     daily_A_output = TRANSFER_FUNC_OUTPUT+NETWORK+'.'+STATION+'/Daily_Admittance_Coherence_Phase/'
     os.makedirs(daily_A_output,exist_ok=True)
     figA.savefig(daily_A_output+'Admittance.Coherence.Phase.'+data_HHZ["time_day"]+'.png', dpi=300, facecolor='w', edgecolor='w')
-'''
+
     #-----------------------------------------------------------------------------------------------------
     
     #Calculate TILT
@@ -1170,4 +1169,3 @@ plt.gcf().autofmt_xdate()
 
 figureTILTfinal.suptitle('Station = '+STATION+' - Period = '+UTCDateTime(year=int(INTERVAL_PERIOD[0].year),julday=int(INTERVAL_PERIOD[0].julday)).strftime('%d/%m/%Y')+'--'+UTCDateTime(year=int(INTERVAL_PERIOD[-1].year),julday=int(INTERVAL_PERIOD[-1].julday)).strftime('%d/%m/%Y'),fontsize=18)
 figureTILTfinal.savefig(daily_A_output+'Tilt.Coherence.total.png', dpi=300, facecolor='w', edgecolor='w')
-'''
