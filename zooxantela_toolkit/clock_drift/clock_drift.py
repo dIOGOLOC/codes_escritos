@@ -13,14 +13,16 @@ from matplotlib.ticker import MultipleLocator, FormatStrFormatter
 from matplotlib.patches import Ellipse
 import matplotlib.cbook as cbook
 from matplotlib.patches import Rectangle
+import matplotlib.gridspec as gridspec
+from matplotlib.transforms import offset_copy
 
 import obspy as op
 from obspy import read,read_inventory, UTCDateTime, Stream, Trace
 from obspy.io.xseed import Parser
-from obspy.signal.cross_correlation import correlate
 from obspy.signal.filter import bandpass,lowpass
 from obspy.geodetics.base import gps2dist_azimuth
 from obspy.signal.util import prev_pow_2
+from obspy.signal.cross_correlation import correlate as obscorr
 
 import json
 import glob
@@ -55,6 +57,9 @@ CLOCK_DRIFT_OUTPUT = '/home/diogoloc/dados_posdoc/ON_MAR/CLOCK_DRIFT_OUTPUT/FIGU
 
 JSON_FILES = '/home/diogoloc/dados_posdoc/ON_MAR/CLOCK_DRIFT_OUTPUT/JSON_FILES/'
 
+#Shapefile  boundary states
+BOUNDARY_STATES_SHP = '/home/diogoloc/SIG_dados/Projeto_ON_MAR/shapefile/brasil_estados/brasil_estados.shp'
+
 FIRSTDAY = '2019-08-01'
 LASTDAY = '2019-08-02'
 
@@ -66,7 +71,7 @@ WINDOW_LENGTH = 3600
 WINDOW_FREQ = 0.0002 
 
 #max time window (s) for cross-correlation
-SHIFT_LEN = 1024
+SHIFT_LEN = 3600
 
 NEW_SAMPLING_RATE = 5
 
@@ -83,7 +88,7 @@ ONEDAY = datetime.timedelta(days=1)
 # MULTIPROCESSING
 # ================
 
-num_processes = 12
+num_processes = 6
 
 # =================
 # Filtering by date
@@ -220,9 +225,12 @@ def get_stations_data(f,onebit_norm=True,white_spectral=False):
 
 	    if onebit_norm:
 	    	traces_onebit = [np.sign(tr[0].data) for tr in traces_resample]
+	    	traces_data_day = [tr.data.tolist() for tr in traces_onebit]
 
 	    else:
 	    	traces_onebit = traces_resample
+	    	traces_data_day = [tr[0].data.tolist() for tr in traces_onebit]
+
 
 	    # ==================
 	    # Spectral whitening
@@ -241,8 +249,6 @@ def get_stations_data(f,onebit_norm=True,white_spectral=False):
 
 	    	# re bandpass to avoid low/high freq noise
 	    	trace.filter(type="bandpass",freqmin=freqmin,freqmax=freqmax,corners=corners,zerophase=zerophase)
-
-	    traces_data_day = [tr.data.tolist() for tr in traces_onebit]
 
 	    lon = inv.get_coordinates(sta_channel_id)['longitude']
 	    lat = inv.get_coordinates(sta_channel_id)['latitude']
@@ -263,7 +269,7 @@ def get_stations_data(f,onebit_norm=True,white_spectral=False):
 
 	    output_DATA_DAY = JSON_FILES+'DATA_DAY_FILES/'+year_day+'.'+julday_day+'/'
 	    os.makedirs(output_DATA_DAY,exist_ok=True)
-	    with open(output_DATA_DAY+'DATA_DAY_'+station.network+'_'+station.name+'_'+sta_channel_id+'_'+year_day+'_'+julday_day+'.json', 'w') as fp:
+	    with open(output_DATA_DAY+'DATA_DAY_'+sta_channel_id+'_'+year_day+'_'+julday_day+'.json', 'w') as fp:
 	    	json.dump(data_dic, fp)
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -289,17 +295,80 @@ def crosscorr_func(stationtrace_pairs):
     day_crosscor_causal.add(sta1['data_day'],sta2['data_day'],sta1['hours_day'],sta2['hours_day'])
     day_crosscor_acausal.add(sta2['data_day'],sta1['data_day'],sta2['hours_day'],sta1['hours_day'])
 
-    CrossCorrelation_dic[sta1['name']+'-'+sta2['name']]['dist'] = round(day_crosscor_causal.dist())
-    CrossCorrelation_dic[sta1['name']+'-'+sta2['name']]['sta1_loc'] = [sta1['lat'],sta1['lon']]
-    CrossCorrelation_dic[sta1['name']+'-'+sta2['name']]['sta2_loc'] = [sta2['lat'],sta2['lon']]
-    CrossCorrelation_dic[sta1['name']+'-'+sta2['name']]['dist'] = round(day_crosscor_causal.dist())
-    CrossCorrelation_dic[sta1['name']+'-'+sta2['name']]['crosscorr_daily_causal'] = day_crosscor_causal.dataarray.tolist()
-    CrossCorrelation_dic[sta1['name']+'-'+sta2['name']]['crosscorr_daily_acausal'] = day_crosscor_acausal.dataarray.tolist()
+    CrossCorrelation_dic['dist'] = round(day_crosscor_causal.dist())
+    CrossCorrelation_dic['sta1_loc'] = [sta1['lat'],sta1['lon']]
+    CrossCorrelation_dic['sta1_name'] = sta1['name']
+    CrossCorrelation_dic['sta2_loc'] = [sta2['lat'],sta2['lon']]
+    CrossCorrelation_dic['sta2_name'] = sta2['name']
+    CrossCorrelation_dic['crosscorr_daily_causal_time'] = day_crosscor_causal.timearray.tolist()
+    CrossCorrelation_dic['crosscorr_daily_causal'] = day_crosscor_causal.dataarray.tolist()
+    CrossCorrelation_dic['crosscorr_daily_acausal'] = day_crosscor_acausal.dataarray.tolist()
+    CrossCorrelation_dic['crosscorr_daily_acausal_time'] = day_crosscor_acausal.timearray.tolist()
 
     output_CrossCorrelation_DAY = JSON_FILES+'CROSS_CORR_DAY_FILES/'+year_day+'.'+julday_day+'/'
     os.makedirs(output_CrossCorrelation_DAY,exist_ok=True)
     with open(output_CrossCorrelation_DAY+'CROSS_CORR_DAY_FILES_'+sta1['name']+'_'+sta2['name']+'_'+year_day+'_'+julday_day+'.json', 'w') as fp:
-    	json.dump(CrossCorrelation_dic, fp)
+        json.dump(CrossCorrelation_dic, fp)
+
+    # ============================
+    # Plot: map and pair crosscorr
+    # ============================
+	
+    fig = plt.figure(figsize=(15, 15))
+    #fig.suptitle('Dia do Evento - '+UTCDateTime(year=int(event_date[0]),julday=int(event_date[1])).strftime('%d/%m/%Y')+' - Magnitude:'+str(stZ[0].stats.sac.mag),fontsize=20)
+
+    gs = gridspec.GridSpec(2, 1,wspace=0.2, hspace=0.5)
+
+    #-------------------------------------------
+
+    map_loc = fig.add_subplot(gs[0],projection=ccrs.PlateCarree())
+		
+    LLCRNRLON_LARGE = -52
+    URCRNRLON_LARGE = -28
+    LLCRNRLAT_LARGE = -28
+    URCRNRLAT_LARGE = -16
+
+    map_loc.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
+    map_loc.yaxis.set_ticks_position('both')
+    map_loc.xaxis.set_ticks_position('both')
+
+    map_loc.set_xticks(np.arange(LLCRNRLON_LARGE,URCRNRLON_LARGE,3), crs=ccrs.PlateCarree())
+    map_loc.set_yticks(np.arange(LLCRNRLAT_LARGE,URCRNRLAT_LARGE,3), crs=ccrs.PlateCarree())
+    map_loc.tick_params(labelbottom=True,labeltop=True,labelleft=True,labelright=True, labelsize=15)
+
+    map_loc.grid(True,which='major',color='gray',linewidth=1,linestyle='--')
+
+    reader_1_SHP = Reader(BOUNDARY_STATES_SHP)
+    shape_1_SHP = list(reader_1_SHP.geometries())
+    plot_shape_1_SHP = cfeature.ShapelyFeature(shape_1_SHP, ccrs.PlateCarree())
+    map_loc.add_feature(plot_shape_1_SHP, facecolor='none', edgecolor='k',linewidth=0.5,zorder=-1)
+    
+    # Use the cartopy interface to create a matplotlib transform object    
+    # for the Geodetic coordinate system. We will use this along with    
+    # matplotlib's offset_copy function to define a coordinate system which
+    # translates the text by 25 pixels to the left.
+    geodetic_transform = ccrs.Geodetic()._as_mpl_transform(map_loc)
+    text_transform = offset_copy(geodetic_transform, units='dots', y=0,x=60)
+    text_transform_mag = offset_copy(geodetic_transform, units='dots', y=-15,x=15)
+    
+    map_loc.scatter(sta1['lon'],sta1['lat'], marker='^',s=200,c='k',edgecolors='w', transform=ccrs.PlateCarree())    
+    map_loc.scatter(sta2['lon'],sta2['lat'], marker='^',s=200,c='k',edgecolors='w', transform=ccrs.PlateCarree())
+
+    map_loc.plot([sta1['lon'],sta1['lat']],[sta2['lon'],sta2['lat']], transform=ccrs.PlateCarree())
+    
+    map_loc.text(sta1['lon'],sta1['lat'], sta1['name'],fontsize=15,verticalalignment='center', horizontalalignment='right',transform=text_transform)
+    map_loc.text(sta2['lon'],sta2['lat'], sta2['name'],fontsize=15,verticalalignment='center', horizontalalignment='right',transform=text_transform)
+	#-------------------------------------------
+    
+    ax = fig.add_subplot(gs[1])
+    data_to_plot = CrossCorrelation_dic['crosscorr_daily_acausal'][::-1]+CrossCorrelation_dic['crosscorr_daily_causal']  
+    time_to_plot = [-1*i for i in CrossCorrelation_dic['crosscorr_daily_acausal_time'][::-1]] + CrossCorrelation_dic['crosscorr_daily_causal_time']
+    ax.plot(time_to_plot,data_to_plot,color='k')
+    ax.set_xlabel('time (s)',fontsize=14)
+
+    output_figure_CrossCorrelation_DAY = CLOCK_DRIFT_OUTPUT+'CROSS_CORR_DAY_FIGURES/'+year_day+'.'+julday_day+'/'
+    os.makedirs(output_figure_CrossCorrelation_DAY,exist_ok=True)    
+    fig.savefig(output_figure_CrossCorrelation_DAY+'CROSS_CORR_DAY_FIG_'+sta1['name']+'_'+sta2['name']+'_'+year_day+'_'+julday_day+'.png')
 	
     return sta1['time_day']
     
@@ -361,8 +430,13 @@ class CrossCorrelation:
 
     def __init__(self, name1, name2, lat1, lon1, lat2, lon2, pair_time_day):
         """
-        @type xcorr_dt: float
-        @type xcorr_tmax: float
+        @type name1: str
+        @type name2: str
+        @type lat1: float
+        @type lon1: float
+        @type lat2: float
+        @type lon2: float
+        @type pair_time_day: str
         """
 
         # names of stations
@@ -422,14 +496,17 @@ class CrossCorrelation:
         	xcorr_hours = []
         	for hour in lst_day_hours:
         		if hour in sta1_hour_lst and hour in sta2_hour_lst:
-        			xcorr_hours.append(correlate(a=tr1[sta1_hour_lst.index(hour)], b=tr2[sta2_hour_lst.index(hour)], shift=shift_len, demean=True, normalize='naive', method='auto', domain=None)[:2*shift_len])
+        			xcorr_hours.append(obscorr(a=tr1[sta1_hour_lst.index(hour)], b=tr2[sta2_hour_lst.index(hour)], shift=int(round(shift_len*NEW_SAMPLING_RATE)), demean=True)[:2*shift_len*NEW_SAMPLING_RATE])
         		else:
         			pass
 
-        	xcorr = np.mean(xcorr_hours)
-      
+        	xcorr = sum(xcorr_hours)/len(xcorr_hours)
+        	xcorr_timearray = np.arange(0,shift_len,1/(2*NEW_SAMPLING_RATE))
         # normalizing cross-corr
         self.dataarray = xcorr
+
+        # time arrya cross-corr
+        self.timearray = xcorr_timearray
 
 # ============
 # Main program
@@ -471,11 +548,9 @@ days_crosscor = sorted(glob.glob(JSON_FILES+'DATA_DAY_FILES/*'))
 
 start_time = time.time()
 
-print('Total of days = '+str(len(days_crosscor)))
-
 for i,j in enumerate(days_crosscor):
 
-	print('Day '+str(i+1)+': '+j.split('/')[-1])
+	print('Day '+str(i+1)+' of '+str(len(days_crosscor)))
 	stations_file = sorted(glob.glob(j+'/*'))
 
 	stationtrace_pairs = list(combinations(stations_file, 2))
@@ -487,367 +562,3 @@ for i,j in enumerate(days_crosscor):
 
 print("--- %.2f execution time (min) ---" % ((time.time() - start_time)/60))
 print('\n')
-
-'''
-
-data_lst = []
-dist_lst = []
-
-for pair in stationtrace_pairs:
-    par = pair[0]+'-'+pair[1]
-    try:
-        min_len = SHIFT_LEN
-        print('Calculanting pair - '+par)
-        data_day_causal = [i.dataarray[:min_len] for i in CrossCorrelation_dic[par]['crosscorr_daily_causal'].values()]
-        data_day_acausal = [i.dataarray[:min_len] for i in CrossCorrelation_dic[par]['crosscorr_daily_acausal'].values()]
-        data_cross_causal = sum(data_day_causal)/len(data_day_causal)
-        data_cross_acausal = sum(data_day_acausal)/len(data_day_acausal)
-        data_dist = CrossCorrelation_dic[par]['dist']
-
-        datacross = data_cross_acausal+data_cross_causal
-        dist_lst.append(data_dist)
-        data_lst.append(datacross)
-    except:
-        print("problema no par: "+par)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-for i,j in enumerate(tqdm(last_daily_lst_data)):
-    
-    data_HHZ = json.load(open([k for k in j if 'HHZ' in k][0]))
-    data_HHE = json.load(open([k for k in j if 'HHE' in k][0]))
-    data_HHN = json.load(open([k for k in j if 'HHN' in k][0]))
-
-    year_day = data_HHZ["time_day"].split('.')[0]
-    julday_day = data_HHZ["time_day"].split('.')[1]
-
-    tr_HHZ = Trace()
-    tr_HHZ.data = np.array(data_HHZ['data_day'])
-    tr_HHZ.stats.starttime = UTCDateTime(year=int(year_day),julday=int(julday_day))
-    tr_HHZ.stats.sampling_rate = NEW_SAMPLING_RATE
-    tr_HHZ.stats.channel = 'HHZ'
-    tr_HHZ.stats.station = data_HHZ['name']
-    tr_HHZ.stats.network = data_HHZ['network']
-
-    tr_HHN = Trace()
-    tr_HHN.data = np.array(data_HHN['data_day'])
-    tr_HHN.stats.starttime = UTCDateTime(year=int(year_day),julday=int(julday_day))
-    tr_HHN.stats.sampling_rate = NEW_SAMPLING_RATE
-    tr_HHN.stats.channel = 'HHN'
-    tr_HHN.stats.station = data_HHZ['name']
-    tr_HHN.stats.network = data_HHZ['network']
-    
-    tr_HHE = Trace()
-    tr_HHE.data = np.array(data_HHE['data_day'])
-    tr_HHE.stats.starttime = UTCDateTime(year=int(year_day),julday=int(julday_day))
-    tr_HHE.stats.sampling_rate = NEW_SAMPLING_RATE
-    tr_HHE.stats.channel = 'HHN'
-    tr_HHE.stats.station = data_HHZ['name']
-    tr_HHE.stats.network = data_HHZ['network']
-    
-    slide_HHZ = np.array([k.data for k in tr_HHZ.slide(window_length=WINDOW_LENGTH, step=WINDOW_LENGTH)])[last_good_windows_lst[i]]
-    slide_HHE = np.array([k.data for k in tr_HHN.slide(window_length=WINDOW_LENGTH, step=WINDOW_LENGTH)])[last_good_windows_lst[i]]
-    slide_HHN = np.array([k.data for k in tr_HHE.slide(window_length=WINDOW_LENGTH, step=WINDOW_LENGTH)])[last_good_windows_lst[i]]
-
-    #-------------------------------------------------------------------------------------------------------------
-    n2 = prev_pow_2(int(WINDOW_LENGTH*NEW_SAMPLING_RATE))
-    f_FFT = NEW_SAMPLING_RATE/2. * np.linspace(0., 1., int(n2/2) + 1)
-    
-    FFT_ZN = []
-    FFT_ZE = []
-    FFT_NE = []
-    
-    FFT_ZZ = []
-    FFT_NN = []
-    FFT_EE = []
-    
-    cFFT_ZN = []
-    cFFT_ZE = []
-    cFFT_NE = []
-
-    qFFT_ZN = []
-    qFFT_ZE = []
-    qFFT_NE = []
-    
-    Z_lst = []
-    N_lst = []
-    E_lst = []
-    for c, v in enumerate(slide_HHZ):
-        ftZ = fft(slide_HHZ[c][0:len(f_FFT)], n=None, axis=-1, norm=None)
-        ftN = fft(slide_HHE[c][0:len(f_FFT)], n=None, axis=-1, norm=None)
-        ftE = fft(slide_HHN[c][0:len(f_FFT)], n=None, axis=-1, norm=None)
-        
-        Z = ftZ
-        N = ftN
-        E = ftE
-        
-        Z_lst.append(ftZ)
-        N_lst.append(ftN)
-        E_lst.append(ftE)
-
-        FFT_ZN.append(np.conj(Z)*N)
-        FFT_ZE.append(np.conj(Z)*E)
-        FFT_NE.append(np.conj(N)*E)
-        FFT_ZZ.append(np.conj(Z)*Z)
-        FFT_NN.append(np.conj(N)*N)
-        FFT_EE.append(np.conj(E)*E)
-
-        cFFT_ZN.append(Z.real*N.real+Z.imag*N.imag)
-        cFFT_ZE.append(Z.real*E.real+Z.imag*E.imag)
-        cFFT_NE.append(N.real*E.real+N.imag*E.imag)
-
-        qFFT_ZN.append(Z.real*N.imag+Z.imag*N.real)
-        qFFT_ZE.append(Z.real*E.imag+Z.imag*E.real)
-        qFFT_NE.append(N.real*E.imag+N.imag*E.real)
-        
-    G_ZN = smooth(np.abs(np.mean(FFT_ZN,axis=0)),40)
-    G_ZE = smooth(np.abs(np.mean(FFT_ZE,axis=0)),40)
-    G_NE = smooth(np.abs(np.mean(FFT_NE,axis=0)),40)
-    
-    G_ZZ = smooth(np.abs(np.mean(FFT_ZZ,axis=0)),40)
-    G_NN = smooth(np.abs(np.mean(FFT_NN,axis=0)),40)
-    G_EE = smooth(np.abs(np.mean(FFT_EE,axis=0)),40)
-    
-    C_ZN = smooth(np.abs(np.mean(cFFT_ZN,axis=0)),40)
-    C_ZE = smooth(np.abs(np.mean(cFFT_ZE,axis=0)),40)
-    C_NE = smooth(np.abs(np.mean(cFFT_NE,axis=0)),40)
-    
-    Q_ZN = smooth(np.abs(np.mean(qFFT_ZN,axis=0)),40)
-    Q_ZE = smooth(np.abs(np.mean(qFFT_ZE,axis=0)),40)
-    Q_NE = smooth(np.abs(np.mean(qFFT_NE,axis=0)),40)
-
-    #---------------------------------------------
-    
-    wind_number = len(slide_HHZ)
-
-    A_ZN,Error_A_ZN = Admittance_xy(G_ZN,G_ZZ,G_NN,wind_number)
-    
-    A_ZE,Error_A_ZE = Admittance_xy(G_ZE,G_ZZ,G_EE,wind_number)
-
-    A_NE,Error_A_NE = Admittance_xy(G_NE, G_NN,G_EE,wind_number)
-    
-    #---------------------------------------------   
-    
-    Gama2_ZN,Error_Gama2_ZN = Coherence_xy(G_ZN,G_ZZ,G_NN,wind_number)
-
-    Gama2_ZE,Error_Gama2_ZE = Coherence_xy(G_ZE,G_ZZ,G_EE,wind_number)
-
-    Gama2_NE,Error_Gama2_NE = Coherence_xy(G_NE,G_NN,G_EE,wind_number)
-
-    #---------------------------------------------
-
-    phase_ZN,Error_phase_ZN = Phase_xy(Q_ZN,C_ZN,G_ZN,G_ZZ,G_NN,wind_number)
-
-    phase_ZE,Error_phase_ZE = Phase_xy(Q_ZE,C_ZE,G_ZE,G_ZZ,G_EE,wind_number)
-    
-    phase_NE,Error_phase_NE = Phase_xy(Q_NE,C_NE,G_NE,G_NN,G_EE,wind_number)
-    
-    #---------------------------------------------
-
-    figA = plt.figure(figsize=(15,15))
-    ax = figA.add_subplot(3, 3, 1)
-    ax.semilogx(f_FFT,np.log(A_ZN),'ok',ms=3,alpha=0.5)
-    ax.errorbar(f_FFT,np.log(A_ZN), yerr=Error_A_ZN, ecolor='k',fmt='none',elinewidth=0.5,capsize=2)
-    ax.set_title('log(Admittance)',fontsize=15)
-    ax.set_ylabel('HHZ-HHN',fontsize=14)
-    ax.set_xlim(1/200,1/10)
-
-    ax1 = figA.add_subplot(3, 3, 2)
-    ax1.set_ylim(0,1)
-    ax1.semilogx(f_FFT,Gama2_ZN, 'ok',ms=3,alpha=0.5)
-    ax1.set_title('Coherence',fontsize=15)
-    ax1.set_xlim(1/200,1/10)
-
-    ax2 = figA.add_subplot(3, 3, 3)
-    ax2.semilogx(f_FFT,phase_ZN, 'ok',ms=3,alpha=0.5)
-    ax2.errorbar(f_FFT,phase_ZN, yerr=Error_phase_ZN, ecolor='k',fmt='none',elinewidth=0.5,capsize=2)
-    ax2.set_ylim(-0.4,0.4)
-    ax2.set_title('Phase',fontsize=15)
-    ax2.set_xlim(1/200,1/10)
-        
-    #----------------------------------------------------------------------------------------------------
-    ax3 = figA.add_subplot(3, 3, 4)
-    ax3.semilogx(f_FFT,np.log(A_ZE), 'ok',ms=3,alpha=0.5)
-    ax3.errorbar(f_FFT,np.log(A_ZE), yerr=Error_A_ZE, ecolor='k',fmt='none',elinewidth=0.5,capsize=2)
-    ax3.set_ylabel('HHZ-HHE',fontsize=14)
-    ax3.set_xlim(1/200,1/10)
-
-    ax4 = figA.add_subplot(3, 3, 5)
-    ax4.set_ylim(0,1)
-    ax4.semilogx(f_FFT,Gama2_ZE, 'ok',ms=3,alpha=0.5)
-    ax4.set_xlim(1/200,1/10)
-
-    ax5 = figA.add_subplot(3, 3, 6)
-    ax5.semilogx(f_FFT,phase_ZE, 'ok',ms=3,alpha=0.5)
-    ax5.errorbar(f_FFT,phase_ZE, yerr=Error_phase_ZE, ecolor='k',fmt='none',elinewidth=0.5,capsize=2)
-    ax5.set_ylim(-0.4,0.4)
-    ax5.set_xlim(1/200,1/10)
-
-    #-----------------------------------------------------------------------------------------------------
-    ax6 = figA.add_subplot(3, 3, 7)
-    ax6.semilogx(f_FFT,np.log(A_NE), 'ok',ms=3,alpha=0.5)
-    ax6.errorbar(f_FFT,np.log(A_NE), yerr=Error_A_NE, ecolor='k',fmt='none',elinewidth=0.5,capsize=2)
-    ax6.set_xlabel('Frequency (Hz)',fontsize=14)
-    ax6.set_ylabel('HHN-HHE',fontsize=14)
-    ax6.set_xlim(1/200,1/10)
-
-    ax7 = figA.add_subplot(3, 3, 8)
-    ax7.set_ylim(0,1)
-    ax7.semilogx(f_FFT,Gama2_NE, 'ok',ms=3,alpha=0.5)
-    ax7.set_xlabel('Frequency (Hz)',fontsize=14)
-    ax7.set_xlim(1/200,1/10)
-
-    ax8 = figA.add_subplot(3, 3, 9)
-    ax8.semilogx(f_FFT,phase_NE, 'ok',ms=3,alpha=0.5)
-    ax8.errorbar(f_FFT,phase_NE, yerr=Error_phase_NE, ecolor='k',fmt='none',elinewidth=0.5,capsize=2)
-    ax8.set_ylim(-0.4,0.4)
-    ax8.set_xlabel('Frequency (Hz)',fontsize=14)
-    ax8.set_xlim(1/200,1/10)
-
-    #-----------------------------------------------------------------------------------------------------
-    
-    figA.suptitle('Station = '+STATION+' - Day = '+UTCDateTime(year=int(year_day),julday=int(julday_day)).strftime('%d/%m/%Y'),fontsize=18)
-    daily_A_output = TRANSFER_FUNC_OUTPUT+NETWORK+'.'+STATION+'/Daily_Admittance_Coherence_Phase/'
-    os.makedirs(daily_A_output,exist_ok=True)
-    figA.savefig(daily_A_output+'Admittance.Coherence.Phase.'+data_HHZ["time_day"]+'.png', dpi=300, facecolor='w', edgecolor='w')
-
-    #-----------------------------------------------------------------------------------------------------
-    
-    #Calculate TILT
-    
-    direc = np.arange(0., 360., 10.)
-    coh = np.zeros(len(direc))
-    ph = np.zeros(len(direc))
-    cZZ = np.abs(np.mean(np.array(Z_lst)*np.conj(np.array(Z_lst)), axis=0))
-
-    for i, d in enumerate(direc):
-
-        # Rotate horizontals
-        ftH = rotate_dir(np.array(N_lst), np.array(E_lst),d)
-
-        # Get transfer functions
-        cHH = np.abs(np.mean(ftH*np.conj(ftH), axis=0))
-        cHZ = np.mean(np.conj(ftH)*np.array(Z_lst), axis=0)
-            
-        Co = (np.abs(cHZ)**2)/(cZZ*cHH)
-        Ph = 180/np.pi*np.arctan2(cHZ.imag,cHZ.real)
-
-        # Calculate coherence over frequency band
-        coh[i] = np.mean(Co[(f_FFT > tiltfreq[0]) & (f_FFT < tiltfreq[1])])
-        ph[i] = np.pi/2. - np.mean(Ph[(f_FFT > tiltfreq[0]) & (f_FFT < tiltfreq[1])])
-
-    # Index where coherence is max
-    ind = np.argwhere(coh == coh.max())
-
-    # Phase and direction at maximum coherence
-    phase_value = ph[ind[0]][0]
-    coh_value = coh[ind[0]][0]
-    tilt = direc[ind[0]][0]
-
-    # Refine search
-    rdirec = np.arange(direc[ind[0]][0]-10., direc[ind[0]][0]+10., 1.)
-    rcoh = np.zeros(len(direc))
-    rph = np.zeros(len(direc))
-
-    for i, d in enumerate(rdirec):
-
-        # Rotate horizontals
-        ftH = rotate_dir(np.array(N_lst),np.array(E_lst), d)
-
-        # Get transfer functions
-        cHH = np.abs(np.mean(np.conj(ftH)*ftH, axis=0))
-        cHZ = np.mean(np.conj(ftH)*np.array(Z_lst), axis=0)
-
-        Co = (np.abs(cHZ)**2)/(cZZ*cHH)
-        Ph = 180/np.pi*np.arctan2(cHZ.imag,cHZ.real)
-        
-        # Calculate coherence over frequency band
-        rcoh[i] = np.mean(Co[(f_FFT > tiltfreq[0]) & (f_FFT < tiltfreq[1])])
-        rph[i] = np.pi/2. - np.mean(Ph[(f_FFT > tiltfreq[0]) & (f_FFT < tiltfreq[1])])
-
-    # Index where coherence is max
-    ind = np.argwhere(rcoh == rcoh.max())
-
-    # Phase and direction at maximum coherence
-    phase_value = rph[ind[0]][0]
-    coh_value = rcoh[ind[0]][0]
-    tilt = rdirec[ind[0]][0]
-
-    # Phase has to be close to zero - otherwise add pi
-    if phase_value > 0.5*np.pi:
-        tilt += 180.
-    if tilt > 360.:
-        tilt -= 360.
-
-    print('Tilf of Maximum coherence = ', tilt)
-    print('Maximum coherence = ', coh_value)
-    print('Phase of Maximum coherence = ', phase_value)
-    
-    tilt_max_coh_lst.append(tilt)
-    day_time_tilt.append([int(year_day),int(julday_day)])
-    max_coh_lst.append(coh_value)
-    phase_max_coh_lst.append(phase_value)
-
-    # Now calculate spectra at tilt direction
-    ftH = rotate_dir(np.array(N_lst), np.array(E_lst), tilt)
-
-    # Get transfer functions
-    cHH = np.abs(np.mean(np.conj(ftH)*ftH, axis=0))
-    cHZ = np.mean(np.conj(ftH)*np.array(Z_lst), axis=0)
-    
-    #-----------------------------------------------------------------------------------------------------
-    
-    colors = plt.cm.cividis(np.linspace(0, 1, coh.shape[0]))
-    
-    figureTILT, (ax1, ax2) = plt.subplots(1, 2,figsize=(10,5))
-    for i, (co, p) in enumerate(zip(coh, ph)):
-        ax1.plot(direc[i], co, 'ok')
-        ax2.plot(direc[i], p, 'ok')
-    ax1.set_ylabel('Coherence')
-    ax1.set_xlabel('Angle from HHE')
-    ax1.set_ylim((0, 1.))
-    ax2.set_ylabel('Phase')
-    ax2.set_xlabel('Angle from HHE')
-    ax1.set_title('Maximum coherence = '+str(coh_value))
-    ax2.set_title('Tilt = '+str(tilt))
-    figureTILT.suptitle('Station = '+STATION+' - Day = '+UTCDateTime(year=int(year_day),julday=int(julday_day)).strftime('%d/%m/%Y'),fontsize=18)
-    figureTILT.savefig(daily_A_output+'Tilt.Coherence.'+data_HHZ["time_day"]+'.png', dpi=300, facecolor='w', edgecolor='w')
-   
-#-------------------------------------------------------------------------------
-
-daily_data = [mdates.num2date(UTCDateTime(year=i[0],julday=i[1]).matplotlib_date) for i in day_time_tilt]
-
-figureTILTfinal, (ax1, ax2) = plt.subplots(2, 1,sharex=True,figsize=(10,5))
-ax1.plot(daily_data, max_coh_lst, 'ok')
-ax1.set_ylabel('Coherence')
-ax1.set_ylim(0, 1)
-ax2.set_xlim(mdates.num2date(INTERVAL_PERIOD[0].matplotlib_date),mdates.num2date(INTERVAL_PERIOD[1].matplotlib_date))
-
-
-ax2.plot(daily_data, tilt_max_coh_lst, 'ok')
-ax2.set_ylabel('Tilt')
-ax2.set_xlabel('Day')
-ax2.set_ylim(0, 360)
-ax2.yaxis.set_major_locator(MultipleLocator(90))
-ax2.yaxis.set_minor_locator(MultipleLocator(10))
-ax2.set_xlim(mdates.num2date(INTERVAL_PERIOD[0].matplotlib_date),mdates.num2date(INTERVAL_PERIOD[-1].matplotlib_date))
-plt.gcf().autofmt_xdate()
-
-
-figureTILTfinal.suptitle('Station = '+STATION+' - Period = '+UTCDateTime(year=int(INTERVAL_PERIOD[0].year),julday=int(INTERVAL_PERIOD[0].julday)).strftime('%d/%m/%Y')+'--'+UTCDateTime(year=int(INTERVAL_PERIOD[-1].year),julday=int(INTERVAL_PERIOD[-1].julday)).strftime('%d/%m/%Y'),fontsize=18)
-figureTILTfinal.savefig(daily_A_output+'Tilt.Coherence.total.png', dpi=300, facecolor='w', edgecolor='w')
-'''

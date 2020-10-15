@@ -84,7 +84,7 @@ for i,j in enumerate(kstnm):
 		# This is the station code according to the SEED standard.
 		code=j,
 		latitude=float(stla[i]),
-		longitude=float(stla[i]),
+		longitude=float(stlo[i]),
 		elevation=float(stel[i]),
 		creation_date=obspy.UTCDateTime(START_DATE),
 		site=Site(name=NETWORK_DESCRIPTION))
@@ -96,7 +96,7 @@ for i,j in enumerate(kstnm):
 		location_code=LOCATION,
 		# Note that these coordinates can differ from the station coordinates.
 		latitude=float(stla[i]),
-		longitude=float(stla[i]),
+		longitude=float(stlo[i]),
 		elevation=float(stel[i]),
 		depth=0.0,
 		azimuth=0.0,
@@ -110,7 +110,7 @@ for i,j in enumerate(kstnm):
 		location_code=LOCATION,
 		# Note that these coordinates can differ from the station coordinates.
 		latitude=float(stla[i]),
-		longitude=float(stla[i]),
+		longitude=float(stlo[i]),
 		elevation=float(stel[i]),
 		depth=0.0,
 		azimuth=90.0,
@@ -124,7 +124,7 @@ for i,j in enumerate(kstnm):
 		location_code=LOCATION,
 		# Note that these coordinates can differ from the station coordinates.
 		latitude=float(stla[i]),
-		longitude=float(stla[i]),
+		longitude=float(stlo[i]),
 		elevation=float(stel[i]),
 		depth=0.0,
 		azimuth=0.0,
@@ -149,7 +149,7 @@ for i,j in enumerate(kstnm):
 		# This is the station code according to the SEED standard.
 		code=j,
 		latitude=float(stla[i]),
-		longitude=float(stla[i]),
+		longitude=float(stlo[i]),
 		elevation=float(stel[i]),
 		creation_date=obspy.UTCDateTime(START_DATE),
 		site=Site(name=NETWORK_DESCRIPTION))
@@ -161,7 +161,7 @@ for i,j in enumerate(kstnm):
 		location_code=LOCATION,
 		# Note that these coordinates can differ from the station coordinates.
 		latitude=float(stla[i]),
-		longitude=float(stla[i]),
+		longitude=float(stlo[i]),
 		elevation=float(stel[i]),
 		depth=0.0,
 		azimuth=0.0,
@@ -175,7 +175,7 @@ for i,j in enumerate(kstnm):
 		location_code=LOCATION,
 		# Note that these coordinates can differ from the station coordinates.
 		latitude=float(stla[i]),
-		longitude=float(stla[i]),
+		longitude=float(stlo[i]),
 		elevation=float(stel[i]),
 		depth=0.0,
 		azimuth=90.0,
@@ -189,7 +189,7 @@ for i,j in enumerate(kstnm):
 		location_code=LOCATION,
 		# Note that these coordinates can differ from the station coordinates.
 		latitude=float(stla[i]),
-		longitude=float(stla[i]),
+		longitude=float(stlo[i]),
 		elevation=float(stel[i]),
 		depth=0.0,
 		azimuth=0.0,
@@ -214,7 +214,7 @@ for i,j in enumerate(kstnm):
 		# This is the station code according to the SEED standard.
 		code=j,
 		latitude=float(stla[i]),
-		longitude=float(stla[i]),
+		longitude=float(stlo[i]),
 		elevation=float(stel[i]),
 		creation_date=obspy.UTCDateTime(START_DATE),
 		site=Site(name=NETWORK_DESCRIPTION))
@@ -226,7 +226,7 @@ for i,j in enumerate(kstnm):
 		location_code=LOCATION,
 		# Note that these coordinates can differ from the station coordinates.
 		latitude=float(stla[i]),
-		longitude=float(stla[i]),
+		longitude=float(stlo[i]),
 		elevation=float(stel[i]),
 		depth=0.0,
 		azimuth=0.0,
@@ -240,7 +240,7 @@ for i,j in enumerate(kstnm):
 		location_code=LOCATION,
 		# Note that these coordinates can differ from the station coordinates.
 		latitude=float(stla[i]),
-		longitude=float(stla[i]),
+		longitude=float(stlo[i]),
 		elevation=float(stel[i]),
 		depth=0.0,
 		azimuth=90.0,
@@ -254,7 +254,7 @@ for i,j in enumerate(kstnm):
 		location_code=LOCATION,
 		# Note that these coordinates can differ from the station coordinates.
 		latitude=float(stla[i]),
-		longitude=float(stla[i]),
+		longitude=float(stlo[i]),
 		elevation=float(stel[i]),
 		depth=0.0,
 		azimuth=0.0,
@@ -268,7 +268,7 @@ for i,j in enumerate(kstnm):
 		location_code=LOCATION,
 		# Note that these coordinates can differ from the station coordinates.
 		latitude=float(stla[i]),
-		longitude=float(stla[i]),
+		longitude=float(stlo[i]),
 		elevation=float(stel[i]),
 		depth=0.0,
 		azimuth=0.0,
@@ -282,7 +282,7 @@ for i,j in enumerate(kstnm):
 		location_code=LOCATION,
 		# Note that these coordinates can differ from the station coordinates.
 		latitude=float(stla[i]),
-		longitude=float(stla[i]),
+		longitude=float(stlo[i]),
 		elevation=float(stel[i]),
 		depth=0.0,
 		azimuth=90.0,
@@ -296,7 +296,7 @@ for i,j in enumerate(kstnm):
 		location_code=LOCATION,
 		# Note that these coordinates can differ from the station coordinates.
 		latitude=float(stla[i]),
-		longitude=float(stla[i]),
+		longitude=float(stlo[i]),
 		elevation=float(stel[i]),
 		depth=0.0,
 		azimuth=0.0,
@@ -326,7 +326,7 @@ for i,j in enumerate(kstnm):
 		# This is the station code according to the SEED standard.
 		code=j,
 		latitude=float(stla[i]),
-		longitude=float(stla[i]),
+		longitude=float(stlo[i]),
 		elevation=float(stel[i]),
 		creation_date=obspy.UTCDateTime(START_DATE),
 		site=Site(name=NETWORK_DESCRIPTION))
@@ -338,7 +338,7 @@ for i,j in enumerate(kstnm):
 		location_code=LOCATION,
 		# Note that these coordinates can differ from the station coordinates.
 		latitude=float(stla[i]),
-		longitude=float(stla[i]),
+		longitude=float(stlo[i]),
 		elevation=float(stel[i]),
 		depth=0.0,
 		azimuth=0.0,
@@ -352,7 +352,7 @@ for i,j in enumerate(kstnm):
 		location_code=LOCATION,
 		# Note that these coordinates can differ from the station coordinates.
 		latitude=float(stla[i]),
-		longitude=float(stla[i]),
+		longitude=float(stlo[i]),
 		elevation=float(stel[i]),
 		depth=0.0,
 		azimuth=0.0,
@@ -366,7 +366,7 @@ for i,j in enumerate(kstnm):
 		location_code=LOCATION,
 		# Note that these coordinates can differ from the station coordinates.
 		latitude=float(stla[i]),
-		longitude=float(stla[i]),
+		longitude=float(stlo[i]),
 		elevation=float(stel[i]),
 		depth=0.0,
 		azimuth=90.0,
@@ -380,7 +380,7 @@ for i,j in enumerate(kstnm):
 		location_code=LOCATION,
 		# Note that these coordinates can differ from the station coordinates.
 		latitude=float(stla[i]),
-		longitude=float(stla[i]),
+		longitude=float(stlo[i]),
 		elevation=float(stel[i]),
 		depth=0.0,
 		azimuth=0.0,
