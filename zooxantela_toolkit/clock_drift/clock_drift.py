@@ -60,26 +60,42 @@ JSON_FILES = '/home/diogoloc/dados_posdoc/ON_MAR/CLOCK_DRIFT_OUTPUT/JSON_FILES/'
 #Shapefile  boundary states
 BOUNDARY_STATES_SHP = '/home/diogoloc/SIG_dados/Projeto_ON_MAR/shapefile/brasil_estados/brasil_estados.shp'
 
-FIRSTDAY = '2019-08-01'
-LASTDAY = '2019-08-02'
+FIRSTDAY = '2019-12-01'
+LASTDAY = '2019-12-10'
+
+#Each hour-long seismogram is amplitude clipped at twice its standard deviation of that hour-long time window.
+CLIP_FACTOR = 2
 
 MIN_WINDOWS = 40
 
 WINDOW_LENGTH = 3600
 
-#freq window (Hz) to smooth ampl spectrum
-WINDOW_FREQ = 0.0002 
-
 #max time window (s) for cross-correlation
-SHIFT_LEN = 3600
+SHIFT_LEN = 1800
 
-NEW_SAMPLING_RATE = 5
+PERIOD_BANDS = [[3, 15], [10, 30], [20, 50]]
+# (these bands focus on periods ~7, 15, 25 seconds)
+
+# default parameters to define the signal and noise windows used to
+# estimate the SNR:
+# - the signal window is defined according to a min and a max velocity as:
+#   dist/vmax < t < dist/vmin
+# - the noise window has a fixed size and starts after a fixed trailing
+#   time from the end of the signal window
+SIGNAL_WINDOW_VMIN = 2.0
+SIGNAL_WINDOW_VMAX = 4.0
+SIGNAL2NOISE_TRAIL = 700.0
+NOISE_WINDOW_SIZE = 700.0
+
+#Returns pairs and spectral SNR array whose spectral SNRs are all >= minspectSNR
+minspectSNR = 2
+
+#RESAMPLING
+NEW_SAMPLING_RATE = 10
 
 # ========================
 # Constants and parameters
 # ========================
-
-DTINY = np.finfo(0.0).tiny
 
 ONESEC = datetime.timedelta(seconds=1)
 ONEDAY = datetime.timedelta(days=1)
@@ -136,55 +152,50 @@ def rotate_dir(tr1, tr2, direc):
 
 #-------------------------------------------------------------------------------
 
-def moving_avg(a, halfwindow, mask=None):
+# Calculating signal-to-noise ratio
+def SNR(data,time_data,dist,vmin=SIGNAL_WINDOW_VMIN,vmax=SIGNAL_WINDOW_VMAX,signal2noise_trail=SIGNAL2NOISE_TRAIL,noise_window_size=NOISE_WINDOW_SIZE):    
+	"""
+    Signal-to-noise ratio calculated as the peak of the absolute amplitude in the signal window divided by the standard deviation in the noise window.
+   
+    The signal window is defined by *vmin* and *vmax*:
+    	dist/*vmax* < t < dist/*vmin*
+    
+    The noise window starts *signal2noise_trail* after the
+    signal window and has a size of *noise_window_size*:
+    
+    	t > dist/*vmin* + *signal2noise_trail*
+    	t < dist/*vmin* + *signal2noise_trail* + *noise_window_size*
+    
+    @type data: numpy array
+    @type time_data: numpy array
+    @type vmin: float
+    @type vmax: float
+    @type signal2noise_trail: float
+    @type noise_window_size: float
     """
-    Performs a fast n-point moving average of (the last
-    dimension of) array *a*, by using stride tricks to roll
-    a window on *a*.
-    Note that *halfwindow* gives the nb of points on each side,
-    so that n = 2*halfwindow + 1.
-    If *mask* is provided, values of *a* where mask = False are
-    skipped.
-    Returns an array of same size as *a* (which means that near
-    the edges, the averaging window is actually < *npt*).
-    """
-    # padding array with zeros on the left and on the right:
-    # e.g., if halfwindow = 2:
-    # a_padded    = [0 0 a0 a1 ... aN 0 0]
-    # mask_padded = [F F ?  ?      ?  F F]
+    # signal window
+	tmin_signal = dist/vmax
+	tmax_signal = dist/vmin
+    
+    # noise window
+	tmin_noise = tmax_signal + signal2noise_trail
+	tmax_noise = tmin_noise + noise_window_size
 
-    if mask is None:
-        mask = np.ones_like(a, dtype='bool')
+	signal_window = (time_data >= tmin_signal) & (time_data <= tmax_signal)
+	noise_window = (time_data >= tmin_noise) & (time_data <= tmax_noise)
 
-    zeros = np.zeros(a.shape[:-1] + (halfwindow,))
-    falses = zeros.astype('bool')
+	peak = np.abs(data[signal_window]).max()
+	noise = data[noise_window].std()
 
-    a_padded = np.concatenate((zeros, np.where(mask, a, 0), zeros), axis=-1)
-    mask_padded = np.concatenate((falses, mask, falses), axis=-1)
+    # appending SNR
+	SNR = peak / noise
 
-    # rolling window on padded array using stride trick
-    #
-    # E.g., if halfwindow=2:
-    # rolling_a[:, 0] = [0   0 a0 a1 ...    aN]
-    # rolling_a[:, 1] = [0  a0 a1 a2 ... aN 0 ]
-    # ...
-    # rolling_a[:, 4] = [a2 a3 ...    aN  0  0]
-
-    npt = 2 * halfwindow + 1  # total size of the averaging window
-    rolling_a = as_strided(a_padded,
-                           shape=a.shape + (npt,),
-                           strides=a_padded.strides + (a.strides[-1],))
-    rolling_mask = as_strided(mask_padded,
-                              shape=mask.shape + (npt,),
-                              strides=mask_padded.strides + (mask.strides[-1],))
-
-    # moving average
-    n = rolling_mask.sum(axis=-1)
-    return np.where(n > 0, rolling_a.sum(axis=-1).astype('float') / n, np.nan)
+    # returning SNR
+	return SNR
 
 #-------------------------------------------------------------------------------
 
-def get_stations_data(f,onebit_norm=True,white_spectral=False):
+def get_stations_data(f,onebit_norm=True,white_spectral=True):
     """
     Gets stations daily data from miniseed file
     
@@ -219,36 +230,66 @@ def get_stations_data(f,onebit_norm=True,white_spectral=False):
 	    traces_filter = [tr.filter('bandpass', freqmin=0.01,freqmax=10,corners=2, zerophase=True) for tr in traces_detrend]
 	    traces_resample = [tr.resample(NEW_SAMPLING_RATE) for tr in traces_filter]
 
-	    # ======================
-	    # One-bit normalization
-	    # ======================
+	    # ===================
+	    # Amplitude  clipping
+	    # ===================
 
-	    if onebit_norm:
-	    	traces_onebit = [np.sign(tr[0].data) for tr in traces_resample]
-	    	traces_data_day = [tr.data.tolist() for tr in traces_onebit]
-
-	    else:
-	    	traces_onebit = traces_resample
-	    	traces_data_day = [tr[0].data.tolist() for tr in traces_onebit]
-
+	    for i,tr in enumerate(traces_resample):
+	    	lim = CLIP_FACTOR * np.std(tr[0].data)
+	    	tr[0].data[tr[0].data > lim] = lim
+	    	tr[0].data[tr[0].data < -lim] = -lim
 
 	    # ==================
 	    # Spectral whitening
 	    # ==================
 
 	    if white_spectral:
-	    	window_freq = WINDOW_FREQ
-	    	fft = rfft(trace.data)  # real FFT
-	    	deltaf = trace.stats.sampling_rate / trace.stats.npts  # frequency step
+	    	freqmin=0.05 
+	    	freqmax=0.5
+	    	for i,tr in enumerate(traces_resample):
+	    		n = len(tr[0].data)
+	    		nsamp = tr[0].stats.sampling_rate
+	    		frange = float(freqmax) - float(freqmin)
+	    		nsmo = int(np.fix(min(0.01, 0.5 * (frange)) * float(n) / nsamp))
+	    		f = np.arange(n) * nsamp / (n - 1.)
+	    		JJ = ((f > float(freqmin)) & (f<float(freqmax))).nonzero()[0]
+            
+	    		# signal FFT
+	    		FFTs = fft(tr[0].data)
+	    		FFTsW = np.zeros(n) + 1j * np.zeros(n)
 
-	    	# smoothing amplitude spectrum
-	    	halfwindow = int(round(window_freq / deltaf / 2.0))
+	    		# Apodization to the left with cos^2 (to smooth the discontinuities)
+	    		smo1 = (np.cos(np.linspace(np.pi/2, np.pi, nsmo+1))**2)
+	    		FFTsW[JJ[0]:JJ[0]+nsmo+1] = smo1 * np.exp(1j * np.angle(FFTs[JJ[0]:JJ[0]+nsmo+1]))
 
-	    	# normalizing spectrum and back to time domain
-	    	trace.data = irfft(fft / weight, n=len(trace.data))
+	    		# boxcar
+	    		FFTsW[JJ[0]+nsmo+1:JJ[-1]-nsmo] = np.ones(len(JJ) - 2 * (nsmo+1))\
+	    		* np.exp(1j * np.angle(FFTs[JJ[0]+nsmo+1:JJ[-1]-nsmo]))
 
-	    	# re bandpass to avoid low/high freq noise
-	    	trace.filter(type="bandpass",freqmin=freqmin,freqmax=freqmax,corners=corners,zerophase=zerophase)
+	    		# Apodization to the right with cos^2 (to smooth the discontinuities)
+	    		smo2 = (np.cos(np.linspace(0, np.pi/2, nsmo+1))**2)
+	    		espo = np.exp(1j * np.angle(FFTs[JJ[-1]-nsmo:JJ[-1]+1]))
+	    		FFTsW[JJ[-1]-nsmo:JJ[-1]+1] = smo2 * espo
+
+	    		whitedata = 2. * ifft(FFTsW).real
+        
+	    		tr[0].data = np.require(whitedata, dtype="float32")
+	    	traces_white_spectral = traces_resample
+
+	    else:
+	    	traces_white_spectral = traces_resample
+
+	    # ======================
+	    # One-bit normalization
+	    # ======================
+
+	    if onebit_norm:
+	    	traces_onebit = [np.sign(tr[0].data) for tr in traces_white_spectral]
+	    	traces_data_day = [ton.data.tolist() for ton in traces_onebit]
+
+	    else:
+	    	traces_onebit = traces_white_spectral
+	    	traces_data_day = [ton[0].data.tolist() for ton in traces_onebit]
 
 	    lon = inv.get_coordinates(sta_channel_id)['longitude']
 	    lat = inv.get_coordinates(sta_channel_id)['latitude']
@@ -286,92 +327,105 @@ def crosscorr_func(stationtrace_pairs):
     sta1 = json.load(open(stationtrace_pairs[0]))
     sta2 = json.load(open(stationtrace_pairs[1]))
 
-    year_day = sta1['time_day'].split('.')[0]
-    julday_day = sta1['time_day'].split('.')[1]
+    try:
 
-    day_crosscor_causal = CrossCorrelation(sta1['name'],sta2['name'],sta1['lat'],sta1['lon'],sta2['lat'],sta2['lon'],sta1['time_day'])
-    day_crosscor_acausal = CrossCorrelation(sta2['name'],sta1['name'],sta2['lat'],sta2['lon'],sta1['lat'],sta1['lon'],sta1['time_day'])
+	    year_day = sta1['time_day'].split('.')[0]
+	    julday_day = sta1['time_day'].split('.')[1]
 
-    day_crosscor_causal.add(sta1['data_day'],sta2['data_day'],sta1['hours_day'],sta2['hours_day'])
-    day_crosscor_acausal.add(sta2['data_day'],sta1['data_day'],sta2['hours_day'],sta1['hours_day'])
+	    day_crosscor_causal = CrossCorrelation(sta1['name'],sta2['name'],sta1['lat'],sta1['lon'],sta2['lat'],sta2['lon'],sta1['time_day'])
+	    day_crosscor_acausal = CrossCorrelation(sta2['name'],sta1['name'],sta2['lat'],sta2['lon'],sta1['lat'],sta1['lon'],sta1['time_day'])
 
-    CrossCorrelation_dic['dist'] = round(day_crosscor_causal.dist())
-    CrossCorrelation_dic['sta1_loc'] = [sta1['lat'],sta1['lon']]
-    CrossCorrelation_dic['sta1_name'] = sta1['name']
-    CrossCorrelation_dic['sta2_loc'] = [sta2['lat'],sta2['lon']]
-    CrossCorrelation_dic['sta2_name'] = sta2['name']
-    CrossCorrelation_dic['crosscorr_daily_causal_time'] = day_crosscor_causal.timearray.tolist()
-    CrossCorrelation_dic['crosscorr_daily_causal'] = day_crosscor_causal.dataarray.tolist()
-    CrossCorrelation_dic['crosscorr_daily_acausal'] = day_crosscor_acausal.dataarray.tolist()
-    CrossCorrelation_dic['crosscorr_daily_acausal_time'] = day_crosscor_acausal.timearray.tolist()
+	    day_crosscor_causal.add(sta1['data_day'],sta2['data_day'],sta1['hours_day'],sta2['hours_day'])
+	    day_crosscor_acausal.add(sta2['data_day'],sta1['data_day'],sta2['hours_day'],sta1['hours_day'])
+	    day_time_crosscor_all = day_crosscor_acausal.timearray+day_crosscor_causal.timearray
+	    day_data_crosscor_all = day_crosscor_acausal.dataarray+day_crosscor_causal.dataarray
+	    raw_SNR = SNR(day_data_crosscor_all,day_time_crosscor_all,day_crosscor_causal.dist(),vmin=SIGNAL_WINDOW_VMIN,vmax=SIGNAL_WINDOW_VMAX,signal2noise_trail=SIGNAL2NOISE_TRAIL,noise_window_size=NOISE_WINDOW_SIZE)
+	    if raw_SNR > minspectSNR:
 
-    output_CrossCorrelation_DAY = JSON_FILES+'CROSS_CORR_DAY_FILES/'+year_day+'.'+julday_day+'/'
-    os.makedirs(output_CrossCorrelation_DAY,exist_ok=True)
-    with open(output_CrossCorrelation_DAY+'CROSS_CORR_DAY_FILES_'+sta1['name']+'_'+sta2['name']+'_'+year_day+'_'+julday_day+'.json', 'w') as fp:
-        json.dump(CrossCorrelation_dic, fp)
+		    CrossCorrelation_dic['dist'] = round(day_crosscor_causal.dist())
+		    CrossCorrelation_dic['sta1_loc'] = [sta1['lat'],sta1['lon']]
+		    CrossCorrelation_dic['sta1_name'] = sta1['name']
+		    CrossCorrelation_dic['sta2_loc'] = [sta2['lat'],sta2['lon']]
+		    CrossCorrelation_dic['sta2_name'] = sta2['name']
+		    CrossCorrelation_dic['crosscorr_daily_causal_time'] = day_crosscor_causal.timearray.tolist()
+		    CrossCorrelation_dic['crosscorr_daily_causal'] = day_crosscor_causal.dataarray.tolist()
+		    CrossCorrelation_dic['crosscorr_daily_acausal'] = day_crosscor_acausal.dataarray.tolist()
+		    CrossCorrelation_dic['crosscorr_daily_acausal_time'] = day_crosscor_acausal.timearray.tolist()
 
-    # ============================
-    # Plot: map and pair crosscorr
-    # ============================
-	
-    fig = plt.figure(figsize=(15, 15))
-    #fig.suptitle('Dia do Evento - '+UTCDateTime(year=int(event_date[0]),julday=int(event_date[1])).strftime('%d/%m/%Y')+' - Magnitude:'+str(stZ[0].stats.sac.mag),fontsize=20)
+		    output_CrossCorrelation_DAY = JSON_FILES+'CROSS_CORR_DAY_FILES/'+year_day+'.'+julday_day+'/'
+		    os.makedirs(output_CrossCorrelation_DAY,exist_ok=True)
+		    with open(output_CrossCorrelation_DAY+'CROSS_CORR_DAY_FILES_'+sta1['name']+'_'+sta2['name']+'_'+year_day+'_'+julday_day+'.json', 'w') as fp:
+		        json.dump(CrossCorrelation_dic, fp)
 
-    gs = gridspec.GridSpec(2, 1,wspace=0.2, hspace=0.5)
+		    # ============================
+		    # Plot: map and pair crosscorr
+		    # ============================
+			
+		    fig = plt.figure(figsize=(15, 15))
+		    fig.suptitle(sta1['name']+'-'+sta2['name']+' - Day - '+UTCDateTime(year=int(year_day),julday=int(julday_day)).strftime('%d/%m/%Y'),fontsize=20)
 
-    #-------------------------------------------
+		    gs = gridspec.GridSpec(2, 1,wspace=0.2, hspace=0.5)
 
-    map_loc = fig.add_subplot(gs[0],projection=ccrs.PlateCarree())
-		
-    LLCRNRLON_LARGE = -52
-    URCRNRLON_LARGE = -28
-    LLCRNRLAT_LARGE = -28
-    URCRNRLAT_LARGE = -16
+		    #-------------------------------------------
 
-    map_loc.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
-    map_loc.yaxis.set_ticks_position('both')
-    map_loc.xaxis.set_ticks_position('both')
+		    map_loc = fig.add_subplot(gs[0],projection=ccrs.PlateCarree())
+				
+		    LLCRNRLON_LARGE = -52
+		    URCRNRLON_LARGE = -28
+		    LLCRNRLAT_LARGE = -28
+		    URCRNRLAT_LARGE = -16
 
-    map_loc.set_xticks(np.arange(LLCRNRLON_LARGE,URCRNRLON_LARGE,3), crs=ccrs.PlateCarree())
-    map_loc.set_yticks(np.arange(LLCRNRLAT_LARGE,URCRNRLAT_LARGE,3), crs=ccrs.PlateCarree())
-    map_loc.tick_params(labelbottom=True,labeltop=True,labelleft=True,labelright=True, labelsize=15)
+		    map_loc.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
+		    map_loc.yaxis.set_ticks_position('both')
+		    map_loc.xaxis.set_ticks_position('both')
 
-    map_loc.grid(True,which='major',color='gray',linewidth=1,linestyle='--')
+		    map_loc.set_xticks(np.arange(LLCRNRLON_LARGE,URCRNRLON_LARGE,3), crs=ccrs.PlateCarree())
+		    map_loc.set_yticks(np.arange(LLCRNRLAT_LARGE,URCRNRLAT_LARGE,3), crs=ccrs.PlateCarree())
+		    map_loc.tick_params(labelbottom=True,labeltop=True,labelleft=True,labelright=True, labelsize=15)
 
-    reader_1_SHP = Reader(BOUNDARY_STATES_SHP)
-    shape_1_SHP = list(reader_1_SHP.geometries())
-    plot_shape_1_SHP = cfeature.ShapelyFeature(shape_1_SHP, ccrs.PlateCarree())
-    map_loc.add_feature(plot_shape_1_SHP, facecolor='none', edgecolor='k',linewidth=0.5,zorder=-1)
-    
-    # Use the cartopy interface to create a matplotlib transform object    
-    # for the Geodetic coordinate system. We will use this along with    
-    # matplotlib's offset_copy function to define a coordinate system which
-    # translates the text by 25 pixels to the left.
-    geodetic_transform = ccrs.Geodetic()._as_mpl_transform(map_loc)
-    text_transform = offset_copy(geodetic_transform, units='dots', y=0,x=60)
-    text_transform_mag = offset_copy(geodetic_transform, units='dots', y=-15,x=15)
-    
-    map_loc.scatter(sta1['lon'],sta1['lat'], marker='^',s=200,c='k',edgecolors='w', transform=ccrs.PlateCarree())    
-    map_loc.scatter(sta2['lon'],sta2['lat'], marker='^',s=200,c='k',edgecolors='w', transform=ccrs.PlateCarree())
+		    map_loc.grid(True,which='major',color='gray',linewidth=1,linestyle='--')
 
-    map_loc.plot([sta1['lon'],sta1['lat']],[sta2['lon'],sta2['lat']], transform=ccrs.PlateCarree())
-    
-    map_loc.text(sta1['lon'],sta1['lat'], sta1['name'],fontsize=15,verticalalignment='center', horizontalalignment='right',transform=text_transform)
-    map_loc.text(sta2['lon'],sta2['lat'], sta2['name'],fontsize=15,verticalalignment='center', horizontalalignment='right',transform=text_transform)
-	#-------------------------------------------
-    
-    ax = fig.add_subplot(gs[1])
-    data_to_plot = CrossCorrelation_dic['crosscorr_daily_acausal'][::-1]+CrossCorrelation_dic['crosscorr_daily_causal']  
-    time_to_plot = [-1*i for i in CrossCorrelation_dic['crosscorr_daily_acausal_time'][::-1]] + CrossCorrelation_dic['crosscorr_daily_causal_time']
-    ax.plot(time_to_plot,data_to_plot,color='k')
-    ax.set_xlabel('time (s)',fontsize=14)
+		    reader_1_SHP = Reader(BOUNDARY_STATES_SHP)
+		    shape_1_SHP = list(reader_1_SHP.geometries())
+		    plot_shape_1_SHP = cfeature.ShapelyFeature(shape_1_SHP, ccrs.PlateCarree())
+		    map_loc.add_feature(plot_shape_1_SHP, facecolor='none', edgecolor='k',linewidth=0.5,zorder=-1)
+		    
+		    # Use the cartopy interface to create a matplotlib transform object    
+		    # for the Geodetic coordinate system. We will use this along with    
+		    # matplotlib's offset_copy function to define a coordinate system which
+		    # translates the text by 25 pixels to the left.
+		    geodetic_transform = ccrs.Geodetic()._as_mpl_transform(map_loc)
+		    text_transform = offset_copy(geodetic_transform, units='dots', y=0,x=60)
+		    text_transform_mag = offset_copy(geodetic_transform, units='dots', y=-15,x=15)
+		    
+		    map_loc.scatter(sta1['lon'],sta1['lat'], marker='^',s=200,c='k',edgecolors='w', transform=ccrs.PlateCarree())    
+		    map_loc.scatter(sta2['lon'],sta2['lat'], marker='^',s=200,c='k',edgecolors='w', transform=ccrs.PlateCarree())
 
-    output_figure_CrossCorrelation_DAY = CLOCK_DRIFT_OUTPUT+'CROSS_CORR_DAY_FIGURES/'+year_day+'.'+julday_day+'/'
-    os.makedirs(output_figure_CrossCorrelation_DAY,exist_ok=True)    
-    fig.savefig(output_figure_CrossCorrelation_DAY+'CROSS_CORR_DAY_FIG_'+sta1['name']+'_'+sta2['name']+'_'+year_day+'_'+julday_day+'.png')
-	
-    return sta1['time_day']
-    
+		    map_loc.plot([sta1['lon'],sta1['lat']],[sta2['lon'],sta2['lat']], transform=ccrs.PlateCarree())
+		    
+		    map_loc.text(sta1['lon'],sta1['lat'], sta1['name'],fontsize=15,verticalalignment='center', horizontalalignment='right',transform=text_transform)
+		    map_loc.text(sta2['lon'],sta2['lat'], sta2['name'],fontsize=15,verticalalignment='center', horizontalalignment='right',transform=text_transform)
+			#-------------------------------------------
+		    
+		    ax = fig.add_subplot(gs[1])
+		    data_to_plot = CrossCorrelation_dic['crosscorr_daily_acausal'][::-1]+CrossCorrelation_dic['crosscorr_daily_causal']  
+		    time_to_plot = [-1*i for i in CrossCorrelation_dic['crosscorr_daily_acausal_time'][::-1]] + CrossCorrelation_dic['crosscorr_daily_causal_time']
+		    ax.plot(time_to_plot,data_to_plot,color='k')
+		    ax.set_xlabel('time (s)',fontsize=14)
+		    ax.set_title('Dist = '+str(round(day_crosscor_causal.dist()))+' km',fontsize=14)
+
+		    output_figure_CrossCorrelation_DAY = CLOCK_DRIFT_OUTPUT+'CROSS_CORR_DAY_FIGURES/'+year_day+'.'+julday_day+'/'
+		    os.makedirs(output_figure_CrossCorrelation_DAY,exist_ok=True)    
+		    fig.savefig(output_figure_CrossCorrelation_DAY+'CROSS_CORR_DAY_FIG_'+sta1['name']+'_'+sta2['name']+'_'+year_day+'_'+julday_day+'.png')    
+		    plt.close()
+
+	    return sta1['time_day']
+
+    except:
+    	print("Problem: CrossCorrelation between "+sta1['name']+" and "+sta2['name']+" in "+sta2['time_day'])
+
+#-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 # =======
 # Classes
 # =======
@@ -499,8 +553,9 @@ class CrossCorrelation:
         			xcorr_hours.append(obscorr(a=tr1[sta1_hour_lst.index(hour)], b=tr2[sta2_hour_lst.index(hour)], shift=int(round(shift_len*NEW_SAMPLING_RATE)), demean=True)[:2*shift_len*NEW_SAMPLING_RATE])
         		else:
         			pass
-
+        	
         	xcorr = sum(xcorr_hours)/len(xcorr_hours)
+        	xcorr = xcorr / float((np.abs(xcorr).max()))
         	xcorr_timearray = np.arange(0,shift_len,1/(2*NEW_SAMPLING_RATE))
         # normalizing cross-corr
         self.dataarray = xcorr
@@ -511,7 +566,7 @@ class CrossCorrelation:
 # ============
 # Main program
 # ============
-
+'''
 print('===============================')
 print('Scanning name of miniseed files')
 print('===============================')
@@ -526,7 +581,7 @@ print('==================================')
 print('Opening miniseed files of each day')
 print('==================================')
 print('\n')
-'''
+
 start_time = time.time()
 
 with Pool(processes=num_processes) as p:
@@ -538,27 +593,170 @@ with Pool(processes=num_processes) as p:
 print("--- %.2f execution time (min) ---" % ((time.time() - start_time)/60))
 print('\n')
 
-'''
 print('====================================')
-print('Calculating daily Cross-correlation:')
+print('Calculating daily Cross-correlations:')
 print('====================================')
 print('\n')
 
 days_crosscor = sorted(glob.glob(JSON_FILES+'DATA_DAY_FILES/*'))
 
+stationtrace_pairs_lst = []
+for i,j in enumerate(days_crosscor):
+	stations_file = sorted(glob.glob(j+'/*'))
+	stationtrace_pairs_lst.append(list(combinations(stations_file, 2)))
+
+stationtrace_pairs = [item for sublist in stationtrace_pairs_lst for item in sublist]
+
 start_time = time.time()
 
-for i,j in enumerate(days_crosscor):
-
-	print('Day '+str(i+1)+' of '+str(len(days_crosscor)))
-	stations_file = sorted(glob.glob(j+'/*'))
-
-	stationtrace_pairs = list(combinations(stations_file, 2))
-
-	pool = Pool(processes=num_processes)
-	CrossCorrelation_days_lst = []
-	for result in tqdm(pool.imap(func=crosscorr_func, iterable=stationtrace_pairs), total=len(stationtrace_pairs)):
-	    CrossCorrelation_days_lst.append(result)
+pool = Pool(processes=num_processes)
+CrossCorrelation_days_lst = []
+for result in tqdm(pool.imap(func=crosscorr_func, iterable=stationtrace_pairs), total=len(stationtrace_pairs)):
+	CrossCorrelation_days_lst.append(result)
 
 print("--- %.2f execution time (min) ---" % ((time.time() - start_time)/60))
 print('\n')
+'''
+print('====================================')
+print('Stacking daily Cross-correlations:')
+print('====================================')
+print('\n')
+
+#Collecting daily list of cross-correlations
+crosscorr_days_lst = sorted(glob.glob(JSON_FILES+'CROSS_CORR_DAY_FILES/*'))
+
+crosscorr_pairs_lst = []
+for i,j in enumerate(crosscorr_days_lst):
+	crosscorr_file = sorted(glob.glob(j+'/*'))
+	crosscorr_pairs_lst.append(crosscorr_file)
+
+#Make a list of list flat
+crosscorr_pairs = [item for sublist in crosscorr_pairs_lst for item in sublist]
+
+#Separating according to pairs name
+crosscorr_pairs_name_lst = []
+for i in crosscorr_pairs:
+	# splitting subdir/basename
+	subdir, filename = os.path.split(i)
+	crosscorr_pairs_name_lst.append(filename.split("_20")[0])
+
+crosscorr_pairs_names = sorted(list(set(crosscorr_pairs_name_lst)))
+
+crosscorr_pairs_data = [[]]*len(crosscorr_pairs_names)
+
+for l,k in enumerate(crosscorr_pairs_names):
+	crosscorr_pairs_data[l] = [j for i,j in enumerate(crosscorr_pairs) if k in j]
+
+#Stacking data
+for i in crosscorr_pairs_data:
+	name_sta1 = list(set([json.load(open(a))['sta1_name'] for a in i]))[0]
+	name_sta2 = list(set([json.load(open(a))['sta2_name'] for a in i]))[0]
+	dist_pair = json.load(open(i[0]))['dist']
+
+	print('Pair: '+name_sta1+'-'+name_sta2+' - '+'days stacked: '+str(len(i)))
+
+	causal_lst = np.mean(np.array([json.load(open(a))['crosscorr_daily_causal'] for a in i]),axis=0)
+	acausal_lst = np.mean(np.array([json.load(open(a))['crosscorr_daily_acausal'] for a in i]),axis=0)
+
+	causal_time = np.array(json.load(open(i[0]))['crosscorr_daily_causal_time'])
+	acausal_time = np.array(json.load(open(i[0]))['crosscorr_daily_acausal_time'])
+
+	loc_sta1 = json.load(open(i[0]))['sta1_loc']
+	loc_sta2 = json.load(open(i[0]))['sta2_loc']
+
+    # ===============================
+    # Plot: map and stacked crosscorr
+    # ===============================
+
+	fig = plt.figure(figsize=(18, 6))
+	fig.suptitle(name_sta1+'-'+name_sta2+' - Dist = '+str(round(dist_pair))+' km'+' - Days stacked: '+str(len(i)),fontsize=20)
+
+	gs = gridspec.GridSpec(len(PERIOD_BANDS)+1, 2,wspace=0.2, hspace=0.5)
+
+    #-------------------------------------------
+
+	map_loc = fig.add_subplot(gs[:,0],projection=ccrs.PlateCarree())
+		
+	LLCRNRLON_LARGE = -52
+	URCRNRLON_LARGE = -28
+	LLCRNRLAT_LARGE = -28
+	URCRNRLAT_LARGE = -16
+	
+	map_loc.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
+	map_loc.yaxis.set_ticks_position('both')
+	map_loc.xaxis.set_ticks_position('both')
+
+	map_loc.set_xticks(np.arange(LLCRNRLON_LARGE,URCRNRLON_LARGE,3), crs=ccrs.PlateCarree())
+	map_loc.set_yticks(np.arange(LLCRNRLAT_LARGE,URCRNRLAT_LARGE,3), crs=ccrs.PlateCarree())
+	map_loc.tick_params(labelbottom=True,labeltop=True,labelleft=True,labelright=True, labelsize=15)
+
+	map_loc.grid(True,which='major',color='gray',linewidth=1,linestyle='--')
+
+	reader_1_SHP = Reader(BOUNDARY_STATES_SHP)
+	shape_1_SHP = list(reader_1_SHP.geometries())
+	plot_shape_1_SHP = cfeature.ShapelyFeature(shape_1_SHP, ccrs.PlateCarree())
+	map_loc.add_feature(plot_shape_1_SHP, facecolor='none', edgecolor='k',linewidth=0.5,zorder=-1)
+	
+    # Use the cartopy interface to create a matplotlib transform object    
+    # for the Geodetic coordinate system. We will use this along with    
+    # matplotlib's offset_copy function to define a coordinate system which
+    # translates the text by 25 pixels to the left.
+	geodetic_transform = ccrs.Geodetic()._as_mpl_transform(map_loc)
+	text_transform = offset_copy(geodetic_transform, units='dots', y=0,x=60)	
+	text_transform_mag = offset_copy(geodetic_transform, units='dots', y=-15,x=15)
+	
+	map_loc.scatter(loc_sta1[1],loc_sta1[0], marker='^',s=200,c='k',edgecolors='w', transform=ccrs.PlateCarree())    	
+	map_loc.scatter(loc_sta2[1],loc_sta2[0], marker='^',s=200,c='k',edgecolors='w', transform=ccrs.PlateCarree())
+
+	map_loc.plot([loc_sta1[1],loc_sta1[0]],[loc_sta2[1],loc_sta2[0]], transform=ccrs.PlateCarree())
+    
+	map_loc.text(loc_sta1[1],loc_sta1[0], name_sta1,fontsize=15,verticalalignment='center', horizontalalignment='right',transform=text_transform)
+	map_loc.text(loc_sta2[1],loc_sta2[0], name_sta2,fontsize=15,verticalalignment='center', horizontalalignment='right',transform=text_transform)
+	#-------------------------------------------
+
+	data_to_plot = acausal_lst[::-1] + causal_lst
+	time_to_plot = [-1*i for i in acausal_time[::-1]] + causal_time
+
+	ax = fig.add_subplot(gs[0,1])
+	ax.plot(time_to_plot, data_to_plot,color='k')
+
+	ylim = (data_to_plot.min(), data_to_plot.max())
+	ax.set_ylim(ylim)
+	ax.set_xlim(-500,500)
+	ax.set_xticklabels([])
+	ax.set_yticklabels([])
+	raw_SNR = SNR(data_to_plot,time_to_plot,dist_pair,vmin=SIGNAL_WINDOW_VMIN,vmax=SIGNAL_WINDOW_VMAX,signal2noise_trail=SIGNAL2NOISE_TRAIL,noise_window_size=NOISE_WINDOW_SIZE)
+	ax.text(x=0.1,y=0.8,s="SNR:"+str(round(raw_SNR)),horizontalalignment='center',transform=ax.transAxes,fontsize=8,bbox={'edgecolor':'w','facecolor': 'white'})
+	ax.text(x=0.9,y=0.8,s="Raw data",horizontalalignment='center',transform=ax.transAxes,fontsize=8,bbox={'edgecolor':'w','facecolor': 'white'})
+
+	# plotting band-filtered cross-correlation
+	for i,band in enumerate(PERIOD_BANDS):
+		ax = fig.add_subplot(gs[i+1,1])
+		lastplot = band is PERIOD_BANDS[-1]
+		firstplot = band is PERIOD_BANDS[0]
+		
+		ax.text(x=0.9,y=0.8,s="Filter:"+str(band[0])+"-"+str(band[1])+"s",transform=ax.transAxes,horizontalalignment='center',fontsize=8,bbox={'edgecolor':'w','facecolor': 'white'})
+
+
+		data_to_plot_filtered = bandpass(data_to_plot, 1.0 /band[1], 1.0 / band[0], NEW_SAMPLING_RATE, corners=2, zerophase=False)
+		ax.plot(time_to_plot, data_to_plot_filtered,color='k')
+		ylim = (data_to_plot_filtered.min(), data_to_plot_filtered.max())
+		ax.set_ylim(ylim)
+		ax.set_xlim(-500,500)
+		ax.set_yticklabels([])
+
+		# Calculating SNR
+		filtered_SNR = SNR(data_to_plot_filtered,time_to_plot,dist_pair,vmin=SIGNAL_WINDOW_VMIN,vmax=SIGNAL_WINDOW_VMAX,signal2noise_trail=SIGNAL2NOISE_TRAIL,noise_window_size=NOISE_WINDOW_SIZE)
+		ax.text(x=0.1,y=0.8,s="SNR:"+str(round(filtered_SNR)),horizontalalignment='center',transform=ax.transAxes,fontsize=8,bbox={'edgecolor':'w','facecolor': 'white'})
+		
+		# formatting labels
+		if not lastplot:
+			ax.set_xticklabels([])
+		if lastplot:
+		# adding label to time
+			ax.set_xlabel('Time (s)',fontsize=14)
+
+	output_figure_CrossCorrelation_DAY = CLOCK_DRIFT_OUTPUT+'CROSS_CORR_STACK_FIGURES/'
+	os.makedirs(output_figure_CrossCorrelation_DAY,exist_ok=True)    
+	fig.savefig(output_figure_CrossCorrelation_DAY+'CROSS_CORR_STACK_FIG_'+name_sta1+'_'+name_sta2+'.png')    
+	plt.close()
