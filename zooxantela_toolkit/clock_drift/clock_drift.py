@@ -32,7 +32,7 @@ from numpy.fft import rfft, irfft, fft, ifft, fftfreq
 from itertools import combinations
 from numpy.lib.stride_tricks import as_strided
 import pandas as pd
-from scipy.signal import spectrogram, detrend, resample,savgol_filter
+from scipy.signal import spectrogram, detrend, resample,savgol_filter,decimate
 from scipy.linalg import norm
 
 import random
@@ -60,20 +60,20 @@ JSON_FILES = '/home/diogoloc/dados_posdoc/ON_MAR/CLOCK_DRIFT_OUTPUT/JSON_FILES/'
 #Shapefile  boundary states
 BOUNDARY_STATES_SHP = '/home/diogoloc/SIG_dados/Projeto_ON_MAR/shapefile/brasil_estados/brasil_estados.shp'
 
-FIRSTDAY = '2019-12-01'
-LASTDAY = '2019-12-10'
+FIRSTDAY = '2019-07-01'
+LASTDAY = '2019-12-31'
 
 #Each hour-long seismogram is amplitude clipped at twice its standard deviation of that hour-long time window.
 CLIP_FACTOR = 2
 
-MIN_WINDOWS = 40
+MIN_WINDOWS = 30
 
 WINDOW_LENGTH = 3600
 
 #max time window (s) for cross-correlation
 SHIFT_LEN = 1800
 
-PERIOD_BANDS = [[3, 15], [10, 30], [20, 50]]
+PERIOD_BANDS = [[3, 15], [7, 25], [20, 50], [50, 100]]
 # (these bands focus on periods ~7, 15, 25 seconds)
 
 # default parameters to define the signal and noise windows used to
@@ -88,10 +88,10 @@ SIGNAL2NOISE_TRAIL = 700.0
 NOISE_WINDOW_SIZE = 700.0
 
 #Returns pairs and spectral SNR array whose spectral SNRs are all >= minspectSNR
-minspectSNR = 2
+minspectSNR = 1
 
 #RESAMPLING
-NEW_SAMPLING_RATE = 10
+NEW_SAMPLING_RATE = 2
 
 # ========================
 # Constants and parameters
@@ -104,7 +104,7 @@ ONEDAY = datetime.timedelta(days=1)
 # MULTIPROCESSING
 # ================
 
-num_processes = 6
+num_processes = 12
 
 # =================
 # Filtering by date
@@ -195,7 +195,7 @@ def SNR(data,time_data,dist,vmin=SIGNAL_WINDOW_VMIN,vmax=SIGNAL_WINDOW_VMAX,sign
 
 #-------------------------------------------------------------------------------
 
-def get_stations_data(f,onebit_norm=True,white_spectral=True):
+def get_stations_data(f,Amp_clip=True,onebit_norm=True,white_spectral=True):
     """
     Gets stations daily data from miniseed file
     
@@ -217,101 +217,108 @@ def get_stations_data(f,onebit_norm=True,white_spectral=True):
 
     st = read(f)
 
-    st_traces = [k for k in st.slide(window_length=WINDOW_LENGTH, step=WINDOW_LENGTH/2)]
-    st_hours = [str(k[0].stats.starttime.hour)+':'+str(k[0].stats.starttime.minute) for k in st_traces]
+    if len(st[0].data) > 1:
 
-    if len(st_hours) > MIN_WINDOWS: 
+	    st_traces = [k for k in st.slide(window_length=WINDOW_LENGTH, step=WINDOW_LENGTH/2)]
 
-	    inv = read_inventory(STATIONXML_DIR+'.'.join([network,name,'xml']))
+	    st_traces_check = []
+	    st_hours = []
+	    for k in st_traces:
+	    	if len(k[0].data) >= 3600:
+	    		st_traces_check.append(k) 
+	    		st_hours.append(str(k[0].stats.starttime.hour)+':'+str(k[0].stats.starttime.minute)) 
 
-	    traces_resp = [tr.remove_response(inventory=inv,output="DISP",water_level=60) for tr in st_traces]
-	    traces_demean = [tr.detrend('demean') for tr in traces_resp]
-	    traces_detrend = [tr.detrend('linear') for tr in traces_demean]
-	    traces_filter = [tr.filter('bandpass', freqmin=0.01,freqmax=10,corners=2, zerophase=True) for tr in traces_detrend]
-	    traces_resample = [tr.resample(NEW_SAMPLING_RATE) for tr in traces_filter]
+	    if len(st_hours) > MIN_WINDOWS: 
 
-	    # ===================
-	    # Amplitude  clipping
-	    # ===================
+		    inv = read_inventory(STATIONXML_DIR+'.'.join([network,name,'xml']))
 
-	    for i,tr in enumerate(traces_resample):
-	    	lim = CLIP_FACTOR * np.std(tr[0].data)
-	    	tr[0].data[tr[0].data > lim] = lim
-	    	tr[0].data[tr[0].data < -lim] = -lim
+		    traces_resp = [tr.remove_response(inventory=inv,output="DISP",water_level=60) for tr in st_traces_check]
+		    traces_demean = [tr.detrend('demean') for tr in traces_resp]
+		    traces_detrend = [tr.detrend('linear') for tr in traces_demean]
+		    traces_filter = [tr.filter('bandpass', freqmin=0.01,freqmax=10,corners=2, zerophase=True) for tr in traces_detrend]
+		    traces_resample = [tr.resample(NEW_SAMPLING_RATE) for tr in traces_filter]
 
-	    # ==================
-	    # Spectral whitening
-	    # ==================
+		    # ===================
+		    # Amplitude  clipping
+		    # ===================
 
-	    if white_spectral:
-	    	freqmin=0.05 
-	    	freqmax=0.5
-	    	for i,tr in enumerate(traces_resample):
-	    		n = len(tr[0].data)
-	    		nsamp = tr[0].stats.sampling_rate
-	    		frange = float(freqmax) - float(freqmin)
-	    		nsmo = int(np.fix(min(0.01, 0.5 * (frange)) * float(n) / nsamp))
-	    		f = np.arange(n) * nsamp / (n - 1.)
-	    		JJ = ((f > float(freqmin)) & (f<float(freqmax))).nonzero()[0]
-            
-	    		# signal FFT
-	    		FFTs = fft(tr[0].data)
-	    		FFTsW = np.zeros(n) + 1j * np.zeros(n)
+		    if Amp_clip:
+			    for i,tr in enumerate(traces_resample):
+			    	lim = CLIP_FACTOR * np.std(tr[0].data)
+			    	tr[0].data[tr[0].data > lim] = lim
+			    	tr[0].data[tr[0].data < -lim] = -lim
+		    
+		    # ======================
+		    # One-bit normalization
+		    # ======================
 
-	    		# Apodization to the left with cos^2 (to smooth the discontinuities)
-	    		smo1 = (np.cos(np.linspace(np.pi/2, np.pi, nsmo+1))**2)
-	    		FFTsW[JJ[0]:JJ[0]+nsmo+1] = smo1 * np.exp(1j * np.angle(FFTs[JJ[0]:JJ[0]+nsmo+1]))
+		    if onebit_norm:
+		    	for i,tr in enumerate(traces_resample):
+		    		tr[0].data = np.sign(tr[0].data)
 
-	    		# boxcar
-	    		FFTsW[JJ[0]+nsmo+1:JJ[-1]-nsmo] = np.ones(len(JJ) - 2 * (nsmo+1))\
-	    		* np.exp(1j * np.angle(FFTs[JJ[0]+nsmo+1:JJ[-1]-nsmo]))
+		    # ==================
+		    # Spectral whitening
+		    # ==================
 
-	    		# Apodization to the right with cos^2 (to smooth the discontinuities)
-	    		smo2 = (np.cos(np.linspace(0, np.pi/2, nsmo+1))**2)
-	    		espo = np.exp(1j * np.angle(FFTs[JJ[-1]-nsmo:JJ[-1]+1]))
-	    		FFTsW[JJ[-1]-nsmo:JJ[-1]+1] = smo2 * espo
+		    if white_spectral:
+		    	freqmin=0.05 
+		    	freqmax=0.5
+		    	for i,tr in enumerate(traces_resample):
+		    		n = len(tr[0].data)
+		    		nsamp = tr[0].stats.sampling_rate
+		    		frange = float(freqmax) - float(freqmin)
+		    		nsmo = int(np.fix(min(0.01, 0.5 * (frange)) * float(n) / nsamp))
+		    		f = np.arange(n) * nsamp / (n - 1.)
+		    		JJ = ((f > float(freqmin)) & (f<float(freqmax))).nonzero()[0]
+	            
+		    		# signal FFT
+		    		FFTs = fft(tr[0].data)
+		    		FFTsW = np.zeros(n) + 1j * np.zeros(n)
 
-	    		whitedata = 2. * ifft(FFTsW).real
-        
-	    		tr[0].data = np.require(whitedata, dtype="float32")
-	    	traces_white_spectral = traces_resample
+		    		# Apodization to the left with cos^2 (to smooth the discontinuities)
+		    		smo1 = (np.cos(np.linspace(np.pi/2, np.pi, nsmo+1))**2)
+		    		FFTsW[JJ[0]:JJ[0]+nsmo+1] = smo1 * np.exp(1j * np.angle(FFTs[JJ[0]:JJ[0]+nsmo+1]))
 
-	    else:
-	    	traces_white_spectral = traces_resample
+		    		# boxcar
+		    		FFTsW[JJ[0]+nsmo+1:JJ[-1]-nsmo] = np.ones(len(JJ) - 2 * (nsmo+1))\
+		    		* np.exp(1j * np.angle(FFTs[JJ[0]+nsmo+1:JJ[-1]-nsmo]))
 
-	    # ======================
-	    # One-bit normalization
-	    # ======================
+		    		# Apodization to the right with cos^2 (to smooth the discontinuities)
+		    		smo2 = (np.cos(np.linspace(0, np.pi/2, nsmo+1))**2)
+		    		espo = np.exp(1j * np.angle(FFTs[JJ[-1]-nsmo:JJ[-1]+1]))
+		    		FFTsW[JJ[-1]-nsmo:JJ[-1]+1] = smo2 * espo
 
-	    if onebit_norm:
-	    	traces_onebit = [np.sign(tr[0].data) for tr in traces_white_spectral]
-	    	traces_data_day = [ton.data.tolist() for ton in traces_onebit]
+		    		whitedata = 2. * ifft(FFTsW).real
+	        
+		    		tr[0].data = np.require(whitedata, dtype="float32")
+		    	traces_white_spectral = traces_resample
 
-	    else:
-	    	traces_onebit = traces_white_spectral
-	    	traces_data_day = [ton[0].data.tolist() for ton in traces_onebit]
+		    traces_data_day = [ton[0].data.tolist() for ton in traces_white_spectral]
 
-	    lon = inv.get_coordinates(sta_channel_id)['longitude']
-	    lat = inv.get_coordinates(sta_channel_id)['latitude']
 
-	    # appending new channel day data
-	    station = StationDayData(name=name, network=network,fileID=sta_channel_id,lon=lon,lat=lat,time_day=time_day,hour_lst=st_hours,data_day=traces_data_day)
+		    lon = inv.get_coordinates(sta_channel_id)['longitude']
+		    lat = inv.get_coordinates(sta_channel_id)['latitude']
 
-	    data_dic = {
-					'name': station.name,
-					'network': station.network,
-					'fileID': station.fileID,
-					'lon': station.lon,
-					'lat': station.lat,
-					'time_day': station.time_day,
-					'hours_day': station.hour_lst,
-					'data_day': station.data_day
-		    		}
+		    # appending new channel day data
+		    station = StationDayData(name=name, network=network,fileID=sta_channel_id,lon=lon,lat=lat,time_day=time_day,hour_lst=st_hours,data_day=traces_data_day)
 
-	    output_DATA_DAY = JSON_FILES+'DATA_DAY_FILES/'+year_day+'.'+julday_day+'/'
-	    os.makedirs(output_DATA_DAY,exist_ok=True)
-	    with open(output_DATA_DAY+'DATA_DAY_'+sta_channel_id+'_'+year_day+'_'+julday_day+'.json', 'w') as fp:
-	    	json.dump(data_dic, fp)
+		    data_dic = {
+						'name': station.name,
+						'network': station.network,
+						'fileID': station.fileID,
+						'lon': station.lon,
+						'lat': station.lat,
+						'time_day': station.time_day,
+						'hours_day': station.hour_lst,
+						'data_day': station.data_day
+			    		}
+
+		    output_DATA_DAY = JSON_FILES+'DATA_DAY_FILES/'+year_day+'.'+julday_day+'/'
+		    os.makedirs(output_DATA_DAY,exist_ok=True)
+		    with open(output_DATA_DAY+'DATA_DAY_'+sta_channel_id+'_'+year_day+'_'+julday_day+'.json', 'w') as fp:
+		    	json.dump(data_dic, fp)    
+    else:
+        pass
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -322,27 +329,27 @@ def nested_dict():
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 def crosscorr_func(stationtrace_pairs):
-    CrossCorrelation_dic = nested_dict()
+	CrossCorrelation_dic = nested_dict()
 
-    sta1 = json.load(open(stationtrace_pairs[0]))
-    sta2 = json.load(open(stationtrace_pairs[1]))
+	sta1 = json.load(open(stationtrace_pairs[0]))
+	sta2 = json.load(open(stationtrace_pairs[1]))
 
-    try:
-
+	try:
 	    year_day = sta1['time_day'].split('.')[0]
 	    julday_day = sta1['time_day'].split('.')[1]
-
-	    day_crosscor_causal = CrossCorrelation(sta1['name'],sta2['name'],sta1['lat'],sta1['lon'],sta2['lat'],sta2['lon'],sta1['time_day'])
-	    day_crosscor_acausal = CrossCorrelation(sta2['name'],sta1['name'],sta2['lat'],sta2['lon'],sta1['lat'],sta1['lon'],sta1['time_day'])
+	    day_crosscor_causal = CrossCorrelation(name1=sta1['name'],name2=sta2['name'],lat1=sta1['lat'],lon1=sta1['lon'],lat2=sta2['lat'],lon2=sta2['lon'],pair_time_day=sta1['time_day'])
+	    day_crosscor_acausal = CrossCorrelation(name1=sta2['name'],name2=sta1['name'],lat1=sta2['lat'],lon1=sta2['lon'],lat2=sta1['lat'],lon2=sta1['lon'],pair_time_day=sta1['time_day'])
 
 	    day_crosscor_causal.add(sta1['data_day'],sta2['data_day'],sta1['hours_day'],sta2['hours_day'])
 	    day_crosscor_acausal.add(sta2['data_day'],sta1['data_day'],sta2['hours_day'],sta1['hours_day'])
 	    day_time_crosscor_all = day_crosscor_acausal.timearray+day_crosscor_causal.timearray
 	    day_data_crosscor_all = day_crosscor_acausal.dataarray+day_crosscor_causal.dataarray
 	    raw_SNR = SNR(day_data_crosscor_all,day_time_crosscor_all,day_crosscor_causal.dist(),vmin=SIGNAL_WINDOW_VMIN,vmax=SIGNAL_WINDOW_VMAX,signal2noise_trail=SIGNAL2NOISE_TRAIL,noise_window_size=NOISE_WINDOW_SIZE)
+	    
 	    if raw_SNR > minspectSNR:
 
 		    CrossCorrelation_dic['dist'] = round(day_crosscor_causal.dist())
+		    CrossCorrelation_dic['date'] = sta1['data_day']
 		    CrossCorrelation_dic['sta1_loc'] = [sta1['lat'],sta1['lon']]
 		    CrossCorrelation_dic['sta1_name'] = sta1['name']
 		    CrossCorrelation_dic['sta2_loc'] = [sta2['lat'],sta2['lon']]
@@ -421,8 +428,8 @@ def crosscorr_func(stationtrace_pairs):
 
 	    return sta1['time_day']
 
-    except:
-    	print("Problem: CrossCorrelation between "+sta1['name']+" and "+sta2['name']+" in "+sta2['time_day'])
+	except:
+		print("Problem: CrossCorrelation between "+sta1['name']+" and "+sta2['name']+" in "+sta2['time_day'])
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -498,7 +505,7 @@ class CrossCorrelation:
         self.name2 = name2
 
         # loc of stations
-        self.lat1 = lat2
+        self.lat1 = lat1
         self.lon1 = lon1
         self.lat2 = lat2
         self.lon2 = lon2
@@ -566,7 +573,7 @@ class CrossCorrelation:
 # ============
 # Main program
 # ============
-'''
+
 print('===============================')
 print('Scanning name of miniseed files')
 print('===============================')
@@ -616,7 +623,7 @@ for result in tqdm(pool.imap(func=crosscorr_func, iterable=stationtrace_pairs), 
 
 print("--- %.2f execution time (min) ---" % ((time.time() - start_time)/60))
 print('\n')
-'''
+
 print('====================================')
 print('Stacking daily Cross-correlations:')
 print('====================================')
@@ -668,7 +675,7 @@ for i in crosscorr_pairs_data:
     # Plot: map and stacked crosscorr
     # ===============================
 
-	fig = plt.figure(figsize=(18, 6))
+	fig = plt.figure(figsize=(20, 7))
 	fig.suptitle(name_sta1+'-'+name_sta2+' - Dist = '+str(round(dist_pair))+' km'+' - Days stacked: '+str(len(i)),fontsize=20)
 
 	gs = gridspec.GridSpec(len(PERIOD_BANDS)+1, 2,wspace=0.2, hspace=0.5)
@@ -722,7 +729,7 @@ for i in crosscorr_pairs_data:
 
 	ylim = (data_to_plot.min(), data_to_plot.max())
 	ax.set_ylim(ylim)
-	ax.set_xlim(-500,500)
+	ax.set_xlim(-SIGNAL2NOISE_TRAIL,SIGNAL2NOISE_TRAIL)
 	ax.set_xticklabels([])
 	ax.set_yticklabels([])
 	raw_SNR = SNR(data_to_plot,time_to_plot,dist_pair,vmin=SIGNAL_WINDOW_VMIN,vmax=SIGNAL_WINDOW_VMAX,signal2noise_trail=SIGNAL2NOISE_TRAIL,noise_window_size=NOISE_WINDOW_SIZE)
@@ -742,7 +749,7 @@ for i in crosscorr_pairs_data:
 		ax.plot(time_to_plot, data_to_plot_filtered,color='k')
 		ylim = (data_to_plot_filtered.min(), data_to_plot_filtered.max())
 		ax.set_ylim(ylim)
-		ax.set_xlim(-500,500)
+		ax.set_xlim(-SIGNAL2NOISE_TRAIL,SIGNAL2NOISE_TRAIL)
 		ax.set_yticklabels([])
 
 		# Calculating SNR
@@ -759,4 +766,104 @@ for i in crosscorr_pairs_data:
 	output_figure_CrossCorrelation_DAY = CLOCK_DRIFT_OUTPUT+'CROSS_CORR_STACK_FIGURES/'
 	os.makedirs(output_figure_CrossCorrelation_DAY,exist_ok=True)    
 	fig.savefig(output_figure_CrossCorrelation_DAY+'CROSS_CORR_STACK_FIG_'+name_sta1+'_'+name_sta2+'.png')    
+	plt.close()
+
+
+print('====================================')
+print('Stacking 10-day Cross-correlations:')
+print('====================================')
+print('\n')
+
+#Collecting daily list of cross-correlations
+crosscorr_days_lst = sorted(glob.glob(JSON_FILES+'CROSS_CORR_DAY_FILES/*'))
+
+crosscorr_pairs_lst = []
+for i,j in enumerate(crosscorr_days_lst):
+	crosscorr_file = sorted(glob.glob(j+'/*'))
+	crosscorr_pairs_lst.append(crosscorr_file)
+
+#Make a list of list flat
+crosscorr_pairs = [item for sublist in crosscorr_pairs_lst for item in sublist]
+
+#Separating according to pairs name
+crosscorr_pairs_name_lst = []
+for i in crosscorr_pairs:
+	# splitting subdir/basename
+	subdir, filename = os.path.split(i)
+	crosscorr_pairs_name_lst.append(filename.split("_20")[0])
+
+crosscorr_pairs_names = sorted(list(set(crosscorr_pairs_name_lst)))
+
+crosscorr_pairs_data = [[]]*len(crosscorr_pairs_names)
+for l,k in enumerate(crosscorr_pairs_names):
+	crosscorr_pairs_data[l] = [j for i,j in enumerate(crosscorr_pairs) if k in j]
+
+crosscorr_pairs_data_10_day_all = []
+for j,i in enumerate(crosscorr_pairs_data):
+	crosscorr_pairs_10day_data = []
+	crosscorr_pair_date_10day = []
+	for k in i: 
+		subdir, filename = os.path.split(k)
+		crosscorr_pair_date = datetime.datetime.strptime(filename.split('.')[0].split('_')[-2]+'.'+filename.split('.')[0].split('_')[-1], '%Y.%j')
+		crosscorr_pair_date_10day.append(crosscorr_pair_date)
+		crosscorr_pairs_10day_data.append([file for file in i if datetime.datetime.strptime(file.split('/')[-1].split('.')[0].split('_')[-2]+'.'+file.split('/')[-1].split('.')[0].split('_')[-1], '%Y.%j') >= crosscorr_pair_date and datetime.datetime.strptime(file.split('/')[-1].split('.')[0].split('_')[-2]+'.'+file.split('/')[-1].split('.')[0].split('_')[-1], '%Y.%j') < crosscorr_pair_date+datetime.timedelta(days=10)])
+				
+	#Stacking data
+	data_to_plot = [] 
+	for ind,data10 in enumerate(crosscorr_pairs_10day_data):
+		name_sta1 = json.load(open(data10[0]))['sta1_name']
+		name_sta2 = json.load(open(data10[0]))['sta2_name']
+		dist_pair = json.load(open(data10[0]))['dist']
+
+		causal_lst = np.mean(np.array([json.load(open(a))['crosscorr_daily_causal'] for a in data10]),axis=0)
+		acausal_lst = np.mean(np.array([json.load(open(a))['crosscorr_daily_acausal'] for a in data10]),axis=0)
+
+		causal_time = np.array(json.load(open(data10[0]))['crosscorr_daily_causal_time'])
+		acausal_time = np.array(json.load(open(data10[0]))['crosscorr_daily_acausal_time'])
+
+		data_to_plot.append(acausal_lst[::-1] + causal_lst)
+		time_to_plot = [-1*i for i in acausal_time[::-1]] + causal_time
+
+		loc_sta1 = json.load(open(data10[0]))['sta1_loc']
+		loc_sta2 = json.load(open(data10[0]))['sta2_loc']
+
+	print('Pair '+str(j+1)+' of '+str(len(crosscorr_pairs_data))+': '+name_sta1+'-'+name_sta2+' - '+'days stacked: '+str(len(i)))
+	crosscorr_pairs_data_10_day_all.append(data_to_plot)
+
+	# ================================	
+	# Plot: stacked crosscorr per dist	
+	# ================================
+
+	fig = plt.figure(figsize=(10, 8))
+	fig.suptitle('Cross-correlations: '+name_sta1+'-'+name_sta2+' - '+'days stacked: '+str(len(i)),fontsize=20)
+
+	data_to_plot_stacked = sum(data_to_plot)/len(data_to_plot)	
+	
+	vector_plot = np.array(data_to_plot)
+	ax = fig.add_subplot()
+	extent = [-SHIFT_LEN,SHIFT_LEN,0,len(data_to_plot)]
+	im = ax.imshow(vector_plot,extent=extent,origin='lower', interpolation='gaussian',aspect='auto',cmap='coolwarm',vmin=-1,vmax=1)
+	ax.axvline(x=0, ymin=0, ymax=1,color='k',linestyle='--')
+	ax.plot(time_to_plot,data_to_plot_stacked,color='k',ls='-',lw=0.25)
+	ax.set_xlim(-SIGNAL2NOISE_TRAIL,SIGNAL2NOISE_TRAIL)
+	ax.text(x=0.9,y=0.9,s=str(round(dist_pair))+' km',horizontalalignment='center',transform=ax.transAxes,fontsize=10,bbox={'edgecolor':'k','facecolor': 'white'})
+	ax.set_yticklabels([])
+	ax.yaxis.set_major_locator(MultipleLocator(1))
+	# adding label to time
+	ax.set_xlabel('Lapse time (s)',fontsize=14)
+
+	axins = inset_axes(ax,
+                   width="10%",  # width = 10% of parent_bbox width
+                   height="2%",  # height : 5%
+                   loc='upper left',
+                   bbox_to_anchor=(0.85, 0.03, 1, 1),
+                   bbox_transform=ax.transAxes,
+                   borderpad=0,
+                   )
+	plt.colorbar(im, cax=axins, orientation="horizontal", ticklocation='top')
+
+
+	output_figure_CrossCorrelation_DAY = CLOCK_DRIFT_OUTPUT+'CROSS_CORR_10_STACK_FIGURES/'
+	os.makedirs(output_figure_CrossCorrelation_DAY,exist_ok=True)    
+	fig.savefig(output_figure_CrossCorrelation_DAY+'CROSS_CORR_10_STACK_FIG_'+name_sta1+'_'+name_sta2+'.png')    
 	plt.close()
