@@ -364,7 +364,7 @@ def crosscorr_func(stationtrace_pairs):
 	    if raw_SNR > minspectSNR:
 
 		    CrossCorrelation_dic['dist'] = round(day_crosscor_causal.dist())
-		    CrossCorrelation_dic['date'] = sta1['data_day']
+		    CrossCorrelation_dic['date'] = sta1['time_day']
 		    CrossCorrelation_dic['sta1_loc'] = [sta1['lat'],sta1['lon']]
 		    CrossCorrelation_dic['sta1_name'] = sta1['name']
 		    CrossCorrelation_dic['sta2_loc'] = [sta2['lat'],sta2['lon']]
@@ -683,6 +683,7 @@ for result in tqdm(pool.imap(func=crosscorr_func, iterable=stationtrace_pairs), 
 print("--- %.2f execution time (min) ---" % ((time.time() - start_time)/60))
 print('\n')
 
+
 print('====================================')
 print('Stacking daily Cross-correlations:')
 print('====================================')
@@ -826,7 +827,7 @@ for i in crosscorr_pairs_data:
 	fig.savefig(output_figure_CrossCorrelation_DAY+'CROSS_CORR_STACK_FIG_'+name_sta1+'_'+name_sta2+'.png')    
 	plt.close()
 
-
+'''
 print('====================================')
 print('Stacking 10-day Cross-correlations:')
 print('====================================')
@@ -857,7 +858,7 @@ for l,k in enumerate(crosscorr_pairs_names):
 	crosscorr_pairs_data[l] = [j for i,j in enumerate(crosscorr_pairs) if k in j]
 
 crosscorr_pairs_data_10_day_all = []
-for j,i in enumerate(crosscorr_pairs_data):
+for i in tqdm(crosscorr_pairs_data):
 	crosscorr_pairs_10day_data = []
 	crosscorr_pair_date_10day = []
 	for k in i: 
@@ -867,8 +868,14 @@ for j,i in enumerate(crosscorr_pairs_data):
 		crosscorr_pairs_10day_data.append([file for file in i if datetime.datetime.strptime(file.split('/')[-1].split('.')[0].split('_')[-2]+'.'+file.split('/')[-1].split('.')[0].split('_')[-1], '%Y.%j') >= crosscorr_pair_date and datetime.datetime.strptime(file.split('/')[-1].split('.')[0].split('_')[-2]+'.'+file.split('/')[-1].split('.')[0].split('_')[-1], '%Y.%j') < crosscorr_pair_date+datetime.timedelta(days=10)])
 				
 	#Stacking data
-	data_to_plot = [] 
+	date_to_plot = []
+	data_to_plot = []
+	time_to_plot = [] 
+ 
 	for ind,data10 in enumerate(crosscorr_pairs_10day_data):
+
+		#date_to_plot.append(json.load(open(data10[0]))['date'])
+		date_to_plot.append(crosscorr_pair_date_10day[ind])
 		name_sta1 = json.load(open(data10[0]))['sta1_name']
 		name_sta2 = json.load(open(data10[0]))['sta2_name']
 		dist_pair = json.load(open(data10[0]))['dist']
@@ -880,52 +887,193 @@ for j,i in enumerate(crosscorr_pairs_data):
 		acausal_time = np.array(json.load(open(data10[0]))['crosscorr_daily_acausal_time'])
 
 		data_to_plot.append(acausal_lst[::-1] + causal_lst)
-		time_to_plot = [-1*i for i in acausal_time[::-1]] + causal_time
+		time_to_plot.append([-1*i for i in acausal_time[::-1]] + causal_time)
 
 		loc_sta1 = json.load(open(data10[0]))['sta1_loc']
 		loc_sta2 = json.load(open(data10[0]))['sta2_loc']
 
-	print('Pair '+str(j+1)+' of '+str(len(crosscorr_pairs_data))+': '+name_sta1+'-'+name_sta2+' - '+'days stacked: '+str(len(i)))
-	crosscorr_pairs_data_10_day_all.append(data_to_plot)
+	#Creating the figure and plotting Stacked Cross-correlations
+	fig = plt.figure(figsize=(10, 20))
+	fig.suptitle('Cross-correlations: '+name_sta1+'-'+name_sta2+' - '+'days stacked: '+str(len(crosscorr_pairs_10day_data)),fontsize=20)
 
-	# ================================	
-	# Plot: stacked crosscorr per dist	
-	# ================================
+	gs = gridspec.GridSpec(4, 2,wspace=0.2, hspace=0.5)
 
-	fig = plt.figure(figsize=(10, 8))
-	fig.suptitle('Cross-correlations: '+name_sta1+'-'+name_sta2+' - '+'days stacked: '+str(len(i)),fontsize=20)
+	#-------------------------------------------
 
-	data_to_plot_stacked = sum(data_to_plot)/len(data_to_plot)	
-	
-	vector_plot = np.array(data_to_plot)
-	ax = fig.add_subplot()
-	extent = [-SHIFT_LEN,SHIFT_LEN,0,len(data_to_plot)]
-	im = ax.imshow(vector_plot,extent=extent,origin='lower', interpolation='gaussian',aspect='auto',cmap='coolwarm',vmin=-1,vmax=1)
-	ax.axvline(x=0, ymin=0, ymax=1,color='k',linestyle='--')
-	ax.plot(time_to_plot,data_to_plot_stacked,color='k',ls='-',lw=0.25)
-	ax.set_xlim(-SIGNAL2NOISE_TRAIL,SIGNAL2NOISE_TRAIL)
-	ax.text(x=0.9,y=0.9,s=str(round(dist_pair))+' km',horizontalalignment='center',transform=ax.transAxes,fontsize=10,bbox={'edgecolor':'k','facecolor': 'white'})
-	ax.set_yticklabels([])
-	ax.yaxis.set_major_locator(MultipleLocator(1))
-	# adding label to time
-	ax.set_xlabel('Lapse time (s)',fontsize=14)
+	map_loc = fig.add_subplot(gs[0,:],projection=ccrs.PlateCarree())
+					
+	LLCRNRLON_LARGE = -52
+	URCRNRLON_LARGE = -36
+	LLCRNRLAT_LARGE = -28
+	URCRNRLAT_LARGE = -19
 
-	axins = inset_axes(ax,
-                   width="10%",  # width = 10% of parent_bbox width
-                   height="2%",  # height : 5%
-                   loc='upper left',
-                   bbox_to_anchor=(0.85, 0.03, 1, 1),
-                   bbox_transform=ax.transAxes,
-                   borderpad=0,
-                   )
+	map_loc.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
+	map_loc.yaxis.set_ticks_position('both')
+	map_loc.xaxis.set_ticks_position('both')
+
+	map_loc.set_xticks(np.arange(LLCRNRLON_LARGE,URCRNRLON_LARGE,3), crs=ccrs.PlateCarree())
+	map_loc.set_yticks(np.arange(LLCRNRLAT_LARGE,URCRNRLAT_LARGE,3), crs=ccrs.PlateCarree())
+	map_loc.tick_params(labelbottom=True,labeltop=True,labelleft=True,labelright=True, labelsize=15)
+
+	map_loc.grid(True,which='major',color='gray',linewidth=1,linestyle='--')
+
+	reader_1_SHP = Reader(BOUNDARY_STATES_SHP)
+	shape_1_SHP = list(reader_1_SHP.geometries())
+	plot_shape_1_SHP = cfeature.ShapelyFeature(shape_1_SHP, ccrs.PlateCarree())
+	map_loc.add_feature(plot_shape_1_SHP, facecolor='none', edgecolor='k',linewidth=0.5,zorder=-1)
+
+	# Use the cartopy interface to create a matplotlib transform object    
+	# for the Geodetic coordinate system. We will use this along with    
+	# matplotlib's offset_copy function to define a coordinate system which
+	# translates the text by 25 pixels to the left.
+	geodetic_transform = ccrs.Geodetic()._as_mpl_transform(map_loc)
+	text_transform = offset_copy(geodetic_transform, units='dots', y=0,x=60)
+	text_transform_mag = offset_copy(geodetic_transform, units='dots', y=-15,x=15)
+
+	map_loc.plot([loc_sta1[1],loc_sta2[1]],[loc_sta1[0],loc_sta2[0]],c='k',alpha=0.5, transform=ccrs.PlateCarree())
+	map_loc.scatter(loc_sta1[1],loc_sta1[0], marker='^',s=200,c='k',edgecolors='w', transform=ccrs.PlateCarree())    
+	map_loc.scatter(loc_sta2[1],loc_sta2[0], marker='^',s=200,c='k',edgecolors='w', transform=ccrs.PlateCarree())
+	map_loc.set_title('Dist = '+str(round(dist_pair))+' km',fontsize=20)
+
+	#--------------------------------------------------------------------------------------------------------------------
+	ax2 = fig.add_subplot(gs[1,0])
+	crosscorr_stack_data_normalized_org_lsts = [bandpass(data_2_plot, 1.0/25, 1.0/7, NEW_SAMPLING_RATE, corners=2, zerophase=False) for data_2_plot in data_to_plot]
+
+	crosscorr_stack_data_normalized_org_lst = [(a-a.mean())/a.std() for a in crosscorr_stack_data_normalized_org_lsts]
+
+	y_factor = 0.2
+	for i,j in enumerate(crosscorr_stack_data_normalized_org_lst):
+		ax2.plot(time_to_plot[i],[x+i/y_factor for x in crosscorr_stack_data_normalized_org_lst[i]],c='k',lw=0.5)
+
+	ax2.set_yticks([i/y_factor for i in range(len(crosscorr_stack_data_normalized_org_lst))])
+	ax2.set_yticklabels([i.strftime("%d/%m/%y") for i in date_to_plot])
+
+	ax2.axvline(x=0, ymin=0, ymax=1,color='k',linestyle='-',lw=1)
+	ax2.set_xlim(-SIGNAL2NOISE_TRAIL,SIGNAL2NOISE_TRAIL)
+
+	# adding labels
+	ax2.set_xlabel('Lapse time (s)',fontsize=14)
+	ax2.set_title('Filter: 7s-25s')
+
+	#---------------------------------------------------------
+	ax3 = fig.add_subplot(gs[1,1])
+
+	vector_plot = np.array(crosscorr_stack_data_normalized_org_lst)
+
+	extent = [-SHIFT_LEN,SHIFT_LEN,0,len(crosscorr_stack_data_normalized_org_lst)]
+	im = ax3.imshow(vector_plot,extent=extent,origin='lower', interpolation='kaiser',aspect='auto',cmap='bwr')
+	ax3.axvline(x=0, ymin=0, ymax=1,color='k',linestyle='--')
+	ax3.set_xlim(-SIGNAL2NOISE_TRAIL,SIGNAL2NOISE_TRAIL)
+
+	ax3.set_yticks([])
+
+	# adding labels
+	ax3.set_xlabel('Lapse time (s)',fontsize=14)
+
+	axins = inset_axes(ax3,
+	                   width="30%",  # width = 10% of parent_bbox width
+	                   height="2%",  # height : 5%
+	                   loc='upper left',
+	                   bbox_to_anchor=(0.65, 0.03, 1, 1),
+	                   bbox_transform=ax3.transAxes,
+	                   borderpad=0,
+	                   )
 	plt.colorbar(im, cax=axins, orientation="horizontal", ticklocation='top')
 
+	#-----------------------------------------------------------------------------------------------
+	
+	crosscorr_stack_data_normalized_org_lst_20_50s = [bandpass(data_2_plot, 1.0/50, 1.0/20, NEW_SAMPLING_RATE, corners=2, zerophase=False) for data_2_plot in data_to_plot]
+	crosscorr_stack_data_normalized_org_lst_20_50 = [(a-a.mean())/a.std() for a in crosscorr_stack_data_normalized_org_lst_20_50s]
+
+	ax4 = fig.add_subplot(gs[2,0])
+	y_factor1 = 0.1
+	for i,j in enumerate(crosscorr_stack_data_normalized_org_lst_20_50):
+		ax4.plot(time_to_plot[i],[x+i/y_factor1 for x in crosscorr_stack_data_normalized_org_lst_20_50[i]],c='k',lw=0.5)
+
+	ax4.set_yticks([i/y_factor1 for i in range(len(crosscorr_stack_data_normalized_org_lst_20_50))])
+	ax4.set_yticklabels([i.strftime("%d/%m/%y") for i in date_to_plot])
+
+	ax4.axvline(x=0, ymin=0, ymax=1,color='k',linestyle='-',lw=1)
+	ax4.set_xlim(-SIGNAL2NOISE_TRAIL,SIGNAL2NOISE_TRAIL)
+
+	# adding labels
+	ax4.set_xlabel('Lapse time (s)',fontsize=14)
+	ax4.set_title('Filter: 20s-50s')
+
+	#---------------------------------------------------------
+	ax5 = fig.add_subplot(gs[2,1])
+
+	vector_plot = np.array(crosscorr_stack_data_normalized_org_lst_20_50)
+
+	extent = [-SHIFT_LEN,SHIFT_LEN,0,len(crosscorr_stack_data_normalized_org_lst_20_50)]
+	im = ax5.imshow(vector_plot,extent=extent,origin='lower', interpolation='kaiser',aspect='auto',cmap='bwr')
+	ax5.axvline(x=0, ymin=0, ymax=1,color='k',linestyle='--')
+	ax5.set_xlim(-SIGNAL2NOISE_TRAIL,SIGNAL2NOISE_TRAIL)
+
+	ax5.set_yticks([])
+
+	# adding labels
+	ax5.set_xlabel('Lapse time (s)',fontsize=14)
+
+	axins = inset_axes(ax5,
+	                   width="30%",  # width = 10% of parent_bbox width
+	                   height="2%",  # height : 5%
+	                   loc='upper left',
+	                   bbox_to_anchor=(0.65, 0.03, 1, 1),
+	                   bbox_transform=ax5.transAxes,
+	                   borderpad=0,
+	                   )
+	plt.colorbar(im, cax=axins, orientation="horizontal", ticklocation='top')
+
+	#-----------------------------------------------------------------------------------------------
+	crosscorr_stack_data_normalized_org_lst_50_100s = [bandpass(data_2_plot, 1.0/100, 1.0/50, NEW_SAMPLING_RATE, corners=2, zerophase=False) for data_2_plot in data_to_plot]
+	crosscorr_stack_data_normalized_org_lst_50_100 = [(a-a.mean())/a.std() for a in crosscorr_stack_data_normalized_org_lst_20_50s]
+
+	ax6 = fig.add_subplot(gs[3,0])
+	y_factor2 = 0.1
+	for i,j in enumerate(crosscorr_stack_data_normalized_org_lst_50_100):
+		ax6.plot(time_to_plot[i],[x+i/y_factor2 for x in crosscorr_stack_data_normalized_org_lst_50_100[i]],c='k',lw=0.5)
+
+	ax6.set_yticks([i/y_factor2 for i in range(len(crosscorr_stack_data_normalized_org_lst_50_100))])
+	ax6.set_yticklabels([i.strftime("%d/%m/%y") for i in date_to_plot])
+
+	ax6.axvline(x=0, ymin=0, ymax=1,color='k',linestyle='-',lw=1)
+	ax6.set_xlim(-SIGNAL2NOISE_TRAIL,SIGNAL2NOISE_TRAIL)
+
+	# adding labels
+	ax6.set_xlabel('Lapse time (s)',fontsize=14)
+	ax6.set_title('Filter: 50s-100s')
+
+	#---------------------------------------------------------
+	ax7 = fig.add_subplot(gs[3,1])
+
+	vector_plot = np.array(crosscorr_stack_data_normalized_org_lst_50_100)
+
+	extent = [-SHIFT_LEN,SHIFT_LEN,0,len(crosscorr_stack_data_normalized_org_lst_50_100)]
+	im = ax7.imshow(vector_plot,extent=extent,origin='lower', interpolation='kaiser',aspect='auto',cmap='bwr')
+	ax7.axvline(x=0, ymin=0, ymax=1,color='k',linestyle='--')
+	ax7.set_xlim(-SIGNAL2NOISE_TRAIL,SIGNAL2NOISE_TRAIL)
+
+	ax7.set_yticks([])
+
+	# adding labels
+	ax7.set_xlabel('Lapse time (s)',fontsize=14)
+
+	axins = inset_axes(ax7,
+	                   width="30%",  # width = 10% of parent_bbox width
+	                   height="2%",  # height : 5%
+	                   loc='upper left',
+	                   bbox_to_anchor=(0.65, 0.03, 1, 1),
+	                   bbox_transform=ax7.transAxes,
+	                   borderpad=0,
+	                   )
+	plt.colorbar(im, cax=axins, orientation="horizontal", ticklocation='top')
 
 	output_figure_CrossCorrelation_DAY = CLOCK_DRIFT_OUTPUT+'CROSS_CORR_10_STACK_FIGURES/'
 	os.makedirs(output_figure_CrossCorrelation_DAY,exist_ok=True)    
 	fig.savefig(output_figure_CrossCorrelation_DAY+'CROSS_CORR_10_STACK_FIG_'+name_sta1+'_'+name_sta2+'.png')    
 	plt.close()
-
+'''
 print('===================================================================================')
 print('Stacking 10-day Cross-correlations and plotting according to interstation distance:')
 print('===================================================================================')
@@ -1032,7 +1180,6 @@ for result in tqdm(pool.imap(func=crosscorr_stack, iterable=crosscorr_pairs_data
 print("--- %.2f execution time (min) ---" % ((time.time() - start_time)/60))
 print('\n')
 
-'''
 print('=======================================================================')
 print('Plotting Stacked Cross-correlations according to interstation distance:')
 print('=======================================================================')
@@ -1324,3 +1471,4 @@ output_figure_CrossCorrelation_DAY = CLOCK_DRIFT_OUTPUT+'CROSS_CORR_STACK_INTERS
 os.makedirs(output_figure_CrossCorrelation_DAY,exist_ok=True)    
 fig.savefig(output_figure_CrossCorrelation_DAY+'CROSS_CORR_STACK_INTERSTATION_DISTANCE_FIG.png',dpi=300)    
 plt.close()
+'''
