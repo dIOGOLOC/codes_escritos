@@ -55,16 +55,20 @@ MSEED_DIR = '/home/diogoloc/dados_posdoc/ON_MAR/obs_data_MSEED/'
 
 STATIONXML_DIR = '/home/diogoloc/dados_posdoc/ON_MAR/XML_OBS/'
 
-TRANSFER_FUNC_OUTPUT = '/home/diogoloc/dados_posdoc/ON_MAR/TRANSFER_FUNC/FIGURAS/'    
+TRANSFER_FUNC_OUTPUT = '/home/diogoloc/dados_posdoc/ON_MAR/TRANSFER_FUNC/FIGURAS/'   
+
+CORRECT_DATA_TRANSFER_FUNC_OUTPUT = '/home/diogoloc/dados_posdoc/ON_MAR/TRANSFER_FUNC/DATA_CORRECTION/'   
 
 JSON_FILES = '/home/diogoloc/dados_posdoc/ON_MAR/TRANSFER_FUNC/JSON_FILES/'
 
-FIRSTDAY = '2019-07-27'
-LASTDAY = '2020-01-27'
+NOISE_MODEL_FILE = '/home/diogoloc/dados_posdoc/ON_MAR/TRANSFER_FUNC/NOISE_MODEL_FILE/noise_models.npz'
+
+FIRSTDAY = '2019-07-28'
+LASTDAY = '2020-06-15'
 
 NETWORK = 'ON'
 
-STATION = 'OBS17'
+STATION = 'OBS18'
 
 MIN_WINDOWS = 24
 
@@ -78,6 +82,8 @@ tiltfreq=[0.005, 0.035]
 
 ALPHA = 0.05
 TOL = 2.0
+
+VERBOSE_MODE = False
 
 # ========================
 # Constants and parameters
@@ -372,7 +378,7 @@ print('==================================================================')
 print('Opening miniseed files and calculating the spectrogram of each day')
 print('==================================================================')
 print('\n')
-
+'''
 start_time = time.time()
 
 with Pool(processes=num_processes) as p:
@@ -384,7 +390,7 @@ with Pool(processes=num_processes) as p:
 print("--- %.2f execution time (min) ---" % ((time.time() - start_time)/60))
 print('\n')
 
-
+'''
 #-------------------------------------------------------------------------------
 daily_lst_spec = [[]]*len(INTERVAL_PERIOD_DATE)
 
@@ -404,6 +410,7 @@ for l,k in enumerate(INTERVAL_PERIOD_DATE):
 	daily_lst_data[l] = [j for i,j in enumerate(DATA_DAY_FILES) if DATA_DAYs[i] == k]
 
 #-------------------------------------------------------------------------------
+
 
 # Select bandpass frequencies
 
@@ -473,47 +480,47 @@ for j in tqdm(daily_lst_spec):
     log_psde = smooth(log_psde,40)
     dsl_HHE = log_psde[ff, :] - np.mean(log_psde[ff, :], axis=0)
     #-----------------------------------------------------
-    '''
-    cmap = 'viridis_r'
-    heights = [1,1,1]
-    widths = [1]
+    if VERBOSE_MODE: 
+	    cmap = 'viridis_r'
+	    heights = [1,1,1]
+	    widths = [1]
 
-    gs_kw = dict(width_ratios=widths, height_ratios=heights)
-    fig, (ax1,ax2,ax3) = plt.subplots(ncols=1, nrows=3,figsize=(15,10),sharex=True,gridspec_kw=gs_kw)
-    
-    im = ax1.pcolormesh(tzh,fz, log_psdz, cmap=cmap,shading='auto',vmin=-180,vmax=-60)
-    ax1.text(0.96, 0.8, 'HHZ', ha='center',bbox=dict(facecolor='w'),transform=ax1.transAxes)
-    ax1.xaxis.set_major_locator(MultipleLocator(4))
-    ax1.yaxis.set_major_locator(MultipleLocator(0.5))
-    axins = inset_axes(ax1,
-                   width="25%",  # width = 10% of parent_bbox width
-                   height="5%",  # height : 50%
-                   loc='upper left',
-                   bbox_to_anchor=(0.75, 0.1, 1, 1),
-                   bbox_transform=ax1.transAxes,
-                   borderpad=0,
-                   )
-    plt.colorbar(im, cax=axins, orientation="horizontal", ticklocation='top')
+	    gs_kw = dict(width_ratios=widths, height_ratios=heights)
+	    fig, (ax1,ax2,ax3) = plt.subplots(ncols=1, nrows=3,figsize=(15,10),sharex=True,gridspec_kw=gs_kw)
+	    
+	    im = ax1.pcolormesh(tzh,fz, log_psdz, cmap=cmap,shading='auto',vmin=-180,vmax=-60)
+	    ax1.text(0.96, 0.8, 'HHZ', ha='center',bbox=dict(facecolor='w'),transform=ax1.transAxes)
+	    ax1.xaxis.set_major_locator(MultipleLocator(4))
+	    ax1.yaxis.set_major_locator(MultipleLocator(0.5))
+	    axins = inset_axes(ax1,
+	                   width="25%",  # width = 10% of parent_bbox width
+	                   height="5%",  # height : 50%
+	                   loc='upper left',
+	                   bbox_to_anchor=(0.75, 0.1, 1, 1),
+	                   bbox_transform=ax1.transAxes,
+	                   borderpad=0,
+	                   )
+	    plt.colorbar(im, cax=axins, orientation="horizontal", ticklocation='top')
 
-    #-----------------------------------------------------
-    ax2.pcolormesh(tnh,fn, log_psdn, cmap=cmap,shading='auto',vmin=-180,vmax=-60)
-    ax2.text(0.96, 0.8, 'HHN', ha='center',bbox=dict(facecolor='w'),transform=ax2.transAxes)
-    ax2.set_ylabel('Frequency (Hz)')
-    ax2.xaxis.set_major_locator(MultipleLocator(4))
-    ax2.yaxis.set_major_locator(MultipleLocator(0.5))
-    #-----------------------------------------------------
-    ax3.pcolormesh(tnh,fe, log_psde, cmap=cmap,shading='auto',vmin=-180,vmax=-60)
-    ax3.text(0.96, 0.8, 'HHE', ha='center',bbox=dict(facecolor='w'),transform=ax3.transAxes)
-    ax3.xaxis.set_major_locator(MultipleLocator(4))
-    ax3.yaxis.set_major_locator(MultipleLocator(0.5))
-    ax3.set_xlabel('Time (h)')
-    #-----------------------------------------------------
-    daily_wind_output = TRANSFER_FUNC_OUTPUT+spec_HHZ['network']+'.'+spec_HHZ['name']+'/Daily_data_windows/'
-    os.makedirs(daily_wind_output,exist_ok=True)
-    fig.suptitle('Station = '+spec_HHZ['name']+' - Day = '+UTCDateTime(year=year_spec,julday=julday_spec).strftime('%d/%m/%Y'),fontsize=18)
-    fig.savefig(daily_wind_output+spec_HHZ['network']+'.'+spec_HHZ['name']+'.'+spec_HHZ['time_day']+'_full.png', dpi=300, facecolor='w', edgecolor='w')
-	'''
-    #-------------------------------------------------------------------------------------------------------------                       
+	    #-----------------------------------------------------
+	    ax2.pcolormesh(tnh,fn, log_psdn, cmap=cmap,shading='auto',vmin=-180,vmax=-60)
+	    ax2.text(0.96, 0.8, 'HHN', ha='center',bbox=dict(facecolor='w'),transform=ax2.transAxes)
+	    ax2.set_ylabel('Frequency (Hz)')
+	    ax2.xaxis.set_major_locator(MultipleLocator(4))
+	    ax2.yaxis.set_major_locator(MultipleLocator(0.5))
+	    #-----------------------------------------------------
+	    ax3.pcolormesh(tnh,fe, log_psde, cmap=cmap,shading='auto',vmin=-180,vmax=-60)
+	    ax3.text(0.96, 0.8, 'HHE', ha='center',bbox=dict(facecolor='w'),transform=ax3.transAxes)
+	    ax3.xaxis.set_major_locator(MultipleLocator(4))
+	    ax3.yaxis.set_major_locator(MultipleLocator(0.5))
+	    ax3.set_xlabel('Time (h)')
+	    #-----------------------------------------------------
+	    daily_wind_output = TRANSFER_FUNC_OUTPUT+spec_HHZ['network']+'.'+spec_HHZ['name']+'/Daily_data_windows/'
+	    os.makedirs(daily_wind_output,exist_ok=True)
+	    fig.suptitle('Station = '+spec_HHZ['name']+' - Day = '+UTCDateTime(year=year_spec,julday=julday_spec).strftime('%d/%m/%Y'),fontsize=18)
+	    fig.savefig(daily_wind_output+spec_HHZ['network']+'.'+spec_HHZ['name']+'.'+spec_HHZ['time_day']+'_full.png', dpi=300, facecolor='w', edgecolor='w')
+
+        #-------------------------------------------------------------------------------------------------------------                       
     
     good_windows = np.repeat([True], len(teh))
     indwin = np.argwhere(good_windows == True)
@@ -563,7 +570,7 @@ for j in tqdm(daily_lst_spec):
     len_good = int(sum(good_windows))
     len_bad = int(sum(bad_windows))
     
-    good_windows_lst.append(good_windows)
+    good_windows_lst.append(good_windows.tolist())
   
     #------------------------------------------------------------------------------
     
@@ -577,102 +584,102 @@ for j in tqdm(daily_lst_spec):
         dsl_HHEs = dsl_HHE[:,good_windows]
 
         #------------------------------------------------------------------------------
-        '''
-        figPSD_mean = plt.figure(figsize=(15,10))
-        ax1 = figPSD_mean.add_subplot(3, 2, 1)
-        ax1.semilogx(fz, log_psdz[:,good_windows], 'k', lw=0.5,alpha=0.5)
-        ax1.text(0.96, 0.8, 'HHZ', ha='center',bbox=dict(facecolor='w'),transform=ax1.transAxes)   
-        ax1.set_xlim(1/200,max(fe))
-        ax1.set_ylim(-180,-20)
- 
-        ax2 = figPSD_mean.add_subplot(3, 2, 2)
-        ax2.semilogx(fz, log_psdz[:,bad_windows], 'r', lw=0.5,alpha=0.5)
-        ax2.text(0.96, 0.8, 'HHZ', ha='center',bbox=dict(facecolor='w'),transform=ax2.transAxes)   
-        ax2.set_xlim(1/200,max(fe))
-        ax2.set_ylim(-180,-20)
-        
-        ax3 = figPSD_mean.add_subplot(3, 2, 3)
-        ax3.semilogx(fn, log_psdn[:,good_windows], 'k', lw=0.5,alpha=0.5)
-        ax3.text(0.96, 0.8, 'HHN', ha='center',bbox=dict(facecolor='w'),transform=ax3.transAxes)   
-        ax3.set_xlim(1/200,max(fe))
-        ax3.set_ylim(-180,-20)
+        if VERBOSE_MODE: 
 
-        ax4 = figPSD_mean.add_subplot(3, 2, 4)
-        ax4.semilogx(fn, log_psdn[:,bad_windows], 'r', lw=0.5,alpha=0.5)
-        ax4.text(0.96, 0.8, 'HHN', ha='center',bbox=dict(facecolor='w'),transform=ax4.transAxes)   
-        ax4.set_xlim(1/200,max(fe))
-        ax4.set_ylim(-180,-20)
-        
-        ax5 = figPSD_mean.add_subplot(3, 2, 5)
-        ax5.semilogx(fe, log_psde[:,good_windows], 'k', lw=0.5,alpha=0.5)
-        ax5.set_xlim(1/200,max(fe))
-        ax5.text(0.96, 0.8, 'HHE', ha='center',bbox=dict(facecolor='w'),transform=ax5.transAxes)   
-        ax5.set_xlabel('Frequency (Hz)',fontsize=15)
-        ax5.set_ylim(-180,-20)
+	        figPSD_mean = plt.figure(figsize=(15,10))
+	        ax1 = figPSD_mean.add_subplot(3, 2, 1)
+	        ax1.semilogx(fz, log_psdz[:,good_windows], 'k', lw=0.5,alpha=0.5)
+	        ax1.text(0.96, 0.8, 'HHZ', ha='center',bbox=dict(facecolor='w'),transform=ax1.transAxes)   
+	        ax1.set_xlim(1/200,max(fe))
+	        ax1.set_ylim(-180,-20)
+	 
+	        ax2 = figPSD_mean.add_subplot(3, 2, 2)
+	        ax2.semilogx(fz, log_psdz[:,bad_windows], 'r', lw=0.5,alpha=0.5)
+	        ax2.text(0.96, 0.8, 'HHZ', ha='center',bbox=dict(facecolor='w'),transform=ax2.transAxes)   
+	        ax2.set_xlim(1/200,max(fe))
+	        ax2.set_ylim(-180,-20)
+	        
+	        ax3 = figPSD_mean.add_subplot(3, 2, 3)
+	        ax3.semilogx(fn, log_psdn[:,good_windows], 'k', lw=0.5,alpha=0.5)
+	        ax3.text(0.96, 0.8, 'HHN', ha='center',bbox=dict(facecolor='w'),transform=ax3.transAxes)   
+	        ax3.set_xlim(1/200,max(fe))
+	        ax3.set_ylim(-180,-20)
+
+	        ax4 = figPSD_mean.add_subplot(3, 2, 4)
+	        ax4.semilogx(fn, log_psdn[:,bad_windows], 'r', lw=0.5,alpha=0.5)
+	        ax4.text(0.96, 0.8, 'HHN', ha='center',bbox=dict(facecolor='w'),transform=ax4.transAxes)   
+	        ax4.set_xlim(1/200,max(fe))
+	        ax4.set_ylim(-180,-20)
+	        
+	        ax5 = figPSD_mean.add_subplot(3, 2, 5)
+	        ax5.semilogx(fe, log_psde[:,good_windows], 'k', lw=0.5,alpha=0.5)
+	        ax5.set_xlim(1/200,max(fe))
+	        ax5.text(0.96, 0.8, 'HHE', ha='center',bbox=dict(facecolor='w'),transform=ax5.transAxes)   
+	        ax5.set_xlabel('Frequency (Hz)',fontsize=15)
+	        ax5.set_ylim(-180,-20)
 
 
-        ax6 = figPSD_mean.add_subplot(3, 2, 6)
-        ax6.semilogx(fe, log_psde[:,bad_windows], 'r', lw=0.5,alpha=0.5)
-        ax6.set_xlim(1/100,max(fe))
-        ax6.text(0.96, 0.8, 'HHE', ha='center',bbox=dict(facecolor='w'),transform=ax6.transAxes)   
-        ax6.set_xlabel('Frequency (Hz)',fontsize=15)
-        ax6.set_ylim(-180,-20)
+	        ax6 = figPSD_mean.add_subplot(3, 2, 6)
+	        ax6.semilogx(fe, log_psde[:,bad_windows], 'r', lw=0.5,alpha=0.5)
+	        ax6.set_xlim(1/100,max(fe))
+	        ax6.text(0.96, 0.8, 'HHE', ha='center',bbox=dict(facecolor='w'),transform=ax6.transAxes)   
+	        ax6.set_xlabel('Frequency (Hz)',fontsize=15)
+	        ax6.set_ylim(-180,-20)
 
-        figPSD_mean.suptitle('Station = '+spec_HHZ['name']+' - Day = '+UTCDateTime(year=year_spec,julday=julday_spec).strftime('%d/%m/%Y')+' - '+'good_wind='+str(len_good)+'/'+'bad_wind='+str(len_bad),fontsize=18)
-        daily_PSD_output = TRANSFER_FUNC_OUTPUT+spec_HHZ['network']+'.'+spec_HHZ['name']+'/Daily_PSD_windows/'
-        os.makedirs(daily_PSD_output,exist_ok=True)
-        figPSD_mean.savefig(daily_PSD_output+'PSD_windows_good_bad_'+str(year_spec)+'_'+str(julday_spec)+'.png', dpi=300, facecolor='w', edgecolor='w')
+	        figPSD_mean.suptitle('Station = '+spec_HHZ['name']+' - Day = '+UTCDateTime(year=year_spec,julday=julday_spec).strftime('%d/%m/%Y')+' - '+'good_wind='+str(len_good)+'/'+'bad_wind='+str(len_bad),fontsize=18)
+	        daily_PSD_output = TRANSFER_FUNC_OUTPUT+spec_HHZ['network']+'.'+spec_HHZ['name']+'/Daily_PSD_windows/'
+	        os.makedirs(daily_PSD_output,exist_ok=True)
+	        figPSD_mean.savefig(daily_PSD_output+'PSD_windows_good_bad_'+str(year_spec)+'_'+str(julday_spec)+'.png', dpi=300, facecolor='w', edgecolor='w')
 
-        #------------------------------------------------------------------------------
+	        #------------------------------------------------------------------------------
 
-        cmap = 'viridis_r'
-        heights = [1,1,1,0.1]
-        widths = [1]
+	        cmap = 'viridis_r'
+	        heights = [1,1,1,0.1]
+	        widths = [1]
 
-        gs_kw = dict(width_ratios=widths, height_ratios=heights)
-        fig, (ax1,ax2,ax3,ax4) = plt.subplots(ncols=1, nrows=4,figsize=(15,10),sharex=True,gridspec_kw=gs_kw)
+	        gs_kw = dict(width_ratios=widths, height_ratios=heights)
+	        fig, (ax1,ax2,ax3,ax4) = plt.subplots(ncols=1, nrows=4,figsize=(15,10),sharex=True,gridspec_kw=gs_kw)
 
-        im = ax1.pcolormesh(tzh,freq_lst, dsl_HHZ, cmap=cmap,shading='auto')
-        ax1.text(0.96, 0.8, 'HHZ', ha='center',bbox=dict(facecolor='w'),transform=ax1.transAxes)
-        ax1.xaxis.set_major_locator(MultipleLocator(4))
-        ax1.yaxis.set_major_locator(MultipleLocator(0.05))
+	        im = ax1.pcolormesh(tzh,freq_lst, dsl_HHZ, cmap=cmap,shading='auto')
+	        ax1.text(0.96, 0.8, 'HHZ', ha='center',bbox=dict(facecolor='w'),transform=ax1.transAxes)
+	        ax1.xaxis.set_major_locator(MultipleLocator(4))
+	        ax1.yaxis.set_major_locator(MultipleLocator(0.05))
 
-        axins = inset_axes(ax1,
-                       width="25%",  # width = 10% of parent_bbox width
-                       height="5%",  # height : 50%
-                       loc='upper left',
-                       bbox_to_anchor=(0.75, 0.1, 1, 1),
-                       bbox_transform=ax1.transAxes,
-                       borderpad=0,
-                       )
-        plt.colorbar(im, cax=axins, orientation="horizontal", ticklocation='top')
+	        axins = inset_axes(ax1,
+	                       width="25%",  # width = 10% of parent_bbox width
+	                       height="5%",  # height : 50%
+	                       loc='upper left',
+	                       bbox_to_anchor=(0.75, 0.1, 1, 1),
+	                       bbox_transform=ax1.transAxes,
+	                       borderpad=0,
+	                       )
+	        plt.colorbar(im, cax=axins, orientation="horizontal", ticklocation='top')
 
-        #-----------------------------------------------------
-        ax2.pcolormesh(tzh,freq_lst, dsl_HHN, cmap=cmap,shading='auto')
-        ax2.text(0.96, 0.8, 'HHN', ha='center',bbox=dict(facecolor='w'),transform=ax2.transAxes)
-        ax2.set_ylabel('Frequency (Hz)')    
-        ax2.xaxis.set_major_locator(MultipleLocator(4))
-        ax2.yaxis.set_major_locator(MultipleLocator(0.05))
-        #-----------------------------------------------------
-        ax3.pcolormesh(tzh,freq_lst, dsl_HHE, cmap=cmap,shading='auto')
-        ax3.text(0.96, 0.8, 'HHE', ha='center',bbox=dict(facecolor='w'),transform=ax3.transAxes)
-        ax3.xaxis.set_major_locator(MultipleLocator(4))
-        ax3.yaxis.set_major_locator(MultipleLocator(0.05))
-        #-----------------------------------------------------
-        colors = ['yellowgreen' if eli == True else 'firebrick' for eli in good_windows]
-        ax4.bar(teh,height=1,width=WINDOW_LENGTH/3600,align='center',color=colors,edgecolor='k')
+	        #-----------------------------------------------------
+	        ax2.pcolormesh(tzh,freq_lst, dsl_HHN, cmap=cmap,shading='auto')
+	        ax2.text(0.96, 0.8, 'HHN', ha='center',bbox=dict(facecolor='w'),transform=ax2.transAxes)
+	        ax2.set_ylabel('Frequency (Hz)')    
+	        ax2.xaxis.set_major_locator(MultipleLocator(4))
+	        ax2.yaxis.set_major_locator(MultipleLocator(0.05))
+	        #-----------------------------------------------------
+	        ax3.pcolormesh(tzh,freq_lst, dsl_HHE, cmap=cmap,shading='auto')
+	        ax3.text(0.96, 0.8, 'HHE', ha='center',bbox=dict(facecolor='w'),transform=ax3.transAxes)
+	        ax3.xaxis.set_major_locator(MultipleLocator(4))
+	        ax3.yaxis.set_major_locator(MultipleLocator(0.05))
+	        #-----------------------------------------------------
+	        colors = ['yellowgreen' if eli == True else 'firebrick' for eli in good_windows]
+	        ax4.bar(teh,height=1,width=WINDOW_LENGTH/3600,align='center',color=colors,edgecolor='k')
 
-        ax4.set_xlabel('Time (h)')
-        ax4.xaxis.set_major_locator(MultipleLocator(4))
-        ax4.set_ylim(0,1)    
-        ax4.set_xlim(0,24)    
-        ax4.set_yticks([])    
-        #-----------------------------------------------------
-        daily_wind_output = TRANSFER_FUNC_OUTPUT+spec_HHZ['network']+'.'+spec_HHZ['name']+'/Daily_data_windows/'
-        os.makedirs(daily_wind_output,exist_ok=True)
-        fig.suptitle('Station = '+spec_HHZ['name']+' - Day = '+UTCDateTime(year=year_spec,julday=julday_spec).strftime('%d/%m/%Y'),fontsize=18)
-        fig.savefig(daily_wind_output+spec_HHZ['network']+'_'+spec_HHZ['name']+'_'+str(year_spec)+'_'+str(julday_spec)+'.png', dpi=300, facecolor='w', edgecolor='w')
-		'''
+	        ax4.set_xlabel('Time (h)')
+	        ax4.xaxis.set_major_locator(MultipleLocator(4))
+	        ax4.set_ylim(0,1)    
+	        ax4.set_xlim(0,24)    
+	        ax4.set_yticks([])    
+	        #-----------------------------------------------------
+	        daily_wind_output = TRANSFER_FUNC_OUTPUT+spec_HHZ['network']+'.'+spec_HHZ['name']+'/Daily_data_windows/'
+	        os.makedirs(daily_wind_output,exist_ok=True)
+	        fig.suptitle('Station = '+spec_HHZ['name']+' - Day = '+UTCDateTime(year=year_spec,julday=julday_spec).strftime('%d/%m/%Y'),fontsize=18)
+	        fig.savefig(daily_wind_output+spec_HHZ['network']+'_'+spec_HHZ['name']+'_'+str(year_spec)+'_'+str(julday_spec)+'.png', dpi=300, facecolor='w', edgecolor='w')
         #----------------------------------------------------------------------------------------------------------------
 
         SELECTED_DAYS_dic = {
@@ -690,6 +697,18 @@ for j in tqdm(daily_lst_spec):
     else:
         first_filter_day.append(False)
 
+FILTER_DAYS_dic = {
+					'daily_lst_spec':daily_lst_spec,
+					'daily_lst_data':daily_lst_data,
+					'first_filter_day': first_filter_day,
+					'good_windows_lst': good_windows_lst
+					}
+
+output_FOLDER_WINDOWS_FILTER_FILES = JSON_FILES+'SELECTED_SPECTROGRAM_WINDOWS_FILTER_FILES/'+spec_HHZ['network']+'.'+spec_HHZ['name']+'/'
+os.makedirs(output_FOLDER_WINDOWS_FILTER_FILES,exist_ok=True)
+with open(output_FOLDER_WINDOWS_FILTER_FILES+'FIRST_FILTER_SPECTROGRAM_WINDOWS.json', 'w') as fp:
+	json.dump(FILTER_DAYS_dic, fp)
+
 #-------------------------------------------------------------------------------
 print('\n')
 print('==============')
@@ -697,12 +716,13 @@ print('Filtering days')
 print('==============')
 print('\n')
 
-second_daily_lst_spec = list(compress(daily_lst_spec, first_filter_day))
-second_daily_lst_data = list(compress(daily_lst_data, first_filter_day))
+output_FOLDER_WINDOWS_FILTER_FILES = JSON_FILES+'SELECTED_SPECTROGRAM_WINDOWS_FILTER_FILES/'+spec_HHZ['network']+'.'+spec_HHZ['name']+'/'
+FIRST_FILTER_WINDOWS = json.load(open(output_FOLDER_WINDOWS_FILTER_FILES+'FIRST_FILTER_SPECTROGRAM_WINDOWS.json'))
 
+second_daily_lst_spec = list(compress(FIRST_FILTER_WINDOWS['daily_lst_spec'], FIRST_FILTER_WINDOWS['first_filter_day']))
+second_daily_lst_data = list(compress(FIRST_FILTER_WINDOWS['daily_lst_data'], FIRST_FILTER_WINDOWS['first_filter_day']))
 
-second_good_windows_lst = list(compress(good_windows_lst, first_filter_day))
-
+second_good_windows_lst = list(compress(FIRST_FILTER_WINDOWS['good_windows_lst'], FIRST_FILTER_WINDOWS['first_filter_day']))
 
 output_FOLDER_SPECTROGRAM = JSON_FILES+'SELECTED_SPECTROGRAM_WINDOWS_FILES/'+NETWORK+'.'+STATION+'/'
 
@@ -714,7 +734,7 @@ PSDz = []
 f = []
 PSD_data_lst = []
 
-for i,j in tqdm(enumerate(json_daily_files)):
+for j in tqdm(json_daily_files):
     sta_dic = json.load(open(j))
     STA_NAME = j.split('/')[-2]
     PSD_julday = j.split('/')[-1].split('.')[0].split('_')[-2:][1]
@@ -783,51 +803,51 @@ len_good_days = int(sum(good_days))
 len_bad_days = int(sum(bad_days))
 
 #-------------------------------------------------------------------------------
+if VERBOSE_MODE: 
+	figPSD_days = plt.figure(figsize=(15,10))
+	ax1 = figPSD_days.add_subplot(3, 2, 1)
+	if len_good_days > 0:
+	    ax1.semilogx(f, PSDz[:,good_days], 'k', lw=0.5,alpha=0.8)
+	ax1.text(0.96, 0.8, 'HHZ', ha='center',bbox=dict(facecolor='w'),transform=ax1.transAxes)   
+	ax1.set_xlim(1/200,max(f))
 
-figPSD_days = plt.figure(figsize=(15,10))
-ax1 = figPSD_days.add_subplot(3, 2, 1)
-if len_good_days > 0:
-    ax1.semilogx(f, PSDz[:,good_days], 'k', lw=0.5,alpha=0.8)
-ax1.text(0.96, 0.8, 'HHZ', ha='center',bbox=dict(facecolor='w'),transform=ax1.transAxes)   
-ax1.set_xlim(1/200,max(f))
+	ax2 = figPSD_days.add_subplot(3, 2, 2)
+	if len_bad_days > 0:
+	    ax2.semilogx(f, PSDz[:,bad_days], 'r', lw=0.5,alpha=0.5)
+	ax2.text(0.96, 0.8, 'HHZ', ha='center',bbox=dict(facecolor='w'),transform=ax2.transAxes)   
+	ax2.set_xlim(1/200,max(f))
+	        
+	ax3 = figPSD_days.add_subplot(3, 2, 3)
+	if len_good_days > 0:
+	    ax3.semilogx(f, PSDn[:,good_days], 'k', lw=0.5,alpha=0.5)
+	ax3.text(0.96, 0.8, 'HHN', ha='center',bbox=dict(facecolor='w'),transform=ax3.transAxes)   
+	ax3.set_xlim(1/200,max(f))
 
-ax2 = figPSD_days.add_subplot(3, 2, 2)
-if len_bad_days > 0:
-    ax2.semilogx(f, PSDz[:,bad_days], 'r', lw=0.5,alpha=0.5)
-ax2.text(0.96, 0.8, 'HHZ', ha='center',bbox=dict(facecolor='w'),transform=ax2.transAxes)   
-ax2.set_xlim(1/200,max(f))
-        
-ax3 = figPSD_days.add_subplot(3, 2, 3)
-if len_good_days > 0:
-    ax3.semilogx(f, PSDn[:,good_days], 'k', lw=0.5,alpha=0.5)
-ax3.text(0.96, 0.8, 'HHN', ha='center',bbox=dict(facecolor='w'),transform=ax3.transAxes)   
-ax3.set_xlim(1/200,max(f))
-
-ax4 = figPSD_days.add_subplot(3, 2, 4)
-if len_bad_days > 0:
-    ax4.semilogx(f, PSDn[:,bad_days], 'r', lw=0.5,alpha=0.5)
-ax4.text(0.96, 0.8, 'HHN', ha='center',bbox=dict(facecolor='w'),transform=ax4.transAxes)   
-ax4.set_xlim(1/200,max(f))
-        
-ax5 = figPSD_days.add_subplot(3, 2, 5)
-if len_good_days > 0:
-    ax5.semilogx(f, PSDe[:,good_days], 'k', lw=0.5,alpha=0.5)
-ax5.set_xlim(1/200,max(f))
-ax5.text(0.96, 0.8, 'HHE', ha='center',bbox=dict(facecolor='w'),transform=ax5.transAxes)   
-ax5.set_xlabel('Frequency (Hz)',fontsize=15)
+	ax4 = figPSD_days.add_subplot(3, 2, 4)
+	if len_bad_days > 0:
+	    ax4.semilogx(f, PSDn[:,bad_days], 'r', lw=0.5,alpha=0.5)
+	ax4.text(0.96, 0.8, 'HHN', ha='center',bbox=dict(facecolor='w'),transform=ax4.transAxes)   
+	ax4.set_xlim(1/200,max(f))
+	        
+	ax5 = figPSD_days.add_subplot(3, 2, 5)
+	if len_good_days > 0:
+	    ax5.semilogx(f, PSDe[:,good_days], 'k', lw=0.5,alpha=0.5)
+	ax5.set_xlim(1/200,max(f))
+	ax5.text(0.96, 0.8, 'HHE', ha='center',bbox=dict(facecolor='w'),transform=ax5.transAxes)   
+	ax5.set_xlabel('Frequency (Hz)',fontsize=15)
 
 
-ax6 = figPSD_days.add_subplot(3, 2, 6)
-if len_bad_days > 0:
-    ax6.semilogx(f, PSDe[:,bad_days], 'r', lw=0.5,alpha=0.5)
-ax6.set_xlim(1/100,max(f))
-ax6.text(0.96, 0.8, 'HHE', ha='center',bbox=dict(facecolor='w'),transform=ax6.transAxes)   
-ax6.set_xlabel('Frequency (Hz)',fontsize=15)
+	ax6 = figPSD_days.add_subplot(3, 2, 6)
+	if len_bad_days > 0:
+	    ax6.semilogx(f, PSDe[:,bad_days], 'r', lw=0.5,alpha=0.5)
+	ax6.set_xlim(1/100,max(f))
+	ax6.text(0.96, 0.8, 'HHE', ha='center',bbox=dict(facecolor='w'),transform=ax6.transAxes)   
+	ax6.set_xlabel('Frequency (Hz)',fontsize=15)
 
-figPSD_days.suptitle('Station = '+STA_NAME+' - good_days='+str(len_good_days)+'/'+'bad_days='+str(len_bad_days),fontsize=18)
-daily_PSD_output = TRANSFER_FUNC_OUTPUT+NETWORK+'.'+STATION+'/Daily_PSD_windows/'
-os.makedirs(daily_PSD_output,exist_ok=True)
-figPSD_days.savefig(daily_PSD_output+'PSD_days_good_bad_'+str(year_spec)+'_'+str(julday_spec)+'.png', dpi=300, facecolor='w', edgecolor='w')
+	figPSD_days.suptitle('Station = '+STA_NAME+' - good_days='+str(len_good_days)+'/'+'bad_days='+str(len_bad_days),fontsize=18)
+	daily_PSD_output = TRANSFER_FUNC_OUTPUT+NETWORK+'.'+STATION+'/Daily_PSD_windows/'
+	os.makedirs(daily_PSD_output,exist_ok=True)
+	figPSD_days.savefig(daily_PSD_output+'PSD_days_good_bad_'+str(year_spec)+'_'+str(julday_spec)+'.png', dpi=300, facecolor='w', edgecolor='w')
 
 #-------------------------------------------------------------------------------
 
@@ -845,6 +865,10 @@ tilt_max_coh_lst = []
 max_coh_lst = []
 phase_max_coh_lst = []
 day_time_tilt = []
+
+tilt_lst = []
+tf_ZH1_lst = [] 
+tf_ZH2_lst = [] 
 for i,j in enumerate(tqdm(last_daily_lst_data)):
     
     data_HHZ = json.load(open([k for k in j if 'HHZ' in k][0]))
@@ -976,77 +1000,78 @@ for i,j in enumerate(tqdm(last_daily_lst_data)):
     phase_NE,Error_phase_NE = Phase_xy(Q_NE,C_NE,G_NE,G_NN,G_EE,wind_number)
     
     #---------------------------------------------
+    if VERBOSE_MODE:
+        figA = plt.figure(figsize=(15,15))
+        ax = figA.add_subplot(3, 3, 1)
+        ax.semilogx(f_FFT,np.log(A_ZN),'ok',ms=3,alpha=0.5)
+        ax.errorbar(f_FFT,np.log(A_ZN), yerr=Error_A_ZN, ecolor='k',fmt='none',elinewidth=0.5,capsize=2)
+        ax.set_title('log(Admittance)',fontsize=15)
+        ax.set_ylabel('HHZ-HHN',fontsize=14)
+        ax.set_xlim(1/200,1/10)
 
-    figA = plt.figure(figsize=(15,15))
-    ax = figA.add_subplot(3, 3, 1)
-    ax.semilogx(f_FFT,np.log(A_ZN),'ok',ms=3,alpha=0.5)
-    ax.errorbar(f_FFT,np.log(A_ZN), yerr=Error_A_ZN, ecolor='k',fmt='none',elinewidth=0.5,capsize=2)
-    ax.set_title('log(Admittance)',fontsize=15)
-    ax.set_ylabel('HHZ-HHN',fontsize=14)
-    ax.set_xlim(1/200,1/10)
+        ax1 = figA.add_subplot(3, 3, 2)
+        ax1.set_ylim(0,1)
+        ax1.semilogx(f_FFT,Gama2_ZN, 'ok',ms=3,alpha=0.5)
+        ax1.set_title('Coherence',fontsize=15)
+        ax1.set_xlim(1/200,1/10)
 
-    ax1 = figA.add_subplot(3, 3, 2)
-    ax1.set_ylim(0,1)
-    ax1.semilogx(f_FFT,Gama2_ZN, 'ok',ms=3,alpha=0.5)
-    ax1.set_title('Coherence',fontsize=15)
-    ax1.set_xlim(1/200,1/10)
+        ax2 = figA.add_subplot(3, 3, 3)
+        ax2.semilogx(f_FFT,phase_ZN, 'ok',ms=3,alpha=0.5)
+        ax2.errorbar(f_FFT,phase_ZN, yerr=Error_phase_ZN, ecolor='k',fmt='none',elinewidth=0.5,capsize=2)
+        ax2.set_ylim(-0.4,0.4)
+        ax2.set_title('Phase',fontsize=15)
+        ax2.set_xlim(1/200,1/10)
+	        
+	    #----------------------------------------------------------------------------------------------------
+        ax3 = figA.add_subplot(3, 3, 4)
+        ax3.semilogx(f_FFT,np.log(A_ZE), 'ok',ms=3,alpha=0.5)
+        ax3.errorbar(f_FFT,np.log(A_ZE), yerr=Error_A_ZE, ecolor='k',fmt='none',elinewidth=0.5,capsize=2)
+        ax3.set_ylabel('HHZ-HHE',fontsize=14)
+        ax3.set_xlim(1/200,1/10)
 
-    ax2 = figA.add_subplot(3, 3, 3)
-    ax2.semilogx(f_FFT,phase_ZN, 'ok',ms=3,alpha=0.5)
-    ax2.errorbar(f_FFT,phase_ZN, yerr=Error_phase_ZN, ecolor='k',fmt='none',elinewidth=0.5,capsize=2)
-    ax2.set_ylim(-0.4,0.4)
-    ax2.set_title('Phase',fontsize=15)
-    ax2.set_xlim(1/200,1/10)
+        ax4 = figA.add_subplot(3, 3, 5)
+        ax4.set_ylim(0,1)
+        ax4.semilogx(f_FFT,Gama2_ZE, 'ok',ms=3,alpha=0.5)
+        ax4.set_xlim(1/200,1/10)
+
+        ax5 = figA.add_subplot(3, 3, 6)
+        ax5.semilogx(f_FFT,phase_ZE, 'ok',ms=3,alpha=0.5)
+        ax5.errorbar(f_FFT,phase_ZE, yerr=Error_phase_ZE, ecolor='k',fmt='none',elinewidth=0.5,capsize=2)
+        ax5.set_ylim(-0.4,0.4)
+        ax5.set_xlim(1/200,1/10)
+
+	    #-----------------------------------------------------------------------------------------------------
+        ax6 = figA.add_subplot(3, 3, 7)
+        ax6.semilogx(f_FFT,np.log(A_NE), 'ok',ms=3,alpha=0.5)
+        ax6.errorbar(f_FFT,np.log(A_NE), yerr=Error_A_NE, ecolor='k',fmt='none',elinewidth=0.5,capsize=2)
+        ax6.set_xlabel('Frequency (Hz)',fontsize=14)
+        ax6.set_ylabel('HHN-HHE',fontsize=14)
+        ax6.set_xlim(1/200,1/10)
+
+        ax7 = figA.add_subplot(3, 3, 8)
+        ax7.set_ylim(0,1)
+        ax7.semilogx(f_FFT,Gama2_NE, 'ok',ms=3,alpha=0.5)
+        ax7.set_xlabel('Frequency (Hz)',fontsize=14)
+        ax7.set_xlim(1/200,1/10)
         
-    #----------------------------------------------------------------------------------------------------
-    ax3 = figA.add_subplot(3, 3, 4)
-    ax3.semilogx(f_FFT,np.log(A_ZE), 'ok',ms=3,alpha=0.5)
-    ax3.errorbar(f_FFT,np.log(A_ZE), yerr=Error_A_ZE, ecolor='k',fmt='none',elinewidth=0.5,capsize=2)
-    ax3.set_ylabel('HHZ-HHE',fontsize=14)
-    ax3.set_xlim(1/200,1/10)
+        ax8 = figA.add_subplot(3, 3, 9)
+        ax8.semilogx(f_FFT,phase_NE, 'ok',ms=3,alpha=0.5)
+        ax8.errorbar(f_FFT,phase_NE, yerr=Error_phase_NE, ecolor='k',fmt='none',elinewidth=0.5,capsize=2)
+        ax8.set_ylim(-0.4,0.4)
+        ax8.set_xlabel('Frequency (Hz)',fontsize=14)
+        ax8.set_xlim(1/200,1/10)
 
-    ax4 = figA.add_subplot(3, 3, 5)
-    ax4.set_ylim(0,1)
-    ax4.semilogx(f_FFT,Gama2_ZE, 'ok',ms=3,alpha=0.5)
-    ax4.set_xlim(1/200,1/10)
-
-    ax5 = figA.add_subplot(3, 3, 6)
-    ax5.semilogx(f_FFT,phase_ZE, 'ok',ms=3,alpha=0.5)
-    ax5.errorbar(f_FFT,phase_ZE, yerr=Error_phase_ZE, ecolor='k',fmt='none',elinewidth=0.5,capsize=2)
-    ax5.set_ylim(-0.4,0.4)
-    ax5.set_xlim(1/200,1/10)
-
-    #-----------------------------------------------------------------------------------------------------
-    ax6 = figA.add_subplot(3, 3, 7)
-    ax6.semilogx(f_FFT,np.log(A_NE), 'ok',ms=3,alpha=0.5)
-    ax6.errorbar(f_FFT,np.log(A_NE), yerr=Error_A_NE, ecolor='k',fmt='none',elinewidth=0.5,capsize=2)
-    ax6.set_xlabel('Frequency (Hz)',fontsize=14)
-    ax6.set_ylabel('HHN-HHE',fontsize=14)
-    ax6.set_xlim(1/200,1/10)
-
-    ax7 = figA.add_subplot(3, 3, 8)
-    ax7.set_ylim(0,1)
-    ax7.semilogx(f_FFT,Gama2_NE, 'ok',ms=3,alpha=0.5)
-    ax7.set_xlabel('Frequency (Hz)',fontsize=14)
-    ax7.set_xlim(1/200,1/10)
-
-    ax8 = figA.add_subplot(3, 3, 9)
-    ax8.semilogx(f_FFT,phase_NE, 'ok',ms=3,alpha=0.5)
-    ax8.errorbar(f_FFT,phase_NE, yerr=Error_phase_NE, ecolor='k',fmt='none',elinewidth=0.5,capsize=2)
-    ax8.set_ylim(-0.4,0.4)
-    ax8.set_xlabel('Frequency (Hz)',fontsize=14)
-    ax8.set_xlim(1/200,1/10)
+	    #-----------------------------------------------------------------------------------------------------
+	    
+        figA.suptitle('Station = '+STATION+' - Day = '+UTCDateTime(year=int(year_day),julday=int(julday_day)).strftime('%d/%m/%Y'),fontsize=18)
+        daily_A_output = TRANSFER_FUNC_OUTPUT+NETWORK+'.'+STATION+'/Daily_Admittance_Coherence_Phase/'
+        os.makedirs(daily_A_output,exist_ok=True)
+        figA.savefig(daily_A_output+'Admittance.Coherence.Phase.'+data_HHZ["time_day"]+'.png', dpi=300, facecolor='w', edgecolor='w')
+        plt.close()
 
     #-----------------------------------------------------------------------------------------------------
     
-    figA.suptitle('Station = '+STATION+' - Day = '+UTCDateTime(year=int(year_day),julday=int(julday_day)).strftime('%d/%m/%Y'),fontsize=18)
-    daily_A_output = TRANSFER_FUNC_OUTPUT+NETWORK+'.'+STATION+'/Daily_Admittance_Coherence_Phase/'
-    os.makedirs(daily_A_output,exist_ok=True)
-    figA.savefig(daily_A_output+'Admittance.Coherence.Phase.'+data_HHZ["time_day"]+'.png', dpi=300, facecolor='w', edgecolor='w')
-
-    #-----------------------------------------------------------------------------------------------------
-    
-    #Calculate TILT
+    #Calculating TILT
     
     direc = np.arange(0., 360., 10.)
     coh = np.zeros(len(direc))
@@ -1111,61 +1136,261 @@ for i,j in enumerate(tqdm(last_daily_lst_data)):
         tilt += 180.
     if tilt > 360.:
         tilt -= 360.
-
-    print('Tilf of Maximum coherence = ', tilt)
-    print('Maximum coherence = ', coh_value)
-    print('Phase of Maximum coherence = ', phase_value)
-    
+   
     tilt_max_coh_lst.append(tilt)
     day_time_tilt.append([int(year_day),int(julday_day)])
     max_coh_lst.append(coh_value)
     phase_max_coh_lst.append(phase_value)
 
     # Now calculate spectra at tilt direction
-    ftH = rotate_dir(np.array(N_lst), np.array(E_lst), tilt)
+    ftH1 = rotate_dir(np.array(N_lst), np.array(E_lst), tilt)
+    ftH2 = rotate_dir(np.array(E_lst), np.array(N_lst), tilt)
 
     # Get transfer functions
-    cHH = np.abs(np.mean(np.conj(ftH)*ftH, axis=0))
-    cHZ = np.mean(np.conj(ftH)*np.array(Z_lst), axis=0)
+    cHH1 = np.abs(np.mean(np.conj(ftH1)*ftH1, axis=0))
+    cHH2 = np.abs(np.mean(np.conj(ftH2)*ftH2, axis=0))
+
+    cHZ1 = np.mean(np.conj(ftH1)*np.array(Z_lst), axis=0)
+    cHZ2 = np.mean(np.conj(ftH2)*np.array(Z_lst), axis=0)
     
+    tf_ZH1 = np.conj(cHZ1)/cHH1
+    tf_ZH2 = np.conj(cHZ2)/cHH2
+
+    tf_ZH1_lst.append(tf_ZH1)
+    tf_ZH2_lst.append(tf_ZH2)
+
+    tilt_lst.append(tilt) 
+
+    '''
+    TRASFER_FUCTION_dic = {
+                            'fTF_ZH1': tf_ZH1_real.tolist(),
+                            'fTF_ZH2': tf_ZH2_real.tolist(),
+                            'tilt': tilt,
+                            }    
+
+    output_TRASFER_FUCTION_dic = JSON_FILES+'TRASFER_FUCTION_FILES/'+spec_HHZ['network']+'.'+spec_HHZ['name']+'/'
+    os.makedirs(output_TRASFER_FUCTION_dic,exist_ok=True)    
+    with open(output_TRASFER_FUCTION_dic+'TRASFER_FUCTION_'+str(year_day)+'_'+str(julday_day)+'.json', 'w') as fp:
+    	json.dump(TRASFER_FUCTION_dic, fp)
+    '''     
     #-----------------------------------------------------------------------------------------------------
-    
-    colors = plt.cm.cividis(np.linspace(0, 1, coh.shape[0]))
-    
-    figureTILT, (ax1, ax2) = plt.subplots(1, 2,figsize=(10,5))
-    for i, (co, p) in enumerate(zip(coh, ph)):
-        ax1.plot(direc[i], co, 'ok')
-        ax2.plot(direc[i], p, 'ok')
+    if VERBOSE_MODE: 
+	    print('Tilf of Maximum coherence = ', tilt)
+	    print('Maximum coherence = ', coh_value)
+	    print('Phase of Maximum coherence = ', phase_value)
+
+	    colors = plt.cm.cividis(np.linspace(0, 1, coh.shape[0]))
+	    
+	    figureTILT, (ax1, ax2) = plt.subplots(1, 2,figsize=(10,5))
+	    for i, (co, p) in enumerate(zip(coh, ph)):
+	        ax1.plot(direc[i], co, 'ok')
+	        ax2.plot(direc[i], p, 'ok')
+	    ax1.set_ylabel('Coherence')
+	    ax1.set_xlabel('Angle from HHE')
+	    ax1.set_ylim((0, 1.))
+	    ax2.set_ylabel('Phase')
+	    ax2.set_xlabel('Angle from HHE')
+	    ax1.set_title('Maximum coherence = '+str(coh_value))
+	    ax2.set_title('Tilt = '+str(tilt))
+	    figureTILT.suptitle('Station = '+STATION+' - Day = '+UTCDateTime(year=int(year_day),julday=int(julday_day)).strftime('%d/%m/%Y'),fontsize=18)
+	    figureTILT.savefig(daily_A_output+'Tilt.Coherence.'+data_HHZ["time_day"]+'.png', dpi=300, facecolor='w', edgecolor='w')
+	   
+#-------------------------------------------------------------------------------
+if VERBOSE_MODE:
+    daily_data = [mdates.num2date(UTCDateTime(year=i[0],julday=i[1]).matplotlib_date) for i in day_time_tilt]
+
+    figureTILTfinal, (ax1, ax2) = plt.subplots(2, 1,sharex=True,figsize=(10,5))
+    ax1.plot(daily_data, max_coh_lst, 'ok')
     ax1.set_ylabel('Coherence')
-    ax1.set_xlabel('Angle from HHE')
-    ax1.set_ylim((0, 1.))
-    ax2.set_ylabel('Phase')
-    ax2.set_xlabel('Angle from HHE')
-    ax1.set_title('Maximum coherence = '+str(coh_value))
-    ax2.set_title('Tilt = '+str(tilt))
-    figureTILT.suptitle('Station = '+STATION+' - Day = '+UTCDateTime(year=int(year_day),julday=int(julday_day)).strftime('%d/%m/%Y'),fontsize=18)
-    figureTILT.savefig(daily_A_output+'Tilt.Coherence.'+data_HHZ["time_day"]+'.png', dpi=300, facecolor='w', edgecolor='w')
-   
+    ax1.set_ylim(0, 1)
+    ax1.set_xlim(mdates.num2date(INTERVAL_PERIOD[0].matplotlib_date),mdates.num2date(INTERVAL_PERIOD[1].matplotlib_date))
+    
+    ax2.plot(daily_data, tilt_max_coh_lst, 'ok')
+    ax2.set_ylabel('Tilt')
+    ax2.set_xlabel('Day')
+    ax2.set_ylim(0, 360)
+    ax2.yaxis.set_major_locator(MultipleLocator(90))
+    ax2.yaxis.set_minor_locator(MultipleLocator(10))
+    ax2.set_xlim(mdates.num2date(INTERVAL_PERIOD[0].matplotlib_date),mdates.num2date(INTERVAL_PERIOD[-1].matplotlib_date))
+    plt.gcf().autofmt_xdate()
+
+    figureTILTfinal.suptitle('Station = '+STATION+' - Period = '+UTCDateTime(year=int(INTERVAL_PERIOD[0].year),julday=int(INTERVAL_PERIOD[0].julday)).strftime('%d/%m/%Y')+'--'+UTCDateTime(year=int(INTERVAL_PERIOD[-1].year),julday=int(INTERVAL_PERIOD[-1].julday)).strftime('%d/%m/%Y'),fontsize=18)
+    daily_A_output = TRANSFER_FUNC_OUTPUT+NETWORK+'.'+STATION+'/Daily_Admittance_Coherence_Phase/'
+    os.makedirs(daily_A_output,exist_ok=True)
+    figureTILTfinal.savefig(daily_A_output+'Tilt.Coherence.total.png', dpi=300, facecolor='w', edgecolor='w')
+    plt.close()
+
 #-------------------------------------------------------------------------------
 
-daily_data = [mdates.num2date(UTCDateTime(year=i[0],julday=i[1]).matplotlib_date) for i in day_time_tilt]
+print('===================')
+print('Correcting the data')
+print('===================')
+print('\n')
 
-figureTILTfinal, (ax1, ax2) = plt.subplots(2, 1,sharex=True,figsize=(10,5))
-ax1.plot(daily_data, max_coh_lst, 'ok')
-ax1.set_ylabel('Coherence')
-ax1.set_ylim(0, 1)
-ax2.set_xlim(mdates.num2date(INTERVAL_PERIOD[0].matplotlib_date),mdates.num2date(INTERVAL_PERIOD[1].matplotlib_date))
+# Method to apply transfer functions between multiple components to produce corrected/cleaned vertical components.
 
+for i,j in enumerate(tqdm(daily_lst_data)):
+    
+    data_HHZ = json.load(open([k for k in j if 'HHZ' in k][0]))
+    data_HHE = json.load(open([k for k in j if 'HHE' in k][0]))
+    data_HHN = json.load(open([k for k in j if 'HHN' in k][0]))
 
-ax2.plot(daily_data, tilt_max_coh_lst, 'ok')
-ax2.set_ylabel('Tilt')
-ax2.set_xlabel('Day')
-ax2.set_ylim(0, 360)
-ax2.yaxis.set_major_locator(MultipleLocator(90))
-ax2.yaxis.set_minor_locator(MultipleLocator(10))
-ax2.set_xlim(mdates.num2date(INTERVAL_PERIOD[0].matplotlib_date),mdates.num2date(INTERVAL_PERIOD[-1].matplotlib_date))
-plt.gcf().autofmt_xdate()
+    year_day = data_HHZ["time_day"].split('.')[0]
+    julday_day = data_HHZ["time_day"].split('.')[1]
 
+    tr_HHZ = Trace()
+    tr_HHZ.data = np.array(data_HHZ['data_day'])
+    tr_HHZ.stats.starttime = UTCDateTime(year=int(year_day),julday=int(julday_day))
+    tr_HHZ.stats.sampling_rate = NEW_SAMPLING_RATE
+    tr_HHZ.stats.channel = 'HHZ'
+    tr_HHZ.stats.station = data_HHZ['name']
+    tr_HHZ.stats.network = data_HHZ['network']
 
-figureTILTfinal.suptitle('Station = '+STATION+' - Period = '+UTCDateTime(year=int(INTERVAL_PERIOD[0].year),julday=int(INTERVAL_PERIOD[0].julday)).strftime('%d/%m/%Y')+'--'+UTCDateTime(year=int(INTERVAL_PERIOD[-1].year),julday=int(INTERVAL_PERIOD[-1].julday)).strftime('%d/%m/%Y'),fontsize=18)
-figureTILTfinal.savefig(daily_A_output+'Tilt.Coherence.total.png', dpi=300, facecolor='w', edgecolor='w')
+    tr_HHN = Trace()
+    tr_HHN.data = np.array(data_HHN['data_day'])
+    tr_HHN.stats.starttime = UTCDateTime(year=int(year_day),julday=int(julday_day))
+    tr_HHN.stats.sampling_rate = NEW_SAMPLING_RATE
+    tr_HHN.stats.channel = 'HHN'
+    tr_HHN.stats.station = data_HHZ['name']
+    tr_HHN.stats.network = data_HHZ['network']
+    
+    tr_HHE = Trace()
+    tr_HHE.data = np.array(data_HHE['data_day'])
+    tr_HHE.stats.starttime = UTCDateTime(year=int(year_day),julday=int(julday_day))
+    tr_HHE.stats.sampling_rate = NEW_SAMPLING_RATE
+    tr_HHE.stats.channel = 'HHN'
+    tr_HHE.stats.station = data_HHZ['name']
+    tr_HHE.stats.network = data_HHZ['network']
+    
+    slide_HHZ = np.array([k.data for k in tr_HHZ.slide(window_length=WINDOW_LENGTH, step=WINDOW_LENGTH)])
+    slide_HHE = np.array([k.data for k in tr_HHN.slide(window_length=WINDOW_LENGTH, step=WINDOW_LENGTH)])
+    slide_HHN = np.array([k.data for k in tr_HHE.slide(window_length=WINDOW_LENGTH, step=WINDOW_LENGTH)])
+
+    #-------------------------------------------------------------------------------------------------------------
+    n2 = prev_pow_2(int(WINDOW_LENGTH*NEW_SAMPLING_RATE))
+    f_FFT = NEW_SAMPLING_RATE/2. * np.linspace(0., 1., int(n2/2) + 1)
+    
+    FFT_ZN = []
+    FFT_ZE = []
+    FFT_NE = []
+    
+    FFT_ZZ = []
+    FFT_NN = []
+    FFT_EE = []
+    
+    cFFT_ZN = []
+    cFFT_ZE = []
+    cFFT_NE = []
+
+    qFFT_ZN = []
+    qFFT_ZE = []
+    qFFT_NE = []
+    
+    Z_lst = []
+    N_lst = []
+    E_lst = []
+    for c, v in enumerate(slide_HHZ):
+        ftZ = fft(slide_HHZ[c][0:len(f_FFT)], n=None, axis=-1, norm=None)
+        ftN = fft(slide_HHE[c][0:len(f_FFT)], n=None, axis=-1, norm=None)
+        ftE = fft(slide_HHN[c][0:len(f_FFT)], n=None, axis=-1, norm=None)
+        
+        Z = ftZ
+        N = ftN
+        E = ftE
+        
+        Z_lst.append(ftZ)
+        N_lst.append(ftN)
+        E_lst.append(ftE)
+
+    tilt_mean = sum(tilt_lst)/len(tilt_lst)
+
+	# Now calculate spectra at tilt direction
+    ftH1 = rotate_dir(np.array(N_lst), np.array(E_lst), tilt_mean)
+    ftH2 = rotate_dir(np.array(E_lst), np.array(N_lst), tilt_mean)
+
+    # Get transfer functions and correcting data
+    fTF_ZH1 = np.array(sum(tf_ZH1_lst)/len(tf_ZH1_lst))
+    corrspec1 = np.array([np.array(Z_lst[i]) - fTF_ZH1*ftH1[i] for i,j in enumerate(ftH1)])
+    corrtime1 = np.real(np.fft.ifft(corrspec1))
+
+    fTF_ZH2 = np.array(sum(tf_ZH2_lst)/len(tf_ZH2_lst))
+    corrspec2 = np.array([np.array(Z_lst[i]) - fTF_ZH2*ftH2[i] for i,j in enumerate(ftH2)])
+    corrtime2 = np.real(np.fft.ifft(corrspec2))
+
+    #Saving data
+    slide_HHZ_CORRECTED_H1 = Stream([k for k in tr_HHZ.slide(window_length=WINDOW_LENGTH, step=WINDOW_LENGTH)])
+    slide_HHZ_CORRECTED_H2 = Stream([k for k in tr_HHZ.slide(window_length=WINDOW_LENGTH, step=WINDOW_LENGTH)])
+
+    for i,j in enumerate(slide_HHZ_CORRECTED_H1):
+        j.data = corrtime1[i]
+
+    slide_HHZ_CORRECTED_H1.merge(method=0)
+
+    CORRECT_DATA_OUTPUT = CORRECT_DATA_TRANSFER_FUNC_OUTPUT+'/'+data_HHZ['network']+'/'+data_HHZ['name']+'/HHZ.D/'
+    os.makedirs(CORRECT_DATA_OUTPUT,exist_ok=True)
+        
+    CORRECT_DATA_OUTPUT_STR = data_HHZ['network']+'.'+data_HHZ['name']+'..HHZ.D.'+str(year_day)+'.'+"%03d" %julday_day
+    slide_HHZ_CORRECTED_H1.write(CORRECT_DATA_OUTPUT+CORRECT_DATA_OUTPUT_STR)
+
+    #----------------------------------------------------------------------------------------------
+    #Importing noise models:
+    NOISE_MODEL_DATA = np.load(NOISE_MODEL_FILE)
+    nhnm = NOISE_MODEL_DATA['high_noise']
+    nlnm = NOISE_MODEL_DATA['low_noise']
+    periods = NOISE_MODEL_DATA['model_periods']
+    xdata = 1.0 / periods
+
+    # hanning window
+    wind = np.ones(len(f_FFT)) 
+
+    if VERBOSE_MODE:
+ 
+        figPSD_mean, (ax0,ax1, ax2) = plt.subplots(1, 3,figsize=(15,5),sharey=True,sharex=True)
+
+        for i in slide_HHZ:
+            spec0 = spectrogram(x=i,fs=NEW_SAMPLING_RATE, window=wind, nperseg=None, noverlap=0)
+            f0, t0, psd0 = spec0
+            log_psdz0 = np.log10(psd0)
+            log_psdz0 *= 10
+            log_psdz0 = smooth(log_psdz0,80)
+            ax0.semilogx(f0,log_psdz0, 'k', lw=0.5,alpha=0.5)
+
+        ax0.plot(xdata,nhnm, '0.4', linewidth=2, zorder=10)
+        ax0.plot(xdata,nlnm, '0.4', linewidth=2, zorder=10)
+        ax0.text(0.9, 0.9, 'Raw', ha='center',bbox=dict(facecolor='w'),transform=ax0.transAxes)   
+        ax0.set_xlim(1/100,max(f0))
+        ax0.set_ylim(-180,-40)
+
+        for i in corrtime1:
+            spec1 = spectrogram(x=i,fs=NEW_SAMPLING_RATE, window=wind, nperseg=None, noverlap=0)
+            f1, t1, psd1 = spec1
+            log_psdz1 = np.log10(psd1)
+            log_psdz1 *= 10
+            log_psdz1 = smooth(log_psdz1,80)
+            ax1.semilogx(f1,log_psdz1, 'k', lw=0.5,alpha=0.5)
+
+        ax1.plot(xdata,nhnm, '0.4', linewidth=2, zorder=10)
+        ax1.plot(xdata,nlnm, '0.4', linewidth=2, zorder=10)
+        ax1.text(0.9, 0.9, 'TF_ZH1', ha='center',bbox=dict(facecolor='w'),transform=ax1.transAxes)   
+        ax1.set_xlim(1/100,max(f1))
+        ax1.set_ylim(-180,-40)
+
+        for i in corrtime2:
+            spec2 = spectrogram(x=i,fs=NEW_SAMPLING_RATE, window=wind, nperseg=None, noverlap=0)
+            f2, t2, psd2 = spec2
+            log_psdz2 = np.log10(psd2)
+            log_psdz2 *= 10
+            log_psdz2 = smooth(log_psdz2,80)
+            ax2.semilogx(f2,log_psdz2, 'k', lw=0.5,alpha=0.5)
+
+        ax2.text(0.9, 0.9, 'TF_ZH2', ha='center',bbox=dict(facecolor='w'),transform=ax2.transAxes)
+        ax2.plot(xdata,nhnm, '0.4', linewidth=2, zorder=10)
+        ax2.plot(xdata,nlnm, '0.4', linewidth=2, zorder=10)   
+        ax2.set_xlim(1/100,max(f2))
+        ax2.set_ylim(-180,-40)
+
+        figPSD_mean.suptitle('Station = '+STATION+' - Day = '+UTCDateTime(year=int(year_day),julday=int(julday_day)).strftime('%d/%m/%Y'),fontsize=18)
+        daily_TRANSFER_FUNC_CORRECTION_output = TRANSFER_FUNC_OUTPUT+data_HHZ['network']+'.'+data_HHZ['name']+'/Daily_TRANSFER_FUNC_CORRECTION/'    
+        os.makedirs(daily_TRANSFER_FUNC_CORRECTION_output,exist_ok=True)
+        figPSD_mean.savefig(daily_TRANSFER_FUNC_CORRECTION_output+'DAILY_TRANSFER_FUNC_CORRECTION_'+str(year_day)+'_'+str(julday_day)+'.png', dpi=300, facecolor='w', edgecolor='w')
+        plt.close()
