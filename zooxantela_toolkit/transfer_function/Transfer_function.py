@@ -373,12 +373,11 @@ files = filelist(basedir=MSEED_DIR+NETWORK+'/'+STATION+'/',interval_period_date=
 
 print('Total of miniseed files = '+str(len(files)))
 print('\n')
-
+'''
 print('==================================================================')
 print('Opening miniseed files and calculating the spectrogram of each day')
 print('==================================================================')
 print('\n')
-'''
 start_time = time.time()
 
 with Pool(processes=num_processes) as p:
@@ -389,7 +388,6 @@ with Pool(processes=num_processes) as p:
 
 print("--- %.2f execution time (min) ---" % ((time.time() - start_time)/60))
 print('\n')
-
 '''
 #-------------------------------------------------------------------------------
 daily_lst_spec = [[]]*len(INTERVAL_PERIOD_DATE)
@@ -409,9 +407,8 @@ DATA_DAYs = [i.split('.json')[0].split('_')[-2]+'.'+i.split('.json')[0].split('_
 for l,k in enumerate(INTERVAL_PERIOD_DATE):
 	daily_lst_data[l] = [j for i,j in enumerate(DATA_DAY_FILES) if DATA_DAYs[i] == k]
 
+
 #-------------------------------------------------------------------------------
-
-
 # Select bandpass frequencies
 
 print('=======================')
@@ -850,7 +847,7 @@ if VERBOSE_MODE:
 	figPSD_days.savefig(daily_PSD_output+'PSD_days_good_bad_'+str(year_spec)+'_'+str(julday_spec)+'.png', dpi=300, facecolor='w', edgecolor='w')
 
 #-------------------------------------------------------------------------------
-
+print('\n')
 print('====================')
 print('Calculating the tilt')
 print('====================')
@@ -1160,19 +1157,7 @@ for i,j in enumerate(tqdm(last_daily_lst_data)):
     tf_ZH2_lst.append(tf_ZH2)
 
     tilt_lst.append(tilt) 
-
-    '''
-    TRASFER_FUCTION_dic = {
-                            'fTF_ZH1': tf_ZH1_real.tolist(),
-                            'fTF_ZH2': tf_ZH2_real.tolist(),
-                            'tilt': tilt,
-                            }    
-
-    output_TRASFER_FUCTION_dic = JSON_FILES+'TRASFER_FUCTION_FILES/'+spec_HHZ['network']+'.'+spec_HHZ['name']+'/'
-    os.makedirs(output_TRASFER_FUCTION_dic,exist_ok=True)    
-    with open(output_TRASFER_FUCTION_dic+'TRASFER_FUCTION_'+str(year_day)+'_'+str(julday_day)+'.json', 'w') as fp:
-    	json.dump(TRASFER_FUCTION_dic, fp)
-    '''     
+  
     #-----------------------------------------------------------------------------------------------------
     if VERBOSE_MODE: 
 	    print('Tilf of Maximum coherence = ', tilt)
@@ -1222,6 +1207,7 @@ if VERBOSE_MODE:
 
 #-------------------------------------------------------------------------------
 
+print('\n')
 print('===================')
 print('Correcting the data')
 print('===================')
@@ -1317,6 +1303,8 @@ for i,j in enumerate(tqdm(daily_lst_data)):
     corrspec2 = np.array([np.array(Z_lst[i]) - fTF_ZH2*ftH2[i] for i,j in enumerate(ftH2)])
     corrtime2 = np.real(np.fft.ifft(corrspec2))
 
+    #-------------------------------------------------------------------------------------------------------------
+
     #Saving data
     slide_HHZ_CORRECTED_H1 = Stream([k for k in tr_HHZ.slide(window_length=WINDOW_LENGTH, step=WINDOW_LENGTH)])
     slide_HHZ_CORRECTED_H2 = Stream([k for k in tr_HHZ.slide(window_length=WINDOW_LENGTH, step=WINDOW_LENGTH)])
@@ -1324,73 +1312,85 @@ for i,j in enumerate(tqdm(daily_lst_data)):
     for i,j in enumerate(slide_HHZ_CORRECTED_H1):
         j.data = corrtime1[i]
 
-    slide_HHZ_CORRECTED_H1.merge(method=0)
+    slide_HHZ_CORRECTED_H1.merge(method=0, fill_value=0)
 
-    CORRECT_DATA_OUTPUT = CORRECT_DATA_TRANSFER_FUNC_OUTPUT+'/'+data_HHZ['network']+'/'+data_HHZ['name']+'/HHZ.D/'
+    CORRECT_DATA_OUTPUT = CORRECT_DATA_TRANSFER_FUNC_OUTPUT+'/TF_ZH1/'+data_HHZ['network']+'/'+data_HHZ['name']+'/HHZ.D/'
     os.makedirs(CORRECT_DATA_OUTPUT,exist_ok=True)
         
-    CORRECT_DATA_OUTPUT_STR = data_HHZ['network']+'.'+data_HHZ['name']+'..HHZ.D.'+str(year_day)+'.'+"%03d" %julday_day
-    slide_HHZ_CORRECTED_H1.write(CORRECT_DATA_OUTPUT+CORRECT_DATA_OUTPUT_STR)
+    CORRECT_DATA_OUTPUT_STR = data_HHZ['network']+'.'+data_HHZ['name']+'..HHZ.D.'+str(year_day)+'.'+str(julday_day)
+    slide_HHZ_CORRECTED_H1.write(CORRECT_DATA_OUTPUT+CORRECT_DATA_OUTPUT_STR,format='MSEED')
 
+    for i,j in enumerate(slide_HHZ_CORRECTED_H2):
+        j.data = corrtime2[i]
+
+    slide_HHZ_CORRECTED_H2.merge(method=0, fill_value=0)
+    inv = read_inventory(STATIONXML_DIR+'.'.join([data_HHZ['network'],'xml']))
+    slide_HHZ_CORRECTED_H2.attach_response(inv)
+
+    CORRECT_DATA_OUTPUT = CORRECT_DATA_TRANSFER_FUNC_OUTPUT+'/TF_ZH2/'+data_HHZ['network']+'/'+data_HHZ['name']+'/HHZ.D/'
+    os.makedirs(CORRECT_DATA_OUTPUT,exist_ok=True)
+        
+    CORRECT_DATA_OUTPUT_STR = data_HHZ['network']+'.'+data_HHZ['name']+'..HHZ.D.'+str(year_day)+'.'+str(julday_day)
+    slide_HHZ_CORRECTED_H2.write(CORRECT_DATA_OUTPUT+CORRECT_DATA_OUTPUT_STR,format='MSEED')
     #----------------------------------------------------------------------------------------------
+
     #Importing noise models:
     NOISE_MODEL_DATA = np.load(NOISE_MODEL_FILE)
     nhnm = NOISE_MODEL_DATA['high_noise']
     nlnm = NOISE_MODEL_DATA['low_noise']
     periods = NOISE_MODEL_DATA['model_periods']
-    xdata = 1.0 / periods
+    xdata = 1/periods
 
     # hanning window
     wind = np.ones(len(f_FFT)) 
 
-    if VERBOSE_MODE:
  
-        figPSD_mean, (ax0,ax1, ax2) = plt.subplots(1, 3,figsize=(15,5),sharey=True,sharex=True)
+    figPSD_mean, (ax0,ax1, ax2) = plt.subplots(1, 3,figsize=(15,5),sharey=True,sharex=True)
 
-        for i in slide_HHZ:
-            spec0 = spectrogram(x=i,fs=NEW_SAMPLING_RATE, window=wind, nperseg=None, noverlap=0)
-            f0, t0, psd0 = spec0
-            log_psdz0 = np.log10(psd0)
-            log_psdz0 *= 10
-            log_psdz0 = smooth(log_psdz0,80)
-            ax0.semilogx(f0,log_psdz0, 'k', lw=0.5,alpha=0.5)
+    for i in slide_HHZ:
+        spec0 = spectrogram(x=i,fs=NEW_SAMPLING_RATE, window=wind, nperseg=None, noverlap=0)
+        f0, t0, psd0 = spec0
+        log_psdz0 = np.log10(psd0)
+        log_psdz0 *= 10
+        log_psdz0 = smooth(log_psdz0,3)
+        ax0.semilogx(f0,log_psdz0, 'k', lw=0.5,alpha=0.5)
 
-        ax0.plot(xdata,nhnm, '0.4', linewidth=2, zorder=10)
-        ax0.plot(xdata,nlnm, '0.4', linewidth=2, zorder=10)
-        ax0.text(0.9, 0.9, 'Raw', ha='center',bbox=dict(facecolor='w'),transform=ax0.transAxes)   
-        ax0.set_xlim(1/100,max(f0))
-        ax0.set_ylim(-180,-40)
+    ax0.plot(xdata,nhnm, '0.4', linewidth=2, zorder=10)
+    ax0.plot(xdata,nlnm, '0.4', linewidth=2, zorder=10)
+    ax0.text(0.9, 0.9, 'Raw', ha='center',bbox=dict(facecolor='w'),transform=ax0.transAxes)   
+    ax0.set_xlim(1/100,max(f0))
+    ax0.set_ylim(-180,-30)
 
-        for i in corrtime1:
-            spec1 = spectrogram(x=i,fs=NEW_SAMPLING_RATE, window=wind, nperseg=None, noverlap=0)
-            f1, t1, psd1 = spec1
-            log_psdz1 = np.log10(psd1)
-            log_psdz1 *= 10
-            log_psdz1 = smooth(log_psdz1,80)
-            ax1.semilogx(f1,log_psdz1, 'k', lw=0.5,alpha=0.5)
+    for i in corrtime1:
+        spec1 = spectrogram(x=i,fs=NEW_SAMPLING_RATE, window=wind, nperseg=None, noverlap=0)
+        f1, t1, psd1 = spec1
+        log_psdz1 = np.log10(psd1)
+        log_psdz1 *= 10
+        log_psdz1 = smooth(log_psdz1,3)
+        ax1.semilogx(f1,log_psdz1, 'k', lw=0.5,alpha=0.5)
+        
+    ax1.plot(xdata,nhnm, '0.4', linewidth=2, zorder=10)
+    ax1.plot(xdata,nlnm, '0.4', linewidth=2, zorder=10)
+    ax1.text(0.9, 0.9, 'TF_ZH1', ha='center',bbox=dict(facecolor='w'),transform=ax1.transAxes)   
+    ax1.set_xlim(1/100,max(f1))
+    ax1.set_ylim(-180,-30)
 
-        ax1.plot(xdata,nhnm, '0.4', linewidth=2, zorder=10)
-        ax1.plot(xdata,nlnm, '0.4', linewidth=2, zorder=10)
-        ax1.text(0.9, 0.9, 'TF_ZH1', ha='center',bbox=dict(facecolor='w'),transform=ax1.transAxes)   
-        ax1.set_xlim(1/100,max(f1))
-        ax1.set_ylim(-180,-40)
+    for i in corrtime2:
+        spec2 = spectrogram(x=i,fs=NEW_SAMPLING_RATE, window=wind, nperseg=None, noverlap=0)
+        f2, t2, psd2 = spec2
+        log_psdz2 = np.log10(psd2)
+        log_psdz2 *= 10
+        log_psdz2 = smooth(log_psdz2,3)
+        ax2.semilogx(f2,log_psdz2, 'k', lw=0.5,alpha=0.5)
 
-        for i in corrtime2:
-            spec2 = spectrogram(x=i,fs=NEW_SAMPLING_RATE, window=wind, nperseg=None, noverlap=0)
-            f2, t2, psd2 = spec2
-            log_psdz2 = np.log10(psd2)
-            log_psdz2 *= 10
-            log_psdz2 = smooth(log_psdz2,80)
-            ax2.semilogx(f2,log_psdz2, 'k', lw=0.5,alpha=0.5)
+    ax2.text(0.9, 0.9, 'TF_ZH2', ha='center',bbox=dict(facecolor='w'),transform=ax2.transAxes)
+    ax2.plot(xdata,nhnm, '0.4', linewidth=2, zorder=10)
+    ax2.plot(xdata,nlnm, '0.4', linewidth=2, zorder=10)   
+    ax2.set_xlim(1/100,max(f2))
+    ax2.set_ylim(-180,-30)
 
-        ax2.text(0.9, 0.9, 'TF_ZH2', ha='center',bbox=dict(facecolor='w'),transform=ax2.transAxes)
-        ax2.plot(xdata,nhnm, '0.4', linewidth=2, zorder=10)
-        ax2.plot(xdata,nlnm, '0.4', linewidth=2, zorder=10)   
-        ax2.set_xlim(1/100,max(f2))
-        ax2.set_ylim(-180,-40)
-
-        figPSD_mean.suptitle('Station = '+STATION+' - Day = '+UTCDateTime(year=int(year_day),julday=int(julday_day)).strftime('%d/%m/%Y'),fontsize=18)
-        daily_TRANSFER_FUNC_CORRECTION_output = TRANSFER_FUNC_OUTPUT+data_HHZ['network']+'.'+data_HHZ['name']+'/Daily_TRANSFER_FUNC_CORRECTION/'    
-        os.makedirs(daily_TRANSFER_FUNC_CORRECTION_output,exist_ok=True)
-        figPSD_mean.savefig(daily_TRANSFER_FUNC_CORRECTION_output+'DAILY_TRANSFER_FUNC_CORRECTION_'+str(year_day)+'_'+str(julday_day)+'.png', dpi=300, facecolor='w', edgecolor='w')
-        plt.close()
+    figPSD_mean.suptitle('Station = '+STATION+' - Day = '+UTCDateTime(year=int(year_day),julday=int(julday_day)).strftime('%d/%m/%Y'),fontsize=18)
+    daily_TRANSFER_FUNC_CORRECTION_output = TRANSFER_FUNC_OUTPUT+data_HHZ['network']+'.'+data_HHZ['name']+'/Daily_TRANSFER_FUNC_CORRECTION/'    
+    os.makedirs(daily_TRANSFER_FUNC_CORRECTION_output,exist_ok=True)
+    figPSD_mean.savefig(daily_TRANSFER_FUNC_CORRECTION_output+'DAILY_TRANSFER_FUNC_CORRECTION_'+str(year_day)+'_'+str(julday_day)+'.png', dpi=300, facecolor='w', edgecolor='w')
+    plt.close()
