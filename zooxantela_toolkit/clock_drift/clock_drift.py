@@ -681,7 +681,7 @@ for result in tqdm(pool.imap(func=crosscorr_func, iterable=stationtrace_pairs), 
 	CrossCorrelation_days_lst.append(result)
 
 print("--- %.2f execution time (min) ---" % ((time.time() - start_time)/60))
-'''
+
 print('\n')
 print('====================================')
 print('Stacking daily Cross-correlations:')
@@ -1239,7 +1239,8 @@ for result in tqdm(pool.imap(func=crosscorr_stack, iterable=crosscorr_pairs_data
 	CrossCorrelation_days_lst.append(result)
 
 print("--- %.2f execution time (min) ---" % ((time.time() - start_time)/60))
-'''
+
+
 print('\n')
 print('=======================================================================')
 print('Plotting Stacked Cross-correlations according to interstation distance:')
@@ -1531,3 +1532,132 @@ print('Clock Drift Calculating:')
 print('========================')
 print('\n')
 
+#Collecting daily list of cross-correlations
+crosscorr_days_lst = sorted(glob.glob(JSON_FILES+'CROSS_CORR_DAY_FILES/*'))
+
+crosscorr_pairs_lst = []
+for i,j in enumerate(crosscorr_days_lst):
+	crosscorr_file = sorted(glob.glob(j+'/*'))
+	crosscorr_pairs_lst.append(crosscorr_file)
+
+#Make a list of list flat
+crosscorr_pairs = [item for sublist in crosscorr_pairs_lst for item in sublist]
+
+#Separating according to pairs name
+crosscorr_pairs_name_lst = []
+for i in crosscorr_pairs:
+	# splitting subdir/basename
+	subdir, filename = os.path.split(i)
+	crosscorr_pairs_name_lst.append(filename.split("_20")[0])
+
+crosscorr_pairs_names = sorted(list(set(crosscorr_pairs_name_lst)))
+
+crosscorr_pairs_data = [[]]*len(crosscorr_pairs_names)
+for l,k in enumerate(crosscorr_pairs_names):
+	crosscorr_pairs_data[l] = [j for i,j in enumerate(crosscorr_pairs) if k in j]
+
+print('==== Stacking data =====')
+
+crosscorr_pairs_date_10_day_all = []
+crosscorr_pairs_loc_10_day_all = []
+crosscorr_pairs_name_10_day_all = []
+crosscorr_pairs_data_10_day_all = []
+crosscorr_pairs_time_10_day_all = []
+crosscorr_pairs_distance_10_day_all = []
+
+for i in tqdm(crosscorr_pairs_data):
+	crosscorr_pairs_10day_data = []
+	crosscorr_pair_date_10day = []
+	for k in i: 
+		subdir, filename = os.path.split(k)
+		crosscorr_pair_date = datetime.datetime.strptime(filename.split('.')[0].split('_')[-2]+'.'+filename.split('.')[0].split('_')[-1], '%Y.%j')
+		crosscorr_pair_date_10day.append(crosscorr_pair_date)
+		crosscorr_pairs_10day_data.append([file for file in i if datetime.datetime.strptime(file.split('/')[-1].split('.')[0].split('_')[-2]+'.'+file.split('/')[-1].split('.')[0].split('_')[-1], '%Y.%j') >= crosscorr_pair_date and datetime.datetime.strptime(file.split('/')[-1].split('.')[0].split('_')[-2]+'.'+file.split('/')[-1].split('.')[0].split('_')[-1], '%Y.%j') < crosscorr_pair_date+datetime.timedelta(days=10)])
+				
+	#Stacking data
+	date_to_plot = []
+	data_to_plot = []
+	time_to_plot = [] 
+ 
+	for ind,data10 in enumerate(crosscorr_pairs_10day_data):
+
+		#date_to_plot.append(json.load(open(data10[0]))['date'])
+		date_to_plot.append(crosscorr_pair_date_10day[ind])
+		name_sta1 = json.load(open(data10[0]))['sta1_name']
+		name_sta2 = json.load(open(data10[0]))['sta2_name']
+		dist_pair = json.load(open(data10[0]))['dist']
+		causal_lst = np.mean(np.array([json.load(open(a))['crosscorr_daily_causal'] for a in data10]),axis=0)
+		acausal_lst = np.mean(np.array([json.load(open(a))['crosscorr_daily_acausal'] for a in data10]),axis=0)
+		data_acausal_causal = np.array(acausal_lst[::-1] + causal_lst)
+		date_normalized = (2*(data_acausal_causal-data_acausal_causal.min())/(data_acausal_causal.max()-data_acausal_causal.min()))-1
+		causal_time = np.array(json.load(open(data10[0]))['crosscorr_daily_causal_time'])
+		acausal_time = np.array(json.load(open(data10[0]))['crosscorr_daily_acausal_time'])
+
+		data_to_plot.append(date_normalized)
+		time_to_plot.append([-1*i for i in acausal_time[::-1]] + causal_time)
+
+		loc_sta1 = json.load(open(data10[0]))['sta1_loc']
+		loc_sta2 = json.load(open(data10[0]))['sta2_loc']
+
+	crosscorr_pairs_date_10_day_all.append(date_to_plot)
+	crosscorr_pairs_loc_10_day_all.append([loc_sta1,loc_sta2])
+	crosscorr_pairs_name_10_day_all.append([name_sta1,name_sta2])
+	crosscorr_pairs_data_10_day_all.append(data_to_plot)
+	crosscorr_pairs_time_10_day_all.append(time_to_plot)
+	crosscorr_pairs_distance_10_day_all.append(dist_pair)
+
+print('==== Plotting data =====')
+
+for i in tqdm(range(len(crosscorr_pairs_distance_10_day_all))):
+
+	#Creating the figure and plotting Stacked Cross-correlations
+	fig = plt.figure(figsize=(10, 10))
+	fig.suptitle('Cross-correlations: '+crosscorr_pairs_name_10_day_all[i][0]+'-'+crosscorr_pairs_name_10_day_all[i][1],fontsize=20)
+
+	gs = gridspec.GridSpec(2, 1,wspace=0.2, hspace=0.5)
+
+	#-------------------------------------------
+
+	map_loc = fig.add_subplot(gs[0],projection=ccrs.PlateCarree())
+					
+	LLCRNRLON_LARGE = -52
+	URCRNRLON_LARGE = -36
+	LLCRNRLAT_LARGE = -28
+	URCRNRLAT_LARGE = -19
+
+	map_loc.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
+	map_loc.yaxis.set_ticks_position('both')
+	map_loc.xaxis.set_ticks_position('both')
+
+	map_loc.set_xticks(np.arange(LLCRNRLON_LARGE,URCRNRLON_LARGE,3), crs=ccrs.PlateCarree())
+	map_loc.set_yticks(np.arange(LLCRNRLAT_LARGE,URCRNRLAT_LARGE,3), crs=ccrs.PlateCarree())
+	map_loc.tick_params(labelbottom=True,labeltop=True,labelleft=True,labelright=True, labelsize=15)
+
+	map_loc.grid(True,which='major',color='gray',linewidth=1,linestyle='--')
+
+	reader_1_SHP = Reader(BOUNDARY_STATES_SHP)
+	shape_1_SHP = list(reader_1_SHP.geometries())
+	plot_shape_1_SHP = cfeature.ShapelyFeature(shape_1_SHP, ccrs.PlateCarree())
+	map_loc.add_feature(plot_shape_1_SHP, facecolor='none', edgecolor='k',linewidth=0.5,zorder=-1)
+
+	# Use the cartopy interface to create a matplotlib transform object    
+	# for the Geodetic coordinate system. We will use this along with    
+	# matplotlib's offset_copy function to define a coordinate system which
+	# translates the text by 25 pixels to the left.
+	geodetic_transform = ccrs.Geodetic()._as_mpl_transform(map_loc)
+	text_transform = offset_copy(geodetic_transform, units='dots', y=0,x=60)
+	text_transform_mag = offset_copy(geodetic_transform, units='dots', y=-15,x=15)
+
+	map_loc.plot([crosscorr_pairs_loc_10_day_all[i][0][1],crosscorr_pairs_loc_10_day_all[i][1][1]],[crosscorr_pairs_loc_10_day_all[i][0][0],crosscorr_pairs_loc_10_day_all[i][1][0]],c='k',alpha=0.5, transform=ccrs.PlateCarree())
+	map_loc.scatter(loc_sta1[1],loc_sta1[0], marker='^',s=200,c='k',edgecolors='w', transform=ccrs.PlateCarree())    
+	map_loc.scatter(loc_sta2[1],loc_sta2[0], marker='^',s=200,c='k',edgecolors='w', transform=ccrs.PlateCarree())
+	map_loc.set_title('Dist = '+str(round(dist_pair))+' km',fontsize=20)
+
+	#-------------------------------------------
+
+	ax1 = fig.add_subplot(gs[1])
+
+	#ax2.set_xticks([i/y_factor2 for i in range(len(crosscorr_pairs_data_10_day_all))])
+	#ax2.set_xticklabels([i.strftime("%d/%m/%y") if i==crosscorr_pairs_date_10_day_all[i][0] or i==crosscorr_pairs_date_10_day_all[i][-1] else None for i in crosscorr_pairs_date_10_day_all[i]])
+
+	plt.show()
