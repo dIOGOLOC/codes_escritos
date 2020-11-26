@@ -48,8 +48,7 @@ import cartopy.crs as ccrs
 from cartopy.io.shapereader import Reader
 import cartopy.feature as cfeature
 
-import pyasdf
-
+from pyasdf import ASDFDataSet
 
 #Configuration file
 
@@ -62,6 +61,8 @@ TRANSFER_FUNC_OUTPUT = '/home/diogoloc/dados_posdoc/ON_MAR/TRANSFER_FUNC/FIGURAS
 CORRECT_DATA_TRANSFER_FUNC_OUTPUT = '/home/diogoloc/dados_posdoc/ON_MAR/TRANSFER_FUNC/DATA_CORRECTION/'   
 
 JSON_FILES = '/home/diogoloc/dados_posdoc/ON_MAR/TRANSFER_FUNC/JSON_FILES/'
+
+ASDF_FILES = '/home/diogoloc/dados_posdoc/ON_MAR/TRANSFER_FUNC/ASDF_FILES/'
 
 NOISE_MODEL_FILE = '/home/diogoloc/dados_posdoc/ON_MAR/TRANSFER_FUNC/NOISE_MODEL_FILE/noise_models.npz'
 
@@ -114,7 +115,6 @@ INTERVAL_PERIOD_DATE = [str(x.year)+'.'+"%03d" % x.julday for x in INTERVAL_PERI
 # =========
 # Functions
 # =========
-
 
 def filelist(basedir,interval_period_date):
     """
@@ -242,48 +242,9 @@ def rotate_dir(tr1, tr2, direc):
 # Classes
 # =======
 
-class StationDayData:
-    """
-    Class to save station info: name, network, channel, files directory, coordinates, datetime and data.
-    """
-
-    def __init__(self, name, network, fileID,lon=None,lat=None,time_day=None,data_day=None):
-        """
-        @type name: str
-        @type network: str
-        @type channel: str
-        @type filesdir: str or unicode
-        @type lon: float
-        @type lat: float
-        @type time_day: L{obspy.core.utcdatetime.UTCDateTime}
-        @type data_day: L{obspy.core.trace.Trace}
-        """
-        self.name = name
-        self.network = network
-        self.fileID = fileID
-        self.lon = lon
-        self.lat = lat
-        self.time_day = time_day
-        self.data_day = data_day
-
-    def __str__(self):
-        """
-        @rtype: unicode
-        """
-        # General infos of station
-        s = [u'Name    : {0}'.format(self.name),
-             u'Network : {0}'.format(self.network),
-             u'FilesID: {0}'.format(self.fileID),
-             u'Longitude:{0}'.format(self.lon),
-             u'Latitude: {0}'.format(self.lat),
-             u'Time_day: {0}'.format(self.time_day),
-            ]
-        return u'\n'.join(s)
-#-------------------------------------------------------------------------------
-
 def get_stations_data(f):
     """
-    Gets stations daily data from miniseed file
+    Gets stations daily data from miniseed file and convert in ASDF
     
     @type f: paht of the minissed file (str)
     @rtype: list of L{StationDayData}
@@ -297,74 +258,63 @@ def get_stations_data(f):
         
     network, name = filename.split('.')[0:2]
     sta_channel_id = filename.split('.D.')[0]
+    channel = sta_channel_id.split('..')[-1]
     time_day = filename.split('.D.')[-1]
     year_day = time_day.split('.')[0]
     julday_day = time_day.split('.')[1]
 
-    st = read(f)
-        
-    inv = read_inventory(STATIONXML_DIR+'.'.join([network,'xml']))
+    st = read(f)       
+    inv = read_inventory(STATIONXML_DIR+'.'.join([network,name,'xml']))
+
     pre_filt = [0.001, 0.005, 45., 50.]
     st[0].remove_response(inventory=inv,pre_filt=pre_filt,output="DISP",water_level=60)
     
     st.detrend('demean')
     st.detrend('linear')
-    st.filter('lowpass', freq=0.5*NEW_SAMPLING_RATE,corners=2, zerophase=True)    
+    st.taper(max_percentage=0.05, type="hann")
     st.resample(NEW_SAMPLING_RATE)
 
-    lon = inv.get_coordinates(sta_channel_id)['longitude']
-    lat = inv.get_coordinates(sta_channel_id)['latitude']
-            
-    # appending new channel day data
-    station = StationDayData(name=name, network=network,fileID=sta_channel_id,lon=lon,lat=lat,time_day=time_day,data_day=st[0])
-
-    data_dic = {
-    			'name': station.name,
-    			'network': station.network,
-    			'time_day': station.time_day,
-    			'fileID': station.fileID,
-    			'data_day': station.data_day.data.tolist()
-    			}
-
-    output_DATA_DAY = JSON_FILES+'DATA_DAY_FILES/'+station.network+'.'+station.name+'/'
-    os.makedirs(output_DATA_DAY,exist_ok=True)
-    with open(output_DATA_DAY+'DATA_DAY_'+station.network+'_'+station.name+'_'+sta_channel_id+'_'+year_day+'_'+julday_day+'.json', 'w') as fp:
-    	json.dump(data_dic, fp)
-
-
-    # Points in window
-    ws = int(WINDOW_LENGTH/station.data_day.stats.delta)
+	#------------------------------------------------------------------
+	# Points in window
+    ws = int(WINDOW_LENGTH/st[0].stats.delta)
 
     # hanning window
-    wind = np.ones(ws) 
- 
-    spec = spectrogram(x=station.data_day.data,fs=station.data_day.stats.sampling_rate, window=wind, nperseg=None, noverlap=0)
-    
+    wind = np.ones(ws)
+
+    # Calculating the spectrogram
+    spec = spectrogram(x=st[0].data,fs=st[0].stats.sampling_rate, window=wind, nperseg=None, noverlap=0)
     f, t, psd = spec
 
- 
-    spec_dic = {
-    			'name': station.name,
-    			'network': station.network,
-    			'time_day': station.time_day,
-    			'fileID': station.fileID,
-    			'f': f.tolist(),
-    			't': t.tolist(),
-    			'psd': psd.tolist()
-    			}
+    #-----------------------------------------------------------------
+    #Creating ASDF preprocessed files folder    
+    output_PREPROCESS_DATA_DAY = ASDF_FILES+'PREPROCESS_DATA_DAY_FILES/'+NETWORK+'.'+STATION+'/'
+    os.makedirs(output_PREPROCESS_DATA_DAY,exist_ok=True)
 
-    output_SPECTROGRAM = JSON_FILES+'SPECTROGRAM_FILES/'+station.network+'.'+station.name+'/'
-    os.makedirs(output_SPECTROGRAM,exist_ok=True)
-    with open(output_SPECTROGRAM+'SPECTROGRAM_DAY_'+station.network+'_'+station.name+'_'+sta_channel_id+'_'+year_day+'_'+julday_day+'.json', 'w') as fp:
-    	json.dump(spec_dic, fp)
+    ds = ASDFDataSet(output_PREPROCESS_DATA_DAY+'PREPROCESS_DATA_DAY_'+NETWORK+'_'+STATION+'_'+channel+'_'+year_day+'_'+julday_day+".h5", compression="gzip-3")
+    ds.add_waveforms(st, tag="preprocessed_recording")    
+    ds.add_stationxml(STATIONXML_DIR+'.'.join([NETWORK,STATION,'xml']))
+    # The type always should be camel case.
+    data_type = "Spectrogram"
+
+    # Name to identify the particular piece of data.
+    path = sta_channel_id
+
+    # Any additional parameters as a Python dictionary which will end up as
+    # attributes of the array.
+    parameters = {'f':f,
+    			  't':t,
+		          'sampling_rate_in_hz': NEW_SAMPLING_RATE,
+        		  'station_id': sta_channel_id}
+    
+
+    ds.add_auxiliary_data(data=psd, data_type=data_type, path=path, parameters=parameters)
 
 #-------------------------------------------------------------------------------
-
-
-
+'''
 # ============
 # Main program
 # ============
+
 print('===============================')
 print('Scanning name of miniseed files')
 print('===============================')
@@ -373,13 +323,16 @@ print('\n')
 # initializing list of stations by scanning name of miniseed files
 files = filelist(basedir=MSEED_DIR+NETWORK+'/'+STATION+'/',interval_period_date=INTERVAL_PERIOD_DATE)
 
+
+files = files[:12]
 print('Total of miniseed files = '+str(len(files)))
 print('\n')
-'''
-print('==================================================================')
-print('Opening miniseed files and calculating the spectrogram of each day')
-print('==================================================================')
+
+print('============================================================')
+print('Opening miniseed files, preprocessing and converting to ASDF')
+print('============================================================')
 print('\n')
+
 start_time = time.time()
 
 with Pool(processes=num_processes) as p:
@@ -391,10 +344,24 @@ with Pool(processes=num_processes) as p:
 print("--- %.2f execution time (min) ---" % ((time.time() - start_time)/60))
 print('\n')
 '''
+print('====================================')
+print('Opening ASDF files and preprocessing')
+print('====================================')
+print('\n')
+
+SPECTROGRAM_DAY_FILES = sorted(glob.glob(ASDF_FILES+'PREPROCESS_DATA_DAY_FILES/'+NETWORK+'.'+STATION+'/*'))
+
+for i in SPECTROGRAM_DAY_FILES:
+	ds = ASDFDataSet(i)
+	print(ds.waveforms[NETWORK+'.'+STATION]['preprocessed_recording'])
+	print(ds.auxiliary_data.Spectrogram)
+
+
+
+'''
 #-------------------------------------------------------------------------------
 daily_lst_spec = [[]]*len(INTERVAL_PERIOD_DATE)
 
-SPECTROGRAM_DAY_FILES = sorted(glob.glob(JSON_FILES+'SPECTROGRAM_FILES/'+NETWORK+'.'+STATION+'/*.json'))
 SPECTROGRAM_DAYs = [i.split('.json')[0].split('_')[-2]+'.'+i.split('.json')[0].split('_')[-1] for i in SPECTROGRAM_DAY_FILES]
 
 for l,k in enumerate(INTERVAL_PERIOD_DATE):
@@ -1396,3 +1363,4 @@ for i,j in enumerate(tqdm(daily_lst_data)):
     os.makedirs(daily_TRANSFER_FUNC_CORRECTION_output,exist_ok=True)
     figPSD_mean.savefig(daily_TRANSFER_FUNC_CORRECTION_output+'DAILY_TRANSFER_FUNC_CORRECTION_'+str(year_day)+'_'+str(julday_day)+'.png', dpi=300, facecolor='w', edgecolor='w')
     plt.close()
+'''

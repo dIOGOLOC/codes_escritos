@@ -1,0 +1,53 @@
+#tutorial para criar arquivo de entrada via NRL
+#(IRIS DMC Library of Nominal Responses for Seismic Instruments)
+#http://ds.iris.edu/NRL/
+#
+#http://www.seis.sc.edu/~crotwell/nrlBrowser/
+
+
+#Importando os pacotes do Obspy e das Respostas das estações:
+
+import obspy
+from obspy.clients.nrl import NRL 
+
+#Cria a variável nrl para visualizar a biblioteca das Respostas:
+
+nrl = NRL()
+
+#Printar sensores:
+
+print(nrl.sensors)
+
+#Printar registradores:
+
+print(nrl.dataloggers)
+
+#======================================================
+
+#Encontrando o sensor para cada estação:
+
+print(nrl.sensors['Geotech']) 
+print(nrl.sensors['Geotech']['KS2000'])
+print(nrl.sensors['Geotech']['KS2000']['2000'])
+print(nrl.sensors['Geotech']['KS2000']['2000']['120'])
+
+#======================================================
+
+#Encontrando o registrador para cada estação:
+
+print(nrl.dataloggers['Geotech']) 
+print(nrl.dataloggers['Geotech']['Smart24'])
+print(nrl.dataloggers['Geotech']['Smart24']['1'])
+print(nrl.dataloggers['Geotech']['Smart24']['1']['20']) 
+print(nrl.dataloggers['Geotech']['Smart24']['1']['20']['100'])
+print(nrl.dataloggers['Geotech']['Smart24']['1']['20']['100']['100'])
+print(nrl.dataloggers['Geotech']['Smart24']['1']['20']['100']['100']['Linear Phase'])
+
+#======================================================
+
+#Encontrando o acelerógrafo para cada estação:
+
+print(nrl.sensors['REF TEK'])                                           
+print(nrl.sensors['REF TEK']['RT 131 (also 130-SMA)'])
+print(nrl.sensors['REF TEK']['RT 131 (also 130-SMA)']['131A-02 (also 130-SMA)'])                                                                
+print(nrl.sensors['REF TEK']['RT 131 (also 130-SMA)']['131A-02 (also 130-SMA)']['SF1500S'])                                                     
