@@ -48,6 +48,9 @@ import cartopy.crs as ccrs
 from cartopy.io.shapereader import Reader
 import cartopy.feature as cfeature
 
+from sklearn.preprocessing import PolynomialFeatures
+from sklearn.linear_model import LinearRegression
+
 import pyasdf
 
 
@@ -64,8 +67,8 @@ JSON_FILES = '/home/diogoloc/dados_posdoc/ON_MAR/CLOCK_DRIFT_OUTPUT_CORRECTED/JS
 #Shapefile  boundary states
 BOUNDARY_STATES_SHP = '/home/diogoloc/SIG_dados/Projeto_ON_MAR/shapefile/brasil_estados/brasil_estados.shp'
 
-FIRSTDAY = '2019-11-01'
-LASTDAY = '2019-11-30'
+FIRSTDAY = '2019--8-01'
+LASTDAY = '2019-12-31'
 
 #Each hour-long seismogram is amplitude clipped at twice its standard deviation of that hour-long time window.
 CLIP_FACTOR = 2
@@ -77,8 +80,10 @@ WINDOW_LENGTH = 3600
 #max time window (s) for cross-correlation
 SHIFT_LEN = 1800
 
-PERIOD_BANDS = [[3, 15], [7, 25], [20, 50], [50, 100]]
+PERIOD_BANDS = [[2, 5], [7, 25], [20, 50], [50, 100]]
 # (these bands focus on periods ~7, 15, 25 seconds)
+
+FREQUENCY_BANDS = [[0.5, 1], [1, 2], [2, 3], [3, 4]]
 
 # default parameters to define the signal and noise windows used to
 # estimate the SNR:
@@ -108,7 +113,7 @@ ONEDAY = datetime.timedelta(days=1)
 # MULTIPROCESSING
 # ================
 
-num_processes = 10
+num_processes = 12
 
 # =================
 # Filtering by date
@@ -1547,7 +1552,6 @@ os.makedirs(output_figure_CrossCorrelation_DAY,exist_ok=True)
 fig.savefig(output_figure_CrossCorrelation_DAY+'CROSS_CORR_STACK_INTERSTATION_DISTANCE_FIG.png',dpi=300)    
 plt.close()
 '''
-
 print('\n')
 print('========================')
 print('Clock Drift Calculating:')
@@ -1589,96 +1593,199 @@ for i in tqdm(crosscorr_pairs_data):
 	name_sta2 = json.load(open(i[0]))['sta2_name']
 	dist_pair = json.load(open(i[0]))['dist']
 
-	print('Pair: '+name_sta1+'-'+name_sta2+' - '+'days stacked: '+str(len(i)))
+	if 'OBS' in name_sta1 or 'OBS' in name_sta2:
 
-	causal_lst = np.array([json.load(open(a))['crosscorr_daily_causal'] for a in i])
-	acausal_lst = np.array([json.load(open(a))['crosscorr_daily_acausal'] for a in i])
+		causal_lst = np.array([json.load(open(a))['crosscorr_daily_causal'] for a in i])
+		acausal_lst = np.array([json.load(open(a))['crosscorr_daily_acausal'] for a in i])
 
-	loc_sta1 = json.load(open(i[0]))['sta1_loc']
-	loc_sta2 = json.load(open(i[0]))['sta2_loc']
+		loc_sta1 = json.load(open(i[0]))['sta1_loc']
+		loc_sta2 = json.load(open(i[0]))['sta2_loc']
 
-	#Creating the figure and plotting Clock-drift
-	fig = plt.figure(figsize=(10, 10))
-	#fig.suptitle('Cross-correlations: '+crosscorr_pairs_name_10_day_all[i][0]+'-'+crosscorr_pairs_name_10_day_all[i][1],fontsize=20)
+		#Creating the figure and plotting Clock-drift
+		fig = plt.figure(figsize=(8, 15))
+		fig.suptitle('Clock-drift between: '+name_sta1+'-'+name_sta2,fontsize=20)
 
-	gs = gridspec.GridSpec(2, 2,wspace=0.2, hspace=0.5)
-	map_loc = fig.add_subplot(gs[0,:],projection=ccrs.PlateCarree())
-						
-	LLCRNRLON_LARGE = -52
-	URCRNRLON_LARGE = -36
-	LLCRNRLAT_LARGE = -28
-	URCRNRLAT_LARGE = -19
+		gs = gridspec.GridSpec(5, 1,wspace=0.2, hspace=0.5)
+		map_loc = fig.add_subplot(gs[0:2],projection=ccrs.PlateCarree())
+							
+		LLCRNRLON_LARGE = -52
+		URCRNRLON_LARGE = -36
+		LLCRNRLAT_LARGE = -28
+		URCRNRLAT_LARGE = -20
 
-	map_loc.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
-	map_loc.yaxis.set_ticks_position('both')
-	map_loc.xaxis.set_ticks_position('both')
+		map_loc.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
+		map_loc.yaxis.set_ticks_position('both')
+		map_loc.xaxis.set_ticks_position('both')
 
-	map_loc.set_xticks(np.arange(LLCRNRLON_LARGE,URCRNRLON_LARGE,3), crs=ccrs.PlateCarree())
-	map_loc.set_yticks(np.arange(LLCRNRLAT_LARGE,URCRNRLAT_LARGE,3), crs=ccrs.PlateCarree())
-	map_loc.tick_params(labelbottom=True,labeltop=True,labelleft=True,labelright=True, labelsize=15)
-	map_loc.grid(True,which='major',color='gray',linewidth=1,linestyle='--')
+		map_loc.set_xticks(np.arange(LLCRNRLON_LARGE,URCRNRLON_LARGE+2,2), crs=ccrs.PlateCarree())
+		map_loc.set_yticks(np.arange(LLCRNRLAT_LARGE,URCRNRLAT_LARGE+2,2), crs=ccrs.PlateCarree())
+		map_loc.tick_params(labelbottom=True, labeltop=True, labelleft=True, labelright=True, labelsize=12)
+		map_loc.grid(True,which='major',color='k',linewidth=1,linestyle='-')
 
-	reader_1_SHP = Reader(BOUNDARY_STATES_SHP)
-	shape_1_SHP = list(reader_1_SHP.geometries())
-	plot_shape_1_SHP = cfeature.ShapelyFeature(shape_1_SHP, ccrs.PlateCarree())
-	map_loc.add_feature(plot_shape_1_SHP, facecolor='none', edgecolor='k',linewidth=0.5,zorder=-1)
-	# Use the cartopy interface to create a matplotlib transform object    
-	# for the Geodetic coordinate system. We will use this along with    
-	# matplotlib's offset_copy function to define a coordinate system which
-	# translates the text by 25 pixels to the left.
-	geodetic_transform = ccrs.Geodetic()._as_mpl_transform(map_loc)
-	text_transform = offset_copy(geodetic_transform, units='dots', y=0,x=60)
-	text_transform_mag = offset_copy(geodetic_transform, units='dots', y=-15,x=15)
+		reader_1_SHP = Reader(BOUNDARY_STATES_SHP)
+		shape_1_SHP = list(reader_1_SHP.geometries())
+		plot_shape_1_SHP = cfeature.ShapelyFeature(shape_1_SHP, ccrs.PlateCarree())
+		map_loc.add_feature(plot_shape_1_SHP, facecolor='none', edgecolor='k',linewidth=0.5,zorder=-1)
+		# Use the cartopy interface to create a matplotlib transform object    
+		# for the Geodetic coordinate system. We will use this along with    
+		# matplotlib's offset_copy function to define a coordinate system which
+		# translates the text by 25 pixels to the left.
+		geodetic_transform = ccrs.Geodetic()._as_mpl_transform(map_loc)
+		text_transform = offset_copy(geodetic_transform, units='dots', y=-5,x=80)
 
-	map_loc.plot([loc_sta1[1],loc_sta2[1]],[loc_sta1[0],loc_sta2[0]],c='k',alpha=0.5, transform=ccrs.PlateCarree())
-	map_loc.scatter(loc_sta1[1],loc_sta1[0], marker='^',s=200,c='k',edgecolors='w', transform=ccrs.PlateCarree())    
-	map_loc.scatter(loc_sta2[1],loc_sta2[0], marker='^',s=200,c='k',edgecolors='w', transform=ccrs.PlateCarree())
+		map_loc.plot([loc_sta1[1],loc_sta2[1]],[loc_sta1[0],loc_sta2[0]],c='k', transform=ccrs.PlateCarree())
+		map_loc.scatter(loc_sta1[1],loc_sta1[0], marker='^',s=200,c='k',edgecolors='w', transform=ccrs.PlateCarree())    
+		map_loc.scatter(loc_sta2[1],loc_sta2[0], marker='^',s=200,c='k',edgecolors='w', transform=ccrs.PlateCarree())
 
-		
-	#-------------------------------------------
-	days_major = DayLocator(interval=3)   # every day
-	days_minor = DayLocator(interval=1)   # every day
-	months = MonthLocator()  # every month
-	yearsFmt = DateFormatter('%b-%Y')
-
-	ax1 = fig.add_subplot(gs[1,0])
-	ax1.xaxis.set_major_locator(months)
-	ax1.xaxis.set_major_formatter(yearsFmt)
-	ax1.xaxis.set_minor_locator(days_minor)
-
-	ax2 = fig.add_subplot(gs[1,1])
-	ax2.xaxis.set_major_locator(months)
-	ax2.xaxis.set_major_formatter(yearsFmt)
-	ax2.xaxis.set_minor_locator(days_minor)
-
-	for k in range(len(causal_lst)):
-
-			data_acausal_causal = np.array(acausal_lst[k][::-1] + causal_lst[k])
-			#data_normalized = (2*(data_acausal_causal-data_acausal_causal.min())/(data_acausal_causal.max()-data_acausal_causal.min()))-1
-			data_normalized = data_acausal_causal
-
-			#Collecting daily list of 10-day stack cross-correlations
-			stacked_10_day_data = np.array(json.load(open(glob.glob(JSON_FILES+'CROSS_CORR_10_DAYS_STACKED_FILES/'+name_sta1+'.'+name_sta2+'/*')[0]))['crosscorr_daily_10data'])
-
-			cc = obscorr(stacked_10_day_data,data_normalized,len(data_normalized))
-			shift, max_value = xcorr_max(cc)
-
-			#cc_negative = obscorr(stacked_10_day_data[:len(stacked_10_day_data)//2], date_normalized[:len(stacked_10_day_data)//2],SHIFT_LEN)
-			#shift_negative, value_negative = xcorr_max(cc_negative)
-
-			#cc_positive = obscorr(stacked_10_day_data[len(stacked_10_day_data)//2:], date_normalized[len(stacked_10_day_data)//2:],SHIFT_LEN)
-			#shift_positive, value_positive = xcorr_max(cc_positive)
-		
-			#-------------------------------------------
-			ax1.plot(crosscorr_pair_date[k],max_value,'ok')
-
-			#ax2.set_xticks([i/y_factor2 for i in range(len(crosscorr_pairs_data_10_day_all))])
-			#ax2.set_xticklabels([i.strftime("%d/%m/%y") if i==crosscorr_pairs_date_10_day_all[i][0] or i==crosscorr_pairs_date_10_day_all[i][-1] else None for i in crosscorr_pairs_date_10_day_all[i]])
+		map_loc.text(loc_sta1[1],loc_sta1[0], name_sta1,fontsize=15,verticalalignment='center', horizontalalignment='right',transform=text_transform)
+		map_loc.text(loc_sta2[1],loc_sta2[0], name_sta2,fontsize=15,verticalalignment='center', horizontalalignment='right',transform=text_transform)
 			
-			#-------------------------------------------
-			ax2.plot(crosscorr_pair_date[k],shift,'ok')
+		#-------------------------------------------
 
-			#ax2.set_xticks([i/y_factor2 for i in range(len(crosscorr_pairs_data_10_day_all))])
-			#ax2.set_xticklabels([i.strftime("%d/%m/%y") if i==crosscorr_pairs_date_10_day_all[i][0] or i==crosscorr_pairs_date_10_day_all[i][-1] else None for i in crosscorr_pairs_date_10_day_all[i]])
+		days_major = DayLocator(interval=3)   # every day
+		days_minor = DayLocator(interval=1)   # every day
+		months = MonthLocator()  # every month
+		yearsFmt = DateFormatter('%b-%Y')
 
-	plt.show()
+		ax0 = fig.add_subplot(gs[2])
+		ax0.xaxis.set_major_locator(months)
+		ax0.xaxis.set_major_formatter(yearsFmt)
+		ax0.xaxis.set_minor_locator(days_minor)
+		ax0.yaxis.set_major_locator(MultipleLocator(0.1))
+		ax0.yaxis.set_minor_locator(MultipleLocator(0.01))
+		ax0.set_xlabel('Time (days)')
+		ax0.set_ylabel('Static drift (s)')
+		ax0.set_ylim(-.2,.2)
+
+		ax1 = fig.add_subplot(gs[3])
+		ax1.xaxis.set_major_locator(months)
+		ax1.xaxis.set_major_formatter(yearsFmt)
+		ax1.xaxis.set_minor_locator(days_minor)
+		ax1.yaxis.set_major_locator(MultipleLocator(0.1))
+		ax1.yaxis.set_minor_locator(MultipleLocator(0.01))
+		ax1.set_xlabel('Time (days)')
+		ax1.set_ylabel('Dynamic drift (s)')
+		ax1.set_ylim(-.2,.2)
+
+
+		ax2 = fig.add_subplot(gs[4])
+		ax2.xaxis.set_major_locator(months)
+		ax2.xaxis.set_major_formatter(yearsFmt)
+		ax2.xaxis.set_minor_locator(days_minor)
+		ax2.yaxis.set_major_locator(MultipleLocator(0.1))
+		ax2.yaxis.set_minor_locator(MultipleLocator(0.01))
+		ax2.set_xlabel('Time (days)')
+		ax2.set_ylabel('Absolute drift (s)')
+		ax2.set_ylim(-.2,.2)
+
+		data_to_plot_clock_dynamic = []
+		data_to_plot_clock_static = []
+		data_to_plot_clock_absolute = []
+		date_to_plot_clock = []
+
+		sigma = 1 #70% of the data
+
+		for k in range(len(causal_lst)):
+
+				data_acausal_causal = np.array(acausal_lst[k][::-1] + causal_lst[k])
+				data_normalized = (2*(data_acausal_causal-data_acausal_causal.min())/(data_acausal_causal.max()-data_acausal_causal.min()))-1
+
+				#Collecting daily list of 10-day stack cross-correlations
+				stacked_10_day_data = np.array(json.load(open(glob.glob(JSON_FILES+'CROSS_CORR_10_DAYS_STACKED_FILES/'+name_sta1+'.'+name_sta2+'/*')[0]))['crosscorr_daily_10data'])
+				stacked_10_day_data_normalized = (2*(stacked_10_day_data-stacked_10_day_data.min())/(stacked_10_day_data.max()-stacked_10_day_data.min()))-1
+
+				cc = obscorr(stacked_10_day_data_normalized,data_normalized,SHIFT_LEN)	
+				shift, max_value = xcorr_max(cc)
+
+				cc_negative = obscorr(stacked_10_day_data_normalized[:len(stacked_10_day_data_normalized)//2], data_normalized[:len(stacked_10_day_data_normalized)//2],SHIFT_LEN)
+				shift_negative, value_negative = xcorr_max(cc_negative)
+
+				cc_positive = obscorr(stacked_10_day_data_normalized[len(stacked_10_day_data_normalized)//2:], data_normalized[len(stacked_10_day_data_normalized)//2:],SHIFT_LEN)
+				shift_positive, value_positive = xcorr_max(cc_positive)
+
+				cc_static_clock_drift = obscorr(stacked_10_day_data_normalized[:len(stacked_10_day_data_normalized)//2],stacked_10_day_data_normalized[len(stacked_10_day_data_normalized)//2:],SHIFT_LEN)
+				shift_static_clock_drift, value_static_clock_drift = xcorr_max(cc_static_clock_drift)
+
+				static_clock_drift = value_static_clock_drift
+
+				dynamic_clock_drift = (value_positive-value_negative)/2
+
+				absolute_clock_drift = dynamic_clock_drift + value_static_clock_drift
+			
+				#-------------------------------------------
+				date_to_plot_clock.append(crosscorr_pair_date[k])
+				data_to_plot_clock_static.append(static_clock_drift)
+				data_to_plot_clock_dynamic.append(dynamic_clock_drift)
+				data_to_plot_clock_absolute.append(absolute_clock_drift)
+
+		date_to_plot_clock = np.array(date_to_plot_clock)
+		data_to_plot_clock_static = np.array(data_to_plot_clock_static)
+		data_to_plot_clock_dynamic = np.array(data_to_plot_clock_dynamic)
+		data_to_plot_clock_absolute = np.array(data_to_plot_clock_absolute)
+
+		True_False_lst_static = [True if np.mean(data_to_plot_clock_static)-sigma*np.std(data_to_plot_clock_static) <= j <= np.mean(data_to_plot_clock_static)+sigma*np.std(data_to_plot_clock_static) else False for j in data_to_plot_clock_static]
+		True_False_lst_dynamic = [True if np.mean(data_to_plot_clock_dynamic)-sigma*np.std(data_to_plot_clock_dynamic) <= j <= np.mean(data_to_plot_clock_dynamic)+sigma*np.std(data_to_plot_clock_dynamic) else False for j in data_to_plot_clock_dynamic]
+		True_False_lst_absolute = [True if np.mean(data_to_plot_clock_absolute)-sigma*np.std(data_to_plot_clock_absolute) <= j <= np.mean(data_to_plot_clock_absolute)+sigma*np.std(data_to_plot_clock_absolute) else False for j in data_to_plot_clock_absolute]
+
+		date_to_plot_clock_True_static = date_to_plot_clock[True_False_lst_static]
+		data_to_plot_clock_True_static = data_to_plot_clock_static[True_False_lst_static]
+
+		date_to_plot_clock_True_dynamic = date_to_plot_clock[True_False_lst_dynamic]
+		data_to_plot_clock_True_dynamic = data_to_plot_clock_dynamic[True_False_lst_dynamic]
+
+		date_to_plot_clock_True_absolute = date_to_plot_clock[True_False_lst_absolute]
+		data_to_plot_clock_True_absolute = data_to_plot_clock_absolute[True_False_lst_absolute]
+
+		#--------------------------------------------------
+
+		poly_reg = PolynomialFeatures(degree=4)
+		X_poly = poly_reg.fit_transform(np.array(range(len(date_to_plot_clock_True_static))).reshape(-1, 1))
+		pol_reg = LinearRegression()
+		pol_reg.fit(X_poly, data_to_plot_clock_True_static)
+
+		for i,j in enumerate(data_to_plot_clock_static):
+			if np.mean(data_to_plot_clock_static)-sigma*np.std(data_to_plot_clock_static) <= j <= np.mean(data_to_plot_clock_static)+sigma*np.std(data_to_plot_clock_static):
+				ax0.plot(date_to_plot_clock[i],data_to_plot_clock_static[i],'ok',ms=3)
+			else:
+				ax0.plot(date_to_plot_clock[i],data_to_plot_clock_static[i],'or',ms=3)
+
+		ax0.plot(date_to_plot_clock_True_static, pol_reg.predict(poly_reg.fit_transform(np.array(range(len(data_to_plot_clock_True_static))).reshape(-1, 1))), color='blue')
+
+		#--------------------------------------------------
+
+		poly_reg = PolynomialFeatures(degree=4)
+		X_poly = poly_reg.fit_transform(np.array(range(len(date_to_plot_clock_True_dynamic))).reshape(-1, 1))
+		pol_reg = LinearRegression()
+		pol_reg.fit(X_poly, data_to_plot_clock_True_dynamic)
+
+		for i,j in enumerate(data_to_plot_clock_dynamic):
+			if np.mean(data_to_plot_clock_dynamic)-sigma*np.std(data_to_plot_clock_dynamic) <= j <= np.mean(data_to_plot_clock_dynamic)+sigma*np.std(data_to_plot_clock_dynamic):
+				l1, = ax1.plot(date_to_plot_clock[i],data_to_plot_clock_dynamic[i],'ok',ms=3)
+			else:
+				l2, = ax1.plot(date_to_plot_clock[i],data_to_plot_clock_dynamic[i],'or',ms=3)
+
+		ax1.plot(date_to_plot_clock_True_dynamic, pol_reg.predict(poly_reg.fit_transform(np.array(range(len(data_to_plot_clock_True_dynamic))).reshape(-1, 1))), color='blue')
+		ax1.legend((l1,l2),('%70 data','%30 data'),loc='upper right')
+
+		#--------------------------------------------------
+
+		poly_reg = PolynomialFeatures(degree=4)
+		X_poly = poly_reg.fit_transform(np.array(range(len(date_to_plot_clock_True_absolute))).reshape(-1, 1))
+		pol_reg = LinearRegression()
+		pol_reg.fit(X_poly, data_to_plot_clock_True_absolute)
+
+		for i,j in enumerate(data_to_plot_clock_absolute):
+			if np.mean(data_to_plot_clock_absolute)-sigma*np.std(data_to_plot_clock_absolute) <= j <= np.mean(data_to_plot_clock_absolute)+sigma*np.std(data_to_plot_clock_absolute):
+				l1, = ax2.plot(date_to_plot_clock[i],data_to_plot_clock_absolute[i],'ok',ms=3)
+			else:
+				l2, = ax2.plot(date_to_plot_clock[i],data_to_plot_clock_absolute[i],'or',ms=3)
+
+		ax2.plot(date_to_plot_clock_True_absolute, pol_reg.predict(poly_reg.fit_transform(np.array(range(len(data_to_plot_clock_True_absolute))).reshape(-1, 1))), color='blue')
+		ax2.legend((l1,l2),('%70 data','%30 data'),loc='upper right')
+
+		fig.autofmt_xdate()
+		
+		output_figure_CLOCK_DRIFT = CLOCK_DRIFT_OUTPUT+'CLOCK_DRIFT_FIGURES/'
+		os.makedirs(output_figure_CLOCK_DRIFT,exist_ok=True)    
+		fig.savefig(output_figure_CLOCK_DRIFT+'CLOCK_DRIFT_BETWEEN_'+name_sta1+'_'+name_sta2+'.png',dpi=300)    
+		plt.close() 		
