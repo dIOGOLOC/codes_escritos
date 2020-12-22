@@ -54,7 +54,7 @@ from pyasdf import ASDFDataSet
 
 from mtspec import mtspec, wigner_ville_spectrum
 
-from obspy.signal.trigger import classic_sta_lta, trigger_onset, coincidence_trigger
+from obspy.signal.trigger import classic_sta_lta, trigger_onset, coincidence_trigger,recursive_sta_lta
 
 
 #Configuration file
@@ -69,10 +69,10 @@ ASDF_FILES = '/home/diogoloc/dados_posdoc/ON_MAR/EARTHQUAKE_FINDER_OUTPUT/ASDF_F
 
 NOISE_MODEL_FILE = '/home/diogoloc/dados_posdoc/ON_MAR/TRANSFER_FUNC/NOISE_MODEL_FILE/noise_models.npz'
 
-FIRSTDAY = '2019-12-10'
-LASTDAY = '2019-12-20'
+FIRSTDAY = '2020-03-22'
+LASTDAY = '2020-03-27'
 
-FILTER_DATA = [1,20]
+FILTER_DATA = [2,10]
 
 NETWORK = 'ON'
 
@@ -90,9 +90,9 @@ TOL = 3.0
 
 VERBOSE_MODE = True
 
-STA = 1
+STA = 0.5
 LTA = 10
-THRON = 10
+THRON = 15
 THROFF = 0.5
 
 # ========================
@@ -108,7 +108,7 @@ ONEDAY = datetime.timedelta(days=1)
 # ================
 # MULTIPROCESSING
 # ================
-num_processes = 6
+num_processes = 12
 
 # =================
 # Filtering by date
@@ -228,6 +228,9 @@ def classic_sta_lta_py(a, nsta, nlta):
         sta[i] = np.mean(a[i:int(i+nsta)]**2)
         lta[i] = np.mean(a[i:int(i+nlta)]**2)
 
+    # Pad zeros
+    sta[:nlta - 1] = 0
+
     # Avoid division by zero by setting zero values to tiny float
     dtiny = np.finfo(0.0).tiny
     idx = lta < dtiny
@@ -252,13 +255,40 @@ def variance_sta_lta_py(a, nsta, nlta):
         sta[i] = np.var(a[i:int(i+nsta)])
         lta[i] = np.var(a[i:int(i+nlta)])
 
+    # Pad zeros
+    sta[:nlta - 1] = 0
+
+    # Avoid division by zero by setting zero values to tiny float
+    dtiny = np.finfo(0.0).tiny
+    idx = lta < dtiny
+    lta[idx] = dtiny
+
     return sta / lta
 
 #-------------------------------------------------------------------------------
 
-def kurtosis_sta_lta_py(a, nsta, nlta):
+def skew_sta_lta_py(a, nlta):
     """
-    Computes the variance STA/LTA from a given input array a. The length of
+    Computes the skew from a given input array a. The length of
+    the STA is given by nsta in samples, respectively is the length of the
+    LTA given by nlta in samples. Written in Python by Kumomeperkoch et al.(2010).
+    """
+    m = len(a)
+    #
+    # compute the short time average (STA) and long time average (LTA)
+    sta = np.zeros(m, dtype=np.float64)
+    lta = np.zeros(m, dtype=np.float64)
+
+    for i in range(m):
+        lta[i] = skew(a[i:int(i+nlta)])
+
+    return lta
+
+#-------------------------------------------------------------------------------
+
+def kurtosis_sta_lta_py(a, nlta):
+    """
+    Computes the kurtosis from a given input array a. The length of
     the STA is given by nsta in samples, respectively is the length of the
     LTA given by nlta in samples. Written in Python by Kumomeperkoch et al.(2010).
     """
@@ -270,7 +300,6 @@ def kurtosis_sta_lta_py(a, nsta, nlta):
 
     for i in range(m):
         lta[i] = kurtosis(a[i:int(i+nlta)])
-
     return lta
 
 # =======
@@ -324,7 +353,7 @@ def get_stations_data(f):
 
     #-----------------------------------------------------------------
     #Creating ASDF preprocessed files folder
-    output_PREPROCESS_DATA_DAY = ASDF_FILES+'PREPROCESS_DATA_DAY_FILES/'+NETWORK+'.'+STATION+'/'
+    output_PREPROCESS_DATA_DAY = ASDF_FILES+'PREPROCESS_DATA_DAY_FILES/'+NETWORK+'.'+STATION+'.'+CHANNEL+'/'
     os.makedirs(output_PREPROCESS_DATA_DAY,exist_ok=True)
 
     ds = ASDFDataSet(output_PREPROCESS_DATA_DAY+'PREPROCESS_DATA_DAY_'+NETWORK+'_'+STATION+'_'+channel+'_'+year_day+'_'+julday_day+".h5", compression="gzip-3")
@@ -379,7 +408,7 @@ def get_stations_data(f):
 # ============
 # Main program
 # ============
-'''
+
 print('===============================')
 print('Scanning name of miniseed files')
 print('===============================')
@@ -407,7 +436,7 @@ with Pool(processes=num_processes) as p:
 
 print("--- %.2f execution time (min) ---" % ((time.time() - start_time)/60))
 print('\n')
-'''
+
 print('====================================')
 print('Opening ASDF files')
 print('====================================')
@@ -415,7 +444,7 @@ print('\n')
 
 daily_lst_data = [[]]*len(INTERVAL_PERIOD_DATE)
 
-DATA_DAY_FILES = sorted(glob.glob(ASDF_FILES+'PREPROCESS_DATA_DAY_FILES/'+NETWORK+'.'+STATION+'/*.h5'))
+DATA_DAY_FILES = sorted(glob.glob(ASDF_FILES+'PREPROCESS_DATA_DAY_FILES/'+NETWORK+'.'+STATION+'.'+CHANNEL+'/*.h5'))
 DATA_DAYs = [i.split('.h5')[0].split('_')[-2]+'.'+i.split('.h5')[0].split('_')[-1] for i in DATA_DAY_FILES]
 
 for l,k in enumerate(INTERVAL_PERIOD_DATE):
@@ -492,7 +521,7 @@ for j in tqdm(daily_lst_data, desc='Daily loop'):
     bad_windows = np.array([False if i == True else True for i in good_windows])
 
     #------------------------------------------------------------------------------
-    '''
+
     if VERBOSE_MODE:
 
 	        cmap = 'Spectral_r'
@@ -535,8 +564,12 @@ for j in tqdm(daily_lst_data, desc='Daily loop'):
 	        fig.suptitle('Station = '+STATION+'.'+CHANNEL+' - Day = '+UTCDateTime(year=int(year_spec),julday=int(julday_spec)).strftime('%d/%m/%Y'),fontsize=18)
 	        fig.savefig(daily_wind_output+NETWORK+'_'+STATION+'_'+CHANNEL+'_'+year_spec+'_'+julday_spec+'.png', dpi=300, facecolor='w', edgecolor='w')
 	        plt.close()
-    '''
+
     #----------------------------------------------------------------------------------------------------------------
+
+    #==================
+    #Looking for EVENTs
+    #==================
 
     slide_data = [k for k in spec.waveforms[NETWORK+'.'+STATION]['preprocessed_recording'].slide(window_length=WINDOW_LENGTH, step=WINDOW_LENGTH/2,include_partial_windows=False, nearest_sample=True)]
 
@@ -551,10 +584,8 @@ for j in tqdm(daily_lst_data, desc='Daily loop'):
         tr.filter("bandpass", freqmin=FILTER_DATA[0], freqmax=FILTER_DATA[1])
 
         # Characteristic function and trigger onsets
-        #cft_var = classic_sta_lta(tr.data, int(STA*df), int(LTA*df))
         cft = classic_sta_lta(tr.data, int(STA*df), int(LTA*df))
-        #cft_var = variance_sta_lta_py(tr.data, int(STA*df), int(LTA*df))
-        on_off = np.array(trigger_onset(cft, THRON, THROFF,max_len_delete=False))
+        on_off = np.array(trigger_onset(charfct=cft, thres1=THRON, thres2=THROFF, max_len=9e+99, max_len_delete=False))
 
         try:
             for trg in on_off:
@@ -565,7 +596,7 @@ for j in tqdm(daily_lst_data, desc='Daily loop'):
 
                 tr_data = wind_data[0]
                 tr_trim = tr_data.copy()
-                trim_data = tr_trim.trim(trigger_on-2,trigger_off+2)
+                trim_data = tr_trim.trim(trigger_on-10,trigger_off+10)
                 trim_data.filter("bandpass", freqmin=FILTER_DATA[0], freqmax=FILTER_DATA[1])
 
                 t = trim_data.times('matplotlib')
@@ -576,6 +607,17 @@ for j in tqdm(daily_lst_data, desc='Daily loop'):
                 x, y = np.meshgrid(
                 t,
                 np.linspace(f_min, f_max, scalogram.shape[0]))
+
+                #----------------------------------------------------------------------------
+                #Creating ASDF preprocessed files folder
+                output_EVENT_DATA = ASDF_FILES+'EVENT_DATA_FILES/'+NETWORK+'.'+STATION+'.'+CHANNEL+'/'
+                os.makedirs(output_EVENT_DATA,exist_ok=True)
+
+                event_asdf = ASDFDataSet(output_EVENT_DATA+'EVENT_DATA_'+NETWORK+'_'+STATION+'_'+CHANNEL+'_'+datetime_window.strftime('%d_%m_%Y_%H_%M_%S_%f')+"_event.h5", compression="gzip-3")
+                tr_2_save = wind_data[0]
+                tr_2_save_trim = tr_2_save.copy()
+                trim_tr_2_save = tr_2_save_trim.trim(trigger_on-10,trigger_off+10)
+                event_asdf.add_waveforms(trim_tr_2_save, tag="event_recording")
 
                 #----------------------------------------------------------------------------
                 if VERBOSE_MODE:
@@ -594,7 +636,7 @@ for j in tqdm(daily_lst_data, desc='Daily loop'):
                     ax1.xaxis.set_minor_locator(axis_minor)
                     ax1.tick_params(axis='both',which='major',width=2,length=5)
                     ax1.tick_params(axis='both',which='minor',width=2,length=3)
-                    ax1.plot(tr.times('matplotlib'),tr.data, 'k')
+                    ax1.plot(tr.times('matplotlib')[500:],tr.data[500:], 'k')
                     ymin, ymax = ax1.get_ylim()
                     ax1.vlines(trigger_on.matplotlib_date, ymin, ymax, color='r', linewidth=1)
                     ax1.vlines(trigger_off.matplotlib_date, ymin, ymax, color='b', linewidth=1)
@@ -623,11 +665,11 @@ for j in tqdm(daily_lst_data, desc='Daily loop'):
                     #==============================================================================================================================================================
 
                     # Plotting the results
-                    axis_major = SecondLocator(interval=3)   # every 5-second
+                    axis_major = SecondLocator(interval=5)   # every 5-second
                     axis_minor = SecondLocator(interval=1)   # every 1-second
 
                     plt.rcParams.update({'font.size': 20})
-                    fig, (ax1,ax2,ax3,ax4) = plt.subplots(ncols=1, nrows=4,figsize=(15,20),sharex=True)
+                    fig, (ax1,ax2,ax3) = plt.subplots(ncols=1, nrows=3,figsize=(15,20),sharex=True)
 
                     ax1.set_title('Date: '+datetime_window.strftime('%d/%m/%Y')+' - Filter: '+str(FILTER_DATA[0])+'-'+str(FILTER_DATA[1])+' Hz')
                     ax1.xaxis.set_major_formatter(axis_Fmt)
@@ -651,35 +693,23 @@ for j in tqdm(daily_lst_data, desc='Daily loop'):
                     ax2.axhline(THRON, 0, 1, color='b', linestyle='--')
                     #----------------------------------------------------------------------------
 
-                    ax3.set_title('Variance STA/LTA trigger')
-                    ax3.xaxis.set_major_locator(axis_major)
+                    ax3.set_title('Continuous Wavelet Transform')
                     ax3.xaxis.set_major_formatter(axis_Fmt)
+                    ax3.xaxis.set_major_locator(axis_major)
                     ax3.xaxis.set_minor_locator(axis_minor)
                     ax3.tick_params(axis='both',which='major',width=2,length=5)
                     ax3.tick_params(axis='both',which='minor',width=2,length=3)
-                    ax3.set_ylim(0,20)
-                    ax3.plot(tr.times('matplotlib'),cft, 'k')
-                    ax3.axhline(THROFF, 0, 1, color='r', linestyle='--')
-                    ax3.axhline(THRON, 0, 1, color='b', linestyle='--')
-                    #----------------------------------------------------------------------------
 
-                    ax4.set_title('Continuous Wavelet Transform')
-                    ax4.xaxis.set_major_formatter(axis_Fmt)
-                    ax4.xaxis.set_major_locator(axis_major)
-                    ax4.xaxis.set_minor_locator(axis_minor)
-                    ax4.tick_params(axis='both',which='major',width=2,length=5)
-                    ax4.tick_params(axis='both',which='minor',width=2,length=3)
+                    im = ax3.pcolormesh(x, y, np.abs(scalogram),shading='auto', cmap='viridis')
+                    ax3.set_ylabel("Frequency [Hz]")
+                    ax3.set_ylim(f_min, f_max)
 
-                    im = ax4.pcolormesh(x, y, np.abs(scalogram),shading='auto', cmap='viridis')
-                    ax4.set_ylabel("Frequency [Hz]")
-                    ax4.set_ylim(f_min, f_max)
-
-                    axins = inset_axes(ax4,
+                    axins = inset_axes(ax3,
                             		   width="15%",
                             		   height="5%",
                             		   loc='upper left',
                             		   bbox_to_anchor=(0.8, 0.1, 1, 1),
-                            		   bbox_transform=ax4.transAxes,
+                            		   bbox_transform=ax3.transAxes,
                             		   borderpad=0,
                             		  )
 
@@ -693,48 +723,145 @@ for j in tqdm(daily_lst_data, desc='Daily loop'):
         except IndexError:
             pass
 
+print('========================')
+print('Opening ASDF Event files')
+print('========================')
+print('\n')
+
+EVENT_FILES_H5 = sorted(glob.glob(ASDF_FILES+'EVENT_DATA_FILES/'+NETWORK+'.'+STATION+'.'+CHANNEL+'/*.h5'))
+
+for data_h5 in tqdm(EVENT_FILES_H5,desc='Events loop'):
+    event_data = ASDFDataSet(data_h5)
+
+    for i in event_data.waveforms[NETWORK+'.'+STATION]['event_recording']:
+        tr = i
+        npts = tr.stats.npts
+        dt = tr.stats.delta
+        df = tr.stats.sampling_rate
+        datetime_window = tr.stats.starttime
+        tr.filter(type="bandpass",freqmin=FILTER_DATA[0],freqmax=FILTER_DATA[1],zerophase=True)
+
+        # Characteristic function and trigger onsets
+        cft = classic_sta_lta_py(tr.data, int((STA/2)*df), int((LTA/2)*df))
+        cft_var = variance_sta_lta_py(tr.data, int((STA/2)*df), int((LTA/2)*df))
+        cft_skew = skew_sta_lta_py(tr.data, int((LTA/2)*df))
+        cft_kur = kurtosis_sta_lta_py(tr.data, int((LTA/2)*df))
+
+        #----------------------------------------------------------------------------
+
+        tr_data = i
+        trim_data = tr_data.copy()
+        #trim_data.filter("bandpass", freqmin=FILTER_DATA[0], freqmax=FILTER_DATA[1])
+
+        ## Get frequencies corresponding to signal PSD
+        freq_cwt_lst = fftfreq(npts,d=dt)
+
+        ## Get positive half of frequencies
+        positive_frequencies = freq_cwt_lst>0
+        freq_cwt_lst = freq_cwt_lst[positive_frequencies]
+
+        t = trim_data.times('matplotlib')
+        f_min = freq_cwt_lst[0]
+        f_max = freq_cwt_lst[-1]
+
+        scalogram = cwt(trim_data.data, dt, 8, f_min, f_max)
+        x, y = np.meshgrid(
+        t,
+        np.linspace(f_min, f_max, scalogram.shape[0]))
+
+        #---------------------------------------------------------------------------------------------------------------------------
+
+        # Plotting the results
+        axis_major = SecondLocator(interval=5)   # every 5-second
+        axis_minor = SecondLocator(interval=1)   # every 1-second
+        axis_Fmt = DateFormatter('%H:%M:%S')
+
+        plt.rcParams.update({'font.size': 20})
+        fig, axes = plt.subplots(ncols=1, nrows=5,figsize=(20,20),sharex=True)
+
+        ax1 = axes[0]
+        ax2 = axes[1]
+        ax3 = axes[2]
+        ax4 = axes[3]
+        ax5 = axes[4]
+        #ax6 = axes[2,0]
+
+        tr_raw_data = i
+        ax1.set_title('Raw Data')
+        ax1.xaxis.set_major_formatter(axis_Fmt)
+        ax1.xaxis.set_major_locator(axis_major)
+        ax1.xaxis.set_minor_locator(axis_minor)
+        ax1.tick_params(axis='both',which='major',width=2,length=5)
+        ax1.tick_params(axis='both',which='minor',width=2,length=3)
+        ax1.plot(tr_raw_data.times('matplotlib'),tr_raw_data.data, color='k', linewidth=2)
+
+        #----------------------------------------------------------------------------
+
+        ax2.set_title('Absolute Mean Value STA/LTA trigger')
+        ax2.xaxis.set_major_locator(axis_major)
+        ax2.xaxis.set_major_formatter(axis_Fmt)
+        ax2.xaxis.set_minor_locator(axis_minor)
+        ax2.tick_params(axis='both',which='major',width=2,length=5)
+        ax2.tick_params(axis='both',which='minor',width=2,length=3)
+        ax2.plot(tr_raw_data.times('matplotlib'),cft, 'k')
+
+        #----------------------------------------------------------------------------
+
+        ax3.set_title('Variance STA/LTA trigger')
+        ax3.xaxis.set_major_locator(axis_major)
+        ax3.xaxis.set_major_formatter(axis_Fmt)
+        ax3.xaxis.set_minor_locator(axis_minor)
+        ax3.tick_params(axis='both',which='major',width=2,length=5)
+        ax3.tick_params(axis='both',which='minor',width=2,length=3)
+        ax3.plot(tr_raw_data.times('matplotlib'),cft_var, 'k')
+
+        #----------------------------------------------------------------------------
+
+        ax4.set_title('Kurtosis trigger')
+        ax4.xaxis.set_major_locator(axis_major)
+        ax4.xaxis.set_major_formatter(axis_Fmt)
+        ax4.xaxis.set_minor_locator(axis_minor)
+        ax4.tick_params(axis='both',which='major',width=2,length=5)
+        ax4.tick_params(axis='both',which='minor',width=2,length=3)
+        ax4.plot(tr_raw_data.times('matplotlib'),cft_kur, 'k')
+
+        #----------------------------------------------------------------------------
+
+        ax5.set_title('Skew trigger')
+        ax5.xaxis.set_major_locator(axis_major)
+        ax5.xaxis.set_major_formatter(axis_Fmt)
+        ax5.xaxis.set_minor_locator(axis_minor)
+        ax5.tick_params(axis='both',which='major',width=2,length=5)
+        ax5.tick_params(axis='both',which='minor',width=2,length=3)
+        ax5.plot(tr_raw_data.times('matplotlib'),cft_skew, 'k')
+        ax5.set_xlabel('Date: '+datetime_window.strftime('%d/%m/%Y'))
 
 
+        #----------------------------------------------------------------------------
         '''
-                    #--------------------------------------------------------------------------------------------------------------------------------
-                    airgun_asdf = ASDFDataSet(NETWORK+'_'+STATION+'_'+CHANNEL+'_'+datetime_window.strftime('%d_%m_%Y_%H_%M_%S')+"_airgun.h5", compression="gzip-3")
+        ax6.set_title('Continuous Wavelet Transform')
+        ax6.xaxis.set_major_formatter(axis_Fmt)
+        ax6.xaxis.set_major_locator(axis_major)
+        ax6.xaxis.set_minor_locator(axis_minor)
+        ax6.tick_params(axis='both',which='major',width=2,length=5)
+        ax6.tick_params(axis='both',which='minor',width=2,length=3)
 
-                    # The type always should be camel case.
-                    data_type_f = "Scalogram"
+        im = ax6.pcolormesh(x, y, np.abs(scalogram),shading='auto', cmap='viridis')
+        ax6.set_ylabel("Frequency [Hz]")
+        ax6.set_xlabel('Date: '+datetime_window.strftime('%d/%m/%Y'))
 
-                    # Name to identify the particular piece of data.
-                    path_f = NETWORK+'.'+STATION+'.'+CHANNEL+'.scalogram'
+        axins = inset_axes(ax6,
+                           width="15%",
+                           height="5%",
+                           loc='upper left',
+                           bbox_to_anchor=(0.8, 0.1, 1, 1),
+                           bbox_transform=ax6.transAxes,
+                           borderpad=0,
+                           )
 
-                    # Any additional parameters as a Python dictionary which will end up as
-                    # attributes of the array.
-                    parameters_f = {'CWT':'cwt: (M, N) ndarray.'}
-
-                    airgun_asdf.add_auxiliary_data(data=np.abs(scalogram), data_type=data_type_f, path=path_f, parameters=parameters_f)
-                    #--------------------------------------------------------------------------------------------------------------------------------
-
-                    # The type always should be camel case.
-                    data_type_x = "X"
-
-                    # Name to identify the particular piece of data.
-                    path_x = NETWORK+'.'+STATION+'.'+CHANNEL+'.x'
-
-                    # Any additional parameters as a Python dictionary which will end up as
-                    # attributes of the array.
-                    parameters_x = {'x':'ndarray.'}
-
-                    airgun_asdf.add_auxiliary_data(data=x, data_type=data_type_x, path=path_x, parameters=parameters_x)
-                    #--------------------------------------------------------------------------------------------------------------------------------
-
-                    # The type always should be camel case.
-                    data_type_y = "Y"
-
-                    # Name to identify the particular piece of data.
-                    path_y = NETWORK+'.'+STATION+'.'+CHANNEL+'.y'
-
-                    # Any additional parameters as a Python dictionary which will end up as
-                    # attributes of the array.
-                    parameters_y = {'y':'ndarray.'}
-
-                    airgun_asdf.add_auxiliary_data(data=y, data_type=data_type_y, path=path_y, parameters=parameters_y)
-                    #----------------------------------------------------------------------------
+        plt.colorbar(im, cax=axins, orientation="horizontal", ticklocation='top')
         '''
+        daily_event_output = EARTHQUAKE_FINDER_OUTPUT+NETWORK+'.'+STATION+'/Selected_event_data/'+CHANNEL+'/'
+        os.makedirs(daily_event_output,exist_ok=True)
+        fig.savefig(daily_event_output+NETWORK+'_'+STATION+'_'+CHANNEL+'_'+datetime_window.strftime('%d_%m_%Y_%H_%M_%S_%f')+'_trim.png', dpi=300, facecolor='w', edgecolor='w')
+        plt.close()
