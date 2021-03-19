@@ -14,7 +14,6 @@ from matplotlib.patches import Ellipse
 import matplotlib.cbook as cbook
 from matplotlib.patches import Rectangle
 
-
 import obspy as op
 from obspy import read,read_inventory, UTCDateTime, Stream, Trace
 from obspy.io.xseed import Parser
@@ -41,34 +40,34 @@ import datetime
 import matplotlib.dates as mdates
 from itertools import compress
 
-
 import cartopy.crs as ccrs
 from cartopy.io.shapereader import Reader
 import cartopy.feature as cfeature
 
-import pyasdf
-
+from pyasdf import ASDFDataSet
 
 #Configuration file
 
-MSEED_DIR = '/home/diogoloc/dados_posdoc/ON_MAR/obs_data_MSEED/' 
+MSEED_DIR = '/home/diogoloc/dados_posdoc/ON_MAR/obs_data_MSEED/'
 
 STATIONXML_DIR = '/home/diogoloc/dados_posdoc/ON_MAR/XML_OBS/'
 
-TRANSFER_FUNC_OUTPUT = '/home/diogoloc/dados_posdoc/ON_MAR/TRANSFER_FUNC/FIGURAS/'   
+TRANSFER_FUNC_OUTPUT = '/home/diogoloc/dados_posdoc/ON_MAR/TRANSFER_FUNC/FIGURAS/'
 
-CORRECT_DATA_TRANSFER_FUNC_OUTPUT = '/home/diogoloc/dados_posdoc/ON_MAR/TRANSFER_FUNC/DATA_CORRECTION/'   
+CORRECT_DATA_TRANSFER_FUNC_OUTPUT = '/home/diogoloc/dados_posdoc/ON_MAR/TRANSFER_FUNC/DATA_CORRECTION/'
+
+ASDF_FILES = '/home/diogoloc/dados_posdoc/ON_MAR/TRANSFER_FUNC/ASDF_FILES/'
 
 JSON_FILES = '/home/diogoloc/dados_posdoc/ON_MAR/TRANSFER_FUNC/JSON_FILES/'
 
 NOISE_MODEL_FILE = '/home/diogoloc/dados_posdoc/ON_MAR/TRANSFER_FUNC/NOISE_MODEL_FILE/noise_models.npz'
 
-FIRSTDAY = '2019-07-28'
-LASTDAY = '2020-06-15'
+FIRSTDAY = '2019-07-27'
+LASTDAY = '2020-01-27'
 
 NETWORK = 'ON'
 
-STATION = 'OBS18'
+STATION = 'OBS17'
 
 MIN_WINDOWS = 24
 
@@ -76,14 +75,14 @@ WINDOW_LENGTH = 600
 
 FILTER_DATA = [0.004,0.2]
 
-NEW_SAMPLING_RATE = 5
+NEW_SAMPLING_RATE = 100
 
 tiltfreq=[0.005, 0.035]
 
 ALPHA = 0.05
 TOL = 2.0
 
-VERBOSE_MODE = False
+VERBOSE_MODE = True
 
 # ========================
 # Constants and parameters
@@ -98,7 +97,7 @@ ONEDAY = datetime.timedelta(days=1)
 # ================
 # MULTIPROCESSING
 # ================
-num_processes = 12
+num_processes = 6
 
 # =================
 # Filtering by date
@@ -124,12 +123,12 @@ def filelist(basedir,interval_period_date):
         if os.path.isdir(os.path.join(basedir, d)):
             files_dir = os.path.join(basedir, d)
             files_list = glob.glob(files_dir+'/*')
-            for s in files_list: 
+            for s in files_list:
                 if any(day_s in s for day_s in interval_period_date):
                     files.append(s)
 
     files = [i for i in files if not 'HHX' in i]
-    
+
     return sorted(files)
 
 #-------------------------------------------------------------------------------
@@ -159,7 +158,7 @@ def Admittance_xy(G_xy,G_xx,G_yy,wind_number):
 
     A_xy = abs(G_xy)/G_xx
 
-    Error_A_xy = np.sqrt(1 - (np.abs(G_xy)**2)/(G_xx*G_yy))/np.sqrt(2*wind_number)*abs(np.sqrt((np.abs(G_xy)**2)/(G_xx*G_yy)))    
+    Error_A_xy = np.sqrt(1 - (np.abs(G_xy)**2)/(G_xx*G_yy))/np.sqrt(2*wind_number)*abs(np.sqrt((np.abs(G_xy)**2)/(G_xx*G_yy)))
 
     return A_xy,Error_A_xy
 
@@ -169,7 +168,7 @@ def Coherence_xy(G_xy,G_xx,G_yy,wind_number):
 
     Gama2_xy = (np.abs(G_xy)**2)/(G_xx*G_yy)
 
-    Error_Gama2_xy = np.sqrt(2)*(1 - np.abs(G_xy)**2)/(G_xx*G_yy)/np.sqrt(wind_number)*abs(np.sqrt((np.abs(G_xy)**2)/(G_xx*G_yy)))    
+    Error_Gama2_xy = np.sqrt(2)*(1 - np.abs(G_xy)**2)/(G_xx*G_yy)/np.sqrt(wind_number)*abs(np.sqrt((np.abs(G_xy)**2)/(G_xx*G_yy)))
 
     return Gama2_xy,Error_Gama2_xy
 
@@ -179,9 +178,9 @@ def Phase_xy(Q_xy,C_xy,G_xy,G_xx,G_yy,wind_number):
 
     Phase_xy = np.arctan2(Q_xy,C_xy)
 
-    Error_phase_xy = np.sqrt(1 - (np.abs(G_xy)**2)/(G_xx*G_yy))/np.sqrt(2*wind_number)*abs(np.sqrt((np.abs(G_xy)**2)/(G_xx*G_yy)))    
+    Error_phase_xy = np.sqrt(1 - (np.abs(G_xy)**2)/(G_xx*G_yy))/np.sqrt(2*wind_number)*abs(np.sqrt((np.abs(G_xy)**2)/(G_xx*G_yy)))
 
-    
+
     return Phase_xy,Error_phase_xy
 
 #-------------------------------------------------------------------------------
@@ -190,7 +189,7 @@ def smooth(data, nd, axis=0):
     """
     Function to smooth power spectral density functions from the convolution
     of a boxcar function with the PSD
-    
+
     Parameters
     ----------
     data : :class:`~numpy.ndarray`
@@ -236,210 +235,36 @@ def rotate_dir(tr1, tr2, direc):
 
     return tr_1
 
-# =======
-# Classes
-# =======
+#-------------------------------------------------------------------------------
 
-class StationDayData:
+def daily_process_function(ASDF_FILES):
     """
-    Class to save station info: name, network, channel, files directory, coordinates, datetime and data.
+    Gets ASDF files for each channel and estimate good windows
+
+    @type ASDF_FILES:  list of ASDF files
     """
+    spec_HHZ = [ASDFDataSet(k) for k in ASDF_FILES if 'HHZ' in k][0]
+    spec_HHE = [ASDFDataSet(k) for k in ASDF_FILES if 'HHE' in k][0]
+    spec_HHN = [ASDFDataSet(k) for k in ASDF_FILES if 'HHN' in k][0]
 
-    def __init__(self, name, network, fileID,lon=None,lat=None,time_day=None,data_day=None):
-        """
-        @type name: str
-        @type network: str
-        @type channel: str
-        @type filesdir: str or unicode
-        @type lon: float
-        @type lat: float
-        @type time_day: L{obspy.core.utcdatetime.UTCDateTime}
-        @type data_day: L{obspy.core.trace.Trace}
-        """
-        self.name = name
-        self.network = network
-        self.fileID = fileID
-        self.lon = lon
-        self.lat = lat
-        self.time_day = time_day
-        self.data_day = data_day
+    year_spec = spec_HHZ.waveforms[NETWORK+'.'+STATION]['preprocessed_recording'][0].stats.starttime.year
+    julday_spec = spec_HHZ.waveforms[NETWORK+'.'+STATION]['preprocessed_recording'][0].stats.starttime.julday
 
-    def __str__(self):
-        """
-        @rtype: unicode
-        """
-        # General infos of station
-        s = [u'Name    : {0}'.format(self.name),
-             u'Network : {0}'.format(self.network),
-             u'FilesID: {0}'.format(self.fileID),
-             u'Longitude:{0}'.format(self.lon),
-             u'Latitude: {0}'.format(self.lat),
-             u'Time_day: {0}'.format(self.time_day),
-            ]
-        return u'\n'.join(s)
-#-------------------------------------------------------------------------------
+    sta_id_HHZ = spec_HHZ.waveforms[NETWORK+'.'+STATION]['preprocessed_recording'][0].id
 
-def get_stations_data(f):
-    """
-    Gets stations daily data from miniseed file
-    
-    @type f: paht of the minissed file (str)
-    @rtype: list of L{StationDayData}
-    """
-    
-    # splitting subdir/basename
-    subdir, filename = os.path.split(f)
+    fz = spec_HHZ.auxiliary_data.Frequencies[sta_id_HHZ+'.f'].data[:]
+    tz = spec_HHZ.auxiliary_data.Times[sta_id_HHZ+'.t'].data[:]
+    psdz = spec_HHZ.auxiliary_data.Spectrogram[sta_id_HHZ+'.S'].data[:]
+    tzh = np.array([i/(60*60) for i in tz])
 
-    # network, station name and station channel in basename,
-    # e.g., ON.TIJ01..HHZ.D.2020.002
-        
-    network, name = filename.split('.')[0:2]
-    sta_channel_id = filename.split('.D.')[0]
-    time_day = filename.split('.D.')[-1]
-    year_day = time_day.split('.')[0]
-    julday_day = time_day.split('.')[1]
-
-    st = read(f)
-        
-    inv = read_inventory(STATIONXML_DIR+'.'.join([network,'xml']))
-    pre_filt = [0.001, 0.005, 45., 50.]
-    st[0].remove_response(inventory=inv,pre_filt=pre_filt,output="DISP",water_level=60)
-    
-    st.detrend('demean')
-    st.detrend('linear')
-    st.filter('lowpass', freq=0.5*NEW_SAMPLING_RATE,corners=2, zerophase=True)    
-    st.resample(NEW_SAMPLING_RATE)
-
-    lon = inv.get_coordinates(sta_channel_id)['longitude']
-    lat = inv.get_coordinates(sta_channel_id)['latitude']
-            
-    # appending new channel day data
-    station = StationDayData(name=name, network=network,fileID=sta_channel_id,lon=lon,lat=lat,time_day=time_day,data_day=st[0])
-
-    data_dic = {
-    			'name': station.name,
-    			'network': station.network,
-    			'time_day': station.time_day,
-    			'fileID': station.fileID,
-    			'data_day': station.data_day.data.tolist()
-    			}
-
-    output_DATA_DAY = JSON_FILES+'DATA_DAY_FILES/'+station.network+'.'+station.name+'/'
-    os.makedirs(output_DATA_DAY,exist_ok=True)
-    with open(output_DATA_DAY+'DATA_DAY_'+station.network+'_'+station.name+'_'+sta_channel_id+'_'+year_day+'_'+julday_day+'.json', 'w') as fp:
-    	json.dump(data_dic, fp)
-
-
-    # Points in window
-    ws = int(WINDOW_LENGTH/station.data_day.stats.delta)
-
-    # hanning window
-    wind = np.ones(ws) 
- 
-    spec = spectrogram(x=station.data_day.data,fs=station.data_day.stats.sampling_rate, window=wind, nperseg=None, noverlap=0)
-    
-    f, t, psd = spec
-
- 
-    spec_dic = {
-    			'name': station.name,
-    			'network': station.network,
-    			'time_day': station.time_day,
-    			'fileID': station.fileID,
-    			'f': f.tolist(),
-    			't': t.tolist(),
-    			'psd': psd.tolist()
-    			}
-
-    output_SPECTROGRAM = JSON_FILES+'SPECTROGRAM_FILES/'+station.network+'.'+station.name+'/'
-    os.makedirs(output_SPECTROGRAM,exist_ok=True)
-    with open(output_SPECTROGRAM+'SPECTROGRAM_DAY_'+station.network+'_'+station.name+'_'+sta_channel_id+'_'+year_day+'_'+julday_day+'.json', 'w') as fp:
-    	json.dump(spec_dic, fp)
-
-#-------------------------------------------------------------------------------
-
-
-
-# ============
-# Main program
-# ============
-print('===============================')
-print('Scanning name of miniseed files')
-print('===============================')
-print('\n')
-
-# initializing list of stations by scanning name of miniseed files
-files = filelist(basedir=MSEED_DIR+NETWORK+'/'+STATION+'/',interval_period_date=INTERVAL_PERIOD_DATE)
-
-print('Total of miniseed files = '+str(len(files)))
-print('\n')
-'''
-print('==================================================================')
-print('Opening miniseed files and calculating the spectrogram of each day')
-print('==================================================================')
-print('\n')
-start_time = time.time()
-
-with Pool(processes=num_processes) as p:
-	max_ = len(files)
-	with tqdm(total=max_) as pbar:
-		for i, _ in enumerate(p.imap_unordered(get_stations_data, files)):
-			pbar.update()
-
-print("--- %.2f execution time (min) ---" % ((time.time() - start_time)/60))
-print('\n')
-'''
-#-------------------------------------------------------------------------------
-daily_lst_spec = [[]]*len(INTERVAL_PERIOD_DATE)
-
-SPECTROGRAM_DAY_FILES = sorted(glob.glob(JSON_FILES+'SPECTROGRAM_FILES/'+NETWORK+'.'+STATION+'/*.json'))
-SPECTROGRAM_DAYs = [i.split('.json')[0].split('_')[-2]+'.'+i.split('.json')[0].split('_')[-1] for i in SPECTROGRAM_DAY_FILES]
-
-for l,k in enumerate(INTERVAL_PERIOD_DATE):
-	daily_lst_spec[l] = [j for i,j in enumerate(SPECTROGRAM_DAY_FILES) if SPECTROGRAM_DAYs[i] == k]
-
-#-------------------------------------------------------------------------------
-daily_lst_data = [[]]*len(INTERVAL_PERIOD_DATE)
-
-DATA_DAY_FILES = sorted(glob.glob(JSON_FILES+'DATA_DAY_FILES/'+NETWORK+'.'+STATION+'/*.json'))
-DATA_DAYs = [i.split('.json')[0].split('_')[-2]+'.'+i.split('.json')[0].split('_')[-1] for i in DATA_DAY_FILES]
-
-for l,k in enumerate(INTERVAL_PERIOD_DATE):
-	daily_lst_data[l] = [j for i,j in enumerate(DATA_DAY_FILES) if DATA_DAYs[i] == k]
-
-
-#-------------------------------------------------------------------------------
-# Select bandpass frequencies
-
-print('=======================')
-print('Filtering daily windows')
-print('=======================')
-print('\n')
-
-first_filter_day = []
-good_windows_lst = []
-
-for j in tqdm(daily_lst_spec):
-    
-    spec_HHZ = json.load(open([k for k in j if 'HHZ' in k][0]))
-    spec_HHE = json.load(open([k for k in j if 'HHE' in k][0]))
-    spec_HHN = json.load(open([k for k in j if 'HHN' in k][0]))
-     
-    year_spec = int(spec_HHZ['time_day'].split('.')[0])
-    julday_spec = int(spec_HHZ['time_day'].split('.')[-1])
-
-    fz = np.array(spec_HHZ['f'])
-    tz = np.array(spec_HHZ['t'])
-    psdz = np.array(spec_HHZ['psd'])
-    tzh = [i/(60*60) for i in tz]
-    
+    #Frequency target
     ff = (fz > FILTER_DATA[0]) & (fz < FILTER_DATA[1])
     freq_lst = fz[ff]
 
     # avoid calculating log of zero
     idx = psdz < DTINY
     psdz[idx] = DTINY
-    
+
     # go to dB
     log_psdz = np.log10(psdz)
     log_psdz *= 10
@@ -447,11 +272,13 @@ for j in tqdm(daily_lst_spec):
     dsl_HHZ = log_psdz[ff, :] - np.mean(log_psdz[ff, :], axis=0)
 
     #-----------------------------------------------------
-    fn = np.array(spec_HHN['f'])
-    tn = np.array(spec_HHN['t'])
-    psdn = np.array(spec_HHN['psd'])
-    tnh = [i/(60*60) for i in tn]
-    
+    sta_id_HHN = spec_HHN.waveforms[NETWORK+'.'+STATION]['preprocessed_recording'][0].id
+
+    fn = spec_HHN.auxiliary_data.Frequencies[sta_id_HHN+'.f'].data[:]
+    tn = spec_HHN.auxiliary_data.Times[sta_id_HHN+'.t'].data[:]
+    psdn = spec_HHN.auxiliary_data.Spectrogram[sta_id_HHN+'.S'].data[:]
+    tnh = np.array([i/(60*60) for i in tn])
+
     # avoid calculating log of zero
     idx = psdn < DTINY
     psdn[idx] = DTINY
@@ -462,33 +289,36 @@ for j in tqdm(daily_lst_spec):
     log_psdn = smooth(log_psdn,40)
     dsl_HHN = log_psdn[ff, :] - np.mean(log_psdn[ff, :], axis=0)
     #-----------------------------------------------------
-    fe = np.array(spec_HHE['f'])
-    te = np.array(spec_HHE['t'])
-    psde = np.array(spec_HHE['psd'])
-    teh = [i/(60*60) for i in te]
+    sta_id_HHE = spec_HHE.waveforms[NETWORK+'.'+STATION]['preprocessed_recording'][0].id
+
+    fe = spec_HHE.auxiliary_data.Frequencies[sta_id_HHE+'.f'].data[:]
+    te = spec_HHE.auxiliary_data.Times[sta_id_HHE+'.t'].data[:]
+    psde = spec_HHE.auxiliary_data.Spectrogram[sta_id_HHE+'.S'].data[:]
+    teh = np.array([i/(60*60) for i in te])
 
     # avoid calculating log of zero
     idx = psde < DTINY
     psde[idx] = DTINY
-    
+
     # go to dB
     log_psde = np.log10(psde)
     log_psde *= 10
     log_psde = smooth(log_psde,40)
     dsl_HHE = log_psde[ff, :] - np.mean(log_psde[ff, :], axis=0)
     #-----------------------------------------------------
-    if VERBOSE_MODE: 
+
+    if VERBOSE_MODE:
 	    cmap = 'viridis_r'
 	    heights = [1,1,1]
 	    widths = [1]
 
 	    gs_kw = dict(width_ratios=widths, height_ratios=heights)
 	    fig, (ax1,ax2,ax3) = plt.subplots(ncols=1, nrows=3,figsize=(15,10),sharex=True,gridspec_kw=gs_kw)
-	    
+
 	    im = ax1.pcolormesh(tzh,fz, log_psdz, cmap=cmap,shading='auto',vmin=-180,vmax=-60)
 	    ax1.text(0.96, 0.8, 'HHZ', ha='center',bbox=dict(facecolor='w'),transform=ax1.transAxes)
 	    ax1.xaxis.set_major_locator(MultipleLocator(4))
-	    ax1.yaxis.set_major_locator(MultipleLocator(0.5))
+	    ax1.yaxis.set_major_locator(MultipleLocator(10))
 	    axins = inset_axes(ax1,
 	                   width="25%",  # width = 10% of parent_bbox width
 	                   height="5%",  # height : 50%
@@ -504,27 +334,27 @@ for j in tqdm(daily_lst_spec):
 	    ax2.text(0.96, 0.8, 'HHN', ha='center',bbox=dict(facecolor='w'),transform=ax2.transAxes)
 	    ax2.set_ylabel('Frequency (Hz)')
 	    ax2.xaxis.set_major_locator(MultipleLocator(4))
-	    ax2.yaxis.set_major_locator(MultipleLocator(0.5))
+	    ax2.yaxis.set_major_locator(MultipleLocator(10))
 	    #-----------------------------------------------------
 	    ax3.pcolormesh(tnh,fe, log_psde, cmap=cmap,shading='auto',vmin=-180,vmax=-60)
 	    ax3.text(0.96, 0.8, 'HHE', ha='center',bbox=dict(facecolor='w'),transform=ax3.transAxes)
 	    ax3.xaxis.set_major_locator(MultipleLocator(4))
-	    ax3.yaxis.set_major_locator(MultipleLocator(0.5))
+	    ax3.yaxis.set_major_locator(MultipleLocator(10))
 	    ax3.set_xlabel('Time (h)')
 	    #-----------------------------------------------------
-	    daily_wind_output = TRANSFER_FUNC_OUTPUT+spec_HHZ['network']+'.'+spec_HHZ['name']+'/Daily_data_windows/'
+	    daily_wind_output = TRANSFER_FUNC_OUTPUT+NETWORK+'.'+STATION+'/Daily_data_windows/'
 	    os.makedirs(daily_wind_output,exist_ok=True)
-	    fig.suptitle('Station = '+spec_HHZ['name']+' - Day = '+UTCDateTime(year=year_spec,julday=julday_spec).strftime('%d/%m/%Y'),fontsize=18)
-	    fig.savefig(daily_wind_output+spec_HHZ['network']+'.'+spec_HHZ['name']+'.'+spec_HHZ['time_day']+'_full.png', dpi=300, facecolor='w', edgecolor='w')
+	    fig.suptitle('Station = '+STATION+' - Day = '+UTCDateTime(year=year_spec,julday=julday_spec).strftime('%d/%m/%Y'),fontsize=18)
+	    fig.savefig(daily_wind_output+NETWORK+'_'+STATION+'_'+str(year_spec)+'_'+str(julday_spec)+'_full.png', dpi=300, facecolor='w', edgecolor='w')
+	    plt.close()
+        #-------------------------------------------------------------------------------------------------------------
 
-        #-------------------------------------------------------------------------------------------------------------                       
-    
     good_windows = np.repeat([True], len(teh))
     indwin = np.argwhere(good_windows == True)
     moveon = False
 
     while moveon == False:
-        
+
         normvar_HHZ = np.zeros(np.sum(good_windows))
         for ii, tmp in enumerate(indwin):
             ind = np.copy(indwin)
@@ -549,10 +379,10 @@ for j in tqdm(daily_lst_spec):
         norm_allchannels = ubernorm_HHZ+ubernorm_HHN+ubernorm_HHE
 
         eliminated_windows = norm_allchannels > TOL*np.std(norm_allchannels)
-        
+
         if np.sum(eliminated_windows) == 0:
             moveon = True
-                
+
         trypenalty = eliminated_windows[np.argwhere(eliminated_windows == False)].T[0]
 
         if ftest(eliminated_windows, 1, trypenalty, 1) < ALPHA:
@@ -563,55 +393,52 @@ for j in tqdm(daily_lst_spec):
             moveon = True
 
     bad_windows = np.array([False if i == True else True for i in good_windows])
-    
+
     len_good = int(sum(good_windows))
     len_bad = int(sum(bad_windows))
-    
-    good_windows_lst.append(good_windows.tolist())
-  
+
     #------------------------------------------------------------------------------
-    
+
     if len_good > MIN_WINDOWS:
-        
-  
-        first_filter_day.append(True)
-            
+
+        first_filter_day = True
+
         dsl_HHZs = dsl_HHZ[:,good_windows]
         dsl_HHNs = dsl_HHN[:,good_windows]
         dsl_HHEs = dsl_HHE[:,good_windows]
 
         #------------------------------------------------------------------------------
-        if VERBOSE_MODE: 
+        if VERBOSE_MODE:
 
 	        figPSD_mean = plt.figure(figsize=(15,10))
 	        ax1 = figPSD_mean.add_subplot(3, 2, 1)
 	        ax1.semilogx(fz, log_psdz[:,good_windows], 'k', lw=0.5,alpha=0.5)
-	        ax1.text(0.96, 0.8, 'HHZ', ha='center',bbox=dict(facecolor='w'),transform=ax1.transAxes)   
+	        ax1.text(0.96, 0.8, 'HHZ', ha='center',bbox=dict(facecolor='w'),transform=ax1.transAxes)
 	        ax1.set_xlim(1/200,max(fe))
 	        ax1.set_ylim(-180,-20)
-	 
+
 	        ax2 = figPSD_mean.add_subplot(3, 2, 2)
 	        ax2.semilogx(fz, log_psdz[:,bad_windows], 'r', lw=0.5,alpha=0.5)
-	        ax2.text(0.96, 0.8, 'HHZ', ha='center',bbox=dict(facecolor='w'),transform=ax2.transAxes)   
+	        ax2.text(0.96, 0.8, 'HHZ', ha='center',bbox=dict(facecolor='w'),transform=ax2.transAxes)
 	        ax2.set_xlim(1/200,max(fe))
 	        ax2.set_ylim(-180,-20)
-	        
+
 	        ax3 = figPSD_mean.add_subplot(3, 2, 3)
 	        ax3.semilogx(fn, log_psdn[:,good_windows], 'k', lw=0.5,alpha=0.5)
-	        ax3.text(0.96, 0.8, 'HHN', ha='center',bbox=dict(facecolor='w'),transform=ax3.transAxes)   
+	        ax3.text(0.96, 0.8, 'HHN', ha='center',bbox=dict(facecolor='w'),transform=ax3.transAxes)
 	        ax3.set_xlim(1/200,max(fe))
 	        ax3.set_ylim(-180,-20)
 
 	        ax4 = figPSD_mean.add_subplot(3, 2, 4)
 	        ax4.semilogx(fn, log_psdn[:,bad_windows], 'r', lw=0.5,alpha=0.5)
-	        ax4.text(0.96, 0.8, 'HHN', ha='center',bbox=dict(facecolor='w'),transform=ax4.transAxes)   
+	        ax4.text(0.96, 0.8, 'HHN', ha='center',bbox=dict(facecolor='w'),transform=ax4.transAxes)
 	        ax4.set_xlim(1/200,max(fe))
 	        ax4.set_ylim(-180,-20)
-	        
+
 	        ax5 = figPSD_mean.add_subplot(3, 2, 5)
 	        ax5.semilogx(fe, log_psde[:,good_windows], 'k', lw=0.5,alpha=0.5)
 	        ax5.set_xlim(1/200,max(fe))
-	        ax5.text(0.96, 0.8, 'HHE', ha='center',bbox=dict(facecolor='w'),transform=ax5.transAxes)   
+	        ax5.text(0.96, 0.8, 'HHE', ha='center',bbox=dict(facecolor='w'),transform=ax5.transAxes)
 	        ax5.set_xlabel('Frequency (Hz)',fontsize=15)
 	        ax5.set_ylim(-180,-20)
 
@@ -619,14 +446,15 @@ for j in tqdm(daily_lst_spec):
 	        ax6 = figPSD_mean.add_subplot(3, 2, 6)
 	        ax6.semilogx(fe, log_psde[:,bad_windows], 'r', lw=0.5,alpha=0.5)
 	        ax6.set_xlim(1/100,max(fe))
-	        ax6.text(0.96, 0.8, 'HHE', ha='center',bbox=dict(facecolor='w'),transform=ax6.transAxes)   
+	        ax6.text(0.96, 0.8, 'HHE', ha='center',bbox=dict(facecolor='w'),transform=ax6.transAxes)
 	        ax6.set_xlabel('Frequency (Hz)',fontsize=15)
 	        ax6.set_ylim(-180,-20)
 
-	        figPSD_mean.suptitle('Station = '+spec_HHZ['name']+' - Day = '+UTCDateTime(year=year_spec,julday=julday_spec).strftime('%d/%m/%Y')+' - '+'good_wind='+str(len_good)+'/'+'bad_wind='+str(len_bad),fontsize=18)
-	        daily_PSD_output = TRANSFER_FUNC_OUTPUT+spec_HHZ['network']+'.'+spec_HHZ['name']+'/Daily_PSD_windows/'
+	        figPSD_mean.suptitle('Station = '+STATION+' - Day = '+UTCDateTime(year=year_spec,julday=julday_spec).strftime('%d/%m/%Y')+' - '+'good_wind='+str(len_good)+'/'+'bad_wind='+str(len_bad),fontsize=18)
+	        daily_PSD_output = TRANSFER_FUNC_OUTPUT+NETWORK+'.'+STATION+'/Daily_PSD_windows/'
 	        os.makedirs(daily_PSD_output,exist_ok=True)
 	        figPSD_mean.savefig(daily_PSD_output+'PSD_windows_good_bad_'+str(year_spec)+'_'+str(julday_spec)+'.png', dpi=300, facecolor='w', edgecolor='w')
+	        plt.close()
 
 	        #------------------------------------------------------------------------------
 
@@ -655,7 +483,7 @@ for j in tqdm(daily_lst_spec):
 	        #-----------------------------------------------------
 	        ax2.pcolormesh(tzh,freq_lst, dsl_HHN, cmap=cmap,shading='auto')
 	        ax2.text(0.96, 0.8, 'HHN', ha='center',bbox=dict(facecolor='w'),transform=ax2.transAxes)
-	        ax2.set_ylabel('Frequency (Hz)')    
+	        ax2.set_ylabel('Frequency (Hz)')
 	        ax2.xaxis.set_major_locator(MultipleLocator(4))
 	        ax2.yaxis.set_major_locator(MultipleLocator(0.05))
 	        #-----------------------------------------------------
@@ -669,14 +497,16 @@ for j in tqdm(daily_lst_spec):
 
 	        ax4.set_xlabel('Time (h)')
 	        ax4.xaxis.set_major_locator(MultipleLocator(4))
-	        ax4.set_ylim(0,1)    
-	        ax4.set_xlim(0,24)    
-	        ax4.set_yticks([])    
+	        ax4.set_ylim(0,1)
+	        ax4.set_xlim(0,24)
+	        ax4.set_yticks([])
 	        #-----------------------------------------------------
-	        daily_wind_output = TRANSFER_FUNC_OUTPUT+spec_HHZ['network']+'.'+spec_HHZ['name']+'/Daily_data_windows/'
+	        daily_wind_output = TRANSFER_FUNC_OUTPUT+NETWORK+'.'+STATION+'/Daily_data_windows/'
 	        os.makedirs(daily_wind_output,exist_ok=True)
-	        fig.suptitle('Station = '+spec_HHZ['name']+' - Day = '+UTCDateTime(year=year_spec,julday=julday_spec).strftime('%d/%m/%Y'),fontsize=18)
-	        fig.savefig(daily_wind_output+spec_HHZ['network']+'_'+spec_HHZ['name']+'_'+str(year_spec)+'_'+str(julday_spec)+'.png', dpi=300, facecolor='w', edgecolor='w')
+	        fig.suptitle('Station = '+STATION+' - Day = '+UTCDateTime(year=year_spec,julday=julday_spec).strftime('%d/%m/%Y'),fontsize=18)
+	        fig.savefig(daily_wind_output+NETWORK+'_'+STATION+'_'+str(year_spec)+'_'+str(julday_spec)+'.png', dpi=300, facecolor='w', edgecolor='w')
+	        plt.close()
+
         #----------------------------------------------------------------------------------------------------------------
 
         SELECTED_DAYS_dic = {
@@ -684,237 +514,49 @@ for j in tqdm(daily_lst_spec):
                             'PSDn': dsl_HHNs.tolist(),
                             'PSDz': dsl_HHZs.tolist(),
                             'f': freq_lst.tolist(),
-                            't': tzh
+                            't': tzh.tolist()
                             }
-        output_FOLDER_SPECTROGRAM = JSON_FILES+'SELECTED_SPECTROGRAM_WINDOWS_FILES/'+spec_HHZ['network']+'.'+spec_HHZ['name']+'/'
+        output_FOLDER_SPECTROGRAM = JSON_FILES+'SELECTED_SPECTROGRAM_WINDOWS_FILES/'+NETWORK+'.'+STATION+'/'
         os.makedirs(output_FOLDER_SPECTROGRAM,exist_ok=True)
         with open(output_FOLDER_SPECTROGRAM+'SELECTED_SPECTROGRAM_'+str(year_spec)+'_'+str(julday_spec)+'.json', 'w') as fp:
             json.dump(SELECTED_DAYS_dic, fp)
-            
+
     else:
-        first_filter_day.append(False)
+        first_filter_day = False
 
-FILTER_DAYS_dic = {
-					'daily_lst_spec':daily_lst_spec,
-					'daily_lst_data':daily_lst_data,
-					'first_filter_day': first_filter_day,
-					'good_windows_lst': good_windows_lst
-					}
+    return [good_windows.tolist(),first_filter_day]
 
-output_FOLDER_WINDOWS_FILTER_FILES = JSON_FILES+'SELECTED_SPECTROGRAM_WINDOWS_FILTER_FILES/'+spec_HHZ['network']+'.'+spec_HHZ['name']+'/'
-os.makedirs(output_FOLDER_WINDOWS_FILTER_FILES,exist_ok=True)
-with open(output_FOLDER_WINDOWS_FILTER_FILES+'FIRST_FILTER_SPECTROGRAM_WINDOWS.json', 'w') as fp:
-	json.dump(FILTER_DAYS_dic, fp)
+#--------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#-------------------------------------------------------------------------------
-print('\n')
-print('==============')
-print('Filtering days')
-print('==============')
-print('\n')
+def calculate_tilt_function(ASDF_FILES,GOOD_WINDOWS_LIST):
 
-output_FOLDER_WINDOWS_FILTER_FILES = JSON_FILES+'SELECTED_SPECTROGRAM_WINDOWS_FILTER_FILES/'+spec_HHZ['network']+'.'+spec_HHZ['name']+'/'
-FIRST_FILTER_WINDOWS = json.load(open(output_FOLDER_WINDOWS_FILTER_FILES+'FIRST_FILTER_SPECTROGRAM_WINDOWS.json'))
+    data_HHZ = [ASDFDataSet(k) for k in ASDF_FILES if 'HHZ' in k][0]
+    data_HHE = [ASDFDataSet(k) for k in ASDF_FILES if 'HHE' in k][0]
+    data_HHN = [ASDFDataSet(k) for k in ASDF_FILES if 'HHN' in k][0]
 
-second_daily_lst_spec = list(compress(FIRST_FILTER_WINDOWS['daily_lst_spec'], FIRST_FILTER_WINDOWS['first_filter_day']))
-second_daily_lst_data = list(compress(FIRST_FILTER_WINDOWS['daily_lst_data'], FIRST_FILTER_WINDOWS['first_filter_day']))
+    year_day = data_HHZ.waveforms[NETWORK+'.'+STATION]['preprocessed_recording'][0].stats.starttime.year
+    julday_day = data_HHZ.waveforms[NETWORK+'.'+STATION]['preprocessed_recording'][0].stats.starttime.julday
 
-second_good_windows_lst = list(compress(FIRST_FILTER_WINDOWS['good_windows_lst'], FIRST_FILTER_WINDOWS['first_filter_day']))
+    tr_HHZ = data_HHZ.waveforms[NETWORK+'.'+STATION]['preprocessed_recording'][0]
+    tr_HHN = data_HHN.waveforms[NETWORK+'.'+STATION]['preprocessed_recording'][0]
+    tr_HHE = data_HHE.waveforms[NETWORK+'.'+STATION]['preprocessed_recording'][0]
 
-output_FOLDER_SPECTROGRAM = JSON_FILES+'SELECTED_SPECTROGRAM_WINDOWS_FILES/'+NETWORK+'.'+STATION+'/'
-
-json_daily_files = sorted(glob.glob(output_FOLDER_SPECTROGRAM+'*'))
-
-PSDe = []
-PSDn = []
-PSDz = []
-f = []
-PSD_data_lst = []
-
-for j in tqdm(json_daily_files):
-    sta_dic = json.load(open(j))
-    STA_NAME = j.split('/')[-2]
-    PSD_julday = j.split('/')[-1].split('.')[0].split('_')[-2:][1]
-    PSD_year = j.split('/')[-1].split('.')[0].split('_')[-2:][0]
-    
-    t = np.array(sta_dic['t'])
-    f = np.array(sta_dic['f'])
-    
-    PSDe.append(np.mean(sta_dic['PSDe'],axis=1))
-    PSDn.append(np.mean(sta_dic['PSDn'],axis=1))
-    PSDz.append(np.mean(sta_dic['PSDz'],axis=1))
-
-PSDe = np.array(PSDe).T
-PSDn = np.array(PSDn).T
-PSDz = np.array(PSDz).T
-
-
-#-------------------------------------------------------------------------------
-
-good_days = np.repeat([True], len(json_daily_files))
-indwin = np.argwhere(good_days == True)
-moveon = False
-
-while moveon == False:
-        
-    normvar_HHZ = np.zeros(np.sum(good_days))
-    for ii, tmp in enumerate(indwin):
-        ind = np.copy(indwin)
-        ind = np.delete(ind, ii)
-        normvar_HHZ[ii] = norm(np.std(PSDz[:, ind], axis=1), ord=2)
-    ubernorm_HHZ = np.median(normvar_HHZ) - normvar_HHZ
-
-    normvar_HHN = np.zeros(np.sum(good_days))
-    for ii, tmp in enumerate(indwin):
-        ind = np.copy(indwin)
-        ind = np.delete(ind, ii)
-        normvar_HHN[ii] = norm(np.std(PSDn[:, ind], axis=1), ord=2)
-    ubernorm_HHN = np.median(normvar_HHN) - normvar_HHN
-
-    normvar_HHE = np.zeros(np.sum(good_days))
-    for ii, tmp in enumerate(indwin):
-        ind = np.copy(indwin)
-        ind = np.delete(ind, ii)
-        normvar_HHE[ii] = norm(np.std(PSDe[:, ind], axis=1), ord=2)
-    ubernorm_HHE = np.median(normvar_HHE) - normvar_HHE
-
-    norm_allchannels = ubernorm_HHZ+ubernorm_HHN+ubernorm_HHE
-
-    eliminated_days = norm_allchannels > TOL*np.std(norm_allchannels)
-        
-    if np.sum(eliminated_days) == 0:
-        moveon = True
-                
-    trypenalty = eliminated_days[np.argwhere(eliminated_days == False)].T[0]
-
-    if ftest(eliminated_days, 1, trypenalty, 1) < ALPHA:
-        good_days[indwin[eliminated_days == True]] = False
-        indwin = np.argwhere(good_days == True)
-        moveon = False
-    else:
-        moveon = True
-
-bad_days = np.array([False if i == True else True for i in good_days])
-    
-len_good_days = int(sum(good_days))
-len_bad_days = int(sum(bad_days))
-
-#-------------------------------------------------------------------------------
-if VERBOSE_MODE: 
-	figPSD_days = plt.figure(figsize=(15,10))
-	ax1 = figPSD_days.add_subplot(3, 2, 1)
-	if len_good_days > 0:
-	    ax1.semilogx(f, PSDz[:,good_days], 'k', lw=0.5,alpha=0.8)
-	ax1.text(0.96, 0.8, 'HHZ', ha='center',bbox=dict(facecolor='w'),transform=ax1.transAxes)   
-	ax1.set_xlim(1/200,max(f))
-
-	ax2 = figPSD_days.add_subplot(3, 2, 2)
-	if len_bad_days > 0:
-	    ax2.semilogx(f, PSDz[:,bad_days], 'r', lw=0.5,alpha=0.5)
-	ax2.text(0.96, 0.8, 'HHZ', ha='center',bbox=dict(facecolor='w'),transform=ax2.transAxes)   
-	ax2.set_xlim(1/200,max(f))
-	        
-	ax3 = figPSD_days.add_subplot(3, 2, 3)
-	if len_good_days > 0:
-	    ax3.semilogx(f, PSDn[:,good_days], 'k', lw=0.5,alpha=0.5)
-	ax3.text(0.96, 0.8, 'HHN', ha='center',bbox=dict(facecolor='w'),transform=ax3.transAxes)   
-	ax3.set_xlim(1/200,max(f))
-
-	ax4 = figPSD_days.add_subplot(3, 2, 4)
-	if len_bad_days > 0:
-	    ax4.semilogx(f, PSDn[:,bad_days], 'r', lw=0.5,alpha=0.5)
-	ax4.text(0.96, 0.8, 'HHN', ha='center',bbox=dict(facecolor='w'),transform=ax4.transAxes)   
-	ax4.set_xlim(1/200,max(f))
-	        
-	ax5 = figPSD_days.add_subplot(3, 2, 5)
-	if len_good_days > 0:
-	    ax5.semilogx(f, PSDe[:,good_days], 'k', lw=0.5,alpha=0.5)
-	ax5.set_xlim(1/200,max(f))
-	ax5.text(0.96, 0.8, 'HHE', ha='center',bbox=dict(facecolor='w'),transform=ax5.transAxes)   
-	ax5.set_xlabel('Frequency (Hz)',fontsize=15)
-
-
-	ax6 = figPSD_days.add_subplot(3, 2, 6)
-	if len_bad_days > 0:
-	    ax6.semilogx(f, PSDe[:,bad_days], 'r', lw=0.5,alpha=0.5)
-	ax6.set_xlim(1/100,max(f))
-	ax6.text(0.96, 0.8, 'HHE', ha='center',bbox=dict(facecolor='w'),transform=ax6.transAxes)   
-	ax6.set_xlabel('Frequency (Hz)',fontsize=15)
-
-	figPSD_days.suptitle('Station = '+STA_NAME+' - good_days='+str(len_good_days)+'/'+'bad_days='+str(len_bad_days),fontsize=18)
-	daily_PSD_output = TRANSFER_FUNC_OUTPUT+NETWORK+'.'+STATION+'/Daily_PSD_windows/'
-	os.makedirs(daily_PSD_output,exist_ok=True)
-	figPSD_days.savefig(daily_PSD_output+'PSD_days_good_bad_'+str(year_spec)+'_'+str(julday_spec)+'.png', dpi=300, facecolor='w', edgecolor='w')
-
-#-------------------------------------------------------------------------------
-print('\n')
-print('====================')
-print('Calculating the tilt')
-print('====================')
-print('\n')
-
-last_daily_lst_spec = list(compress(second_daily_lst_spec, good_days.tolist()))
-last_daily_lst_data = list(compress(second_daily_lst_data, good_days.tolist()))
-
-last_good_windows_lst = list(compress(second_good_windows_lst, good_days.tolist()))
-
-tilt_max_coh_lst = []
-max_coh_lst = []
-phase_max_coh_lst = []
-day_time_tilt = []
-
-tilt_lst = []
-tf_ZH1_lst = [] 
-tf_ZH2_lst = [] 
-for i,j in enumerate(tqdm(last_daily_lst_data)):
-    
-    data_HHZ = json.load(open([k for k in j if 'HHZ' in k][0]))
-    data_HHE = json.load(open([k for k in j if 'HHE' in k][0]))
-    data_HHN = json.load(open([k for k in j if 'HHN' in k][0]))
-
-    year_day = data_HHZ["time_day"].split('.')[0]
-    julday_day = data_HHZ["time_day"].split('.')[1]
-
-    tr_HHZ = Trace()
-    tr_HHZ.data = np.array(data_HHZ['data_day'])
-    tr_HHZ.stats.starttime = UTCDateTime(year=int(year_day),julday=int(julday_day))
-    tr_HHZ.stats.sampling_rate = NEW_SAMPLING_RATE
-    tr_HHZ.stats.channel = 'HHZ'
-    tr_HHZ.stats.station = data_HHZ['name']
-    tr_HHZ.stats.network = data_HHZ['network']
-
-    tr_HHN = Trace()
-    tr_HHN.data = np.array(data_HHN['data_day'])
-    tr_HHN.stats.starttime = UTCDateTime(year=int(year_day),julday=int(julday_day))
-    tr_HHN.stats.sampling_rate = NEW_SAMPLING_RATE
-    tr_HHN.stats.channel = 'HHN'
-    tr_HHN.stats.station = data_HHZ['name']
-    tr_HHN.stats.network = data_HHZ['network']
-    
-    tr_HHE = Trace()
-    tr_HHE.data = np.array(data_HHE['data_day'])
-    tr_HHE.stats.starttime = UTCDateTime(year=int(year_day),julday=int(julday_day))
-    tr_HHE.stats.sampling_rate = NEW_SAMPLING_RATE
-    tr_HHE.stats.channel = 'HHN'
-    tr_HHE.stats.station = data_HHZ['name']
-    tr_HHE.stats.network = data_HHZ['network']
-    
-    slide_HHZ = np.array([k.data for k in tr_HHZ.slide(window_length=WINDOW_LENGTH, step=WINDOW_LENGTH)])[last_good_windows_lst[i]]
-    slide_HHE = np.array([k.data for k in tr_HHN.slide(window_length=WINDOW_LENGTH, step=WINDOW_LENGTH)])[last_good_windows_lst[i]]
-    slide_HHN = np.array([k.data for k in tr_HHE.slide(window_length=WINDOW_LENGTH, step=WINDOW_LENGTH)])[last_good_windows_lst[i]]
+    slide_HHZ = np.array([k.data for k in tr_HHZ.slide(window_length=WINDOW_LENGTH, step=WINDOW_LENGTH)],dtype=object)[GOOD_WINDOWS_LIST]
+    slide_HHE = np.array([k.data for k in tr_HHN.slide(window_length=WINDOW_LENGTH, step=WINDOW_LENGTH)],dtype=object)[GOOD_WINDOWS_LIST]
+    slide_HHN = np.array([k.data for k in tr_HHE.slide(window_length=WINDOW_LENGTH, step=WINDOW_LENGTH)],dtype=object)[GOOD_WINDOWS_LIST]
 
     #-------------------------------------------------------------------------------------------------------------
     n2 = prev_pow_2(int(WINDOW_LENGTH*NEW_SAMPLING_RATE))
     f_FFT = NEW_SAMPLING_RATE/2. * np.linspace(0., 1., int(n2/2) + 1)
-    
+
     FFT_ZN = []
     FFT_ZE = []
     FFT_NE = []
-    
+
     FFT_ZZ = []
     FFT_NN = []
     FFT_EE = []
-    
+
     cFFT_ZN = []
     cFFT_ZE = []
     cFFT_NE = []
@@ -922,7 +564,7 @@ for i,j in enumerate(tqdm(last_daily_lst_data)):
     qFFT_ZN = []
     qFFT_ZE = []
     qFFT_NE = []
-    
+
     Z_lst = []
     N_lst = []
     E_lst = []
@@ -930,11 +572,11 @@ for i,j in enumerate(tqdm(last_daily_lst_data)):
         ftZ = fft(slide_HHZ[c][0:len(f_FFT)], n=None, axis=-1, norm=None)
         ftN = fft(slide_HHE[c][0:len(f_FFT)], n=None, axis=-1, norm=None)
         ftE = fft(slide_HHN[c][0:len(f_FFT)], n=None, axis=-1, norm=None)
-        
+
         Z = ftZ
         N = ftN
         E = ftE
-        
+
         Z_lst.append(ftZ)
         N_lst.append(ftN)
         E_lst.append(ftE)
@@ -953,35 +595,35 @@ for i,j in enumerate(tqdm(last_daily_lst_data)):
         qFFT_ZN.append(Z.real*N.imag+Z.imag*N.real)
         qFFT_ZE.append(Z.real*E.imag+Z.imag*E.real)
         qFFT_NE.append(N.real*E.imag+N.imag*E.real)
-        
+
     G_ZN = smooth(np.abs(np.mean(FFT_ZN,axis=0)),40)
     G_ZE = smooth(np.abs(np.mean(FFT_ZE,axis=0)),40)
     G_NE = smooth(np.abs(np.mean(FFT_NE,axis=0)),40)
-    
+
     G_ZZ = smooth(np.abs(np.mean(FFT_ZZ,axis=0)),40)
     G_NN = smooth(np.abs(np.mean(FFT_NN,axis=0)),40)
     G_EE = smooth(np.abs(np.mean(FFT_EE,axis=0)),40)
-    
+
     C_ZN = smooth(np.abs(np.mean(cFFT_ZN,axis=0)),40)
     C_ZE = smooth(np.abs(np.mean(cFFT_ZE,axis=0)),40)
     C_NE = smooth(np.abs(np.mean(cFFT_NE,axis=0)),40)
-    
+
     Q_ZN = smooth(np.abs(np.mean(qFFT_ZN,axis=0)),40)
     Q_ZE = smooth(np.abs(np.mean(qFFT_ZE,axis=0)),40)
     Q_NE = smooth(np.abs(np.mean(qFFT_NE,axis=0)),40)
 
     #---------------------------------------------
-    
+
     wind_number = len(slide_HHZ)
 
     A_ZN,Error_A_ZN = Admittance_xy(G_ZN,G_ZZ,G_NN,wind_number)
-    
+
     A_ZE,Error_A_ZE = Admittance_xy(G_ZE,G_ZZ,G_EE,wind_number)
 
     A_NE,Error_A_NE = Admittance_xy(G_NE, G_NN,G_EE,wind_number)
-    
-    #---------------------------------------------   
-    
+
+    #---------------------------------------------
+
     Gama2_ZN,Error_Gama2_ZN = Coherence_xy(G_ZN,G_ZZ,G_NN,wind_number)
 
     Gama2_ZE,Error_Gama2_ZE = Coherence_xy(G_ZE,G_ZZ,G_EE,wind_number)
@@ -993,9 +635,9 @@ for i,j in enumerate(tqdm(last_daily_lst_data)):
     phase_ZN,Error_phase_ZN = Phase_xy(Q_ZN,C_ZN,G_ZN,G_ZZ,G_NN,wind_number)
 
     phase_ZE,Error_phase_ZE = Phase_xy(Q_ZE,C_ZE,G_ZE,G_ZZ,G_EE,wind_number)
-    
+
     phase_NE,Error_phase_NE = Phase_xy(Q_NE,C_NE,G_NE,G_NN,G_EE,wind_number)
-    
+
     #---------------------------------------------
     if VERBOSE_MODE:
         figA = plt.figure(figsize=(15,15))
@@ -1018,7 +660,7 @@ for i,j in enumerate(tqdm(last_daily_lst_data)):
         ax2.set_ylim(-0.4,0.4)
         ax2.set_title('Phase',fontsize=15)
         ax2.set_xlim(1/200,1/10)
-	        
+
 	    #----------------------------------------------------------------------------------------------------
         ax3 = figA.add_subplot(3, 3, 4)
         ax3.semilogx(f_FFT,np.log(A_ZE), 'ok',ms=3,alpha=0.5)
@@ -1050,7 +692,7 @@ for i,j in enumerate(tqdm(last_daily_lst_data)):
         ax7.semilogx(f_FFT,Gama2_NE, 'ok',ms=3,alpha=0.5)
         ax7.set_xlabel('Frequency (Hz)',fontsize=14)
         ax7.set_xlim(1/200,1/10)
-        
+
         ax8 = figA.add_subplot(3, 3, 9)
         ax8.semilogx(f_FFT,phase_NE, 'ok',ms=3,alpha=0.5)
         ax8.errorbar(f_FFT,phase_NE, yerr=Error_phase_NE, ecolor='k',fmt='none',elinewidth=0.5,capsize=2)
@@ -1059,17 +701,17 @@ for i,j in enumerate(tqdm(last_daily_lst_data)):
         ax8.set_xlim(1/200,1/10)
 
 	    #-----------------------------------------------------------------------------------------------------
-	    
+
         figA.suptitle('Station = '+STATION+' - Day = '+UTCDateTime(year=int(year_day),julday=int(julday_day)).strftime('%d/%m/%Y'),fontsize=18)
         daily_A_output = TRANSFER_FUNC_OUTPUT+NETWORK+'.'+STATION+'/Daily_Admittance_Coherence_Phase/'
         os.makedirs(daily_A_output,exist_ok=True)
-        figA.savefig(daily_A_output+'Admittance.Coherence.Phase.'+data_HHZ["time_day"]+'.png', dpi=300, facecolor='w', edgecolor='w')
+        figA.savefig(daily_A_output+'Admittance_Coherence_Phase_'+str(year_day)+'_'+str(julday_day)+'.png', dpi=300, facecolor='w', edgecolor='w')
         plt.close()
 
     #-----------------------------------------------------------------------------------------------------
-    
+
     #Calculating TILT
-    
+
     direc = np.arange(0., 360., 10.)
     coh = np.zeros(len(direc))
     ph = np.zeros(len(direc))
@@ -1083,7 +725,7 @@ for i,j in enumerate(tqdm(last_daily_lst_data)):
         # Get transfer functions
         cHH = np.abs(np.mean(ftH*np.conj(ftH), axis=0))
         cHZ = np.mean(np.conj(ftH)*np.array(Z_lst), axis=0)
-            
+
         Co = (np.abs(cHZ)**2)/(cZZ*cHH)
         Ph = 180/np.pi*np.arctan2(cHZ.imag,cHZ.real)
 
@@ -1115,7 +757,7 @@ for i,j in enumerate(tqdm(last_daily_lst_data)):
 
         Co = (np.abs(cHZ)**2)/(cZZ*cHH)
         Ph = 180/np.pi*np.arctan2(cHZ.imag,cHZ.real)
-        
+
         # Calculate coherence over frequency band
         rcoh[i] = np.mean(Co[(f_FFT > tiltfreq[0]) & (f_FFT < tiltfreq[1])])
         rph[i] = np.pi/2. - np.mean(Ph[(f_FFT > tiltfreq[0]) & (f_FFT < tiltfreq[1])])
@@ -1133,39 +775,21 @@ for i,j in enumerate(tqdm(last_daily_lst_data)):
         tilt += 180.
     if tilt > 360.:
         tilt -= 360.
-   
-    tilt_max_coh_lst.append(tilt)
-    day_time_tilt.append([int(year_day),int(julday_day)])
-    max_coh_lst.append(coh_value)
-    phase_max_coh_lst.append(phase_value)
 
     # Now calculate spectra at tilt direction
     ftH1 = rotate_dir(np.array(N_lst), np.array(E_lst), tilt)
-    ftH2 = rotate_dir(np.array(E_lst), np.array(N_lst), tilt)
 
     # Get transfer functions
     cHH1 = np.abs(np.mean(np.conj(ftH1)*ftH1, axis=0))
-    cHH2 = np.abs(np.mean(np.conj(ftH2)*ftH2, axis=0))
 
     cHZ1 = np.mean(np.conj(ftH1)*np.array(Z_lst), axis=0)
-    cHZ2 = np.mean(np.conj(ftH2)*np.array(Z_lst), axis=0)
-    
+
     tf_ZH1 = np.conj(cHZ1)/cHH1
-    tf_ZH2 = np.conj(cHZ2)/cHH2
 
-    tf_ZH1_lst.append(tf_ZH1)
-    tf_ZH2_lst.append(tf_ZH2)
-
-    tilt_lst.append(tilt) 
-  
     #-----------------------------------------------------------------------------------------------------
-    if VERBOSE_MODE: 
-	    print('Tilf of Maximum coherence = ', tilt)
-	    print('Maximum coherence = ', coh_value)
-	    print('Phase of Maximum coherence = ', phase_value)
-
+    if VERBOSE_MODE:
 	    colors = plt.cm.cividis(np.linspace(0, 1, coh.shape[0]))
-	    
+
 	    figureTILT, (ax1, ax2) = plt.subplots(1, 2,figsize=(10,5))
 	    for i, (co, p) in enumerate(zip(coh, ph)):
 	        ax1.plot(direc[i], co, 'ok')
@@ -1178,19 +802,366 @@ for i,j in enumerate(tqdm(last_daily_lst_data)):
 	    ax1.set_title('Maximum coherence = '+str(coh_value))
 	    ax2.set_title('Tilt = '+str(tilt))
 	    figureTILT.suptitle('Station = '+STATION+' - Day = '+UTCDateTime(year=int(year_day),julday=int(julday_day)).strftime('%d/%m/%Y'),fontsize=18)
-	    figureTILT.savefig(daily_A_output+'Tilt.Coherence.'+data_HHZ["time_day"]+'.png', dpi=300, facecolor='w', edgecolor='w')
-	   
+	    figureTILT.savefig(daily_A_output+'Tilt_Coherence_'+str(year_day)+'_'+str(julday_day)+'.png', dpi=300, facecolor='w', edgecolor='w')
+	    plt.close()
+
+    #-------------------------------------------------------------------------------
+
+    return [tilt,[int(year_day),int(julday_day)],coh_value,phase_value,tf_ZH1]
+
+    #-------------------------------------------------------------------------------
+
+# =======
+# Classes
+# =======
+
+def get_stations_data(f):
+    """
+    Gets stations daily data from miniseed file and convert in ASDF
+
+    @type f: paht of the minissed file (str)
+    @rtype: list of L{StationDayData}
+    """
+
+    # splitting subdir/basename
+    subdir, filename = os.path.split(f)
+
+    # network, station name and station channel in basename,
+    # e.g., ON.TIJ01..HHZ.D.2020.002
+
+    network, name = filename.split('.')[0:2]
+    sta_channel_id = filename.split('.D.')[0]
+    channel = sta_channel_id.split('..')[-1]
+    time_day = filename.split('.D.')[-1]
+    year_day = time_day.split('.')[0]
+    julday_day = time_day.split('.')[1]
+
+    st = read(f)
+    inv = read_inventory(STATIONXML_DIR+'.'.join([network,name,'xml']))
+
+    pre_filt = [0.001, 0.005, 45., 50.]
+    st[0].remove_response(inventory=inv,pre_filt=pre_filt,output="DISP",water_level=60)
+
+    st.detrend('demean')
+    st.detrend('linear')
+    st.taper(max_percentage=0.05, type="hann")
+
+    #------------------------------------------------------------------
+	# Points in window
+    ws = int(WINDOW_LENGTH/st[0].stats.delta)
+
+    # Number of points to overlap
+    ss = int(WINDOW_LENGTH/st[0].stats.delta)
+
+    # hanning window
+    wind = np.ones(ws)
+
+    # Calculating the spectrogram
+    spec = spectrogram(x=st[0].data,fs=st[0].stats.sampling_rate, window=wind, nperseg=ws, noverlap=0)
+    f, t, psd = spec
+
+    #-----------------------------------------------------------------
+    #Creating ASDF preprocessed files folder
+    output_DATA_DAY = ASDF_FILES+'DATA_DAY_FILES/'+NETWORK+'.'+STATION+'/'
+    os.makedirs(output_DATA_DAY,exist_ok=True)
+
+    ds = ASDFDataSet(output_DATA_DAY+'DATA_DAY_'+NETWORK+'_'+STATION+'_'+channel+'_'+year_day+'_'+julday_day+".h5", compression="gzip-3")
+    ds.add_waveforms(st, tag="preprocessed_recording")
+    ds.add_stationxml(STATIONXML_DIR+'.'.join([NETWORK,STATION,'xml']))
+
+    #-----------------------------------------------------------------
+    # The type always should be camel case.
+    data_type_f = "Frequencies"
+    # Name to identify the particular piece of data.
+    path_f = sta_channel_id+'.f'
+    # Any additional parameters as a Python dictionary which will end up as attributes of the array.
+    parameters_f = {'f':'Array of sample frequencies.',
+        		  'sampling_rate_in_hz': st[0].stats.sampling_rate,
+        		  'station_id': sta_channel_id}
+
+    ds.add_auxiliary_data(data=f, data_type=data_type_f, path=path_f, parameters=parameters_f)
+
+    # The type always should be camel case.
+    data_type_t = "Times"
+    # Name to identify the particular piece of data.
+    path_t = sta_channel_id+'.t'
+    # Any additional parameters as a Python dictionary which will end up as attributes of the array.
+    parameters_t = {'t':'Array of segment times.',
+        		  'sampling_rate_in_hz': st[0].stats.sampling_rate,
+        		  'station_id': sta_channel_id}
+
+
+    ds.add_auxiliary_data(data=t, data_type=data_type_t, path=path_t, parameters=parameters_t)
+
+    # The type always should be camel case.
+    data_type_s = "Spectrogram"
+    # Name to identify the particular piece of data.
+    path_s = sta_channel_id+'.S'
+    # Any additional parameters as a Python dictionary which will end up as attributes of the array.
+    parameters_s = {'S':'Spectrogram of x. By default, the last axis of S corresponds to the segment times.',
+        		  'sampling_rate_in_hz': st[0].stats.sampling_rate,
+        		  'station_id': sta_channel_id}
+
+    ds.add_auxiliary_data(data=psd, data_type=data_type_s, path=path_s, parameters=parameters_s)
+
+    #-------------------------------------------------------------------------------
+
+# ============
+# Main program
+# ============
+
+print('===============================')
+print('Scanning name of miniseed files')
+print('===============================')
+print('\n')
+
+# initializing list of stations by scanning name of miniseed files
+files = filelist(basedir=MSEED_DIR+NETWORK+'/'+STATION+'/',interval_period_date=INTERVAL_PERIOD_DATE)
+
+print('Total of miniseed files = '+str(len(files)))
+print('\n')
+'''
+print('============================================================')
+print('Opening miniseed files, preprocessing and converting to ASDF')
+print('============================================================')
+print('\n')
+
+start_time = time.time()
+
+with Pool(processes=num_processes) as p:
+	max_ = len(files)
+	with tqdm(total=max_) as pbar:
+		for i, _ in enumerate(p.imap_unordered(get_stations_data, files)):
+			pbar.update()
+
+print("--- %.2f execution time (min) ---" % ((time.time() - start_time)/60))
+print('\n')
+'''
+print('=======================')
+print('Filtering daily windows')
+print('=======================')
+print('\n')
+
+daily_lst_data = [[]]*len(INTERVAL_PERIOD_DATE)
+
+DATA_DAY_FILES = sorted(glob.glob(ASDF_FILES+'DATA_DAY_FILES/'+NETWORK+'.'+STATION+'/*.h5'))
+DATA_DAYs = [i.split('.h5')[0].split('_')[-2]+'.'+i.split('.h5')[0].split('_')[-1] for i in DATA_DAY_FILES]
+
+for l,k in enumerate(INTERVAL_PERIOD_DATE):
+	daily_lst_data[l] = [j for i,j in enumerate(DATA_DAY_FILES) if DATA_DAYs[i] == k]
+'''
+#----------------------------------------------------------------------------------------------------------
+
+first_filter_day = []
+good_windows_lst = []
+
+start_time = time.time()
+
+with Pool(processes=int(num_processes/2)) as p:
+    max_ = len(daily_lst_data)
+    with tqdm(total=max_) as pbar:
+        for i,j in enumerate(p.imap_unordered(daily_process_function, daily_lst_data)):
+            good_windows_lst.append(j[0])
+            first_filter_day.append(j[1])
+            pbar.update()
+
+print("--- %.2f execution time (min) ---" % ((time.time() - start_time)/60))
+print('\n')
+
 #-------------------------------------------------------------------------------
+
+FILTER_DAYS_dic = {
+					'daily_lst_data':daily_lst_data,
+					'first_filter_day': first_filter_day,
+					'good_windows_lst': good_windows_lst
+					}
+
+output_FOLDER_WINDOWS_FILTER_FILES = JSON_FILES+'SELECTED_SPECTROGRAM_WINDOWS_FILTER_FILES/'+NETWORK+'.'+STATION+'/'
+os.makedirs(output_FOLDER_WINDOWS_FILTER_FILES,exist_ok=True)
+with open(output_FOLDER_WINDOWS_FILTER_FILES+'FIRST_FILTER_SPECTROGRAM_WINDOWS.json', 'w') as fp:
+	json.dump(FILTER_DAYS_dic, fp)
+#-------------------------------------------------------------------------------
+'''
+print('\n')
+print('==============')
+print('Filtering days')
+print('==============')
+print('\n')
+
+output_FOLDER_WINDOWS_FILTER_FILES = JSON_FILES+'SELECTED_SPECTROGRAM_WINDOWS_FILTER_FILES/'+NETWORK+'.'+STATION+'/'
+FIRST_FILTER_WINDOWS = json.load(open(output_FOLDER_WINDOWS_FILTER_FILES+'FIRST_FILTER_SPECTROGRAM_WINDOWS.json'))
+
+second_daily_lst_data = list(compress(FIRST_FILTER_WINDOWS['daily_lst_data'], FIRST_FILTER_WINDOWS['first_filter_day']))
+second_good_windows_lst = list(compress(FIRST_FILTER_WINDOWS['good_windows_lst'], FIRST_FILTER_WINDOWS['first_filter_day']))
+
+output_FOLDER_SPECTROGRAM = JSON_FILES+'SELECTED_SPECTROGRAM_WINDOWS_FILES/'+NETWORK+'.'+STATION+'/'
+
+json_daily_files = sorted(glob.glob(output_FOLDER_SPECTROGRAM+'*'))
+
+PSDe = []
+PSDn = []
+PSDz = []
+f = []
+PSD_data_lst = []
+
+for j in tqdm(json_daily_files):
+    sta_dic = json.load(open(j))
+    STA_NAME = j.split('/')[-2]
+    PSD_julday = j.split('/')[-1].split('.')[0].split('_')[-2:][1]
+    PSD_year = j.split('/')[-1].split('.')[0].split('_')[-2:][0]
+
+    t = np.array(sta_dic['t'])
+    f = np.array(sta_dic['f'])
+
+    PSDe.append(np.mean(sta_dic['PSDe'],axis=1))
+    PSDn.append(np.mean(sta_dic['PSDn'],axis=1))
+    PSDz.append(np.mean(sta_dic['PSDz'],axis=1))
+
+PSDe = np.array(PSDe).T
+PSDn = np.array(PSDn).T
+PSDz = np.array(PSDz).T
+
+
+#-------------------------------------------------------------------------------
+
+good_days = np.repeat([True], len(json_daily_files))
+indwin = np.argwhere(good_days == True)
+moveon = False
+
+while moveon == False:
+
+    normvar_HHZ = np.zeros(np.sum(good_days))
+    for ii, tmp in enumerate(indwin):
+        ind = np.copy(indwin)
+        ind = np.delete(ind, ii)
+        normvar_HHZ[ii] = norm(np.std(PSDz[:, ind], axis=1), ord=2)
+    ubernorm_HHZ = np.median(normvar_HHZ) - normvar_HHZ
+
+    normvar_HHN = np.zeros(np.sum(good_days))
+    for ii, tmp in enumerate(indwin):
+        ind = np.copy(indwin)
+        ind = np.delete(ind, ii)
+        normvar_HHN[ii] = norm(np.std(PSDn[:, ind], axis=1), ord=2)
+    ubernorm_HHN = np.median(normvar_HHN) - normvar_HHN
+
+    normvar_HHE = np.zeros(np.sum(good_days))
+    for ii, tmp in enumerate(indwin):
+        ind = np.copy(indwin)
+        ind = np.delete(ind, ii)
+        normvar_HHE[ii] = norm(np.std(PSDe[:, ind], axis=1), ord=2)
+    ubernorm_HHE = np.median(normvar_HHE) - normvar_HHE
+
+    norm_allchannels = ubernorm_HHZ+ubernorm_HHN+ubernorm_HHE
+
+    eliminated_days = norm_allchannels > TOL*np.std(norm_allchannels)
+
+    if np.sum(eliminated_days) == 0:
+        moveon = True
+
+    trypenalty = eliminated_days[np.argwhere(eliminated_days == False)].T[0]
+
+    if ftest(eliminated_days, 1, trypenalty, 1) < ALPHA:
+        good_days[indwin[eliminated_days == True]] = False
+        indwin = np.argwhere(good_days == True)
+        moveon = False
+    else:
+        moveon = True
+
+bad_days = np.array([False if i == True else True for i in good_days])
+
+len_good_days = int(sum(good_days))
+len_bad_days = int(sum(bad_days))
+
+#-------------------------------------------------------------------------------
+if VERBOSE_MODE:
+	figPSD_days = plt.figure(figsize=(15,10))
+	ax1 = figPSD_days.add_subplot(3, 2, 1)
+	if len_good_days > 0:
+	    ax1.semilogx(f, PSDz[:,good_days], 'k', lw=0.5,alpha=0.8)
+	ax1.text(0.96, 0.8, 'HHZ', ha='center',bbox=dict(facecolor='w'),transform=ax1.transAxes)
+	ax1.set_xlim(1/200,max(f))
+
+	ax2 = figPSD_days.add_subplot(3, 2, 2)
+	if len_bad_days > 0:
+	    ax2.semilogx(f, PSDz[:,bad_days], 'r', lw=0.5,alpha=0.5)
+	ax2.text(0.96, 0.8, 'HHZ', ha='center',bbox=dict(facecolor='w'),transform=ax2.transAxes)
+	ax2.set_xlim(1/200,max(f))
+
+	ax3 = figPSD_days.add_subplot(3, 2, 3)
+	if len_good_days > 0:
+	    ax3.semilogx(f, PSDn[:,good_days], 'k', lw=0.5,alpha=0.5)
+	ax3.text(0.96, 0.8, 'HHN', ha='center',bbox=dict(facecolor='w'),transform=ax3.transAxes)
+	ax3.set_xlim(1/200,max(f))
+
+	ax4 = figPSD_days.add_subplot(3, 2, 4)
+	if len_bad_days > 0:
+	    ax4.semilogx(f, PSDn[:,bad_days], 'r', lw=0.5,alpha=0.5)
+	ax4.text(0.96, 0.8, 'HHN', ha='center',bbox=dict(facecolor='w'),transform=ax4.transAxes)
+	ax4.set_xlim(1/200,max(f))
+
+	ax5 = figPSD_days.add_subplot(3, 2, 5)
+	if len_good_days > 0:
+	    ax5.semilogx(f, PSDe[:,good_days], 'k', lw=0.5,alpha=0.5)
+	ax5.set_xlim(1/200,max(f))
+	ax5.text(0.96, 0.8, 'HHE', ha='center',bbox=dict(facecolor='w'),transform=ax5.transAxes)
+	ax5.set_xlabel('Frequency (Hz)',fontsize=15)
+
+
+	ax6 = figPSD_days.add_subplot(3, 2, 6)
+	if len_bad_days > 0:
+	    ax6.semilogx(f, PSDe[:,bad_days], 'r', lw=0.5,alpha=0.5)
+	ax6.set_xlim(1/100,max(f))
+	ax6.text(0.96, 0.8, 'HHE', ha='center',bbox=dict(facecolor='w'),transform=ax6.transAxes)
+	ax6.set_xlabel('Frequency (Hz)',fontsize=15)
+
+	figPSD_days.suptitle('Station = '+STA_NAME+' - good_days='+str(len_good_days)+'/'+'bad_days='+str(len_bad_days),fontsize=18)
+	daily_PSD_output = TRANSFER_FUNC_OUTPUT+NETWORK+'.'+STATION+'/Daily_PSD_windows/'
+	os.makedirs(daily_PSD_output,exist_ok=True)
+	figPSD_days.savefig(daily_PSD_output+'PSD_days_good_bad'+'.png', dpi=300, facecolor='w', edgecolor='w')
+	plt.close()
+
+#-------------------------------------------------------------------------------
+print('\n')
+print('====================')
+print('Calculating the tilt')
+print('====================')
+print('\n')
+
+last_daily_lst_data = list(compress(second_daily_lst_data, good_days.tolist()))
+last_good_windows_lst = list(compress(second_good_windows_lst, good_days.tolist()))
+
+tilt_lst = []
+day_time_tilt = []
+coh_lst = []
+phase_lst = []
+tf_ZH1_lst = []
+
+#-------------------------
+start_time = time.time()
+with Pool(processes=num_processes) as p:
+    max_ = len(last_daily_lst_data)
+    with tqdm(total=max_) as pbar:
+        for i,j in enumerate(p.starmap(calculate_tilt_function,  zip(last_daily_lst_data,last_good_windows_lst))):
+            tilt_lst.append(j[0])
+            day_time_tilt.append(j[1])
+            coh_lst.append(j[2])
+            phase_lst.append(j[3])
+            tf_ZH1_lst.append(j[4])
+            pbar.update()
+print("--- %.2f execution time (min) ---" % ((time.time() - start_time)/60))
+print('\n')
+
+#----------------------------------------------------------------------------------------------------------------------------------------------------
 if VERBOSE_MODE:
     daily_data = [mdates.num2date(UTCDateTime(year=i[0],julday=i[1]).matplotlib_date) for i in day_time_tilt]
 
     figureTILTfinal, (ax1, ax2) = plt.subplots(2, 1,sharex=True,figsize=(10,5))
-    ax1.plot(daily_data, max_coh_lst, 'ok')
+    ax1.plot(daily_data, coh_lst, 'ok')
     ax1.set_ylabel('Coherence')
     ax1.set_ylim(0, 1)
     ax1.set_xlim(mdates.num2date(INTERVAL_PERIOD[0].matplotlib_date),mdates.num2date(INTERVAL_PERIOD[1].matplotlib_date))
-    
-    ax2.plot(daily_data, tilt_max_coh_lst, 'ok')
+
+    ax2.plot(daily_data, tilt_lst, 'ok')
     ax2.set_ylabel('Tilt')
     ax2.set_xlabel('Day')
     ax2.set_ylim(0, 360)
@@ -1216,38 +1187,18 @@ print('\n')
 # Method to apply transfer functions between multiple components to produce corrected/cleaned vertical components.
 
 for i,j in enumerate(tqdm(daily_lst_data)):
-    
-    data_HHZ = json.load(open([k for k in j if 'HHZ' in k][0]))
-    data_HHE = json.load(open([k for k in j if 'HHE' in k][0]))
-    data_HHN = json.load(open([k for k in j if 'HHN' in k][0]))
 
-    year_day = data_HHZ["time_day"].split('.')[0]
-    julday_day = data_HHZ["time_day"].split('.')[1]
+    data_HHZ = [ASDFDataSet(k) for k in j if 'HHZ' in k][0]
+    data_HHE = [ASDFDataSet(k) for k in j if 'HHE' in k][0]
+    data_HHN = [ASDFDataSet(k) for k in j if 'HHN' in k][0]
 
-    tr_HHZ = Trace()
-    tr_HHZ.data = np.array(data_HHZ['data_day'])
-    tr_HHZ.stats.starttime = UTCDateTime(year=int(year_day),julday=int(julday_day))
-    tr_HHZ.stats.sampling_rate = NEW_SAMPLING_RATE
-    tr_HHZ.stats.channel = 'HHZ'
-    tr_HHZ.stats.station = data_HHZ['name']
-    tr_HHZ.stats.network = data_HHZ['network']
+    year_day = data_HHZ.waveforms[NETWORK+'.'+STATION]['preprocessed_recording'][0].stats.starttime.year
+    julday_day = data_HHZ.waveforms[NETWORK+'.'+STATION]['preprocessed_recording'][0].stats.starttime.julday
 
-    tr_HHN = Trace()
-    tr_HHN.data = np.array(data_HHN['data_day'])
-    tr_HHN.stats.starttime = UTCDateTime(year=int(year_day),julday=int(julday_day))
-    tr_HHN.stats.sampling_rate = NEW_SAMPLING_RATE
-    tr_HHN.stats.channel = 'HHN'
-    tr_HHN.stats.station = data_HHZ['name']
-    tr_HHN.stats.network = data_HHZ['network']
-    
-    tr_HHE = Trace()
-    tr_HHE.data = np.array(data_HHE['data_day'])
-    tr_HHE.stats.starttime = UTCDateTime(year=int(year_day),julday=int(julday_day))
-    tr_HHE.stats.sampling_rate = NEW_SAMPLING_RATE
-    tr_HHE.stats.channel = 'HHN'
-    tr_HHE.stats.station = data_HHZ['name']
-    tr_HHE.stats.network = data_HHZ['network']
-    
+    tr_HHZ = data_HHZ.waveforms[NETWORK+'.'+STATION]['preprocessed_recording'][0]
+    tr_HHN = data_HHN.waveforms[NETWORK+'.'+STATION]['preprocessed_recording'][0]
+    tr_HHE = data_HHE.waveforms[NETWORK+'.'+STATION]['preprocessed_recording'][0]
+
     slide_HHZ = np.array([k.data for k in tr_HHZ.slide(window_length=WINDOW_LENGTH, step=WINDOW_LENGTH)])
     slide_HHE = np.array([k.data for k in tr_HHN.slide(window_length=WINDOW_LENGTH, step=WINDOW_LENGTH)])
     slide_HHN = np.array([k.data for k in tr_HHE.slide(window_length=WINDOW_LENGTH, step=WINDOW_LENGTH)])
@@ -1255,15 +1206,15 @@ for i,j in enumerate(tqdm(daily_lst_data)):
     #-------------------------------------------------------------------------------------------------------------
     n2 = prev_pow_2(int(WINDOW_LENGTH*NEW_SAMPLING_RATE))
     f_FFT = NEW_SAMPLING_RATE/2. * np.linspace(0., 1., int(n2/2) + 1)
-    
+
     FFT_ZN = []
     FFT_ZE = []
     FFT_NE = []
-    
+
     FFT_ZZ = []
     FFT_NN = []
     FFT_EE = []
-    
+
     cFFT_ZN = []
     cFFT_ZE = []
     cFFT_NE = []
@@ -1271,7 +1222,7 @@ for i,j in enumerate(tqdm(daily_lst_data)):
     qFFT_ZN = []
     qFFT_ZE = []
     qFFT_NE = []
-    
+
     Z_lst = []
     N_lst = []
     E_lst = []
@@ -1279,11 +1230,11 @@ for i,j in enumerate(tqdm(daily_lst_data)):
         ftZ = fft(slide_HHZ[c][0:len(f_FFT)], n=None, axis=-1, norm=None)
         ftN = fft(slide_HHE[c][0:len(f_FFT)], n=None, axis=-1, norm=None)
         ftE = fft(slide_HHN[c][0:len(f_FFT)], n=None, axis=-1, norm=None)
-        
+
         Z = ftZ
         N = ftN
         E = ftE
-        
+
         Z_lst.append(ftZ)
         N_lst.append(ftN)
         E_lst.append(ftE)
@@ -1292,46 +1243,29 @@ for i,j in enumerate(tqdm(daily_lst_data)):
 
 	# Now calculate spectra at tilt direction
     ftH1 = rotate_dir(np.array(N_lst), np.array(E_lst), tilt_mean)
-    ftH2 = rotate_dir(np.array(E_lst), np.array(N_lst), tilt_mean)
 
     # Get transfer functions and correcting data
-    fTF_ZH1 = np.array(sum(tf_ZH1_lst)/len(tf_ZH1_lst))
+    fTF_ZH1 = smooth(np.array(sum(tf_ZH1_lst)/len(tf_ZH1_lst)),50)
     corrspec1 = np.array([np.array(Z_lst[i]) - fTF_ZH1*ftH1[i] for i,j in enumerate(ftH1)])
     corrtime1 = np.real(np.fft.ifft(corrspec1))
-
-    fTF_ZH2 = np.array(sum(tf_ZH2_lst)/len(tf_ZH2_lst))
-    corrspec2 = np.array([np.array(Z_lst[i]) - fTF_ZH2*ftH2[i] for i,j in enumerate(ftH2)])
-    corrtime2 = np.real(np.fft.ifft(corrspec2))
 
     #-------------------------------------------------------------------------------------------------------------
 
     #Saving data
     slide_HHZ_CORRECTED_H1 = Stream([k for k in tr_HHZ.slide(window_length=WINDOW_LENGTH, step=WINDOW_LENGTH)])
-    slide_HHZ_CORRECTED_H2 = Stream([k for k in tr_HHZ.slide(window_length=WINDOW_LENGTH, step=WINDOW_LENGTH)])
 
     for i,j in enumerate(slide_HHZ_CORRECTED_H1):
         j.data = corrtime1[i]
 
     slide_HHZ_CORRECTED_H1.merge(method=0, fill_value=0)
+    inv = read_inventory(STATIONXML_DIR+'.'.join([NETWORK,STATION,'xml']))
+    slide_HHZ_CORRECTED_H1.attach_response(inv)
 
-    CORRECT_DATA_OUTPUT = CORRECT_DATA_TRANSFER_FUNC_OUTPUT+'/TF_ZH1/'+data_HHZ['network']+'/'+data_HHZ['name']+'/HHZ.D/'
+    CORRECT_DATA_OUTPUT = CORRECT_DATA_TRANSFER_FUNC_OUTPUT+'/TF_ZH1/'+NETWORK+'/'+STATION+'/HHZ.D/'
     os.makedirs(CORRECT_DATA_OUTPUT,exist_ok=True)
-        
-    CORRECT_DATA_OUTPUT_STR = data_HHZ['network']+'.'+data_HHZ['name']+'..HHZ.D.'+str(year_day)+'.'+str(julday_day)
+
+    CORRECT_DATA_OUTPUT_STR = NETWORK+'.'+STATION+'..HHZ.D.'+str(year_day)+'.'+str(julday_day)
     slide_HHZ_CORRECTED_H1.write(CORRECT_DATA_OUTPUT+CORRECT_DATA_OUTPUT_STR,format='MSEED')
-
-    for i,j in enumerate(slide_HHZ_CORRECTED_H2):
-        j.data = corrtime2[i]
-
-    slide_HHZ_CORRECTED_H2.merge(method=0, fill_value=0)
-    inv = read_inventory(STATIONXML_DIR+'.'.join([data_HHZ['network'],'xml']))
-    slide_HHZ_CORRECTED_H2.attach_response(inv)
-
-    CORRECT_DATA_OUTPUT = CORRECT_DATA_TRANSFER_FUNC_OUTPUT+'/TF_ZH2/'+data_HHZ['network']+'/'+data_HHZ['name']+'/HHZ.D/'
-    os.makedirs(CORRECT_DATA_OUTPUT,exist_ok=True)
-        
-    CORRECT_DATA_OUTPUT_STR = data_HHZ['network']+'.'+data_HHZ['name']+'..HHZ.D.'+str(year_day)+'.'+str(julday_day)
-    slide_HHZ_CORRECTED_H2.write(CORRECT_DATA_OUTPUT+CORRECT_DATA_OUTPUT_STR,format='MSEED')
     #----------------------------------------------------------------------------------------------
 
     #Importing noise models:
@@ -1341,56 +1275,75 @@ for i,j in enumerate(tqdm(daily_lst_data)):
     periods = NOISE_MODEL_DATA['model_periods']
     xdata = 1/periods
 
-    # hanning window
-    wind = np.ones(len(f_FFT)) 
+    #------------------------------------------------------------------
+    # Points in window
+    ws = int(len(f_FFT))
 
- 
-    figPSD_mean, (ax0,ax1, ax2) = plt.subplots(1, 3,figsize=(15,5),sharey=True,sharex=True)
+    # hanning window
+    wind = np.ones(ws)
+
+    figPSD_mean, (ax0,ax1) = plt.subplots(1, 2,figsize=(15,5),sharey=True,sharex=False)
 
     for i in slide_HHZ:
-        spec0 = spectrogram(x=i,fs=NEW_SAMPLING_RATE, window=wind, nperseg=None, noverlap=0)
+        spec0 = spectrogram(x=i,fs=NEW_SAMPLING_RATE, window=wind, nperseg=ws, noverlap=None)
         f0, t0, psd0 = spec0
+
+        # avoid calculating log of zero
+        idx = psd0 < DTINY
+        psd0[idx] = DTINY
+
+        idf = f0 < DTINY
+        f0[idf] = DTINY
+
+        # go to dB
         log_psdz0 = np.log10(psd0)
         log_psdz0 *= 10
-        log_psdz0 = smooth(log_psdz0,3)
-        ax0.semilogx(f0,log_psdz0, 'k', lw=0.5,alpha=0.5)
 
-    ax0.plot(xdata,nhnm, '0.4', linewidth=2, zorder=10)
-    ax0.plot(xdata,nlnm, '0.4', linewidth=2, zorder=10)
-    ax0.text(0.9, 0.9, 'Raw', ha='center',bbox=dict(facecolor='w'),transform=ax0.transAxes)   
-    ax0.set_xlim(1/100,max(f0))
+        periods_0 =  1.0 / f0
+        #log_psdz0 = smooth(log_psdz0,8)
+        ax0.semilogx(periods_0,log_psdz0, 'k', lw=0.5,alpha=0.5)
+
+    ax0.plot(periods,nhnm, '0.4', linewidth=2, zorder=10)
+    ax0.plot(periods,nlnm, '0.4', linewidth=2, zorder=10)
+    ax0.text(0.9, 0.9, 'Raw', ha='center',bbox=dict(facecolor='w'),transform=ax0.transAxes)
+    ax0.set_xlim(0.01, 50)
     ax0.set_ylim(-180,-30)
+    ax0.set_ylabel('Amplitude [dB]')
+    ax0.set_xlabel('Period [s]')
+    ax0.set_title('Number of Segments: '+str(len(psd0)))
+
 
     for i in corrtime1:
-        spec1 = spectrogram(x=i,fs=NEW_SAMPLING_RATE, window=wind, nperseg=None, noverlap=0)
+        spec1 = spectrogram(x=i,fs=NEW_SAMPLING_RATE, window=wind, nperseg=ws, noverlap=None)
         f1, t1, psd1 = spec1
+
+        # avoid calculating log of zero
+        idx = psd1 < DTINY
+        psd1[idx] = DTINY
+
+        idf = f1 < DTINY
+        f1[idf] = DTINY
+
+        # go to dB
         log_psdz1 = np.log10(psd1)
         log_psdz1 *= 10
-        log_psdz1 = smooth(log_psdz1,3)
-        ax1.semilogx(f1,log_psdz1, 'k', lw=0.5,alpha=0.5)
-        
-    ax1.plot(xdata,nhnm, '0.4', linewidth=2, zorder=10)
-    ax1.plot(xdata,nlnm, '0.4', linewidth=2, zorder=10)
-    ax1.text(0.9, 0.9, 'TF_ZH1', ha='center',bbox=dict(facecolor='w'),transform=ax1.transAxes)   
-    ax1.set_xlim(1/100,max(f1))
+
+        periods_1 =  1.0 / f1
+        #log_psdz1 = smooth(log_psdz1,8)
+        ax1.semilogx(periods_1,log_psdz1, 'k', lw=0.5,alpha=0.5)
+
+    ax1.plot(periods,nhnm, '0.4', linewidth=2, zorder=10)
+    ax1.plot(periods,nlnm, '0.4', linewidth=2, zorder=10)
+    ax1.text(0.9, 0.9, 'Corrected', ha='center',bbox=dict(facecolor='w'),transform=ax1.transAxes)
+    ax1.set_xlim(0.01, 50)
     ax1.set_ylim(-180,-30)
+    ax1.set_xlabel('Period [s]')
+    ax1.set_title('Number of Segments: '+str(len(psd1)))
 
-    for i in corrtime2:
-        spec2 = spectrogram(x=i,fs=NEW_SAMPLING_RATE, window=wind, nperseg=None, noverlap=0)
-        f2, t2, psd2 = spec2
-        log_psdz2 = np.log10(psd2)
-        log_psdz2 *= 10
-        log_psdz2 = smooth(log_psdz2,3)
-        ax2.semilogx(f2,log_psdz2, 'k', lw=0.5,alpha=0.5)
 
-    ax2.text(0.9, 0.9, 'TF_ZH2', ha='center',bbox=dict(facecolor='w'),transform=ax2.transAxes)
-    ax2.plot(xdata,nhnm, '0.4', linewidth=2, zorder=10)
-    ax2.plot(xdata,nlnm, '0.4', linewidth=2, zorder=10)   
-    ax2.set_xlim(1/100,max(f2))
-    ax2.set_ylim(-180,-30)
 
     figPSD_mean.suptitle('Station = '+STATION+' - Day = '+UTCDateTime(year=int(year_day),julday=int(julday_day)).strftime('%d/%m/%Y'),fontsize=18)
-    daily_TRANSFER_FUNC_CORRECTION_output = TRANSFER_FUNC_OUTPUT+data_HHZ['network']+'.'+data_HHZ['name']+'/Daily_TRANSFER_FUNC_CORRECTION/'    
+    daily_TRANSFER_FUNC_CORRECTION_output = TRANSFER_FUNC_OUTPUT+NETWORK+'.'+STATION+'/Daily_TRANSFER_FUNC_CORRECTION/'
     os.makedirs(daily_TRANSFER_FUNC_CORRECTION_output,exist_ok=True)
     figPSD_mean.savefig(daily_TRANSFER_FUNC_CORRECTION_output+'DAILY_TRANSFER_FUNC_CORRECTION_'+str(year_day)+'_'+str(julday_day)+'.png', dpi=300, facecolor='w', edgecolor='w')
     plt.close()

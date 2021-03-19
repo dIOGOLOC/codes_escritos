@@ -69,8 +69,8 @@ ASDF_FILES = '/home/diogoloc/dados_posdoc/ON_MAR/EARTHQUAKE_FINDER_OUTPUT/ASDF_F
 
 NOISE_MODEL_FILE = '/home/diogoloc/dados_posdoc/ON_MAR/TRANSFER_FUNC/NOISE_MODEL_FILE/noise_models.npz'
 
-FIRSTDAY = '2020-03-22'
-LASTDAY = '2020-03-27'
+FIRSTDAY = '2019-07-28'
+LASTDAY = '2019-12-31'
 
 FILTER_DATA = [2,10]
 
@@ -437,9 +437,9 @@ with Pool(processes=num_processes) as p:
 print("--- %.2f execution time (min) ---" % ((time.time() - start_time)/60))
 print('\n')
 
-print('====================================')
+print('==================')
 print('Opening ASDF files')
-print('====================================')
+print('==================')
 print('\n')
 
 daily_lst_data = [[]]*len(INTERVAL_PERIOD_DATE)
@@ -452,6 +452,8 @@ for l,k in enumerate(INTERVAL_PERIOD_DATE):
 
 #-------------------------------------------------------------------------------
 # Select bandpass frequencies
+
+
 
 print('=======================')
 print('Filtering daily windows')
