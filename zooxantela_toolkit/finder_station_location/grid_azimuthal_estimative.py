@@ -45,11 +45,11 @@ from scipy.interpolate import griddata
 # Configuration file
 # ==================
 
-GRID_DISTANCE = 2.5 #degrees
+GRID_DISTANCE = 1.5 #degrees
 
 GRID_SPACING = 0.25  #degrees
 
-EARTHQUAKES_MIN = 3.5  #mag
+EARTHQUAKES_MIN = 2.5  #mag
 
 NUM_PROCESSES = 8
 
@@ -63,7 +63,7 @@ LLCRNRLAT = -28 #degrees
 URCRNRLAT = -16 #degrees
 
 STA_CONTINENT_FILE = '/home/diogoloc/dados_posdoc/ON_MAR/sta_coord/rsbr_lat_lon_projeto.csv'
-OBS_LOCATION_FILE = '/home/diogoloc/dados_posdoc/ON_MAR/sta_coord/coord_obs_data.csv'
+OBS_LOCATION_FILE = '/home/diogoloc/dados_posdoc/ON_MAR/sta_coord/coord_obs_data_arr1.csv'
 COAST_SHAPEFILE = '/home/diogoloc/SIG_dados/Projeto_ON_MAR/shapefile/brasil_estados/brasil_estados.shp'
 OCEANO_SHAPEFILE = '/home/diogoloc/SIG_dados/Projeto_ON_MAR/shapefile/area_batimetria/area_ON_projeto.shp'
 EARTHQUAKES_SHAPEFILE =  '/home/diogoloc/dados_posdoc/ON_MAR/sta_coord/coord_terremotos_marinhos_brasil.csv'
@@ -248,7 +248,7 @@ with Pool(processes=NUM_PROCESSES) as p:
 
 azimuthal_gap = []
 for i,j in enumerate(azimuthal_test_lst):
-    if len(j[1]) > 0:
+    if len(j[1]) > 1:
         if j[1][0] == 0:
             pass
         else:
@@ -286,7 +286,7 @@ inproj = osr.SpatialReference()
 inproj.ImportFromWkt(proj)
 
 # Add the interpolated grid:
-img2 = ax.imshow(grid,extent=[LLCRNRLON,URCRNRLON,LLCRNRLAT,URCRNRLAT],cmap='cividis',origin='lower',vmin=0,vmax=360,alpha=0.5,zorder=-10,interpolation='lanczos')
+img2 = ax.imshow(grid,extent=[LLCRNRLON,URCRNRLON,LLCRNRLAT,URCRNRLAT],cmap='Spectral',origin='lower',vmin=0,vmax=360,alpha=0.75,zorder=-10,interpolation='kaiser')
 
 axins = inset_axes(ax,
                width="20%",  # width = 10% of parent_bbox width

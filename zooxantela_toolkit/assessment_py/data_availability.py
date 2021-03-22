@@ -40,15 +40,15 @@ def plot_date_file(FIG_FOLDER_OUTPUT,directory_data,XML_FILE):
             data_lista.append(os.path.join(root, name))
 
     data_lista = sorted(data_lista)
-    
+
     dataframe_lista = []
     #create a empty dataframe with pandas
     for i,j in enumerate(data_lista):
         print("Extracting data from header "+str(i+1)+" of "+str(len(data_lista)))
-                
+
         #Reading header from data
         st = obspy.read(j)
-                
+
         #----------------------------
         #Dataframe starting
 
@@ -72,14 +72,14 @@ def plot_date_file(FIG_FOLDER_OUTPUT,directory_data,XML_FILE):
         for g,h in enumerate(np.arange(24)):
             lst_time = []
             for x,c in enumerate(flat_time_lst):
-                if c.hour == h:   
+                if c.hour == h:
                     lst_time.append(c.hour)
             time_flat_time_lst[g] = lst_time
 
         NUMBER_HOUR = [[]]*24
         for q,w in enumerate(time_flat_time_lst):
             NUMBER_HOUR[q] = len(w)
-          
+
 
         dataframe_lista.append(pd.DataFrame([[network],[station],[channel],[DATETIME],[NUMBER_HOUR]], index=['NETWORK', 'STATION', 'CHANNEL', 'DATETIME','NUMBER_HOUR']).T)
         print(pd.DataFrame([[network],[station],[channel],[DATETIME],[NUMBER_HOUR]], index=['NETWORK', 'STATION', 'CHANNEL', 'DATETIME','NUMBER_HOUR']).T)
@@ -114,7 +114,7 @@ def plot_date_file(FIG_FOLDER_OUTPUT,directory_data,XML_FILE):
 
         xlim_initial = mdates.date2num(datatime_initial)
         xlim_final = mdates.date2num(datatime_final)
-            
+
         #----------------------------
         #Function to check if the dates in data set are inside the period chosen (INITIAL_DATE to FINAL_DATE)
 
@@ -149,7 +149,7 @@ def plot_date_file(FIG_FOLDER_OUTPUT,directory_data,XML_FILE):
         days5 = DayLocator(interval=int(len(datetime_lista)*5/100))   # every day
         months = MonthLocator()  # every month
         yearsFmt = DateFormatter('%Y-%m-%d')
-        
+
         days1.MAXTICKS = 10000
 
 
@@ -176,10 +176,10 @@ def plot_date_file(FIG_FOLDER_OUTPUT,directory_data,XML_FILE):
             ax[k].grid(b=True, which='major', color='k', linestyle='-')
             ax[k].grid(b=True, which='minor', color='k', linestyle='-')
 
-        
+
         plt.setp(ax[k].xaxis.get_majorticklabels(), fontsize=10, rotation=30)
         ax[-1].set_xlabel('Time', fontsize=20)
-        
+
         #criando a localização da barra de cores:
         axins = inset_axes(ax[0],
                            width="10%",  # width = 10% of parent_bbox width
@@ -191,18 +191,18 @@ def plot_date_file(FIG_FOLDER_OUTPUT,directory_data,XML_FILE):
                            )
         cbar = fig.colorbar(im, cax=axins, orientation="horizontal", ticklocation='top',ticks=[0,30,60],label='Files per hour')
         cbar.ax.set_xticklabels(['0%','50%','100%'])
-        
+
         os.makedirs(FIG_FOLDER_OUTPUT,exist_ok=True)
         fig.savefig(FIG_FOLDER_OUTPUT+j+'_'+'COMPLETENESS_'+str(obspy.UTCDateTime(INITIAL_DATE).year)+'_'+str(obspy.UTCDateTime(INITIAL_DATE).month)+'_'+str(obspy.UTCDateTime(INITIAL_DATE).day)+'_'+str(obspy.UTCDateTime(FINAL_DATE).year)+'_'+str(obspy.UTCDateTime(FINAL_DATE).month)+'_'+str(obspy.UTCDateTime(FINAL_DATE).day)+'.pdf',dpi=500)
         #plt.show()
-    
+
 def get_date_file_via_client(FIG_FOLDER_OUTPUT,STATION_NAME):
-    
+
     #Conectando ao arclink
     client = Client(user=USER,host=HOST, port=PORT, institution=INSTITUTION)
 
     #Crio a lista com dias de acordo tempo inicial e final
-    data_lista = np.arange(obspy.UTCDateTime(INITIAL_DATE),obspy.UTCDateTime(FINAL_DATE),86400) 
+    data_lista = np.arange(obspy.UTCDateTime(INITIAL_DATE),obspy.UTCDateTime(FINAL_DATE),86400)
 
     #Criando um dicionário em branco
     time_dic = nested_dict()
@@ -240,7 +240,7 @@ def get_date_file_via_client(FIG_FOLDER_OUTPUT,STATION_NAME):
             for g,h in enumerate(np.arange(24)):
                 lst_time = []
                 for x,c in enumerate(flat_time_lst):
-                    if c.hour == h:   
+                    if c.hour == h:
                         lst_time.append(c.hour)
                 time_flat_time_lst[g] = lst_time
 
@@ -251,13 +251,13 @@ def get_date_file_via_client(FIG_FOLDER_OUTPUT,STATION_NAME):
         except:
             print('No data to: '+str(j))
 
-            time_dic[str(j)]['DATETIME'] = str(j.year)+','+str(j.month)+','+str(j.day) 
-            for q,w in enumerate(np.arange(24)):            
+            time_dic[str(j)]['DATETIME'] = str(j.year)+','+str(j.month)+','+str(j.day)
+            for q,w in enumerate(np.arange(24)):
                 time_dic[str(j)]['HOUR'][str(w)] = 0
         #Fim do dicionário
         #----------------------------
     # ======================================================================
-    # Alocando os valores do contador de horas na variável time_plot_lst 
+    # Alocando os valores do contador de horas na variável time_plot_lst
     # ======================================================================
 
     time_plot_lst = [[]]*len(data_lista)
@@ -269,7 +269,7 @@ def get_date_file_via_client(FIG_FOLDER_OUTPUT,STATION_NAME):
 
 
     # =========================================================================
-    # Calculando as datas entre o período inicial e final para plotar no eixo x 
+    # Calculando as datas entre o período inicial e final para plotar no eixo x
     # =========================================================================
 
     datatime_initial = datetime.datetime(obspy.UTCDateTime(INITIAL_DATE).year,obspy.UTCDateTime(INITIAL_DATE).month,obspy.UTCDateTime(INITIAL_DATE).day)
@@ -281,7 +281,7 @@ def get_date_file_via_client(FIG_FOLDER_OUTPUT,STATION_NAME):
 
     xlim_initial = mdates.date2num(datatime_initial)
     xlim_final = mdates.date2num(datatime_final)
-    
+
     #----------------------------
     #Checando se as datas do banco de dados batem com o período escolhido (INITIAL_DATE e FINAL_DATE)
 

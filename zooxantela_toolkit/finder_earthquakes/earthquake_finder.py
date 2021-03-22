@@ -404,7 +404,7 @@ def get_stations_data(f):
 
 
     ds.add_auxiliary_data(data=psd, data_type=data_type_s, path=path_s, parameters=parameters_s)
-
+'''
 # ============
 # Main program
 # ============
@@ -724,7 +724,7 @@ for j in tqdm(daily_lst_data, desc='Daily loop'):
 
         except IndexError:
             pass
-
+'''
 print('========================')
 print('Opening ASDF Event files')
 print('========================')
