@@ -56,23 +56,34 @@ from mtspec import mtspec, wigner_ville_spectrum
 
 from obspy.signal.trigger import classic_sta_lta, trigger_onset, coincidence_trigger,recursive_sta_lta
 
+# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# ++++++++++++++++++++++++++ Configuration file ++++++++++++++++++++++++++++++++
+# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-#Configuration file
-
+# Pasta com os arquivos em MSEED (MSEED_DIR+NETWORK+'/'+STATION+'/'+CHANNEL+'.D/')
 MSEED_DIR = '/home/diogoloc/dados_posdoc/ON_MAR/obs_data_MSEED/'
 
+# Escolha uma rede:
+NETWORK = 'ON'
+
+# Escolha uma estação:
+STATION = 'OBS20'
+
+# Escolha um canal:
+CHANNEL = 'HHZ'
+
+# Número de processadores:
+num_processes = 8
+
+# Pasta para salvar as figuras
 FIGURES_OUTPUT = '/home/diogoloc/dados_posdoc/ON_MAR/Figuras/'
 
+# Data inicial e final da aquisição
 INITIAL_DATE = '2019-08-02'
 FINAL_DATE = '2020-06-16'
 
-NETWORK = 'ON'
-
-STATION = 'OBS20'
-
-CHANNEL = 'HHZ'
-
-VERBOSE_MODE = True
+# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 # ========================
 # Constants and parameters
@@ -80,11 +91,6 @@ VERBOSE_MODE = True
 
 ONESEC = datetime.timedelta(seconds=1)
 ONEDAY = datetime.timedelta(days=1)
-
-# ================
-# MULTIPROCESSING
-# ================
-num_processes = 8
 
 # =================
 # Filtering by date
@@ -98,7 +104,6 @@ INTERVAL_PERIOD_DATE = [str(x.year)+'.'+"%03d" % x.julday for x in INTERVAL_PERI
 # =========
 # Functions
 # =========
-
 
 def filelist(basedir,interval_period_date):
     """
@@ -246,8 +251,8 @@ print('Main program')
 print('============')
 print('\n')
 
+#Procurando os arquivos em MSEED
 data_lista = []
-
 print('Data from = '+MSEED_DIR+NETWORK+'/'+STATION+'/'+CHANNEL+'.D/')
 print('\n')
 
@@ -256,6 +261,8 @@ for root, dirs, files in os.walk(MSEED_DIR+NETWORK+'/'+STATION+'/'+CHANNEL+'.D/'
         data_lista.append(os.path.join(root, name))
 
 data_lista = sorted(data_lista)
+
+#Processando cada arquivos em MSEED
 
 start_time = time.time()
 df_lst = []
@@ -270,4 +277,7 @@ df = df.sort_values(by="DATETIME")
 print("--- %.2f execution time (min) ---" % ((time.time() - start_time)/60))
 print('\n')
 
+#Plotando o resultado final
 plot_date_file(df)
+
+#FIM
