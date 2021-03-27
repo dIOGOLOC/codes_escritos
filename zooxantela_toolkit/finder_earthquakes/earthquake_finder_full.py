@@ -66,10 +66,10 @@ ASDF_FILES = '/home/diogoloc/dados_posdoc/ON_MAR/EARTHQUAKE_FINDER_OUTPUT/ASDF_F
 
 NOISE_MODEL_FILE = '/home/diogoloc/dados_posdoc/ON_MAR/TRANSFER_FUNC/NOISE_MODEL_FILE/noise_models.npz'
 
-FIRSTDAY = '2019-12-01'
+FIRSTDAY = '2019-08-01'
 LASTDAY = '2019-12-31'
 
-FILTER_DATA = [1,40]
+FILTER_DATA = [2,16]
 
 NETWORK = 'ON'
 
@@ -81,16 +81,16 @@ WINDOW_LENGTH = 600
 
 VERBOSE_MODE = True
 
-STA = 2
+STA = 1
 LTA = 60
 
 THRON = 3
 THROFF = 2
 
-EVENT_LENGTH_MIN = 2
+EVENT_LENGTH_MIN = 1.5
 
-PEM = 7
-PET = 10
+PEM = 5
+PET = 5
 
 # ========================
 # Constants and parameters
@@ -414,9 +414,9 @@ def find_plot_event(daily_data):
 
         st = spec.waveforms[NETWORK+'.'+STATION]['preprocessed_recording']
         st.filter("bandpass", freqmin=FILTER_DATA[0], freqmax=FILTER_DATA[1],corners=2)
-        st.plot(type="dayplot", interval=60, right_vertical_labels=False,
-            one_tick_per_line=True,color=['k', 'r', 'b', 'g'], show_y_UTC_label=False,
-            size = (3200, 1800),events={"min_magnitude": 5.5},
+        st.plot(type="dayplot", interval=60,tick_format='%Hh', right_vertical_labels=False,vertical_scaling_range=1/1000000,
+            one_tick_per_line=True,color=['k', 'gray'], show_y_UTC_label=False,
+            size = (3200, 1800),events={"min_magnitude": 5.0},equal_scale=True,
             outfile=daily_plot_output+NETWORK+'_'+STATION+'_'+CHANNEL+'_'+date_spec.strftime('%d_%m_%Y_%H_%M_%S_%f')+'.png',
             dpi=300, facecolor='w', edgecolor='w')
 
