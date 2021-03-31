@@ -43,9 +43,9 @@ import verde as vd
 # Configuration file
 # ==================
 
-STATION_SPACING = 2 #degrees
+STATION_SPACING = 0.75 #degrees
 STATION_MAX_DISTANCE = 2 #degrees
-NUMBER_STATIONS = 10
+NUMBER_STATIONS = 20
 
 NUM_PROCESSES = 8
 
@@ -62,7 +62,7 @@ URCRNRLAT = -16 #degrees
 STA_CONTINENT_FILE = '/home/diogoloc/dados_posdoc/ON_MAR/sta_coord/rsbr_lat_lon_projeto.csv'
 OBS_LOCATION_FILE = '/home/diogoloc/dados_posdoc/ON_MAR/sta_coord/coord_potential_obs_location.csv'
 COAST_SHAPEFILE = '/home/diogoloc/SIG_dados/Projeto_ON_MAR/shapefile/brasil_estados/brasil_estados.shp'
-OCEANO_SHAPEFILE = '/home/diogoloc/SIG_dados/Projeto_ON_MAR/shapefile/area_batimetria/area_ON_projeto.shp'
+OCEANO_SHAPEFILE = '/home/diogoloc/SIG_dados/Projeto_ON_MAR/shapefile/area_batimetria/area_oceano_projeto_simples.shp'
 EARTHQUAKES_SHAPEFILE =  '/home/diogoloc/dados_posdoc/ON_MAR/sta_coord/coord_terremotos_marinhos_brasil.csv'
 SRTM_FILE =  '/home/diogoloc/SIG_dados/Projeto_ON_MAR/raster/projeto_dem/projeto_srtm.tif'
 
@@ -310,7 +310,10 @@ grx,gry = grid_maker(LLCRNRLON,URCRNRLON,LLCRNRLAT,URCRNRLAT)
 
 #Plotting the map:
 plot_grid_obs(grx,gry)
+for i,j in enumerate(grx):
+    print(grx[i],',',gry[i])
 
+'''
 #Creating combinations between possible OBS locations:
 lst_grid = [i for i in range(len(grx))]
 comb = list(combinations(lst_grid, NUMBER_STATIONS))
@@ -333,6 +336,6 @@ print('\n')
 
 #for i,j in enumerate(sta_OBS_lon):
 #    sta_OBS_lon[i], sta_OBS_lat[i]
-
+'''
 
 #----------------------------------------------------------------------------

@@ -66,14 +66,14 @@ ASDF_FILES = '/home/diogoloc/dados_posdoc/ON_MAR/EARTHQUAKE_FINDER_OUTPUT/ASDF_F
 
 NOISE_MODEL_FILE = '/home/diogoloc/dados_posdoc/ON_MAR/TRANSFER_FUNC/NOISE_MODEL_FILE/noise_models.npz'
 
-FIRSTDAY = '2019-08-01'
+FIRSTDAY = '2019-08-02'
 LASTDAY = '2019-12-31'
 
 FILTER_DATA = [2,16]
 
 NETWORK = 'ON'
 
-STATION = 'OBS17'
+STATION = 'OBS20'
 
 CHANNEL = 'HHZ'
 
@@ -105,7 +105,7 @@ ONEDAY = datetime.timedelta(days=1)
 # ================
 # MULTIPROCESSING
 # ================
-num_processes = 6
+num_processes = 8
 
 # =================
 # Filtering by date
@@ -332,21 +332,7 @@ def get_stations_data(f):
 
     st.detrend('demean')
     st.detrend('linear')
-    st.taper(max_percentage=0.05, type="hann")
-
-    #------------------------------------------------------------------
-	# Points in window
-    ws = int(WINDOW_LENGTH/st[0].stats.delta)
-
-    # Number of points to overlap
-    ss = int(WINDOW_LENGTH*0.5/st[0].stats.delta)
-
-    # hanning window
-    wind = np.ones(ws)
-
-    # Calculating the spectrogram
-    spec = spectrogram(x=st[0].data,fs=st[0].stats.sampling_rate, window=wind, nperseg=ws, noverlap=ss)
-    f, t, psd = spec
+    #st.taper(max_percentage=0.05, type="hann")
 
     #-----------------------------------------------------------------
     #Creating ASDF preprocessed files folder
@@ -357,50 +343,6 @@ def get_stations_data(f):
     ds.add_waveforms(st, tag="preprocessed_recording")
     ds.add_stationxml(STATIONXML_DIR+'.'.join([NETWORK,STATION,'xml']))
 
-    # The type always should be camel case.
-    data_type_f = "Frequencies"
-
-    # Name to identify the particular piece of data.
-    path_f = sta_channel_id+'.f'
-
-    # Any additional parameters as a Python dictionary which will end up as
-    # attributes of the array.
-    parameters_f = {'f':'Array of sample frequencies.',
-        		  'sampling_rate_in_hz': st[0].stats.sampling_rate,
-        		  'station_id': sta_channel_id}
-
-
-    ds.add_auxiliary_data(data=f, data_type=data_type_f, path=path_f, parameters=parameters_f)
-
-    # The type always should be camel case.
-    data_type_t = "Times"
-
-    # Name to identify the particular piece of data.
-    path_t = sta_channel_id+'.t'
-
-    # Any additional parameters as a Python dictionary which will end up as
-    # attributes of the array.
-    parameters_t = {'t':'Array of segment times.',
-        		  'sampling_rate_in_hz': st[0].stats.sampling_rate,
-        		  'station_id': sta_channel_id}
-
-
-    ds.add_auxiliary_data(data=t, data_type=data_type_t, path=path_t, parameters=parameters_t)
-
-    # The type always should be camel case.
-    data_type_s = "Spectrogram"
-
-    # Name to identify the particular piece of data.
-    path_s = sta_channel_id+'.S'
-
-    # Any additional parameters as a Python dictionary which will end up as
-    # attributes of the array.
-    parameters_s = {'S':'Spectrogram of x. By default, the last axis of S corresponds to the segment times.',
-        		  'sampling_rate_in_hz': st[0].stats.sampling_rate,
-        		  'station_id': sta_channel_id}
-
-
-    ds.add_auxiliary_data(data=psd, data_type=data_type_s, path=path_s, parameters=parameters_s)
 #-------------------------------------------------------------------------------------------------------
 
 def find_plot_event(daily_data):

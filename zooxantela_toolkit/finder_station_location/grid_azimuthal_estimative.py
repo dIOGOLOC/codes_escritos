@@ -45,15 +45,15 @@ from scipy.interpolate import griddata
 # Configuration file
 # ==================
 
-GRID_DISTANCE = 1.5 #degrees
+GRID_DISTANCE = 300 #km
 
 GRID_SPACING = 0.25  #degrees
 
 EARTHQUAKES_MIN = 2.5  #mag
 
-NUM_PROCESSES = 8
+FACTOR_OCEAN = 1.5
 
-FILTER_GRID_BY_SHAPEFILE = False
+NUM_PROCESSES = 8
 
 PLOT_STATS = False
 
@@ -63,9 +63,9 @@ LLCRNRLAT = -28 #degrees
 URCRNRLAT = -16 #degrees
 
 STA_CONTINENT_FILE = '/home/diogoloc/dados_posdoc/ON_MAR/sta_coord/rsbr_lat_lon_projeto.csv'
-OBS_LOCATION_FILE = '/home/diogoloc/dados_posdoc/ON_MAR/sta_coord/coord_obs_data_arr1.csv'
+OBS_LOCATION_FILE = '/home/diogoloc/dados_posdoc/ON_MAR/sta_coord/coord_obs_data_arr2.csv'
 COAST_SHAPEFILE = '/home/diogoloc/SIG_dados/Projeto_ON_MAR/shapefile/brasil_estados/brasil_estados.shp'
-OCEANO_SHAPEFILE = '/home/diogoloc/SIG_dados/Projeto_ON_MAR/shapefile/area_batimetria/area_ON_projeto.shp'
+CONTINENTE_SHAPEFILE = '/home/diogoloc/SIG_dados/Projeto_ON_MAR/shapefile/area_continente/area_continente.shp'
 EARTHQUAKES_SHAPEFILE =  '/home/diogoloc/dados_posdoc/ON_MAR/sta_coord/coord_terremotos_marinhos_brasil.csv'
 SRTM_FILE =  '/home/diogoloc/SIG_dados/Projeto_ON_MAR/raster/projeto_dem/projeto_srtm.tif'
 
@@ -82,19 +82,6 @@ def grid_maker(west, east, south, north):
 
     grdx = rows.ravel()
     grdy = cols.ravel()
-
-    if FILTER_GRID_BY_SHAPEFILE == True:
-        polys = shapefile.Reader(OCEANO_SHAPEFILE)
-        multi = shape(polys.shapeRecords()[0].shape.__geo_interface__)
-        pontos = [Point(grdx[i],grdy[i]) for i,j in enumerate(grdy)]
-
-        grdx = []
-        grdy = []
-
-        for i, j in enumerate(pontos):
-            if j.within(multi):
-                grdx.append(j.x)
-                grdy.append(j.y)
 
     return grdx,grdy
 
@@ -139,7 +126,7 @@ def plot_grid_obs(plot_stats):
     legend2 = ax.legend(*l2.legend_elements(**kw), loc="upper right", title="Magnitude dos eventos")
     ax.add_artist(legend2)
 
-    l3, = ax.plot(sta_OBS_lon,sta_OBS_lat, 's',markersize=7,markeredgecolor='k',markerfacecolor='w')
+    l3, = ax.plot(sta_OBS_lon,sta_OBS_lat, '^',markersize=7,markeredgecolor='k',markerfacecolor='b')
     l1, = ax.plot(sta_terra_lon,sta_terra_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey')
 
     legend = ax.legend([l1,l3,l4],['Estações RSBR','Possíveis OBSs','Grade de eventos'],scatterpoints=1, framealpha=1,labelspacing=1, loc='lower right',facecolor='w',fontsize='medium',markerscale=1.5)
@@ -169,9 +156,19 @@ def calc_azimuthal_gap(input_lst):
     azimuth_lst = []
     for i,sta_loc in enumerate(lst_sta_obs):
         dist,azim,bazim = op.geodetics.base.gps2dist_azimuth(gy,gx, sta_loc[1], sta_loc[0], a=6378137.0, f=0.0033528106647474805)
-        dist_degree = op.geodetics.base.kilometer2degrees(dist/1000)
-        if dist_degree <= GRID_DISTANCE:
-            azimuth_lst.append(round(azim))
+        dist_km = dist/1000
+
+        #check if the point is in the continent or in ocean:
+        polys = shapefile.Reader(CONTINENTE_SHAPEFILE)
+        multi = shape(polys.shapeRecords()[0].shape.__geo_interface__)
+        ponto = Point(gy,gx)
+
+        if ponto.within(multi):
+            if dist_km <= GRID_DISTANCE:
+                azimuth_lst.append(round(azim))
+        else:
+            if dist_km <= GRID_DISTANCE/FACTOR_OCEAN:
+                azimuth_lst.append(round(azim))
 
     return [[gx,gy],sorted(azimuth_lst)]
 
@@ -315,7 +312,7 @@ ax.yaxis.set_ticks_position('both')
 ax.xaxis.set_ticks_position('both')
 ax.set_title('Cobertura azimutal da RSBR e da rede de OBSs para terremotos de m$_{L}$>'+str(EARTHQUAKES_MIN),fontsize=15,y=1.05)
 
-l2, = ax.plot(sta_OBS_lon,sta_OBS_lat, 's',markersize=10,markeredgecolor='k',markerfacecolor='w',zorder=10)
+l2, = ax.plot(sta_OBS_lon,sta_OBS_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='b',zorder=10)
 l1, = ax.plot(sta_terra_lon,sta_terra_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',zorder=1)
 legend = ax.legend([l1,l2],['Estações RSBR','Possíveis OBSs'],scatterpoints=1, framealpha=1,labelspacing=1, loc='lower right',facecolor='w',fontsize='medium',markerscale=1.5)
 
