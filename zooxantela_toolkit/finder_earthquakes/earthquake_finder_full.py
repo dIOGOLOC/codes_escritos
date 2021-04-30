@@ -66,7 +66,7 @@ ASDF_FILES = '/home/diogoloc/dados_posdoc/ON_MAR/EARTHQUAKE_FINDER_OUTPUT/ASDF_F
 
 NOISE_MODEL_FILE = '/home/diogoloc/dados_posdoc/ON_MAR/TRANSFER_FUNC/NOISE_MODEL_FILE/noise_models.npz'
 
-FIRSTDAY = '2019-08-02'
+FIRSTDAY = '2019-12-28'
 LASTDAY = '2019-12-31'
 
 FILTER_DATA = [2,16]
