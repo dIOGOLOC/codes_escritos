@@ -116,7 +116,7 @@ for data_h5 in tqdm(EVENT_FILES_H5,desc='Events loop'):
         dt = tr.stats.delta
         df = tr.stats.sampling_rate
         datetime_window = tr.stats.starttime
-        if npts/df > (10+2):
+        if npts/df > (10+3):
 
             #----------------------------------------------------------------------------
 
