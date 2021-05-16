@@ -58,15 +58,15 @@ from obspy.signal.trigger import classic_sta_lta, trigger_onset, coincidence_tri
 # Configuration file
 # ====================================================================================================
 
-MSEED_DIR_OBS = '/home/diogoloc/dados_posdoc/ON_MAR/obs_data_MSEED/'
+MSEED_DIR_OBS = '/media/diogoloc/Backup/dados_posdoc/ON_MAR/obs_data_MSEED/'
 
-MSEED_DIR_STA = '/home/diogoloc/dados_posdoc/ON_MAR/data/2019/'
+MSEED_DIR_STA = '/media/diogoloc/Backup/dados_posdoc/ON_MAR/data/2019/'
 
-STATIONXML_DIR = '/home/diogoloc/dados_posdoc/ON_MAR/XML_ON_OBS_CC/'
+STATIONXML_DIR = '/media/diogoloc/Backup/dados_posdoc/ON_MAR/XML_ON_OBS_CC/'
 
-EARTHQUAKE_FINDER_OUTPUT = '/home/diogoloc/dados_posdoc/ON_MAR/EARTHQUAKE_FINDER_NETWORK_OUTPUT/FIGURAS/'
+EARTHQUAKE_FINDER_OUTPUT = '/media/diogoloc/Backup/dados_posdoc/ON_MAR/EARTHQUAKE_FINDER_NETWORK_OUTPUT/FIGURAS/'
 
-ASDF_FILES = '/home/diogoloc/dados_posdoc/ON_MAR/EARTHQUAKE_FINDER_NETWORK_OUTPUT/ASDF_FILES/'
+ASDF_FILES = '/media/diogoloc/Backup/dados_posdoc/ON_MAR/EARTHQUAKE_FINDER_NETWORK_OUTPUT/ASDF_FILES/'
 
 FIRSTDAY = '2019-08-01'
 LASTDAY = '2019-12-31'
@@ -109,7 +109,7 @@ ONEDAY = datetime.timedelta(days=1)
 # MULTIPROCESSING
 # ================
 
-num_processes = 12
+num_processes = 4
 
 # =================
 # Filtering by date
@@ -226,27 +226,39 @@ def find_events(input_list_FIND_EVENT):
                     st_selected.append(st4[0])
 
                     st_selected.trim(i['time']-PEM,i['time']+i['duration']+PET)
-                    st_selected_time = st_selected[0].stats.starttime
+
+                st_selected_time = st_selected[0].stats.starttime
+
+                #----------------------------------------------------------------------------
+
+                ampli_max = []
+                for trac in st_selected:
+                    ampli_max.append(np.mean(abs(trac.data)))
+
+                if sum(np.array(ampli_max) > 10**-9) > 2:
+
+                    # Plotting the results
+                    axis_major = SecondLocator(interval=10)   # every 5-second
+                    axis_minor = SecondLocator(interval=1)   # every 1-second
+                    axis_Fmt = DateFormatter('%H:%M:%S')
+
+                    plt.rcParams.update({'font.size': 20})
+                    fig, axes = plt.subplots(ncols=2, nrows=len(st_selected),figsize=(20,20),sharex='col')
+                    fig.suptitle('Date: '+st_selected_time.strftime('%d/%m/%Y'))
 
                     #----------------------------------------------------------------------------
-                    ampli_max = []
-                    for trac in st_selected:
-                        ampli_max.append(np.mean(abs(trac.data)))
 
-                    if sum(np.array(ampli_max) > 10**-9) > 2:
+                    for ind,traces in enumerate(st_selected):
+                        try:
 
-                        # Plotting the results
-                        axis_major = SecondLocator(interval=10)   # every 5-second
-                        axis_minor = SecondLocator(interval=1)   # every 1-second
-                        axis_Fmt = DateFormatter('%H:%M:%S')
+                            #Creating ASDF preprocessed files folder
+                            output_EVENT_DATA = ASDF_FILES+'EVENT_DATA_FILES/'+NETWORK+'/'+NETWORK+'_'+st_selected_time.strftime('%Y_%m_%d_%H_%M_%S_%f')+'/'
+                            os.makedirs(output_EVENT_DATA,exist_ok=True)
 
-                        plt.rcParams.update({'font.size': 20})
-                        fig, axes = plt.subplots(ncols=2, nrows=len(st_selected),figsize=(20,20),sharex='col')
-                        fig.suptitle('Date: '+st_selected_time.strftime('%d/%m/%Y'))
-
-                        #----------------------------------------------------------------------------
-
-                        for ind,traces in enumerate(st_selected):
+                            event_asdf = ASDFDataSet(output_EVENT_DATA+'EVENT_DATA_'+NETWORK+'_'+traces.stats.station+'_'+traces.stats.channel+'_'+traces.stats.starttime.strftime('%Y_%m_%d_%H_%M_%S_%f')+"_event.h5", compression="gzip-3")
+                            tr_2_save = traces
+                            event_asdf.add_waveforms(tr_2_save, tag="event_recording")
+                            #----------------------------------------------------------------------------
 
                             ax1 = axes[ind,0]
 
@@ -275,7 +287,6 @@ def find_events(input_list_FIND_EVENT):
                             x, y = np.meshgrid(t,np.linspace(f_min, f_max, scalogram.shape[0]))
 
                             ax2 = axes[ind,1]
-
                             #ax2.set_title('Continuous Wavelet Transform')
                             ax2.xaxis.set_major_formatter(axis_Fmt)
                             ax2.xaxis.set_major_locator(axis_major)
@@ -299,11 +310,13 @@ def find_events(input_list_FIND_EVENT):
                             plt.colorbar(im, cax=axins, orientation="horizontal", ticklocation='top')
 
                         #----------------------------------------------------------------------------
+                        except:
+                            pass
 
-                        daily_event_output = EARTHQUAKE_FINDER_OUTPUT+'/Daily_event_data_windows/'+'/'+st_selected_time.strftime('%Y-%d-%m')+'/'
-                        os.makedirs(daily_event_output,exist_ok=True)
-                        fig.savefig(daily_event_output+NETWORK+'_'+st_selected_time.strftime('%Y_%d_%m_%H_%M_%S_%f')+'.png', dpi=300, facecolor='w', edgecolor='w')
-                        plt.close()
+                    daily_event_output = EARTHQUAKE_FINDER_OUTPUT+'/Daily_event_data_windows/'+'/'+st_selected_time.strftime('%Y-%m-%d')+'/'
+                    os.makedirs(daily_event_output,exist_ok=True)
+                    fig.savefig(daily_event_output+NETWORK+'_'+st_selected_time.strftime('%Y_%m_%d_%H_%M_%S_%f')+'.png', dpi=300, facecolor='w', edgecolor='w')
+                    plt.close()
 
 # ============
 # Main program
