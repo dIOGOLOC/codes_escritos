@@ -59,17 +59,13 @@ from obspy.signal.trigger import classic_sta_lta, trigger_onset, coincidence_tri
 
 #Configuration file
 
-EARTHQUAKE_FINDER_OUTPUT = '/home/diogoloc/dados_posdoc/ON_MAR/EARTHQUAKE_FINDER_OUTPUT/FIGURAS/'
+EARTHQUAKE_FINDER_OUTPUT = '/home/diogoloc/dados_posdoc/ON_MAR/EARTHQUAKE_NETWORK_FINDER_OUTPUT/FIGURAS/'
 
-ASDF_FILES = '/home/diogoloc/dados_posdoc/ON_MAR/EARTHQUAKE_FINDER_OUTPUT/ASDF_FILES/'
+ASDF_FILES = '/home/diogoloc/dados_posdoc/ON_MAR/EARTHQUAKE_NETWORK_FINDER_OUTPUT/ASDF_FILES/'
 
 FILTER_DATA = [0.1,45]
 
 NETWORK = 'ON'
-
-STATION = 'OBS20'
-
-CHANNEL = 'HHZ'
 
 # ========================
 # Constants and parameters
@@ -80,17 +76,6 @@ DTINY = np.finfo(0.0).tiny
 ONESEC = datetime.timedelta(seconds=1)
 ONEDAY = datetime.timedelta(days=1)
 
-
-# ================
-# MULTIPROCESSING
-# ================
-num_processes = 12
-
-# =========
-# Functions
-# =========
-
-
 # ============
 # Main program
 # ============
@@ -100,122 +85,133 @@ print('Opening ASDF Event files')
 print('========================')
 print('\n')
 
-EVENT_FOLDER_H5 = sorted(glob.glob(ASDF_FILES+'EVENT_DATA_FILES/'+NETWORK+'.'+STATION+'.'+CHANNEL+'/*'))
-EVENT_FILES = []
-for i in EVENT_FOLDER_H5:
-    EVENT_FILES.append(sorted(glob.glob(i+'/*.h5')))
+if os.path.isfile(ASDF_FILES+'EVENT_DATA_FILES/processed_folders.npy'):
+    EVENT_FOLDER_H5 = np.load(ASDF_FILES+'EVENT_DATA_FILES/processed_folders.npy').tolist()
+else:
+    EVENT_FOLDER_H5 = sorted(glob.glob(ASDF_FILES+'EVENT_DATA_FILES/'+NETWORK+'/*'))
 
-EVENT_FILES_H5 = [item for items in EVENT_FILES for item in items]
+processed_EVENT_FOLDER_H5 = []
+for data_h5 in tqdm(EVENT_FOLDER_H5,desc='Events loop'):
+    EVENT_FILES = sorted(glob.glob(data_h5+'/*.h5'))
 
-for data_h5 in tqdm(EVENT_FILES_H5,desc='Events loop'):
-    event_data = ASDFDataSet(data_h5)
+    # Plotting the results
+    axis_major = SecondLocator(interval=5)   # every 5-second
+    axis_minor = SecondLocator(interval=1)   # every 1-second
+    axis_Fmt = DateFormatter('%H:%M:%S')
 
-    for i in event_data.waveforms[NETWORK+'.'+STATION]['event_recording']:
-        tr = i
+    plt.rcParams.update({'font.size': 12})
+    fig, axes = plt.subplots(ncols=2, nrows=len(EVENT_FILES),figsize=(20,20),sharex='col')
+    plt.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=None, hspace=0.4)
+
+    for i,file_h5 in enumerate(EVENT_FILES):
+        event_data = ASDFDataSet(file_h5)
+        id_event = event_data.waveforms.list()[0]
+        tr = event_data.waveforms[id_event]['event_recording'][0]
+
         npts = tr.stats.npts
         dt = tr.stats.delta
         df = tr.stats.sampling_rate
         datetime_window = tr.stats.starttime
-        if npts/df > (10+3):
 
-            #----------------------------------------------------------------------------
+        #----------------------------------------------------------------------------
 
-            tr_data = i
-            trim_data = tr_data.copy()
-            trim_data.filter("bandpass", freqmin=FILTER_DATA[0], freqmax=FILTER_DATA[1])
-            ## Get frequencies corresponding to signal PSD
-            freq_cwt_lst = fftfreq(npts,d=dt)
+        tr_data = tr
+        trim_data = tr_data.copy()
+        trim_data.filter("bandpass", freqmin=FILTER_DATA[0], freqmax=FILTER_DATA[1])
+        ## Get frequencies corresponding to signal PSD
+        freq_cwt_lst = fftfreq(npts,d=dt)
 
-            ## Get positive half of frequencies
-            positive_frequencies = freq_cwt_lst>0
-            freq_cwt_lst = freq_cwt_lst[positive_frequencies]
+        ## Get positive half of frequencies
+        positive_frequencies = freq_cwt_lst>0
+        freq_cwt_lst = freq_cwt_lst[positive_frequencies]
 
-            t = trim_data.times('matplotlib')
-            f_min = freq_cwt_lst[0]
-            f_max = freq_cwt_lst[-1]
+        t = trim_data.times('matplotlib')
+        f_min = freq_cwt_lst[0]
+        f_max = freq_cwt_lst[-1]
 
-            scalogram = cwt(trim_data.data, dt, 8, f_min, f_max)
-            x, y = np.meshgrid(
-            t,
-            np.linspace(f_min, f_max, scalogram.shape[0]))
+        scalogram = cwt(trim_data.data, dt, 8, f_min, f_max)
+        x, y = np.meshgrid(
+        t,
+        np.linspace(f_min, f_max, scalogram.shape[0]))
 
-            #---------------------------------------------------------------------------------------------------------------------------
+        #---------------------------------------------------------------------------------------------------------------------------
 
-            # Plotting the results
-            axis_major = SecondLocator(interval=5)   # every 5-second
-            axis_minor = SecondLocator(interval=1)   # every 1-second
-            axis_Fmt = DateFormatter('%H:%M:%S')
+        ax1 = axes[i,0]
+        ax4 = axes[i,1]
 
-            plt.rcParams.update({'font.size': 20})
-            fig, axes = plt.subplots(ncols=1, nrows=2,figsize=(20,20),sharex=True)
+        tr_raw_data = tr
+        max_amp = max(tr_raw_data.data)
 
-            ax1 = axes[0]
-            ax4 = axes[1]
-
-            tr_raw_data = i
-            max_amp = max(tr_raw_data.data)
-
+        if i == 0:
             ax1.set_title('Raw Data')
-            ax1.xaxis.set_major_formatter(axis_Fmt)
-            ax1.xaxis.set_major_locator(axis_major)
-            ax1.xaxis.set_minor_locator(axis_minor)
-            ax1.tick_params(axis='both',which='major',width=2,length=5)
-            ax1.tick_params(axis='both',which='minor',width=2,length=3)
-            ax1.plot(tr_raw_data.times('matplotlib'),tr_raw_data.data, color='k', linewidth=2)
-            ax1.text(0.02,0.9,'max_amp:'+str(round(max_amp,8)),transform=ax1.transAxes)
 
-            #----------------------------------------------------------------------------
+        ax1.xaxis.set_major_formatter(axis_Fmt)
+        ax1.xaxis.set_major_locator(axis_major)
+        ax1.xaxis.set_minor_locator(axis_minor)
+        ax1.tick_params(axis='both',which='major',width=2,length=5)
+        ax1.tick_params(axis='both',which='minor',width=2,length=3)
+        ax1.plot(tr_raw_data.times('matplotlib'),tr_raw_data.data, color='k', linewidth=2)
+        ax1.text(0.1, 0.85, tr.stats.station, horizontalalignment='center',verticalalignment='center', transform=ax1.transAxes)
+
+        #----------------------------------------------------------------------------
+        if i == 0:
             ax4.set_title('Continuous Wavelet Transform')
-            ax4.xaxis.set_major_formatter(axis_Fmt)
-            ax4.xaxis.set_major_locator(axis_major)
-            ax4.xaxis.set_minor_locator(axis_minor)
-            ax4.tick_params(axis='both',which='major',width=2,length=5)
-            ax4.tick_params(axis='both',which='minor',width=2,length=3)
+            fig.suptitle('Event Date: '+datetime_window.strftime('%d/%m/%Y'),y=0.95,fontsize=25)
 
-            im = ax4.pcolormesh(x, y, np.abs(scalogram),shading='auto', cmap='viridis')
-            ax4.set_ylabel("Frequency [Hz]")
-            ax4.set_xlabel('Date: '+datetime_window.strftime('%d/%m/%Y'))
+        ax4.xaxis.set_major_formatter(axis_Fmt)
+        ax4.xaxis.set_major_locator(axis_major)
+        ax4.xaxis.set_minor_locator(axis_minor)
+        ax4.tick_params(axis='both',which='major',width=2,length=5)
+        ax4.tick_params(axis='both',which='minor',width=2,length=3)
 
-            axins = inset_axes(ax4,
-                               width="15%",
-                               height="5%",
-                               loc='upper left',
-                               bbox_to_anchor=(0.8, 0.1, 1, 1),
-                               bbox_transform=ax4.transAxes,
-                               borderpad=0,
-                               )
+        im = ax4.pcolormesh(x, y, np.abs(scalogram),shading='auto', cmap='viridis')
+        ax4.set_ylabel("Frequency [Hz]")
 
-            plt.colorbar(im, cax=axins, orientation="horizontal", ticklocation='top')
 
-            #---BUTTON----
-            #Buttons
-            NO_ax_button = plt.axes([0.15, 0.925, 0.05,0.05]) #xposition, yposition, width and height
-            YES_ax_button = plt.axes([0.25, 0.925, 0.05,0.05]) #xposition, yposition, width and height
-            MAYBE_ax_button = plt.axes([0.35, 0.925, 0.05,0.05]) #xposition, yposition, width and height
+        axins = inset_axes(ax4,
+                       width="40%",
+                       height="5%",
+                       loc='upper left',
+                       bbox_to_anchor=(0.60, 0.1, 1, 1),
+                       bbox_transform=ax4.transAxes,
+                       borderpad=0,
+                       )
 
-            #Properties of the button
-            NO_button = Button(NO_ax_button, 'NOISE', color = 'red', hovercolor = 'grey')
-            YES_button = Button(YES_ax_button, 'EVENT', color = 'green', hovercolor = 'grey')
-            MAYBE_button = Button(MAYBE_ax_button, 'MAYBE', color = 'white', hovercolor = 'grey')
+        plt.colorbar(im, cax=axins, orientation="horizontal", ticklocation='top')
 
-            #Saving informations if bottom if clicked:
-            def NO_checked(val):
-                plt.close(fig)
+        #---BUTTON----
+    #Buttons
+    NO_ax_button = plt.axes([0.15, 0.925, 0.05,0.05]) #xposition, yposition, width and height
+    YES_ax_button = plt.axes([0.25, 0.925, 0.05,0.05]) #xposition, yposition, width and height
+    MAYBE_ax_button = plt.axes([0.35, 0.925, 0.05,0.05]) #xposition, yposition, width and height
 
-            def YES_checked(val):
-                daily_event_output = EARTHQUAKE_FINDER_OUTPUT+NETWORK+'.'+STATION+'/Selected_event_data_GOOD/'+CHANNEL+'/'
-                os.makedirs(daily_event_output,exist_ok=True)
-                fig.savefig(daily_event_output+NETWORK+'_'+STATION+'_'+CHANNEL+'_'+datetime_window.strftime('%Y_%d_%m_%H_%M_%S_%f')+'_trim.png', dpi=300, facecolor='w', edgecolor='w')
-                plt.close(fig)
+    #Properties of the button
+    NO_button = Button(NO_ax_button, 'NOISE', color = 'red', hovercolor = 'grey')
+    YES_button = Button(YES_ax_button, 'EVENT', color = 'green', hovercolor = 'grey')
+    MAYBE_button = Button(MAYBE_ax_button, 'MAYBE', color = 'white', hovercolor = 'grey')
 
-            def MAYBE_checked(val):
-                daily_event_output = EARTHQUAKE_FINDER_OUTPUT+NETWORK+'.'+STATION+'/Selected_event_data_MAYBE/'+CHANNEL+'/'
-                os.makedirs(daily_event_output,exist_ok=True)
-                fig.savefig(daily_event_output+NETWORK+'_'+STATION+'_'+CHANNEL+'_'+datetime_window.strftime('%Y_%d_%m_%H_%M_%S_%f')+'_trim.png', dpi=300, facecolor='w', edgecolor='w')
-                plt.close(fig)
+    #Saving informations if bottom if clicked:
+    def NO_checked(val):
+        plt.close(fig)
 
-            #calling the function when the button gets clicked
-            NO_button.on_clicked(NO_checked)
-            YES_button.on_clicked(YES_checked)
-            MAYBE_button.on_clicked(MAYBE_checked)
-            plt.show()
+    def YES_checked(val):
+        daily_event_output = EARTHQUAKE_FINDER_OUTPUT+NETWORK+'/Selected_event_data_GOOD/'
+        os.makedirs(daily_event_output,exist_ok=True)
+        fig.savefig(daily_event_output+NETWORK+'_'+datetime_window.strftime('%Y_%d_%m_%H_%M_%S_%f')+'_trim.png', dpi=300, facecolor='w', edgecolor='w')
+        plt.close(fig)
+
+    def MAYBE_checked(val):
+        daily_event_output = EARTHQUAKE_FINDER_OUTPUT+NETWORK+'/Selected_event_data_MAYBE/'
+        os.makedirs(daily_event_output,exist_ok=True)
+        fig.savefig(daily_event_output+NETWORK+'_'+datetime_window.strftime('%Y_%d_%m_%H_%M_%S_%f')+'_trim.png', dpi=300, facecolor='w', edgecolor='w')
+        plt.close(fig)
+
+    #calling the function when the button gets clicked
+    NO_button.on_clicked(NO_checked)
+    YES_button.on_clicked(YES_checked)
+    MAYBE_button.on_clicked(MAYBE_checked)
+    plt.show()
+
+    processed_EVENT_FOLDER_H5.append(data_h5)
+    lst3 = [value for value in EVENT_FOLDER_H5 if value not in processed_EVENT_FOLDER_H5]
+    np.save(ASDF_FILES+'EVENT_DATA_FILES/processed_folders',lst3)
