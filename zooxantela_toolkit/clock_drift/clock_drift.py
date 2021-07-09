@@ -56,10 +56,17 @@ import pyasdf
 
 #Configuration file
 
+<<<<<<< Updated upstream
 MSEED_DIR_OBS = '/media/diogoloc/Backup/dados_posdoc/ON_MAR/obs_data_MSEED/'
+=======
+MSEED_DIR_OBS = '/home/diogoloc/dados_posdoc/ON_MAR/obs_data_MSEED/'
+
+MSEED_DIR_STA = '/home/diogoloc/dados_posdoc/ON_MAR/data/'
+>>>>>>> Stashed changes
 
 MSEED_DIR_STA = '/media/diogoloc/Backup/dados_posdoc/ON_MAR/data/'
 
+<<<<<<< Updated upstream
 STATIONS_LST = ['ABR01','DUB01','MAN01','OBS20','TER01','ALF01','GDU01','NAN01','TIJ01','CAJ01','GUA01',
 'OBS17','PET01','TRI01','CAM01','JAC01','OBS18','RIB01','VAS01','CMC01','MAJ01','SLP01']
 
@@ -68,10 +75,23 @@ STATIONXML_DIR = '/media/diogoloc/Backup/dados_posdoc/ON_MAR/XML_ON_OBS_CC/'
 CLOCK_DRIFT_OUTPUT = '/media/diogoloc/Backup/dados_posdoc/ON_MAR/CLOCK_DRIFT_OUTPUT/FIGURAS/'
 
 JSON_FILES = '/media/diogoloc/Backup/dados_posdoc/ON_MAR/CLOCK_DRIFT_OUTPUT/JSON_FILES/'
+=======
+CLOCK_DRIFT_OUTPUT = '/home/diogoloc/dados_posdoc/ON_MAR/CLOCK_DRIFT_OUTPUT/FIGURAS/'
+
+JSON_FILES = '/home/diogoloc/dados_posdoc/ON_MAR/CLOCK_DRIFT_OUTPUT/JSON_FILES/'
+>>>>>>> Stashed changes
 
 #Shapefile  boundary states
 BOUNDARY_STATES_SHP = '/media/diogoloc/Backup/dados_posdoc/SIG_dados/Projeto_ON_MAR/shapefile/brasil_estados/UFEBRASIL.shp'
 
+<<<<<<< Updated upstream
+=======
+STATIONS_LST = ['TIJ01','DUB01','RIB01','GUA01','SLP01','PET01','CAM01','ABR01','VAS01']
+
+OBS_LST = ['OBS17','OBS18','OBS20']
+
+
+>>>>>>> Stashed changes
 FIRSTDAY = '2019-08-01'
 LASTDAY = '2020-06-01'
 
@@ -664,12 +684,13 @@ class CrossCorrelation:
 # ============
 # Main program
 # ============
-'''
+
 print('===============================')
 print('Scanning name of miniseed files')
 print('===============================')
 print('\n')
 start_time = time.time()
+<<<<<<< Updated upstream
 
 files_STA = filelist(basedir=MSEED_DIR_STA,interval_period_date=INTERVAL_PERIOD_DATE)
 files_OBS = filelist(basedir=MSEED_DIR_OBS,interval_period_date=INTERVAL_PERIOD_DATE)
@@ -681,6 +702,15 @@ for i in files1:
 
 files = [item for sublist in files_final for item in sublist]
 
+=======
+
+files_STA = filelist(basedir=MSEED_DIR_STA,interval_period_date=INTERVAL_PERIOD_DATE)
+files_OBS = filelist(basedir=MSEED_DIR_OBS,interval_period_date=INTERVAL_PERIOD_DATE)
+files = files_STA+files_OBS
+
+print('Total of Land stations files = '+str(len(files_STA)))
+print('Total of OBS stations files = '+str(len(files_OBS)))
+>>>>>>> Stashed changes
 print('Total of files = '+str(len(files)))
 print("--- %.2f execution time (min) ---" % ((time.time() - start_time)/60))
 print('\n')
@@ -700,7 +730,7 @@ with Pool(processes=num_processes) as p:
 
 print("--- %.2f execution time (min) ---" % ((time.time() - start_time)/60))
 print('\n')
-
+'''
 print('====================================')
 print('Calculating daily Cross-correlations:')
 print('====================================')
@@ -1821,3 +1851,4 @@ for i in tqdm(crosscorr_pairs_data):
 		os.makedirs(output_figure_CLOCK_DRIFT,exist_ok=True)
 		fig.savefig(output_figure_CLOCK_DRIFT+'CLOCK_DRIFT_BETWEEN_'+name_sta1+'_'+name_sta2+'.png',dpi=300)
 		plt.close()
+'''

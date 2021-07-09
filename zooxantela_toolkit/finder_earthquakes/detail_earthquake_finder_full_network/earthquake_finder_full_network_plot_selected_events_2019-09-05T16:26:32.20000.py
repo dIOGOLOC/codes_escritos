@@ -79,8 +79,8 @@ STATIONS_LST = ['ABR01']
 
 OBS_LST = ['OBS17','OBS18','OBS20']
 
-PEM = 1
-PET = 50
+PEM = 5
+PET = 10
 
 FILTER_DATA = [1,20]
 
@@ -130,6 +130,7 @@ for sta in OBS_LST:
         lst_OBS.append(b)
 
 files_INTERVAL_PERIOD_DATE = lst_OBS+lst_INLAND
+
 print('\n')
 print('==============')
 print('Finding events')
