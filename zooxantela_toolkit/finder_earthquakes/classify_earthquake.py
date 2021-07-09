@@ -52,16 +52,14 @@ import cartopy.feature as cfeature
 
 from pyasdf import ASDFDataSet
 
-from mtspec import mtspec, wigner_ville_spectrum
-
 from obspy.signal.trigger import classic_sta_lta, trigger_onset, coincidence_trigger,recursive_sta_lta
 
 
 #Configuration file
 
-EARTHQUAKE_FINDER_OUTPUT = '/home/diogoloc/dados_posdoc/ON_MAR/EARTHQUAKE_NETWORK_FINDER_OUTPUT/FIGURAS/'
+EARTHQUAKE_FINDER_OUTPUT = '/media/diogoloc/Backup/dados_posdoc/ON_MAR/EARTHQUAKE_FINDER_NETWORK_OUTPUT/FIGURAS/'
 
-ASDF_FILES = '/home/diogoloc/dados_posdoc/ON_MAR/EARTHQUAKE_NETWORK_FINDER_OUTPUT/ASDF_FILES/'
+ASDF_FILES = '/media/diogoloc/Backup/dados_posdoc/ON_MAR/EARTHQUAKE_FINDER_NETWORK_OUTPUT/ASDF_FILES/'
 
 FILTER_DATA = [0.1,45]
 

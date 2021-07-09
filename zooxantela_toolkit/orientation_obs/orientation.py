@@ -63,11 +63,13 @@ MSEED_DIR_STA = '/media/diogoloc/Backup/dados_posdoc/ON_MAR/data/'
 STATIONS_LST = ['ABR01','DUB01','MAN01','OBS20','TER01','ALF01','GDU01','NAN01','TIJ01','CAJ01','GUA01',
 'OBS17','PET01','TRI01','CAM01','JAC01','OBS18','RIB01','VAS01','CMC01','MAJ01','SLP01']
 
+CHANNEL_LST = ['HHZ.D','HHN.D','HHE.D','HH1.D','HH2.D']
+
 STATIONXML_DIR = '/media/diogoloc/Backup/dados_posdoc/ON_MAR/XML_ON_OBS_CC/'
 
-CLOCK_DRIFT_OUTPUT = '/media/diogoloc/Backup/dados_posdoc/ON_MAR/CLOCK_DRIFT_OUTPUT/FIGURAS/'
+ORIENTATION_OUTPUT = '/media/diogoloc/Backup/dados_posdoc/ON_MAR/ORIENTATION_OUTPUT/FIGURAS/'
 
-JSON_FILES = '/media/diogoloc/Backup/dados_posdoc/ON_MAR/CLOCK_DRIFT_OUTPUT/JSON_FILES/'
+JSON_FILES = '/media/diogoloc/Backup/dados_posdoc/ON_MAR/ORIENTATION_OUTPUT/JSON_FILES/'
 
 #Shapefile  boundary states
 BOUNDARY_STATES_SHP = '/media/diogoloc/Backup/dados_posdoc/SIG_dados/Projeto_ON_MAR/shapefile/brasil_estados/UFEBRASIL.shp'
@@ -145,7 +147,7 @@ def filelist(basedir,interval_period_date):
     		if any(day_s in files_path for day_s in interval_period_date):
     			files_lst.append(files_path)
 
-    file_lsts = sorted([i for i in files_lst if 'HHZ' in i])
+    file_lsts = sorted([i for i in files_lst if any(channel_s in i for channel_s in CHANNEL_LST)])
 
     return file_lsts
 
@@ -224,7 +226,7 @@ def Normalize(data):
 
 #-------------------------------------------------------------------------------
 
-def get_stations_data(f,Amp_clip=True,onebit_norm=True,white_spectral=True):
+def get_stations_data(f,Amp_clip=True,onebit_norm=False,white_spectral=True):
     """
     Gets stations daily data from miniseed file
 
@@ -245,6 +247,11 @@ def get_stations_data(f,Amp_clip=True,onebit_norm=True,white_spectral=True):
     julday_day = time_day.split('.')[1]
 
     output_DATA_DAY = JSON_FILES+'DATA_DAY_FILES/'+year_day+'.'+julday_day+'/'
+
+    if sta_channel_id == 'HH1':
+        sta_channel_id = 'HHN'
+    if sta_channel_id == 'HH2':
+        sta_channel_id = 'HHE'
 
     if os.path.isfile(output_DATA_DAY+'DATA_DAY_'+sta_channel_id+'_'+year_day+'_'+julday_day+'.json'):
         pass
@@ -375,6 +382,8 @@ def crosscorr_func(stationtrace_pairs):
     year_day = sta1['time_day'].split('.')[0]
     julday_day = sta1['time_day'].split('.')[1]
 
+    sta1_fileID = sta1['fileID']
+    sta2_fileID = sta2['fileID']
 
     day_crosscor_causal = CrossCorrelation(name1=sta1['name'],name2=sta2['name'],lat1=sta1['lat'],lon1=sta1['lon'],lat2=sta2['lat'],lon2=sta2['lon'],pair_time_day=sta1['time_day'])
     day_crosscor_acausal = CrossCorrelation(name1=sta2['name'],name2=sta1['name'],lat1=sta2['lat'],lon1=sta2['lon'],lat2=sta1['lat'],lon2=sta1['lon'],pair_time_day=sta1['time_day'])
@@ -396,14 +405,16 @@ def crosscorr_func(stationtrace_pairs):
             CrossCorrelation_dic['sta1_name'] = sta1['name']
             CrossCorrelation_dic['sta2_loc'] = [sta2['lat'],sta2['lon']]
             CrossCorrelation_dic['sta2_name'] = sta2['name']
+            CrossCorrelation_dic['sta1_fileID'] = sta1['fileID']
+            CrossCorrelation_dic['sta2_fileID'] = sta2['fileID']
             CrossCorrelation_dic['crosscorr_daily_causal_time'] = day_crosscor_causal.timearray.tolist()
             CrossCorrelation_dic['crosscorr_daily_causal'] = day_crosscor_causal.dataarray.tolist()
             CrossCorrelation_dic['crosscorr_daily_acausal'] = day_crosscor_acausal.dataarray.tolist()
             CrossCorrelation_dic['crosscorr_daily_acausal_time'] = day_crosscor_acausal.timearray.tolist()
 
-            output_CrossCorrelation_DAY = JSON_FILES+'CROSS_CORR_DAY_FILES/'+year_day+'.'+julday_day+'/'
+            output_CrossCorrelation_DAY = JSON_FILES+'CROSS_CORR_ORIENTATION_DAY_FILES/'+year_day+'.'+julday_day+'/'
             os.makedirs(output_CrossCorrelation_DAY,exist_ok=True)
-            with open(output_CrossCorrelation_DAY+'CROSS_CORR_DAY_FILES_'+sta1['name']+'_'+sta2['name']+'_'+year_day+'_'+julday_day+'.json', 'w') as fp:
+            with open(output_CrossCorrelation_DAY+'CROSS_CORR_ORIENTATION_DAY_FILES_'+sta1['fileID']+'_'+sta2['fileID']+'_'+year_day+'_'+julday_day+'.json', 'w') as fp:
                 json.dump(CrossCorrelation_dic, fp)
 
 		    # ============================
@@ -664,7 +675,7 @@ class CrossCorrelation:
 # ============
 # Main program
 # ============
-'''
+
 print('===============================')
 print('Scanning name of miniseed files')
 print('===============================')
@@ -707,13 +718,13 @@ print('====================================')
 print('\n')
 
 days_crosscor = sorted(glob.glob(JSON_FILES+'DATA_DAY_FILES/*'))
-
 stationtrace_pairs_lst = []
 for i,j in enumerate(days_crosscor):
 	stations_file = sorted(glob.glob(j+'/*'))
 	stationtrace_pairs_lst.append(list(combinations(stations_file, 2)))
 
 stationtrace_pairs = [item for sublist in stationtrace_pairs_lst for item in sublist]
+
 start_time = time.time()
 
 pool = Pool(processes=num_processes)
@@ -1255,6 +1266,7 @@ for j,i in enumerate(crosscorr_pairs_data):
 
 	crosscorr_pairs_data_10_day_all.append(sum(data_to_plot)/len(data_to_plot))
 	crosscorr_pairs_distance_10_day_all.append(dist_pair)
+
 
 print('\n')
 print('============================')
@@ -1821,3 +1833,4 @@ for i in tqdm(crosscorr_pairs_data):
 		os.makedirs(output_figure_CLOCK_DRIFT,exist_ok=True)
 		fig.savefig(output_figure_CLOCK_DRIFT+'CLOCK_DRIFT_BETWEEN_'+name_sta1+'_'+name_sta2+'.png',dpi=300)
 		plt.close()
+'''

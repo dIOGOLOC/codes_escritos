@@ -75,7 +75,8 @@ FILTER_DATA = [2,16]
 
 NETWORK = 'ON'
 
-STATIONS_LST = ['TIJ01','DUB01','RIB01','GUA01','SLP01','PET01','CAM01','ABR01','VAS01']
+STATIONS_LST = ['TIJ01','DUB01','RIB01','GUA01','PET01','CAM01','ABR01','VAS01']
+OBSS_LST = ['OBS17','OBS18','OBS20']
 
 CHANNEL = 'HHZ'
 
@@ -335,7 +336,10 @@ for sta in STATIONS_LST:
     lst_INLAND.append([i for i in lst_INLAND1 if sta in i][0])
 print('Total of INLAND stations = '+str(len(lst_INLAND)))
 
-lst_OBS = glob.glob(MSEED_DIR_OBS+NETWORK+'/*')
+lst_OBS1 = glob.glob(MSEED_DIR_OBS+NETWORK+'/*')
+lst_OBS = []
+for sta in OBSS_LST:
+    lst_OBS.append([i for i in lst_OBS1 if sta in i][0])
 print('Total of OBS stations = '+str(len(lst_OBS)))
 
 files_INLAND = []
