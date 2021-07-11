@@ -65,14 +65,18 @@ STATIONS_LST = ['ABR01','DUB01','MAN01','OBS20','TER01','ALF01','GDU01','NAN01',
 
 CHANNEL_LST = ['HHZ.D','HHN.D','HHE.D','HH1.D','HH2.D']
 
-STATIONXML_DIR = '/media/diogoloc/Backup/dados_posdoc/ON_MAR/XML_ON_OBS_CC/'
+#STATIONXML_DIR = '/media/diogoloc/Backup/dados_posdoc/ON_MAR/XML_ON_OBS_CC/'
+STATIONXML_DIR = '/run/user/1000/gvfs/smb-share:server=hatabackup.local,share=dados_posdoc/ON_MAR/XML_ON_OBS_CC/'
 
-ORIENTATION_OUTPUT = '/media/diogoloc/Backup/dados_posdoc/ON_MAR/ORIENTATION_OUTPUT/FIGURAS/'
+#ORIENTATION_OUTPUT = '/media/diogoloc/Backup/dados_posdoc/ON_MAR/ORIENTATION_OUTPUT/FIGURAS/'
+ORIENTATION_OUTPUT = '/run/user/1000/gvfs/smb-share:server=hatabackup.local,share=dados_posdoc/ON_MAR/ORIENTATION_OUTPUT/FIGURAS/'
 
-JSON_FILES = '/media/diogoloc/Backup/dados_posdoc/ON_MAR/ORIENTATION_OUTPUT/JSON_FILES/'
+#JSON_FILES = '/media/diogoloc/Backup/dados_posdoc/ON_MAR/ORIENTATION_OUTPUT/JSON_FILES/'
+JSON_FILES = '/run/user/1000/gvfs/smb-share:server=hatabackup.local,share=dados_posdoc/ON_MAR/ORIENTATION_OUTPUT/JSON_FILES/'
 
 #Shapefile  boundary states
-BOUNDARY_STATES_SHP = '/media/diogoloc/Backup/dados_posdoc/SIG_dados/Projeto_ON_MAR/shapefile/brasil_estados/UFEBRASIL.shp'
+#BOUNDARY_STATES_SHP = '/media/diogoloc/Backup/dados_posdoc/SIG_dados/Projeto_ON_MAR/shapefile/brasil_estados/UFEBRASIL.shp'
+BOUNDARY_STATES_SHP = '/run/user/1000/gvfs/smb-share:server=hatabackup.local,share=dados_posdoc/SIG_dados/Projeto_ON_MAR/shapefile/brasil_estados/UFEBRASIL.shp'
 
 FIRSTDAY = '2019-08-01'
 LASTDAY = '2020-06-01'
@@ -382,8 +386,8 @@ def crosscorr_func(stationtrace_pairs):
     year_day = sta1['time_day'].split('.')[0]
     julday_day = sta1['time_day'].split('.')[1]
 
-    sta1_fileID = sta1['fileID']
-    sta2_fileID = sta2['fileID']
+    sta1_CHANNEL = sta1['fileID'].split('..')[1]
+    sta2_CHANNEL = sta2['fileID'].split('..')[1]
 
     day_crosscor_causal = CrossCorrelation(name1=sta1['name'],name2=sta2['name'],lat1=sta1['lat'],lon1=sta1['lon'],lat2=sta2['lat'],lon2=sta2['lon'],pair_time_day=sta1['time_day'])
     day_crosscor_acausal = CrossCorrelation(name1=sta2['name'],name2=sta1['name'],lat1=sta2['lat'],lon1=sta2['lon'],lat2=sta1['lat'],lon2=sta1['lon'],pair_time_day=sta1['time_day'])
@@ -405,8 +409,8 @@ def crosscorr_func(stationtrace_pairs):
             CrossCorrelation_dic['sta1_name'] = sta1['name']
             CrossCorrelation_dic['sta2_loc'] = [sta2['lat'],sta2['lon']]
             CrossCorrelation_dic['sta2_name'] = sta2['name']
-            CrossCorrelation_dic['sta1_fileID'] = sta1['fileID']
-            CrossCorrelation_dic['sta2_fileID'] = sta2['fileID']
+            CrossCorrelation_dic['sta1_channel'] = sta1_CHANNEL
+            CrossCorrelation_dic['sta2_channel'] = sta2_CHANNEL
             CrossCorrelation_dic['crosscorr_daily_causal_time'] = day_crosscor_causal.timearray.tolist()
             CrossCorrelation_dic['crosscorr_daily_causal'] = day_crosscor_causal.dataarray.tolist()
             CrossCorrelation_dic['crosscorr_daily_acausal'] = day_crosscor_acausal.dataarray.tolist()
@@ -414,7 +418,7 @@ def crosscorr_func(stationtrace_pairs):
 
             output_CrossCorrelation_DAY = JSON_FILES+'CROSS_CORR_ORIENTATION_DAY_FILES/'+year_day+'.'+julday_day+'/'
             os.makedirs(output_CrossCorrelation_DAY,exist_ok=True)
-            with open(output_CrossCorrelation_DAY+'CROSS_CORR_ORIENTATION_DAY_FILES_'+sta1['fileID']+'_'+sta2['fileID']+'_'+year_day+'_'+julday_day+'.json', 'w') as fp:
+            with open(output_CrossCorrelation_DAY+'CROSS_CORR_ORIENTATION_DAY_FILES_'+sta1['name']+'_'+sta1_CHANNEL+'_'+sta2['name']+'_'+sta2_CHANNEL+'_'+year_day+'_'+julday_day+'.json', 'w') as fp:
                 json.dump(CrossCorrelation_dic, fp)
 
 		    # ============================
@@ -473,15 +477,15 @@ def crosscorr_func(stationtrace_pairs):
             ax.set_xlabel('time (s)',fontsize=14)
             ax.set_title('Dist = '+str(round(day_crosscor_causal.dist()))+' km',fontsize=14)
 
-            output_figure_CrossCorrelation_DAY = CLOCK_DRIFT_OUTPUT+'CROSS_CORR_DAY_FIGURES/'+year_day+'.'+julday_day+'/'
+            output_figure_CrossCorrelation_DAY = ORIENTATION_OUTPUT+'CROSS_CORR_DAY_FIGURES/'+year_day+'.'+julday_day+'/'
             os.makedirs(output_figure_CrossCorrelation_DAY,exist_ok=True)
-            fig.savefig(output_figure_CrossCorrelation_DAY+'CROSS_CORR_DAY_FIG_'+sta1['name']+'_'+sta2['name']+'_'+year_day+'_'+julday_day+'.png')
+            fig.savefig(output_figure_CrossCorrelation_DAY+'CROSS_CORR_DAY_FIG_'+sta1['name']+'_'+sta1_CHANNEL+'_'+sta2['name']+'_'+sta2_CHANNEL+'_'+year_day+'_'+julday_day+'.png')
             plt.close('all')
 
         return sta1['time_day']
 
     else:
-        print("Problem: CrossCorrelation between "+sta1['name']+" and "+sta2['name']+" in "+sta2['time_day'])
+        print("Problem: CrossCorrelation between "+sta1['name']+'_'+sta1_CHANNEL+'_'+sta2['name']+'_'+sta2_CHANNEL+" in "+sta2['time_day'])
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -495,6 +499,8 @@ def crosscorr_stack(crosscorr_pairs_data):
     #Reading data
 	name_sta1 = list(set([json.load(open(a))['sta1_name'] for a in crosscorr_pairs_data]))[0]
 	name_sta2 = list(set([json.load(open(a))['sta2_name'] for a in crosscorr_pairs_data]))[0]
+    channel_sta1 = list(set([json.load(open(a))['sta1_channel'] for a in crosscorr_pairs_data]))[0]
+    channel_sta2 = list(set([json.load(open(a))['sta2_channel'] for a in crosscorr_pairs_data]))[0]
 	dist_pair = json.load(open(crosscorr_pairs_data[0]))['dist']
 
 	loc_sta1 = json.load(open(crosscorr_pairs_data[0]))['sta1_loc']
@@ -518,12 +524,14 @@ def crosscorr_stack(crosscorr_pairs_data):
 	CrossCorrelation_stack_dic['sta2_name'] = name_sta2
 	CrossCorrelation_stack_dic['sta1_loc'] = loc_sta1
 	CrossCorrelation_stack_dic['sta2_loc'] = loc_sta2
+    CrossCorrelation_stack_dic['sta1_channel'] = channel_sta1
+    CrossCorrelation_stack_dic['sta2_channel'] = channel_sta2
 	CrossCorrelation_stack_dic['crosscorr_stack'] = data_to_plot.tolist()
 	CrossCorrelation_stack_dic['crosscorr_stack_time'] = time_to_plot.tolist()
 
-	output_CrossCorrelation_DAY = JSON_FILES+'CROSS_CORR_STACKED_FILES/'+name_sta1+'.'+name_sta2+'/'
+	output_CrossCorrelation_DAY = JSON_FILES+'CROSS_CORR_STACKED_FILES/'+name_sta1+'_'+channel_sta1+'.'+name_sta2+'_'+channel_sta2+'/'
 	os.makedirs(output_CrossCorrelation_DAY,exist_ok=True)
-	with open(output_CrossCorrelation_DAY+'CROSS_CORR_STACKED_FILES_'+name_sta1+'_'+name_sta2+'.json', 'w') as fp:
+	with open(output_CrossCorrelation_DAY+'CROSS_CORR_STACKED_FILES_'+name_sta1+'_'+channel_sta1+'.'+name_sta2+'_'+channel_sta2+'.json', 'w') as fp:
 		json.dump(CrossCorrelation_stack_dic, fp)
 
 
@@ -675,7 +683,7 @@ class CrossCorrelation:
 # ============
 # Main program
 # ============
-
+'''
 print('===============================')
 print('Scanning name of miniseed files')
 print('===============================')
@@ -711,7 +719,7 @@ with Pool(processes=num_processes) as p:
 
 print("--- %.2f execution time (min) ---" % ((time.time() - start_time)/60))
 print('\n')
-
+'''
 print('====================================')
 print('Calculating daily Cross-correlations:')
 print('====================================')
@@ -741,7 +749,8 @@ print('====================================')
 print('\n')
 
 #Collecting daily list of cross-correlations
-crosscorr_days_lst = sorted(glob.glob(JSON_FILES+'CROSS_CORR_DAY_FILES/*'))
+#crosscorr_days_lst = sorted(glob.glob(JSON_FILES+'CROSS_CORR_DAY_FILES/*'))
+crosscorr_days_lst = sorted(glob.glob('/run/user/1000/gvfs/smb-share:server=hatabackup.local,share=dados_posdoc/ON_MAR/ORIENTATION_OUTPUT/JSON_FILES/CROSS_CORR_DAY_FILES/*'))
 
 crosscorr_pairs_lst = []
 for i,j in enumerate(crosscorr_days_lst):
@@ -750,6 +759,7 @@ for i,j in enumerate(crosscorr_days_lst):
 
 #Make a list of list flat
 crosscorr_pairs = [item for sublist in crosscorr_pairs_lst for item in sublist]
+print(crosscorr_pairs_lst[0])
 
 #Separating according to pairs name
 crosscorr_pairs_name_lst = []
@@ -879,7 +889,7 @@ for i in crosscorr_pairs_data:
 		# adding label to time
 			ax.set_xlabel('Time (s)',fontsize=14)
 
-	output_figure_CrossCorrelation_DAY = CLOCK_DRIFT_OUTPUT+'CROSS_CORR_STACK_FIGURES/'
+	output_figure_CrossCorrelation_DAY = ORIENTATION_OUTPUT+'CROSS_CORR_STACK_FIGURES/'
 	os.makedirs(output_figure_CrossCorrelation_DAY,exist_ok=True)
 	fig.savefig(output_figure_CrossCorrelation_DAY+'CROSS_CORR_STACK_FIG_'+name_sta1+'_'+name_sta2+'.png')
 	plt.close()
@@ -1197,7 +1207,7 @@ for i in tqdm(crosscorr_pairs_data):
 	                   )
 	plt.colorbar(im, cax=axins, orientation="horizontal", ticklocation='top')
 
-	output_figure_CrossCorrelation_DAY = CLOCK_DRIFT_OUTPUT+'CROSS_CORR_10_STACK_FIGURES/'
+	output_figure_CrossCorrelation_DAY = ORIENTATION_OUTPUT+'CROSS_CORR_10_STACK_FIGURES/'
 	os.makedirs(output_figure_CrossCorrelation_DAY,exist_ok=True)
 	fig.savefig(output_figure_CrossCorrelation_DAY+'CROSS_CORR_10_STACK_FIG_'+name_sta1+'_'+name_sta2+'.png')
 	plt.close()
@@ -1591,7 +1601,7 @@ axins = inset_axes(ax7,
                    )
 plt.colorbar(im, cax=axins, orientation="horizontal", ticklocation='top')
 
-output_figure_CrossCorrelation_DAY = CLOCK_DRIFT_OUTPUT+'CROSS_CORR_STACK_INTERSTATION_DISTANCE_FIGURES/'
+output_figure_CrossCorrelation_DAY = ORIENTATION_OUTPUT+'CROSS_CORR_STACK_INTERSTATION_DISTANCE_FIGURES/'
 os.makedirs(output_figure_CrossCorrelation_DAY,exist_ok=True)
 fig.savefig(output_figure_CrossCorrelation_DAY+'CROSS_CORR_STACK_INTERSTATION_DISTANCE_FIG.png',dpi=300)
 plt.close()
@@ -1829,7 +1839,7 @@ for i in tqdm(crosscorr_pairs_data):
 
 		fig.autofmt_xdate()
 
-		output_figure_CLOCK_DRIFT = CLOCK_DRIFT_OUTPUT+'CLOCK_DRIFT_FIGURES/'
+		output_figure_CLOCK_DRIFT = ORIENTATION_OUTPUT+'CLOCK_DRIFT_FIGURES/'
 		os.makedirs(output_figure_CLOCK_DRIFT,exist_ok=True)
 		fig.savefig(output_figure_CLOCK_DRIFT+'CLOCK_DRIFT_BETWEEN_'+name_sta1+'_'+name_sta2+'.png',dpi=300)
 		plt.close()
