@@ -65,18 +65,18 @@ STATIONS_LST = ['ABR01','DUB01','MAN01','OBS20','TER01','ALF01','GDU01','NAN01',
 
 CHANNEL_LST = ['HHZ.D','HHN.D','HHE.D','HH1.D','HH2.D']
 
-#STATIONXML_DIR = '/media/diogoloc/Backup/dados_posdoc/ON_MAR/XML_ON_OBS_CC/'
-STATIONXML_DIR = '/run/user/1000/gvfs/smb-share:server=hatabackup.local,share=dados_posdoc/ON_MAR/XML_ON_OBS_CC/'
+STATIONXML_DIR = '/media/diogoloc/Backup/dados_posdoc/ON_MAR/XML_ON_OBS_CC/'
+#STATIONXML_DIR = '/run/user/1000/gvfs/smb-share:server=hatabackup.local,share=dados_posdoc/ON_MAR/XML_ON_OBS_CC/'
 
-#ORIENTATION_OUTPUT = '/media/diogoloc/Backup/dados_posdoc/ON_MAR/ORIENTATION_OUTPUT/FIGURAS/'
-ORIENTATION_OUTPUT = '/run/user/1000/gvfs/smb-share:server=hatabackup.local,share=dados_posdoc/ON_MAR/ORIENTATION_OUTPUT/FIGURAS/'
+ORIENTATION_OUTPUT = '/media/diogoloc/Backup/dados_posdoc/ON_MAR/ORIENTATION_OUTPUT/FIGURAS/'
+#ORIENTATION_OUTPUT = '/run/user/1000/gvfs/smb-share:server=hatabackup.local,share=dados_posdoc/ON_MAR/ORIENTATION_OUTPUT/FIGURAS/'
 
-#JSON_FILES = '/media/diogoloc/Backup/dados_posdoc/ON_MAR/ORIENTATION_OUTPUT/JSON_FILES/'
-JSON_FILES = '/run/user/1000/gvfs/smb-share:server=hatabackup.local,share=dados_posdoc/ON_MAR/ORIENTATION_OUTPUT/JSON_FILES/'
+JSON_FILES = '/media/diogoloc/Backup/dados_posdoc/ON_MAR/ORIENTATION_OUTPUT/JSON_FILES/'
+#JSON_FILES = '/run/user/1000/gvfs/smb-share:server=hatabackup.local,share=dados_posdoc/ON_MAR/ORIENTATION_OUTPUT/JSON_FILES/'
 
 #Shapefile  boundary states
-#BOUNDARY_STATES_SHP = '/media/diogoloc/Backup/dados_posdoc/SIG_dados/Projeto_ON_MAR/shapefile/brasil_estados/UFEBRASIL.shp'
-BOUNDARY_STATES_SHP = '/run/user/1000/gvfs/smb-share:server=hatabackup.local,share=dados_posdoc/SIG_dados/Projeto_ON_MAR/shapefile/brasil_estados/UFEBRASIL.shp'
+BOUNDARY_STATES_SHP = '/media/diogoloc/Backup/dados_posdoc/SIG_dados/Projeto_ON_MAR/shapefile/brasil_estados/UFEBRASIL.shp'
+#BOUNDARY_STATES_SHP = '/run/user/1000/gvfs/smb-share:server=hatabackup.local,share=dados_posdoc/SIG_dados/Projeto_ON_MAR/shapefile/brasil_estados/UFEBRASIL.shp'
 
 FIRSTDAY = '2019-08-01'
 LASTDAY = '2020-06-01'
@@ -426,7 +426,7 @@ def crosscorr_func(stationtrace_pairs):
 		    # ============================
 
             fig = plt.figure(figsize=(15, 15))
-            fig.suptitle(sta1['name']+'-'+sta2['name']+' - Day - '+UTCDateTime(year=int(year_day),julday=int(julday_day)).strftime('%d/%m/%Y'),fontsize=20)
+            fig.suptitle(sta1['name']+'.'+sta1_CHANNEL+'-'+sta2['name']+'.'+sta2_CHANNEL+' - Day - '+UTCDateTime(year=int(year_day),julday=int(julday_day)).strftime('%d/%m/%Y'),fontsize=20)
 
             gs = gridspec.GridSpec(2, 1,wspace=0.2, hspace=0.5)
 
@@ -485,7 +485,7 @@ def crosscorr_func(stationtrace_pairs):
         return sta1['time_day']
 
     else:
-        print("Problem: CrossCorrelation between "+sta1['name']+'_'+sta1_CHANNEL+'_'+sta2['name']+'_'+sta2_CHANNEL+" in "+sta2['time_day'])
+        print("Problem: CrossCorrelation between "+sta1['name']+'.'+sta1_CHANNEL+'-'+sta2['name']+'.'+sta2_CHANNEL+" in "+sta2['time_day'])
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -543,7 +543,7 @@ def crosscorr_stack(crosscorr_pairs_data):
 
 class StationDayData:
     """
-    Class to save station info: name, network, channel, files directory, coordinates, datetime and data.
+    Class to save station info: name, network, fileID, files directory, coordinates, datetime and data.
     """
 
     def __init__(self, name, network, fileID,lon=None,lat=None,time_day=None,hour_lst=None,data_day=None):
@@ -587,16 +587,18 @@ class StationDayData:
 class CrossCorrelation:
     """
     Cross-correlation class, which contains:
-    - a pair of sets of names
+    - a pair of sets of names and channels
     - year and julian day
     - distance between stations
     - a cross-correlation data list
     """
 
-    def __init__(self, name1, name2, lat1, lon1, lat2, lon2, pair_time_day):
+    def __init__(self, name1, name2, channel_1_name, channel_2_name, lat1, lon1, lat2, lon2, pair_time_day):
         """
         @type name1: str
         @type name2: str
+        @type channel_1_name: str
+        @type channel_2_name: str
         @type lat1: float
         @type lon1: float
         @type lat2: float
@@ -604,9 +606,13 @@ class CrossCorrelation:
         @type pair_time_day: str
         """
 
-        # names of stations
+        # names of the stations
         self.name1 = name1
         self.name2 = name2
+
+        # channel names of the stations
+        self.channel_1_name = channel_1_name
+        self.channel_2_name = channel_2_name
 
         # loc of stations
         self.lat1 = lat1
@@ -618,8 +624,8 @@ class CrossCorrelation:
         self.croscorr_day = pair_time_day
 
     def __repr__(self):
-        s = '<cross-correlation between stations {0}-{1}: date: {2}>'
-        return s.format(self.name1, self.name2, self.croscorr_day)
+        s = '<cross-correlation between stations {sta1}.{ch_sta1}-{sta2}.{ch_sta2}: date: {crossday}>'
+        return s.format(sta1=self.name1, ch_sta1=self.channel_1_name, sta2=self.name2, ch_sta2=self.channel_2_name, crossday=self.croscorr_day)
 
     def __str__(self):
         """
@@ -627,9 +633,9 @@ class CrossCorrelation:
                365 days from 2002-01-01 to 2002-12-01'
         """
         s = ('Cross-correlation between stations '
-             '{sta1}-{sta2}: '
+             '{sta1}.{ch_sta1}-{sta2}.{ch_sta2}: '
              'Date: {crossday}')
-        return s.format(sta1=self.name1,sta2=self.name2,crossday=self.croscorr_day)
+        return s.format(sta1=self.name1, ch_sta1=self.channel_1_name, sta2=self.name2, ch_sta2=self.channel_2_name, crossday=self.croscorr_day)
 
     def dist(self):
         """
