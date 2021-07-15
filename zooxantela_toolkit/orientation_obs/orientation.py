@@ -746,7 +746,7 @@ for result in tqdm(pool.imap(func=crosscorr_func, iterable=stationtrace_pairs), 
 	CrossCorrelation_days_lst.append(result)
 
 print("--- %.2f execution time (min) ---" % ((time.time() - start_time)/60))
-'''
+
 print('\n')
 print('====================================')
 print('Stacking daily Cross-correlations:')
@@ -953,8 +953,11 @@ for i in tqdm(crosscorr_pairs_data):
 
 		date_to_plot.append(crosscorr_pair_date_10day[ind])
 		name_sta1 = json.load(open(data10[0]))['sta1_name']
+		channel_sta1 = json.load(open(data10[0]))['sta1_channel']
 		name_sta2 = json.load(open(data10[0]))['sta2_name']
+		channel_sta2 = json.load(open(data10[0]))['sta2_channel']
 		dist_pair = json.load(open(data10[0]))['dist']
+
 
 		causal_lst = np.mean(np.array([json.load(open(a))['crosscorr_daily_causal'] for a in data10]),axis=0)
 		acausal_lst = np.mean(np.array([json.load(open(a))['crosscorr_daily_acausal'] for a in data10]),axis=0)
@@ -968,257 +971,263 @@ for i in tqdm(crosscorr_pairs_data):
 		loc_sta1 = json.load(open(data10[0]))['sta1_loc']
 		loc_sta2 = json.load(open(data10[0]))['sta2_loc']
 
-	#crosscorr_stack_data_normalized_org_lst = [(2*(a-a.min())/(a.max()-a.min()))-1 for a in data_to_plot]
-	#stacked_data = sum(crosscorr_stack_data_normalized_org_lst)/len(crosscorr_stack_data_normalized_org_lst)
-	stacked_data = sum(data_to_plot)/len(data_to_plot)
+	if dist_pair > 0:
 
-	CrossCorrelation_10_days_dic = nested_dict()
-	CrossCorrelation_10_days_dic['dist'] = round(dist_pair)
-	CrossCorrelation_10_days_dic['date'] = filename.split('.')[0].split('_')[-2]+'.'+filename.split('.')[0].split('_')[-1]
-	CrossCorrelation_10_days_dic['sta1_loc'] = loc_sta1
-	CrossCorrelation_10_days_dic['sta1_name'] = name_sta1
-	CrossCorrelation_10_days_dic['sta2_loc'] = loc_sta2
-	CrossCorrelation_10_days_dic['sta2_name'] = name_sta2
-	CrossCorrelation_10_days_dic['crosscorr_daily_causal_time'] = time_to_plot[0].tolist()
-	CrossCorrelation_10_days_dic['crosscorr_daily_10data'] = stacked_data.tolist()
+		print('Pair: '+name_sta1+'.'+channel_sta1+'-'+name_sta2+'.'+channel_sta2+' - '+'days stacked: '+str(len(i)))
 
-	output_CrossCorrelation_DAY = JSON_FILES+'CROSS_CORR_10_DAYS_STACKED_FILES/'+name_sta1+'.'+name_sta2+'/'
-	os.makedirs(output_CrossCorrelation_DAY,exist_ok=True)
-	with open(output_CrossCorrelation_DAY+'CROSS_CORR_10_DAYS_STACKED_'+name_sta1+'_'+name_sta2+'.json', 'w') as fp:
-		json.dump(CrossCorrelation_10_days_dic, fp)
+		#crosscorr_stack_data_normalized_org_lst = [(2*(a-a.min())/(a.max()-a.min()))-1 for a in data_to_plot]
+		#stacked_data = sum(crosscorr_stack_data_normalized_org_lst)/len(crosscorr_stack_data_normalized_org_lst)
+		stacked_data = sum(data_to_plot)/len(data_to_plot)
 
+		CrossCorrelation_10_days_dic = nested_dict()
+		CrossCorrelation_10_days_dic['dist'] = round(dist_pair)
+		CrossCorrelation_10_days_dic['date'] = filename.split('.')[0].split('_')[-2]+'.'+filename.split('.')[0].split('_')[-1]
+		CrossCorrelation_10_days_dic['sta1_loc'] = loc_sta1
+		CrossCorrelation_10_days_dic['sta1_name'] = name_sta1
+		CrossCorrelation_10_days_dic['sta1_channel'] = channel_sta1
+		CrossCorrelation_10_days_dic['sta2_loc'] = loc_sta2
+		CrossCorrelation_10_days_dic['sta2_name'] = name_sta2
+		CrossCorrelation_10_days_dic['sta2_channel'] = channel_sta2
+		CrossCorrelation_10_days_dic['crosscorr_daily_causal_time'] = time_to_plot[0].tolist()
+		CrossCorrelation_10_days_dic['crosscorr_daily_10data'] = stacked_data.tolist()
 
-	#Creating the figure and plotting Stacked Cross-correlations
-	fig = plt.figure(figsize=(10, 25))
-	fig.suptitle('Cross-correlations: '+name_sta1+'-'+name_sta2+' - '+'days stacked: '+str(len(crosscorr_pairs_10day_data)),fontsize=20)
+		output_CrossCorrelation_DAY = JSON_FILES+'CROSS_CORR_10_DAYS_STACKED_FILES/'+name_sta1+'.'+channel_sta1+'-'+name_sta2+'.'+channel_sta2+'/'
+		os.makedirs(output_CrossCorrelation_DAY,exist_ok=True)
+		with open(output_CrossCorrelation_DAY+'CROSS_CORR_10_DAYS_STACKED_'+name_sta1+'.'+channel_sta1+'-'+name_sta2+'.'+channel_sta2+'.json', 'w') as fp:
+			json.dump(CrossCorrelation_10_days_dic, fp)
 
-	gs = gridspec.GridSpec(5, 2,wspace=0.2, hspace=0.5)
 
-	#-------------------------------------------
+		#Creating the figure and plotting Stacked Cross-correlations
+		fig = plt.figure(figsize=(10, 25))
+		fig.suptitle('Cross-correlations: '+name_sta1+'.'+channel_sta1+'-'+name_sta2+'.'+channel_sta2+' - '+'days stacked: '+str(len(crosscorr_pairs_10day_data)),fontsize=20)
 
-	map_loc = fig.add_subplot(gs[0,:],projection=ccrs.PlateCarree())
+		gs = gridspec.GridSpec(5, 2,wspace=0.2, hspace=0.5)
 
-	LLCRNRLON_LARGE = -52
-	URCRNRLON_LARGE = -36
-	LLCRNRLAT_LARGE = -30
-	URCRNRLAT_LARGE = -10
+		#-------------------------------------------
 
-	map_loc.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
-	map_loc.yaxis.set_ticks_position('both')
-	map_loc.xaxis.set_ticks_position('both')
+		map_loc = fig.add_subplot(gs[0,:],projection=ccrs.PlateCarree())
 
-	map_loc.set_xticks(np.arange(LLCRNRLON_LARGE,URCRNRLON_LARGE,3), crs=ccrs.PlateCarree())
-	map_loc.set_yticks(np.arange(LLCRNRLAT_LARGE,URCRNRLAT_LARGE,3), crs=ccrs.PlateCarree())
-	map_loc.tick_params(labelbottom=True,labeltop=True,labelleft=True,labelright=True, labelsize=15)
+		LLCRNRLON_LARGE = -52
+		URCRNRLON_LARGE = -36
+		LLCRNRLAT_LARGE = -30
+		URCRNRLAT_LARGE = -10
 
-	map_loc.grid(True,which='major',color='gray',linewidth=1,linestyle='--')
+		map_loc.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
+		map_loc.yaxis.set_ticks_position('both')
+		map_loc.xaxis.set_ticks_position('both')
 
-	reader_1_SHP = Reader(BOUNDARY_STATES_SHP)
-	shape_1_SHP = list(reader_1_SHP.geometries())
-	plot_shape_1_SHP = cfeature.ShapelyFeature(shape_1_SHP, ccrs.PlateCarree())
-	map_loc.add_feature(plot_shape_1_SHP, facecolor='none', edgecolor='k',linewidth=0.5,zorder=-1)
+		map_loc.set_xticks(np.arange(LLCRNRLON_LARGE,URCRNRLON_LARGE,3), crs=ccrs.PlateCarree())
+		map_loc.set_yticks(np.arange(LLCRNRLAT_LARGE,URCRNRLAT_LARGE,3), crs=ccrs.PlateCarree())
+		map_loc.tick_params(labelbottom=True,labeltop=True,labelleft=True,labelright=True, labelsize=15)
 
-	# Use the cartopy interface to create a matplotlib transform object
-	# for the Geodetic coordinate system. We will use this along with
-	# matplotlib's offset_copy function to define a coordinate system which
-	# translates the text by 25 pixels to the left.
-	geodetic_transform = ccrs.Geodetic()._as_mpl_transform(map_loc)
-	text_transform = offset_copy(geodetic_transform, units='dots', y=0,x=80)
-	text_transform_mag = offset_copy(geodetic_transform, units='dots', y=-15,x=15)
+		map_loc.grid(True,which='major',color='gray',linewidth=1,linestyle='--')
 
-	map_loc.plot([loc_sta1[1],loc_sta2[1]],[loc_sta1[0],loc_sta2[0]],c='k',alpha=0.5, transform=ccrs.PlateCarree())
-	map_loc.scatter(loc_sta1[1],loc_sta1[0], marker='^',s=200,c='k',edgecolors='w', transform=ccrs.PlateCarree())
-	map_loc.scatter(loc_sta2[1],loc_sta2[0], marker='^',s=200,c='k',edgecolors='w', transform=ccrs.PlateCarree())
-	map_loc.set_title('Dist = '+str(round(dist_pair))+' km',fontsize=20)
+		reader_1_SHP = Reader(BOUNDARY_STATES_SHP)
+		shape_1_SHP = list(reader_1_SHP.geometries())
+		plot_shape_1_SHP = cfeature.ShapelyFeature(shape_1_SHP, ccrs.PlateCarree())
+		map_loc.add_feature(plot_shape_1_SHP, facecolor='none', edgecolor='k',linewidth=0.5,zorder=-1)
 
-	#-------------------------------------------
+		# Use the cartopy interface to create a matplotlib transform object
+		# for the Geodetic coordinate system. We will use this along with
+		# matplotlib's offset_copy function to define a coordinate system which
+		# translates the text by 25 pixels to the left.
+		geodetic_transform = ccrs.Geodetic()._as_mpl_transform(map_loc)
+		text_transform = offset_copy(geodetic_transform, units='dots', y=0,x=80)
+		text_transform_mag = offset_copy(geodetic_transform, units='dots', y=-15,x=15)
 
-	ax1 = fig.add_subplot(gs[1,:])
+		map_loc.plot([loc_sta1[1],loc_sta2[1]],[loc_sta1[0],loc_sta2[0]],c='k',alpha=0.5, transform=ccrs.PlateCarree())
+		map_loc.scatter(loc_sta1[1],loc_sta1[0], marker='^',s=200,c='k',edgecolors='w', transform=ccrs.PlateCarree())
+		map_loc.scatter(loc_sta2[1],loc_sta2[0], marker='^',s=200,c='k',edgecolors='w', transform=ccrs.PlateCarree())
+		map_loc.set_title('Dist = '+str(round(dist_pair))+' km',fontsize=20)
 
-	ax1.plot(time_to_plot[0],stacked_data,c='k',lw=0.5)
-	ax1.axvline(x=0, ymin=0, ymax=1,color='k',linestyle='-',lw=1)
+		#-------------------------------------------
 
-	ax1.axvline(x=dist_pair/SIGNAL_WINDOW_VMIN, ymin=0, ymax=1,color='gray',linestyle='--',lw=1)
-	ax1.axvline(x=dist_pair/SIGNAL_WINDOW_VMAX, ymin=0, ymax=1,color='gray',linestyle='--',lw=1)
-	ax1.axvline(x=-(dist_pair/SIGNAL_WINDOW_VMIN), ymin=0, ymax=1,color='gray',linestyle='--',lw=1)
-	ax1.axvline(x=-(dist_pair/SIGNAL_WINDOW_VMAX), ymin=0, ymax=1,color='gray',linestyle='--',lw=1)
+		ax1 = fig.add_subplot(gs[1,:])
 
-	ax1.set_xlim(-SIGNAL2NOISE_TRAIL,SIGNAL2NOISE_TRAIL)
+		ax1.plot(time_to_plot[0],stacked_data,c='k',lw=0.5)
+		ax1.axvline(x=0, ymin=0, ymax=1,color='k',linestyle='-',lw=1)
 
-	# adding labels
-	ax1.set_xlabel('Lapse time (s)',fontsize=14)
-	ax1.set_title('Stacked Data')
+		ax1.axvline(x=dist_pair/SIGNAL_WINDOW_VMIN, ymin=0, ymax=1,color='gray',linestyle='--',lw=1)
+		ax1.axvline(x=dist_pair/SIGNAL_WINDOW_VMAX, ymin=0, ymax=1,color='gray',linestyle='--',lw=1)
+		ax1.axvline(x=-(dist_pair/SIGNAL_WINDOW_VMIN), ymin=0, ymax=1,color='gray',linestyle='--',lw=1)
+		ax1.axvline(x=-(dist_pair/SIGNAL_WINDOW_VMAX), ymin=0, ymax=1,color='gray',linestyle='--',lw=1)
 
-	#--------------------------------------------------------------------------------------------------------------------
+		ax1.set_xlim(-SIGNAL2NOISE_TRAIL,SIGNAL2NOISE_TRAIL)
 
-	ax2 = fig.add_subplot(gs[2,0])
-	crosscorr_stack_data_normalized_org_lsts = [bandpass(data_2_plot, 1.0/25, 1.0/7, NEW_SAMPLING_RATE, corners=2, zerophase=False) for data_2_plot in data_to_plot]
-	crosscorr_stack_data_normalized_org_lst = [(2*(a-a.min())/(a.max()-a.min()))-1 for a in crosscorr_stack_data_normalized_org_lsts]
+		# adding labels
+		ax1.set_xlabel('Lapse time (s)',fontsize=14)
+		ax1.set_title('Stacked Data')
 
-	y_factor = 1
-	for i,j in enumerate(crosscorr_stack_data_normalized_org_lst):
-		ax2.plot(time_to_plot[i],[x+i/y_factor for x in crosscorr_stack_data_normalized_org_lst[i]],c='k',lw=0.5)
+		#--------------------------------------------------------------------------------------------------------------------
 
-	ax2.set_yticks([i/y_factor for i in range(len(crosscorr_stack_data_normalized_org_lst))])
-	ax2.set_yticklabels([i.strftime("%d/%m/%y") if i==date_to_plot[0] or i==date_to_plot[-1] else None for i in date_to_plot])
+		ax2 = fig.add_subplot(gs[2,0])
+		crosscorr_stack_data_normalized_org_lsts = [bandpass(data_2_plot, 1.0/25, 1.0/7, NEW_SAMPLING_RATE, corners=2, zerophase=False) for data_2_plot in data_to_plot]
+		crosscorr_stack_data_normalized_org_lst = [(2*(a-a.min())/(a.max()-a.min()))-1 for a in crosscorr_stack_data_normalized_org_lsts]
 
-	ax2.axvline(x=0, ymin=0, ymax=1,color='k',linestyle='-',lw=1)
+		y_factor = 1
+		for i,j in enumerate(crosscorr_stack_data_normalized_org_lst):
+			ax2.plot(time_to_plot[i],[x+i/y_factor for x in crosscorr_stack_data_normalized_org_lst[i]],c='k',lw=0.5)
 
-	ax2.axvline(x=dist_pair/SIGNAL_WINDOW_VMIN, ymin=0, ymax=1,color='gray',linestyle='--',lw=1)
-	ax2.axvline(x=dist_pair/SIGNAL_WINDOW_VMAX, ymin=0, ymax=1,color='gray',linestyle='--',lw=1)
-	ax2.axvline(x=-(dist_pair/SIGNAL_WINDOW_VMIN), ymin=0, ymax=1,color='gray',linestyle='--',lw=1)
-	ax2.axvline(x=-(dist_pair/SIGNAL_WINDOW_VMAX), ymin=0, ymax=1,color='gray',linestyle='--',lw=1)
+		ax2.set_yticks([i/y_factor for i in range(len(crosscorr_stack_data_normalized_org_lst))])
+		ax2.set_yticklabels([i.strftime("%d/%m/%y") if i==date_to_plot[0] or i==date_to_plot[-1] else None for i in date_to_plot])
 
-	ax2.set_xlim(-SIGNAL2NOISE_TRAIL,SIGNAL2NOISE_TRAIL)
+		ax2.axvline(x=0, ymin=0, ymax=1,color='k',linestyle='-',lw=1)
+
+		ax2.axvline(x=dist_pair/SIGNAL_WINDOW_VMIN, ymin=0, ymax=1,color='gray',linestyle='--',lw=1)
+		ax2.axvline(x=dist_pair/SIGNAL_WINDOW_VMAX, ymin=0, ymax=1,color='gray',linestyle='--',lw=1)
+		ax2.axvline(x=-(dist_pair/SIGNAL_WINDOW_VMIN), ymin=0, ymax=1,color='gray',linestyle='--',lw=1)
+		ax2.axvline(x=-(dist_pair/SIGNAL_WINDOW_VMAX), ymin=0, ymax=1,color='gray',linestyle='--',lw=1)
+
+		ax2.set_xlim(-SIGNAL2NOISE_TRAIL,SIGNAL2NOISE_TRAIL)
 
-	# adding labels
-	ax2.set_xlabel('Lapse time (s)',fontsize=14)
-	ax2.set_title('Filter: 7s-25s')
+		# adding labels
+		ax2.set_xlabel('Lapse time (s)',fontsize=14)
+		ax2.set_title('Filter: 7s-25s')
 
-	#---------------------------------------------------------
+		#---------------------------------------------------------
 
-	ax3 = fig.add_subplot(gs[2,1])
+		ax3 = fig.add_subplot(gs[2,1])
 
-	vector_plot = np.array(crosscorr_stack_data_normalized_org_lst)
+		vector_plot = np.array(crosscorr_stack_data_normalized_org_lst)
+
+		extent = [-SHIFT_LEN,SHIFT_LEN,0,len(crosscorr_stack_data_normalized_org_lst)]
+		im = ax3.imshow(vector_plot,extent=extent,origin='lower', interpolation='kaiser',aspect='auto',cmap='bwr')
+		ax3.axvline(x=0, ymin=0, ymax=1,color='k',linestyle='-')
+		ax3.set_xlim(-SIGNAL2NOISE_TRAIL,SIGNAL2NOISE_TRAIL)
 
-	extent = [-SHIFT_LEN,SHIFT_LEN,0,len(crosscorr_stack_data_normalized_org_lst)]
-	im = ax3.imshow(vector_plot,extent=extent,origin='lower', interpolation='kaiser',aspect='auto',cmap='bwr')
-	ax3.axvline(x=0, ymin=0, ymax=1,color='k',linestyle='-')
-	ax3.set_xlim(-SIGNAL2NOISE_TRAIL,SIGNAL2NOISE_TRAIL)
+		ax3.axvline(x=dist_pair/SIGNAL_WINDOW_VMIN, ymin=0, ymax=1,color='gray',linestyle='--',lw=1)
+		ax3.axvline(x=dist_pair/SIGNAL_WINDOW_VMAX, ymin=0, ymax=1,color='gray',linestyle='--',lw=1)
+		ax3.axvline(x=-(dist_pair/SIGNAL_WINDOW_VMIN), ymin=0, ymax=1,color='gray',linestyle='--',lw=1)
+		ax3.axvline(x=-(dist_pair/SIGNAL_WINDOW_VMAX), ymin=0, ymax=1,color='gray',linestyle='--',lw=1)
+		ax3.set_yticks([])
 
-	ax3.axvline(x=dist_pair/SIGNAL_WINDOW_VMIN, ymin=0, ymax=1,color='gray',linestyle='--',lw=1)
-	ax3.axvline(x=dist_pair/SIGNAL_WINDOW_VMAX, ymin=0, ymax=1,color='gray',linestyle='--',lw=1)
-	ax3.axvline(x=-(dist_pair/SIGNAL_WINDOW_VMIN), ymin=0, ymax=1,color='gray',linestyle='--',lw=1)
-	ax3.axvline(x=-(dist_pair/SIGNAL_WINDOW_VMAX), ymin=0, ymax=1,color='gray',linestyle='--',lw=1)
-	ax3.set_yticks([])
+		# adding labels
+		ax3.set_xlabel('Lapse time (s)',fontsize=14)
 
-	# adding labels
-	ax3.set_xlabel('Lapse time (s)',fontsize=14)
+		axins = inset_axes(ax3,
+		width="30%",  # width = 10% of parent_bbox width
+		height="2%",  # height : 5%
+		loc='upper left',
+		bbox_to_anchor=(0.65, 0.03, 1, 1),
+		bbox_transform=ax3.transAxes,
+		borderpad=0,
+		)
+		plt.colorbar(im, cax=axins, orientation="horizontal", ticklocation='top')
 
-	axins = inset_axes(ax3,
-	                   width="30%",  # width = 10% of parent_bbox width
-	                   height="2%",  # height : 5%
-	                   loc='upper left',
-	                   bbox_to_anchor=(0.65, 0.03, 1, 1),
-	                   bbox_transform=ax3.transAxes,
-	                   borderpad=0,
-	                   )
-	plt.colorbar(im, cax=axins, orientation="horizontal", ticklocation='top')
+		#-----------------------------------------------------------------------------------------------
 
-	#-----------------------------------------------------------------------------------------------
+		crosscorr_stack_data_normalized_org_lst_20_50s = [bandpass(data_2_plot, 1.0/50, 1.0/20, NEW_SAMPLING_RATE, corners=2, zerophase=False) for data_2_plot in data_to_plot]
+		crosscorr_stack_data_normalized_org_lst_20_50 = [(2*(a-a.min())/(a.max()-a.min()))-1 for a in crosscorr_stack_data_normalized_org_lst_20_50s]
 
-	crosscorr_stack_data_normalized_org_lst_20_50s = [bandpass(data_2_plot, 1.0/50, 1.0/20, NEW_SAMPLING_RATE, corners=2, zerophase=False) for data_2_plot in data_to_plot]
-	crosscorr_stack_data_normalized_org_lst_20_50 = [(2*(a-a.min())/(a.max()-a.min()))-1 for a in crosscorr_stack_data_normalized_org_lst_20_50s]
+		ax4 = fig.add_subplot(gs[3,0])
+		y_factor1 = 0.5
+		for i,j in enumerate(crosscorr_stack_data_normalized_org_lst_20_50):
+			ax4.plot(time_to_plot[i],[x+i/y_factor1 for x in crosscorr_stack_data_normalized_org_lst_20_50[i]],c='k',lw=0.5)
 
-	ax4 = fig.add_subplot(gs[3,0])
-	y_factor1 = 0.5
-	for i,j in enumerate(crosscorr_stack_data_normalized_org_lst_20_50):
-		ax4.plot(time_to_plot[i],[x+i/y_factor1 for x in crosscorr_stack_data_normalized_org_lst_20_50[i]],c='k',lw=0.5)
-
-	ax4.set_yticks([i/y_factor1 for i in range(len(crosscorr_stack_data_normalized_org_lst_20_50))])
-	ax4.set_yticklabels([i.strftime("%d/%m/%y") if i==date_to_plot[0] or i==date_to_plot[-1] else None for i in date_to_plot])
-
-	ax4.axvline(x=0, ymin=0, ymax=1,color='k',linestyle='-',lw=1)
-	ax4.set_xlim(-SIGNAL2NOISE_TRAIL,SIGNAL2NOISE_TRAIL)
-	ax4.axvline(x=dist_pair/SIGNAL_WINDOW_VMIN, ymin=0, ymax=1,color='gray',linestyle='--',lw=1)
-	ax4.axvline(x=dist_pair/SIGNAL_WINDOW_VMAX, ymin=0, ymax=1,color='gray',linestyle='--',lw=1)
-	ax4.axvline(x=-(dist_pair/SIGNAL_WINDOW_VMIN), ymin=0, ymax=1,color='gray',linestyle='--',lw=1)
-	ax4.axvline(x=-(dist_pair/SIGNAL_WINDOW_VMAX), ymin=0, ymax=1,color='gray',linestyle='--',lw=1)
-	# adding labels
-	ax4.set_xlabel('Lapse time (s)',fontsize=14)
-	ax4.set_title('Filter: 20s-50s')
-
-	#---------------------------------------------------------
-
-	ax5 = fig.add_subplot(gs[3,1])
-
-	vector_plot = np.array(crosscorr_stack_data_normalized_org_lst_20_50)
-
-	extent = [-SHIFT_LEN,SHIFT_LEN,0,len(crosscorr_stack_data_normalized_org_lst_20_50)]
-	im = ax5.imshow(vector_plot,extent=extent,origin='lower', interpolation='kaiser',aspect='auto',cmap='bwr')
-	ax5.axvline(x=0, ymin=0, ymax=1,color='k',linestyle='-')
-	ax5.set_xlim(-SIGNAL2NOISE_TRAIL,SIGNAL2NOISE_TRAIL)
-
-	ax5.axvline(x=dist_pair/SIGNAL_WINDOW_VMIN, ymin=0, ymax=1,color='gray',linestyle='--',lw=1)
-	ax5.axvline(x=dist_pair/SIGNAL_WINDOW_VMAX, ymin=0, ymax=1,color='gray',linestyle='--',lw=1)
-	ax5.axvline(x=-(dist_pair/SIGNAL_WINDOW_VMIN), ymin=0, ymax=1,color='gray',linestyle='--',lw=1)
-	ax5.axvline(x=-(dist_pair/SIGNAL_WINDOW_VMAX), ymin=0, ymax=1,color='gray',linestyle='--',lw=1)
-
-	ax5.set_yticks([])
-
-	# adding labels
-	ax5.set_xlabel('Lapse time (s)',fontsize=14)
-
-	axins = inset_axes(ax5,
-	                   width="30%",  # width = 10% of parent_bbox width
-	                   height="2%",  # height : 5%
-	                   loc='upper left',
-	                   bbox_to_anchor=(0.65, 0.03, 1, 1),
-	                   bbox_transform=ax5.transAxes,
-	                   borderpad=0,
-	                   )
-	plt.colorbar(im, cax=axins, orientation="horizontal", ticklocation='top')
-
-	#-----------------------------------------------------------------------------------------------
-
-	crosscorr_stack_data_normalized_org_lst_50_100s = [bandpass(data_2_plot, 1.0/100, 1.0/50, NEW_SAMPLING_RATE, corners=2, zerophase=False) for data_2_plot in data_to_plot]
-	crosscorr_stack_data_normalized_org_lst_50_100 = [(2*(a-a.min())/(a.max()-a.min()))-1 for a in crosscorr_stack_data_normalized_org_lst_20_50s]
-
-	ax6 = fig.add_subplot(gs[4,0])
-	y_factor2 = 0.5
-	for i,j in enumerate(crosscorr_stack_data_normalized_org_lst_50_100):
-		ax6.plot(time_to_plot[i],[x+i/y_factor2 for x in crosscorr_stack_data_normalized_org_lst_50_100[i]],c='k',lw=0.5)
-
-	ax6.set_yticks([i/y_factor2 for i in range(len(crosscorr_stack_data_normalized_org_lst_50_100))])
-	ax6.set_yticklabels([i.strftime("%d/%m/%y") if i==date_to_plot[0] or i==date_to_plot[-1] else None for i in date_to_plot])
-
-	ax6.axvline(x=0, ymin=0, ymax=1,color='k',linestyle='-',lw=1)
-	ax6.set_xlim(-SIGNAL2NOISE_TRAIL,SIGNAL2NOISE_TRAIL)
-
-	ax6.axvline(x=dist_pair/SIGNAL_WINDOW_VMIN, ymin=0, ymax=1,color='gray',linestyle='--',lw=1)
-	ax6.axvline(x=dist_pair/SIGNAL_WINDOW_VMAX, ymin=0, ymax=1,color='gray',linestyle='--',lw=1)
-	ax6.axvline(x=-(dist_pair/SIGNAL_WINDOW_VMIN), ymin=0, ymax=1,color='gray',linestyle='--',lw=1)
-	ax6.axvline(x=-(dist_pair/SIGNAL_WINDOW_VMAX), ymin=0, ymax=1,color='gray',linestyle='--',lw=1)
-	# adding labels
-	ax6.set_xlabel('Lapse time (s)',fontsize=14)
-	ax6.set_title('Filter: 50s-100s')
-
-	#---------------------------------------------------------
-
-	ax7 = fig.add_subplot(gs[4,1])
-
-	vector_plot = np.array(crosscorr_stack_data_normalized_org_lst_50_100)
-
-	extent = [-SHIFT_LEN,SHIFT_LEN,0,len(crosscorr_stack_data_normalized_org_lst_50_100)]
-	im = ax7.imshow(vector_plot,extent=extent,origin='lower', interpolation='kaiser',aspect='auto',cmap='bwr')
-	ax7.axvline(x=0, ymin=0, ymax=1,color='k',linestyle='-')
-	ax7.set_xlim(-SIGNAL2NOISE_TRAIL,SIGNAL2NOISE_TRAIL)
-
-	ax7.axvline(x=dist_pair/SIGNAL_WINDOW_VMIN, ymin=0, ymax=1,color='gray',linestyle='--',lw=1)
-	ax7.axvline(x=dist_pair/SIGNAL_WINDOW_VMAX, ymin=0, ymax=1,color='gray',linestyle='--',lw=1)
-	ax7.axvline(x=-(dist_pair/SIGNAL_WINDOW_VMIN), ymin=0, ymax=1,color='gray',linestyle='--',lw=1)
-	ax7.axvline(x=-(dist_pair/SIGNAL_WINDOW_VMAX), ymin=0, ymax=1,color='gray',linestyle='--',lw=1)
-
-	ax7.set_yticks([])
-
-	# adding labels
-	ax7.set_xlabel('Lapse time (s)',fontsize=14)
-
-	axins = inset_axes(ax7,
-	                   width="30%",  # width = 10% of parent_bbox width
-	                   height="2%",  # height : 5%
-	                   loc='upper left',
-	                   bbox_to_anchor=(0.65, 0.03, 1, 1),
-	                   bbox_transform=ax7.transAxes,
-	                   borderpad=0,
-	                   )
-	plt.colorbar(im, cax=axins, orientation="horizontal", ticklocation='top')
-
-	output_figure_CrossCorrelation_DAY = ORIENTATION_OUTPUT+'CROSS_CORR_10_STACK_FIGURES/'
-	os.makedirs(output_figure_CrossCorrelation_DAY,exist_ok=True)
-	fig.savefig(output_figure_CrossCorrelation_DAY+'CROSS_CORR_10_STACK_FIG_'+name_sta1+'_'+name_sta2+'.png')
-	plt.close()
-
+		ax4.set_yticks([i/y_factor1 for i in range(len(crosscorr_stack_data_normalized_org_lst_20_50))])
+		ax4.set_yticklabels([i.strftime("%d/%m/%y") if i==date_to_plot[0] or i==date_to_plot[-1] else None for i in date_to_plot])
+
+		ax4.axvline(x=0, ymin=0, ymax=1,color='k',linestyle='-',lw=1)
+		ax4.set_xlim(-SIGNAL2NOISE_TRAIL,SIGNAL2NOISE_TRAIL)
+		ax4.axvline(x=dist_pair/SIGNAL_WINDOW_VMIN, ymin=0, ymax=1,color='gray',linestyle='--',lw=1)
+		ax4.axvline(x=dist_pair/SIGNAL_WINDOW_VMAX, ymin=0, ymax=1,color='gray',linestyle='--',lw=1)
+		ax4.axvline(x=-(dist_pair/SIGNAL_WINDOW_VMIN), ymin=0, ymax=1,color='gray',linestyle='--',lw=1)
+		ax4.axvline(x=-(dist_pair/SIGNAL_WINDOW_VMAX), ymin=0, ymax=1,color='gray',linestyle='--',lw=1)
+		# adding labels
+		ax4.set_xlabel('Lapse time (s)',fontsize=14)
+		ax4.set_title('Filter: 20s-50s')
+
+		#---------------------------------------------------------
+
+		ax5 = fig.add_subplot(gs[3,1])
+
+		vector_plot = np.array(crosscorr_stack_data_normalized_org_lst_20_50)
+
+		extent = [-SHIFT_LEN,SHIFT_LEN,0,len(crosscorr_stack_data_normalized_org_lst_20_50)]
+		im = ax5.imshow(vector_plot,extent=extent,origin='lower', interpolation='kaiser',aspect='auto',cmap='bwr')
+		ax5.axvline(x=0, ymin=0, ymax=1,color='k',linestyle='-')
+		ax5.set_xlim(-SIGNAL2NOISE_TRAIL,SIGNAL2NOISE_TRAIL)
+
+		ax5.axvline(x=dist_pair/SIGNAL_WINDOW_VMIN, ymin=0, ymax=1,color='gray',linestyle='--',lw=1)
+		ax5.axvline(x=dist_pair/SIGNAL_WINDOW_VMAX, ymin=0, ymax=1,color='gray',linestyle='--',lw=1)
+		ax5.axvline(x=-(dist_pair/SIGNAL_WINDOW_VMIN), ymin=0, ymax=1,color='gray',linestyle='--',lw=1)
+		ax5.axvline(x=-(dist_pair/SIGNAL_WINDOW_VMAX), ymin=0, ymax=1,color='gray',linestyle='--',lw=1)
+
+		ax5.set_yticks([])
+
+		# adding labels
+		ax5.set_xlabel('Lapse time (s)',fontsize=14)
+
+		axins = inset_axes(ax5,
+		width="30%",  # width = 10% of parent_bbox width
+		height="2%",  # height : 5%
+		loc='upper left',
+		bbox_to_anchor=(0.65, 0.03, 1, 1),
+		bbox_transform=ax5.transAxes,
+		borderpad=0,
+		)
+		plt.colorbar(im, cax=axins, orientation="horizontal", ticklocation='top')
+
+		#-----------------------------------------------------------------------------------------------
+
+		crosscorr_stack_data_normalized_org_lst_50_100s = [bandpass(data_2_plot, 1.0/100, 1.0/50, NEW_SAMPLING_RATE, corners=2, zerophase=False) for data_2_plot in data_to_plot]
+		crosscorr_stack_data_normalized_org_lst_50_100 = [(2*(a-a.min())/(a.max()-a.min()))-1 for a in crosscorr_stack_data_normalized_org_lst_20_50s]
+
+		ax6 = fig.add_subplot(gs[4,0])
+		y_factor2 = 0.5
+		for i,j in enumerate(crosscorr_stack_data_normalized_org_lst_50_100):
+			ax6.plot(time_to_plot[i],[x+i/y_factor2 for x in crosscorr_stack_data_normalized_org_lst_50_100[i]],c='k',lw=0.5)
+
+		ax6.set_yticks([i/y_factor2 for i in range(len(crosscorr_stack_data_normalized_org_lst_50_100))])
+		ax6.set_yticklabels([i.strftime("%d/%m/%y") if i==date_to_plot[0] or i==date_to_plot[-1] else None for i in date_to_plot])
+
+		ax6.axvline(x=0, ymin=0, ymax=1,color='k',linestyle='-',lw=1)
+		ax6.set_xlim(-SIGNAL2NOISE_TRAIL,SIGNAL2NOISE_TRAIL)
+
+		ax6.axvline(x=dist_pair/SIGNAL_WINDOW_VMIN, ymin=0, ymax=1,color='gray',linestyle='--',lw=1)
+		ax6.axvline(x=dist_pair/SIGNAL_WINDOW_VMAX, ymin=0, ymax=1,color='gray',linestyle='--',lw=1)
+		ax6.axvline(x=-(dist_pair/SIGNAL_WINDOW_VMIN), ymin=0, ymax=1,color='gray',linestyle='--',lw=1)
+		ax6.axvline(x=-(dist_pair/SIGNAL_WINDOW_VMAX), ymin=0, ymax=1,color='gray',linestyle='--',lw=1)
+		# adding labels
+		ax6.set_xlabel('Lapse time (s)',fontsize=14)
+		ax6.set_title('Filter: 50s-100s')
+
+		#---------------------------------------------------------
+
+		ax7 = fig.add_subplot(gs[4,1])
+
+		vector_plot = np.array(crosscorr_stack_data_normalized_org_lst_50_100)
+
+		extent = [-SHIFT_LEN,SHIFT_LEN,0,len(crosscorr_stack_data_normalized_org_lst_50_100)]
+		im = ax7.imshow(vector_plot,extent=extent,origin='lower', interpolation='kaiser',aspect='auto',cmap='bwr')
+		ax7.axvline(x=0, ymin=0, ymax=1,color='k',linestyle='-')
+		ax7.set_xlim(-SIGNAL2NOISE_TRAIL,SIGNAL2NOISE_TRAIL)
+
+		ax7.axvline(x=dist_pair/SIGNAL_WINDOW_VMIN, ymin=0, ymax=1,color='gray',linestyle='--',lw=1)
+		ax7.axvline(x=dist_pair/SIGNAL_WINDOW_VMAX, ymin=0, ymax=1,color='gray',linestyle='--',lw=1)
+		ax7.axvline(x=-(dist_pair/SIGNAL_WINDOW_VMIN), ymin=0, ymax=1,color='gray',linestyle='--',lw=1)
+		ax7.axvline(x=-(dist_pair/SIGNAL_WINDOW_VMAX), ymin=0, ymax=1,color='gray',linestyle='--',lw=1)
+
+		ax7.set_yticks([])
+
+		# adding labels
+		ax7.set_xlabel('Lapse time (s)',fontsize=14)
+
+		axins = inset_axes(ax7,
+		width="30%",  # width = 10% of parent_bbox width
+		height="2%",  # height : 5%
+		loc='upper left',
+		bbox_to_anchor=(0.65, 0.03, 1, 1),
+		bbox_transform=ax7.transAxes,
+		borderpad=0,
+		)
+		plt.colorbar(im, cax=axins, orientation="horizontal", ticklocation='top')
+
+		output_figure_CrossCorrelation_DAY = ORIENTATION_OUTPUT+'CROSS_CORR_10_STACK_FIGURES/'
+		os.makedirs(output_figure_CrossCorrelation_DAY,exist_ok=True)
+		fig.savefig(output_figure_CrossCorrelation_DAY+'CROSS_CORR_10_STACK_FIG_'+name_sta1+'.'+channel_sta1+'-'+name_sta2+'.'+channel_sta2+'.png')
+		plt.close()
+'''
 print('\n')
 print('===================================================================================')
 print('Stacking 10-day Cross-correlations and plotting according to interstation distance:')
