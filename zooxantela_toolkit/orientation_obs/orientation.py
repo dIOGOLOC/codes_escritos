@@ -389,8 +389,8 @@ def crosscorr_func(stationtrace_pairs):
     sta1_CHANNEL = sta1['fileID'].split('..')[1]
     sta2_CHANNEL = sta2['fileID'].split('..')[1]
 
-    day_crosscor_causal = CrossCorrelation(name1=sta1['name'],name2=sta2['name'],lat1=sta1['lat'],lon1=sta1['lon'],lat2=sta2['lat'],lon2=sta2['lon'],pair_time_day=sta1['time_day'])
-    day_crosscor_acausal = CrossCorrelation(name1=sta2['name'],name2=sta1['name'],lat1=sta2['lat'],lon1=sta2['lon'],lat2=sta1['lat'],lon2=sta1['lon'],pair_time_day=sta1['time_day'])
+    day_crosscor_causal = CrossCorrelation(name1=sta1['name'],name2=sta2['name'],channel_1_name=sta1_CHANNEL,channel_2_name=sta2_CHANNEL,lat1=sta1['lat'],lon1=sta1['lon'],lat2=sta2['lat'],lon2=sta2['lon'],pair_time_day=sta1['time_day'])
+    day_crosscor_acausal = CrossCorrelation(name1=sta2['name'],name2=sta1['name'],channel_1_name=sta1_CHANNEL,channel_2_name=sta2_CHANNEL,lat1=sta2['lat'],lon1=sta2['lon'],lat2=sta1['lat'],lon2=sta1['lon'],pair_time_day=sta1['time_day'])
 
     day_crosscor_causal.add(sta1['data_day'],sta2['data_day'],sta1['hours_day'],sta2['hours_day'])
     day_crosscor_acausal.add(sta2['data_day'],sta1['data_day'],sta2['hours_day'],sta1['hours_day'])
@@ -499,8 +499,8 @@ def crosscorr_stack(crosscorr_pairs_data):
     #Reading data
 	name_sta1 = list(set([json.load(open(a))['sta1_name'] for a in crosscorr_pairs_data]))[0]
 	name_sta2 = list(set([json.load(open(a))['sta2_name'] for a in crosscorr_pairs_data]))[0]
-    channel_sta1 = list(set([json.load(open(a))['sta1_channel'] for a in crosscorr_pairs_data]))[0]
-    channel_sta2 = list(set([json.load(open(a))['sta2_channel'] for a in crosscorr_pairs_data]))[0]
+	channel_sta1 = list(set([json.load(open(a))['sta1_channel'] for a in crosscorr_pairs_data]))[0]
+	channel_sta2 = list(set([json.load(open(a))['sta2_channel'] for a in crosscorr_pairs_data]))[0]
 	dist_pair = json.load(open(crosscorr_pairs_data[0]))['dist']
 
 	loc_sta1 = json.load(open(crosscorr_pairs_data[0]))['sta1_loc']
@@ -524,8 +524,8 @@ def crosscorr_stack(crosscorr_pairs_data):
 	CrossCorrelation_stack_dic['sta2_name'] = name_sta2
 	CrossCorrelation_stack_dic['sta1_loc'] = loc_sta1
 	CrossCorrelation_stack_dic['sta2_loc'] = loc_sta2
-    CrossCorrelation_stack_dic['sta1_channel'] = channel_sta1
-    CrossCorrelation_stack_dic['sta2_channel'] = channel_sta2
+	CrossCorrelation_stack_dic['sta1_channel'] = channel_sta1
+	CrossCorrelation_stack_dic['sta2_channel'] = channel_sta2
 	CrossCorrelation_stack_dic['crosscorr_stack'] = data_to_plot.tolist()
 	CrossCorrelation_stack_dic['crosscorr_stack_time'] = time_to_plot.tolist()
 
@@ -725,7 +725,7 @@ with Pool(processes=num_processes) as p:
 
 print("--- %.2f execution time (min) ---" % ((time.time() - start_time)/60))
 print('\n')
-'''
+
 print('====================================')
 print('Calculating daily Cross-correlations:')
 print('====================================')
@@ -738,7 +738,6 @@ for i,j in enumerate(days_crosscor):
 	stationtrace_pairs_lst.append(list(combinations(stations_file, 2)))
 
 stationtrace_pairs = [item for sublist in stationtrace_pairs_lst for item in sublist]
-
 start_time = time.time()
 
 pool = Pool(processes=num_processes)
@@ -755,8 +754,7 @@ print('====================================')
 print('\n')
 
 #Collecting daily list of cross-correlations
-#crosscorr_days_lst = sorted(glob.glob(JSON_FILES+'CROSS_CORR_DAY_FILES/*'))
-crosscorr_days_lst = sorted(glob.glob('/run/user/1000/gvfs/smb-share:server=hatabackup.local,share=dados_posdoc/ON_MAR/ORIENTATION_OUTPUT/JSON_FILES/CROSS_CORR_DAY_FILES/*'))
+crosscorr_days_lst = sorted(glob.glob(JSON_FILES+'CROSS_CORR_ORIENTATION_DAY_FILES/*'))
 
 crosscorr_pairs_lst = []
 for i,j in enumerate(crosscorr_days_lst):
@@ -765,7 +763,6 @@ for i,j in enumerate(crosscorr_days_lst):
 
 #Make a list of list flat
 crosscorr_pairs = [item for sublist in crosscorr_pairs_lst for item in sublist]
-print(crosscorr_pairs_lst[0])
 
 #Separating according to pairs name
 crosscorr_pairs_name_lst = []
@@ -784,122 +781,126 @@ for l,k in enumerate(crosscorr_pairs_names):
 #Stacking data
 for i in crosscorr_pairs_data:
 	name_sta1 = list(set([json.load(open(a))['sta1_name'] for a in i]))[0]
+	channel_sta1 = list(set([json.load(open(a))['sta1_channel'] for a in i]))[0]
 	name_sta2 = list(set([json.load(open(a))['sta2_name'] for a in i]))[0]
+	channel_sta2 = list(set([json.load(open(a))['sta2_channel'] for a in i]))[0]
 	dist_pair = json.load(open(i[0]))['dist']
 
-	print('Pair: '+name_sta1+'-'+name_sta2+' - '+'days stacked: '+str(len(i)))
+	if dist_pair > 0:
 
-	causal_lst = np.mean(np.array([json.load(open(a))['crosscorr_daily_causal'] for a in i]),axis=0)
-	acausal_lst = np.mean(np.array([json.load(open(a))['crosscorr_daily_acausal'] for a in i]),axis=0)
+		print('Pair: '+name_sta1+'.'+channel_sta1+'-'+name_sta2+'.'+channel_sta2+' - '+'days stacked: '+str(len(i)))
 
-	causal_time = np.array(json.load(open(i[0]))['crosscorr_daily_causal_time'])
-	acausal_time = np.array(json.load(open(i[0]))['crosscorr_daily_acausal_time'])
+		causal_lst = np.mean(np.array([json.load(open(a))['crosscorr_daily_causal'] for a in i]),axis=0)
+		acausal_lst = np.mean(np.array([json.load(open(a))['crosscorr_daily_acausal'] for a in i]),axis=0)
 
-	loc_sta1 = json.load(open(i[0]))['sta1_loc']
-	loc_sta2 = json.load(open(i[0]))['sta2_loc']
+		causal_time = np.array(json.load(open(i[0]))['crosscorr_daily_causal_time'])
+		acausal_time = np.array(json.load(open(i[0]))['crosscorr_daily_acausal_time'])
 
-    # ===============================
-    # Plot: map and stacked crosscorr
-    # ===============================
+		loc_sta1 = json.load(open(i[0]))['sta1_loc']
+		loc_sta2 = json.load(open(i[0]))['sta2_loc']
 
-	fig = plt.figure(figsize=(20, 7))
-	fig.suptitle(name_sta1+'-'+name_sta2+' - Dist = '+str(round(dist_pair))+' km'+' - Days stacked: '+str(len(i)),fontsize=20)
+        # ===============================
+        # Plot: map and stacked crosscorr
+        # ===============================
 
-	gs = gridspec.GridSpec(len(PERIOD_BANDS)+1, 2,wspace=0.2, hspace=0.5)
+		fig = plt.figure(figsize=(20, 7))
+		fig.suptitle(name_sta1+'.'+channel_sta1+'-'+name_sta2+'.'+channel_sta2+' - Dist = '+str(round(dist_pair))+' km'+' - Days stacked: '+str(len(i)),fontsize=20)
 
-    #-------------------------------------------
+		gs = gridspec.GridSpec(len(PERIOD_BANDS)+1, 2,wspace=0.2, hspace=0.5)
 
-	map_loc = fig.add_subplot(gs[:,0],projection=ccrs.PlateCarree())
+        #-------------------------------------------
 
-	LLCRNRLON_LARGE = -52
-	URCRNRLON_LARGE = -28
-	LLCRNRLAT_LARGE = -30
-	URCRNRLAT_LARGE = -10
+		map_loc = fig.add_subplot(gs[:,0],projection=ccrs.PlateCarree())
 
-	map_loc.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
-	map_loc.yaxis.set_ticks_position('both')
-	map_loc.xaxis.set_ticks_position('both')
+		LLCRNRLON_LARGE = -52
+		URCRNRLON_LARGE = -28
+		LLCRNRLAT_LARGE = -30
+		URCRNRLAT_LARGE = -10
 
-	map_loc.set_xticks(np.arange(LLCRNRLON_LARGE,URCRNRLON_LARGE,3), crs=ccrs.PlateCarree())
-	map_loc.set_yticks(np.arange(LLCRNRLAT_LARGE,URCRNRLAT_LARGE,3), crs=ccrs.PlateCarree())
-	map_loc.tick_params(labelbottom=True,labeltop=True,labelleft=True,labelright=True, labelsize=15)
+		map_loc.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
+		map_loc.yaxis.set_ticks_position('both')
+		map_loc.xaxis.set_ticks_position('both')
 
-	map_loc.grid(True,which='major',color='gray',linewidth=1,linestyle='--')
+		map_loc.set_xticks(np.arange(LLCRNRLON_LARGE,URCRNRLON_LARGE,3), crs=ccrs.PlateCarree())
+		map_loc.set_yticks(np.arange(LLCRNRLAT_LARGE,URCRNRLAT_LARGE,3), crs=ccrs.PlateCarree())
+		map_loc.tick_params(labelbottom=True,labeltop=True,labelleft=True,labelright=True, labelsize=15)
 
-	reader_1_SHP = Reader(BOUNDARY_STATES_SHP)
-	shape_1_SHP = list(reader_1_SHP.geometries())
-	plot_shape_1_SHP = cfeature.ShapelyFeature(shape_1_SHP, ccrs.PlateCarree())
-	map_loc.add_feature(plot_shape_1_SHP, facecolor='none', edgecolor='k',linewidth=0.5,zorder=-1)
+		map_loc.grid(True,which='major',color='gray',linewidth=1,linestyle='--')
 
-    # Use the cartopy interface to create a matplotlib transform object
-    # for the Geodetic coordinate system. We will use this along with
-    # matplotlib's offset_copy function to define a coordinate system which
-    # translates the text by 25 pixels to the left.
-	geodetic_transform = ccrs.Geodetic()._as_mpl_transform(map_loc)
-	text_transform = offset_copy(geodetic_transform, units='dots', y=0,x=80)
-	text_transform_mag = offset_copy(geodetic_transform, units='dots', y=-15,x=15)
+		reader_1_SHP = Reader(BOUNDARY_STATES_SHP)
+		shape_1_SHP = list(reader_1_SHP.geometries())
+		plot_shape_1_SHP = cfeature.ShapelyFeature(shape_1_SHP, ccrs.PlateCarree())
+		map_loc.add_feature(plot_shape_1_SHP, facecolor='none', edgecolor='k',linewidth=0.5,zorder=-1)
 
-	map_loc.scatter(loc_sta1[1],loc_sta1[0], marker='^',s=200,c='k',edgecolors='w', transform=ccrs.PlateCarree())
-	map_loc.scatter(loc_sta2[1],loc_sta2[0], marker='^',s=200,c='k',edgecolors='w', transform=ccrs.PlateCarree())
+        # Use the cartopy interface to create a matplotlib transform object
+        # for the Geodetic coordinate system. We will use this along with
+        # matplotlib's offset_copy function to define a coordinate system which
+        # translates the text by 25 pixels to the left.
+		geodetic_transform = ccrs.Geodetic()._as_mpl_transform(map_loc)
+		text_transform = offset_copy(geodetic_transform, units='dots', y=0,x=80)
+		text_transform_mag = offset_copy(geodetic_transform, units='dots', y=-15,x=15)
 
-	map_loc.plot([loc_sta1[1],loc_sta2[1]],[loc_sta1[0],loc_sta2[0]], transform=ccrs.PlateCarree())
+		map_loc.scatter(loc_sta1[1],loc_sta1[0], marker='^',s=200,c='k',edgecolors='w', transform=ccrs.PlateCarree())
+		map_loc.scatter(loc_sta2[1],loc_sta2[0], marker='^',s=200,c='k',edgecolors='w', transform=ccrs.PlateCarree())
 
-	map_loc.text(loc_sta1[1],loc_sta1[0], name_sta1,fontsize=15,verticalalignment='center', horizontalalignment='right',transform=text_transform)
-	map_loc.text(loc_sta2[1],loc_sta2[0], name_sta2,fontsize=15,verticalalignment='center', horizontalalignment='right',transform=text_transform)
-	#-------------------------------------------
+		map_loc.plot([loc_sta1[1],loc_sta2[1]],[loc_sta1[0],loc_sta2[0]], transform=ccrs.PlateCarree())
 
-	data_to_plot = acausal_lst[::-1] + causal_lst
-	time_to_plot = [-1*i for i in acausal_time[::-1]] + causal_time
+		map_loc.text(loc_sta1[1],loc_sta1[0], name_sta1,fontsize=15,verticalalignment='center', horizontalalignment='right',transform=text_transform)
+		map_loc.text(loc_sta2[1],loc_sta2[0], name_sta2,fontsize=15,verticalalignment='center', horizontalalignment='right',transform=text_transform)
+    	#-------------------------------------------
 
-	ax = fig.add_subplot(gs[0,1])
-	ax.plot(time_to_plot, data_to_plot,color='k')
+		data_to_plot = acausal_lst[::-1] + causal_lst
+		time_to_plot = [-1*i for i in acausal_time[::-1]] + causal_time
 
-	ylim = (data_to_plot.min(), data_to_plot.max())
-	ax.set_ylim(ylim)
-	ax.set_xlim(-SIGNAL2NOISE_TRAIL,SIGNAL2NOISE_TRAIL)
-	ax.set_xticklabels([])
-	ax.set_yticklabels([])
-	raw_SNR = SNR(data_to_plot,time_to_plot,dist_pair,vmin=SIGNAL_WINDOW_VMIN,vmax=SIGNAL_WINDOW_VMAX,signal2noise_trail=SIGNAL2NOISE_TRAIL,noise_window_size=NOISE_WINDOW_SIZE)
-	ax.text(x=0.1,y=0.8,s="SNR:"+str(round(raw_SNR)),horizontalalignment='center',transform=ax.transAxes,fontsize=8,bbox={'edgecolor':'w','facecolor': 'white'})
-	ax.text(x=0.9,y=0.8,s="Raw data",horizontalalignment='center',transform=ax.transAxes,fontsize=8,bbox={'edgecolor':'w','facecolor': 'white'})
+		ax = fig.add_subplot(gs[0,1])
+		ax.plot(time_to_plot, data_to_plot,color='k')
 
-	# plotting band-filtered cross-correlation
-	for i,band in enumerate(PERIOD_BANDS):
-		ax = fig.add_subplot(gs[i+1,1])
-		lastplot = band is PERIOD_BANDS[-1]
-		firstplot = band is PERIOD_BANDS[0]
-
-		ax.text(x=0.9,y=0.8,s="Filter:"+str(band[0])+"-"+str(band[1])+"s",transform=ax.transAxes,horizontalalignment='center',fontsize=8,bbox={'edgecolor':'w','facecolor': 'white'})
-
-		data_to_plot_filtered = bandpass(data_to_plot, 1.0 /band[1], 1.0 / band[0], NEW_SAMPLING_RATE, corners=2, zerophase=False)
-		ax.plot(time_to_plot, data_to_plot_filtered,color='k')
-		ylim = (data_to_plot_filtered.min(), data_to_plot_filtered.max())
+		ylim = (data_to_plot.min(), data_to_plot.max())
 		ax.set_ylim(ylim)
 		ax.set_xlim(-SIGNAL2NOISE_TRAIL,SIGNAL2NOISE_TRAIL)
+		ax.set_xticklabels([])
 		ax.set_yticklabels([])
+		raw_SNR = SNR(data_to_plot,time_to_plot,dist_pair,vmin=SIGNAL_WINDOW_VMIN,vmax=SIGNAL_WINDOW_VMAX,signal2noise_trail=SIGNAL2NOISE_TRAIL,noise_window_size=NOISE_WINDOW_SIZE)
+		ax.text(x=0.1,y=0.8,s="SNR:"+str(round(raw_SNR)),horizontalalignment='center',transform=ax.transAxes,fontsize=8,bbox={'edgecolor':'w','facecolor': 'white'})
+		ax.text(x=0.9,y=0.8,s="Raw data",horizontalalignment='center',transform=ax.transAxes,fontsize=8,bbox={'edgecolor':'w','facecolor': 'white'})
 
-		ax.axvline(x=dist_pair/SIGNAL_WINDOW_VMIN, ymin=0, ymax=1,color='gray',linestyle='--',lw=1)
-		ax.axvline(x=dist_pair/SIGNAL_WINDOW_VMAX, ymin=0, ymax=1,color='gray',linestyle='--',lw=1)
-		ax.axvline(x=-(dist_pair/SIGNAL_WINDOW_VMIN), ymin=0, ymax=1,color='gray',linestyle='--',lw=1)
-		ax.axvline(x=-(dist_pair/SIGNAL_WINDOW_VMAX), ymin=0, ymax=1,color='gray',linestyle='--',lw=1)
+    	# plotting band-filtered cross-correlation
+		for i,band in enumerate(PERIOD_BANDS):
+			ax = fig.add_subplot(gs[i+1,1])
+			lastplot = band is PERIOD_BANDS[-1]
+			firstplot = band is PERIOD_BANDS[0]
+
+			ax.text(x=0.9,y=0.8,s="Filter:"+str(band[0])+"-"+str(band[1])+"s",transform=ax.transAxes,horizontalalignment='center',fontsize=8,bbox={'edgecolor':'w','facecolor': 'white'})
+
+			data_to_plot_filtered = bandpass(data_to_plot, 1.0 /band[1], 1.0 / band[0], NEW_SAMPLING_RATE, corners=2, zerophase=False)
+			ax.plot(time_to_plot, data_to_plot_filtered,color='k')
+			ylim = (data_to_plot_filtered.min(), data_to_plot_filtered.max())
+			ax.set_ylim(ylim)
+			ax.set_xlim(-SIGNAL2NOISE_TRAIL,SIGNAL2NOISE_TRAIL)
+			ax.set_yticklabels([])
+
+			ax.axvline(x=dist_pair/SIGNAL_WINDOW_VMIN, ymin=0, ymax=1,color='gray',linestyle='--',lw=1)
+			ax.axvline(x=dist_pair/SIGNAL_WINDOW_VMAX, ymin=0, ymax=1,color='gray',linestyle='--',lw=1)
+			ax.axvline(x=-(dist_pair/SIGNAL_WINDOW_VMIN), ymin=0, ymax=1,color='gray',linestyle='--',lw=1)
+			ax.axvline(x=-(dist_pair/SIGNAL_WINDOW_VMAX), ymin=0, ymax=1,color='gray',linestyle='--',lw=1)
 
 
-		# Calculating SNR
-		filtered_SNR = SNR(data_to_plot_filtered,time_to_plot,dist_pair,vmin=SIGNAL_WINDOW_VMIN,vmax=SIGNAL_WINDOW_VMAX,signal2noise_trail=SIGNAL2NOISE_TRAIL,noise_window_size=NOISE_WINDOW_SIZE)
-		ax.text(x=0.1,y=0.8,s="SNR:"+str(round(filtered_SNR)),horizontalalignment='center',transform=ax.transAxes,fontsize=8,bbox={'edgecolor':'w','facecolor': 'white'})
+    		# Calculating SNR
+			filtered_SNR = SNR(data_to_plot_filtered,time_to_plot,dist_pair,vmin=SIGNAL_WINDOW_VMIN,vmax=SIGNAL_WINDOW_VMAX,signal2noise_trail=SIGNAL2NOISE_TRAIL,noise_window_size=NOISE_WINDOW_SIZE)
+			ax.text(x=0.1,y=0.8,s="SNR:"+str(round(filtered_SNR)),horizontalalignment='center',transform=ax.transAxes,fontsize=8,bbox={'edgecolor':'w','facecolor': 'white'})
 
-		# formatting labels
-		if not lastplot:
-			ax.set_xticklabels([])
-		if lastplot:
-		# adding label to time
-			ax.set_xlabel('Time (s)',fontsize=14)
+    		# formatting labels
+			if not lastplot:
+				ax.set_xticklabels([])
+			if lastplot:
+    		# adding label to time
+				ax.set_xlabel('Time (s)',fontsize=14)
 
-	output_figure_CrossCorrelation_DAY = ORIENTATION_OUTPUT+'CROSS_CORR_STACK_FIGURES/'
-	os.makedirs(output_figure_CrossCorrelation_DAY,exist_ok=True)
-	fig.savefig(output_figure_CrossCorrelation_DAY+'CROSS_CORR_STACK_FIG_'+name_sta1+'_'+name_sta2+'.png')
-	plt.close()
-
+		output_figure_CrossCorrelation_DAY = ORIENTATION_OUTPUT+'CROSS_CORR_STACK_FIGURES/'
+		os.makedirs(output_figure_CrossCorrelation_DAY,exist_ok=True)
+		fig.savefig(output_figure_CrossCorrelation_DAY+'CROSS_CORR_STACK_FIG_'+name_sta1+'_'+channel_sta1+'_'+name_sta2+'_'+channel_sta2+'.png')
+		plt.close()
+'''
 print('\n')
 print('====================================')
 print('Stacking 10-day Cross-correlations:')
@@ -907,7 +908,7 @@ print('====================================')
 print('\n')
 
 #Collecting daily list of cross-correlations
-crosscorr_days_lst = sorted(glob.glob(JSON_FILES+'CROSS_CORR_DAY_FILES/*'))
+crosscorr_days_lst = sorted(glob.glob(JSON_FILES+'CROSS_CORR_ORIENTATION_DAY_FILES/*'))
 
 crosscorr_pairs_lst = []
 for i,j in enumerate(crosscorr_days_lst):
@@ -1225,7 +1226,7 @@ print('=========================================================================
 print('\n')
 
 #Collecting daily list of cross-correlations
-crosscorr_days_lst = sorted(glob.glob(JSON_FILES+'CROSS_CORR_DAY_FILES/*'))
+crosscorr_days_lst = sorted(glob.glob(JSON_FILES+'CROSS_CORR_ORIENTATION_DAY_FILES/*'))
 
 crosscorr_pairs_lst = []
 for i,j in enumerate(crosscorr_days_lst):
@@ -1291,7 +1292,7 @@ print('============================')
 print('\n')
 
 #Collecting daily list of cross-correlations
-crosscorr_days_lst = sorted(glob.glob(JSON_FILES+'CROSS_CORR_DAY_FILES/*'))
+crosscorr_days_lst = sorted(glob.glob(JSON_FILES+'CROSS_CORR_ORIENTATION_DAY_FILES/*'))
 
 crosscorr_pairs_lst = []
 for i,j in enumerate(crosscorr_days_lst):
@@ -1619,7 +1620,7 @@ print('========================')
 print('\n')
 
 #Collecting daily list of cross-correlations
-crosscorr_days_lst = sorted(glob.glob(JSON_FILES+'CROSS_CORR_DAY_FILES/*'))
+crosscorr_days_lst = sorted(glob.glob(JSON_FILES+'CROSS_CORR_ORIENTATION_DAY_FILES/*'))
 
 crosscorr_pairs_lst = []
 for i,j in enumerate(crosscorr_days_lst):
