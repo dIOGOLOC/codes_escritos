@@ -91,10 +91,8 @@ WINDOW_LENGTH = 3600
 #max time window (s) for cross-correlation
 SHIFT_LEN = 1800
 
-PERIOD_BANDS = [[2, 5], [7, 25], [20, 50], [50, 100]]
+PERIOD_BANDS = [[1, 10], [7, 25], [20, 50], [50, 100]]
 # (these bands focus on periods ~7, 15, 25 seconds)
-
-FREQUENCY_BANDS = [[0.5, 1], [1, 2], [2, 3], [3, 4]]
 
 # default parameters to define the signal and noise windows used to
 # estimate the SNR:
@@ -900,7 +898,7 @@ for i in crosscorr_pairs_data:
 		os.makedirs(output_figure_CrossCorrelation_DAY,exist_ok=True)
 		fig.savefig(output_figure_CrossCorrelation_DAY+'CROSS_CORR_STACK_FIG_'+name_sta1+'_'+channel_sta1+'_'+name_sta2+'_'+channel_sta2+'.png')
 		plt.close()
-'''
+
 print('\n')
 print('====================================')
 print('Stacking 10-day Cross-correlations:')
@@ -1229,72 +1227,6 @@ for i in tqdm(crosscorr_pairs_data):
 		plt.close()
 '''
 print('\n')
-print('===================================================================================')
-print('Stacking 10-day Cross-correlations and plotting according to interstation distance:')
-print('===================================================================================')
-print('\n')
-
-#Collecting daily list of cross-correlations
-crosscorr_days_lst = sorted(glob.glob(JSON_FILES+'CROSS_CORR_ORIENTATION_DAY_FILES/*'))
-
-crosscorr_pairs_lst = []
-for i,j in enumerate(crosscorr_days_lst):
-	crosscorr_file = sorted(glob.glob(j+'/*'))
-	crosscorr_pairs_lst.append(crosscorr_file)
-
-#Make a list of list flat
-crosscorr_pairs = [item for sublist in crosscorr_pairs_lst for item in sublist]
-
-#Separating according to pairs name
-crosscorr_pairs_name_lst = []
-for i in crosscorr_pairs:
-	# splitting subdir/basename
-	subdir, filename = os.path.split(i)
-	crosscorr_pairs_name_lst.append(filename.split("_20")[0])
-
-crosscorr_pairs_names = sorted(list(set(crosscorr_pairs_name_lst)))
-
-crosscorr_pairs_data = [[]]*len(crosscorr_pairs_names)
-for l,k in enumerate(crosscorr_pairs_names):
-	crosscorr_pairs_data[l] = [j for i,j in enumerate(crosscorr_pairs) if k in j]
-
-crosscorr_pairs_data_10_day_all = []
-crosscorr_pairs_distance_10_day_all = []
-for j,i in enumerate(crosscorr_pairs_data):
-	crosscorr_pairs_10day_data = []
-	crosscorr_pair_date_10day = []
-	for k in i:
-		subdir, filename = os.path.split(k)
-		crosscorr_pair_date = datetime.datetime.strptime(filename.split('.')[0].split('_')[-2]+'.'+filename.split('.')[0].split('_')[-1], '%Y.%j')
-		crosscorr_pair_date_10day.append(crosscorr_pair_date)
-		crosscorr_pairs_10day_data.append([file for file in i if datetime.datetime.strptime(file.split('/')[-1].split('.')[0].split('_')[-2]+'.'+file.split('/')[-1].split('.')[0].split('_')[-1], '%Y.%j') >= crosscorr_pair_date and datetime.datetime.strptime(file.split('/')[-1].split('.')[0].split('_')[-2]+'.'+file.split('/')[-1].split('.')[0].split('_')[-1], '%Y.%j') < crosscorr_pair_date+datetime.timedelta(days=10)])
-
-	#Stacking data
-	data_to_plot = []
-	for ind,data10 in enumerate(crosscorr_pairs_10day_data):
-		name_sta1 = json.load(open(data10[0]))['sta1_name']
-		name_sta2 = json.load(open(data10[0]))['sta2_name']
-		dist_pair = json.load(open(data10[0]))['dist']
-
-		causal_lst = np.mean(np.array([json.load(open(a))['crosscorr_daily_causal'] for a in data10]),axis=0)
-		acausal_lst = np.mean(np.array([json.load(open(a))['crosscorr_daily_acausal'] for a in data10]),axis=0)
-
-		causal_time = np.array(json.load(open(data10[0]))['crosscorr_daily_causal_time'])
-		acausal_time = np.array(json.load(open(data10[0]))['crosscorr_daily_acausal_time'])
-
-		data_to_plot.append(acausal_lst[::-1] + causal_lst)
-		time_to_plot = [-1*i for i in acausal_time[::-1]] + causal_time
-
-		loc_sta1 = json.load(open(data10[0]))['sta1_loc']
-		loc_sta2 = json.load(open(data10[0]))['sta2_loc']
-
-	print('Pair '+str(j+1)+' of '+str(len(crosscorr_pairs_data))+': '+name_sta1+'-'+name_sta2+' - '+'days stacked: '+str(len(i)))
-
-	crosscorr_pairs_data_10_day_all.append(sum(data_to_plot)/len(data_to_plot))
-	crosscorr_pairs_distance_10_day_all.append(dist_pair)
-
-
-print('\n')
 print('============================')
 print('Stacking Cross-correlations:')
 print('============================')
@@ -1336,7 +1268,7 @@ for result in tqdm(pool.imap(func=crosscorr_stack, iterable=crosscorr_pairs_data
 
 print("--- %.2f execution time (min) ---" % ((time.time() - start_time)/60))
 
-
+'''
 print('\n')
 print('=======================================================================')
 print('Plotting Stacked Cross-correlations according to interstation distance:')
