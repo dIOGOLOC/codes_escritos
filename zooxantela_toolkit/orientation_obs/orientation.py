@@ -976,13 +976,44 @@ for i in tqdm(crosscorr_pairs_data):
 
 		print('Pair: '+name_sta1+'.'+channel_sta1+'-'+name_sta2+'.'+channel_sta2+' - '+'days stacked: '+str(len(i)))
 
-		#crosscorr_stack_data_normalized_org_lst = [(2*(a-a.min())/(a.max()-a.min()))-1 for a in data_to_plot]
-		#stacked_data = sum(crosscorr_stack_data_normalized_org_lst)/len(crosscorr_stack_data_normalized_org_lst)
+		if 'OBS' in name_sta1 or 'OBS' in name_sta2:
+
+        		#Stacking data
+        		causal_lst = np.mean(np.array([json.load(open(a))['crosscorr_daily_causal'] for a in crosscorr_pairs_data]),axis=0)
+        		acausal_lst = np.mean(np.array([json.load(open(a))['crosscorr_daily_acausal'] for a in crosscorr_pairs_data]),axis=0)
+
+        		causal_time = np.array(json.load(open(crosscorr_pairs_data[0]))['crosscorr_daily_causal_time'])
+        		acausal_time = np.array(json.load(open(crosscorr_pairs_data[0]))['crosscorr_daily_acausal_time'])
+
+        		data_to_plot = acausal_lst[::-1] + causal_lst
+        		time_to_plot = [-1*i for i in acausal_time[::-1]] + causal_time
+
+        		#Saving CrossCorrelations stacked data:
+        		CrossCorrelation_stack_dic = nested_dict()
+
+        		CrossCorrelation_stack_dic['dist'] = dist_pair
+        		CrossCorrelation_stack_dic['sta1_name'] = name_sta1
+        		CrossCorrelation_stack_dic['sta2_name'] = name_sta2
+        		CrossCorrelation_stack_dic['sta1_loc'] = loc_sta1
+        		CrossCorrelation_stack_dic['sta2_loc'] = loc_sta2
+        		CrossCorrelation_stack_dic['sta1_channel'] = channel_sta1
+        		CrossCorrelation_stack_dic['sta2_channel'] = channel_sta2
+        		CrossCorrelation_stack_dic['crosscorr_stack'] = data_to_plot.tolist()
+        		CrossCorrelation_stack_dic['crosscorr_stack_time'] = time_to_plot.tolist()
+
+        		output_CrossCorrelation_DAY = JSON_FILES+'CROSS_CORR_STACKED_FILES/'+name_sta1+'_'+channel_sta1+'.'+name_sta2+'_'+channel_sta2+'/'
+        		os.makedirs(output_CrossCorrelation_DAY,exist_ok=True)
+        		with open(output_CrossCorrelation_DAY+'CROSS_CORR_STACKED_FILES_'+name_sta1+'_'+channel_sta1+'.'+name_sta2+'_'+channel_sta2+'.json', 'w') as fp:
+        			json.dump(CrossCorrelation_stack_dic, fp)
+
+
+        		return CrossCorrelation_stack_dic['crosscorr_stack']
+
+
 		stacked_data = sum(data_to_plot)/len(data_to_plot)
 
 		CrossCorrelation_10_days_dic = nested_dict()
 		CrossCorrelation_10_days_dic['dist'] = round(dist_pair)
-		CrossCorrelation_10_days_dic['date'] = filename.split('.')[0].split('_')[-2]+'.'+filename.split('.')[0].split('_')[-1]
 		CrossCorrelation_10_days_dic['sta1_loc'] = loc_sta1
 		CrossCorrelation_10_days_dic['sta1_name'] = name_sta1
 		CrossCorrelation_10_days_dic['sta1_channel'] = channel_sta1
