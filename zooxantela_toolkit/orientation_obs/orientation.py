@@ -1264,7 +1264,7 @@ for i in tqdm(crosscorr_pairs_data):
 		os.makedirs(output_figure_CrossCorrelation_DAY,exist_ok=True)
 		fig.savefig(output_figure_CrossCorrelation_DAY+'CROSS_CORR_10_STACK_FIG_'+name_sta1+'.'+channel_sta1+'-'+name_sta2+'.'+channel_sta2+'.png')
 		plt.close()
-'''
+
 print('\n')
 print('============================')
 print('Stacking Cross-correlations:')
@@ -1307,7 +1307,6 @@ for result in tqdm(pool.imap(func=crosscorr_stack, iterable=crosscorr_pairs_data
 
 print("--- %.2f execution time (min) ---" % ((time.time() - start_time)/60))
 
-'''
 print('\n')
 print('=======================================================================')
 print('Plotting Stacked Cross-correlations according to interstation distance:')
@@ -1592,11 +1591,11 @@ output_figure_CrossCorrelation_DAY = ORIENTATION_OUTPUT+'CROSS_CORR_STACK_INTERS
 os.makedirs(output_figure_CrossCorrelation_DAY,exist_ok=True)
 fig.savefig(output_figure_CrossCorrelation_DAY+'CROSS_CORR_STACK_INTERSTATION_DISTANCE_FIG.png',dpi=300)
 plt.close()
-
+'''
 print('\n')
-print('========================')
-print('Clock Drift Calculating:')
-print('========================')
+print('============================')
+print('Calculating the orientation:')
+print('============================')
 print('\n')
 
 #Collecting daily list of cross-correlations
@@ -1830,4 +1829,176 @@ for i in tqdm(crosscorr_pairs_data):
 		os.makedirs(output_figure_CLOCK_DRIFT,exist_ok=True)
 		fig.savefig(output_figure_CLOCK_DRIFT+'CLOCK_DRIFT_BETWEEN_'+name_sta1+'_'+name_sta2+'.png',dpi=300)
 		plt.close()
+'''
+def DLcalc(stream, Rf, LPF, HPF, epi, baz, A, winlen=10., ptype=0):
+    """
+    DORAN-LASKE calculation for one freq, one orbit of surface wave
+    ADRIAN. K. DORAN and GABI LASKE, DLOPy VERSION 1.0,
+    RELEASED APRIL 2017
+    Parameters
+    ----------
+    stream : float
+        Latitude of origin point (deg)
+    lon1 : float
+        Longitude of origin point (deg)
+    lat2 : float
+        Latitude of end point (deg)
+    lon2 : float
+        Longitude of end point (deg)
+    map* : :class:`~numpy.ndarray`
+        maps of Rayleigh-wave dispersion at various frequencies
+    Returns
+    -------
+    R1 : :class:`~numpy.ndarray`
+        R1 velocity path
+    R2 : :class:`~numpy.ndarray`
+        R2 velocity path
+    """
+
+    # Pre-process
+    stream.taper(type='hann', max_percentage=0.05)
+    stream.filter("lowpass", freq=LPF, corners=4, zerophase=True)
+    stream.filter("highpass", freq=HPF, corners=4, zerophase=True)
+    stream.detrend()
+
+    # Window info
+    Rvel = getf(Rf, A)  # Group velocity at Rf
+    R1window = (1.0/(Rf/1000.))*winlen
+    arv = 1./Rvel * epi
+    r1 = arv - R1window/2.
+    r2 = arv + R1window/2.
+
+    dt = stream[0].stats.starttime
+    st = stream.slice(starttime=dt+r1, endtime=dt+r2)
+
+    # Extract waveform data for each component
+    try:
+        tr1 = st.select(component='1')[0].data
+        tr2 = st.select(component='2')[0].data
+    except:
+        tr1 = st.select(component='N')[0].data
+        tr2 = st.select(component='E')[0].data
+    trZ = st.select(component='Z')[0].data
+
+    # Calculate Hilbert transform of vertical trace data
+    trZ = np.imag(sig.hilbert(trZ))
+
+    # Ensure all data vectors are same length
+    tr1, tr2, trZ = resiz(tr1, tr2, trZ)
+
+    # Rotate through and find max normalized covariance
+    dphi = 0.1
+    ang = np.arange(0., 360., dphi)
+    cc1 = np.zeros(len(ang))
+    cc2 = np.zeros(len(ang))
+    for k, a in enumerate(ang):
+        R, T = rotate_ne_rt(tr1, tr2, a)
+        covmat = np.corrcoef(R, trZ)
+        cc1[k] = covmat[0, 1]
+        cstar = np.cov(trZ, R)/np.cov(trZ)
+        cc2[k] = cstar[0, 1]
+
+    # Get argument of maximum of cc2
+    ia = cc2.argmax()
+
+    # Get azimuth and correct for angles above 360
+    phi = (baz - float(ia)*dphi) + 180.
+    if phi < 0.:
+        phi += 360.
+    if phi >= 360.:
+        phi -= 360.
+
+    # # plotting:
+    # # ptype=0, no plot
+    # # ptype=1, Rayleigh plot
+    # # ptype=2, Love plot
+    # if ptype == 1:
+    #     import matplotlib.dates as dat
+    #     X = P[0].times()
+    #     T = np.zeros((len(X)))
+    #     for q in np.arange((len(T))):
+    #         T[q] = dt + r1 + X[q]
+    #     ZZ = dat.epoch2num(T)
+    #     Z = dat.num2date(ZZ)
+    #     n, e = rot2d(rdat, rdat2, ANG/4.)
+    #     plt.figure()
+    #     plt.plot(Z, vdat, label='Vertical')
+    #     plt.hold("on")
+    #     plt.plot(Z, n, label='BH1')
+    #     plt.legend(loc=4)
+    #     plt.xlabel('Time')
+    #     plt.ylabel('Counts')
+    #     plt.title('D-L Results (%i mHz)' % (Rf))
+    # elif ptype == 2:
+    #     import matplotlib.dates as dat
+    #     X = P[0].times()
+    #     T = np.zeros((len(X)))
+    #     for q in np.arange((len(T))):
+    #         T[q] = dt+r1+X[q]
+    #     ZZ = dat.epoch2num(T)
+    #     Z = dat.num2date(ZZ)
+    #     n, e = rot2d(rdat, rdat2, ANG/4.)
+    #     plt.figure()
+    #     plt.subplot(121)
+    #     plt.plot(Z, vdat, label='Vertical')
+    #     plt.hold("on")
+    #     plt.plot(Z, n, label='BH1')
+    #     plt.legend(loc=4)
+    #     plt.xlabel('Time')
+    #     plt.suptitle('D-L Results (%i mHz)' % (Rf))
+    #     plt.subplot(122)
+    #     plt.plot(Z, e, label='BH2')
+    #     plt.xlabel('Time')
+    #     plt.ylabel('Counts')
+    #     plt.legend(loc=4)
+    # elif ptype == 3:
+    #     import matplotlib.dates as dat
+    #     X = P[0].times()
+    #     T = np.zeros((len(X)))
+    #     for q in np.arange((len(T))):
+    #         T[q] = dt+r1+X[q]
+    #     n, e = rot2d(rdat, rdat2, ANG/4.)
+    #     plt.figure()
+    #     plt.plot(T, vdat, label='Vertical')
+
+    # if ptype > 0:
+    #     plt.show()
+
+    return phi, cc1[ia]
+
+
+# Final calculation
+def estimate(phi, ind):
+    """
+    Function to estimate final azimuth from
+    ADRIAN. K. DORAN and GABI LASKE, DLOPy VERSION 1.0,
+    RELEASED APRIL 2017
+    Parameters
+    ----------
+    phi : :class:`~numpy.ndarray`
+        Input array of estimated azimuth
+    ind : list
+        List of index values that satisfy some QC condition
+        for phi
+    Returns
+    -------
+    m : float
+        Mean value of robust, bootstrapped estimates
+    s : float
+        2 Standard deviations of robust, bootstrapped estimates
+    """
+
+    # Get phi', where conditions are met
+    phip = phi[ind]
+
+    # Re-center at circular mean
+    phip = centerat(phip, m=cmean(phi, high=360))
+
+    # Remove outliers
+    phipp = outlier(phip, 5.)
+
+    # bootstrap results for statistic
+    m = boot(phipp, 5000)
+
+    return cmean(m, high=360), 2*1.96*cstd(m, high=360)
 '''
