@@ -1601,7 +1601,6 @@ print('\n')
 
 #Collecting daily list of cross-correlations
 crosscorr_days_lst= sorted(glob.glob(JSON_FILES+'CROSS_CORR_STACKED_FILES/*'))
-
 crosscorr_pairs_lst = []
 for i,j in enumerate(crosscorr_days_lst):
 	crosscorr_file = sorted(glob.glob(j+'/*'))
@@ -1641,9 +1640,9 @@ for i,j in enumerate(OBS_pairs):
             if '_HHZ' in pair.split(OBS_lst[i]+'_HHZ')[0] or '_HHZ' in pair.split(OBS_lst[i]+'_HHZ')[1]:
                 temp_HHZ.append(pair_folder)
 
-        OBS_pairs_channels.append([temp_HHE,temp_HHN,temp_HHZ])
+    OBS_pairs_channels.append([temp_HHE,temp_HHN,temp_HHZ])
+
 for i,chs in enumerate(OBS_pairs_channels):
-    print(OBS_lst[i])
     OBS_orientation = []
     OBS_cc1_max = []
     for k,l in enumerate(chs[0]):
@@ -1686,6 +1685,7 @@ for i,chs in enumerate(OBS_pairs_channels):
 
             signal_window = (trZ_time >= tmin_signal) & (trZ_time <= tmax_signal)
             noise_window = (trZ_time >= tmin_noise) & (trZ_time <= tmax_noise)
+            noise_rotated = tr1_data_filtered[noise_window].std()
 
             tr2 = tr2_data_filtered[signal_window]
             tr1 = tr1_data_filtered[signal_window]
@@ -1699,18 +1699,26 @@ for i,chs in enumerate(OBS_pairs_channels):
             ang = np.arange(0., 360., dphi)
             cc1 = np.zeros(len(ang))
             cc2 = np.zeros(len(ang))
-            baz = []
+            SNR_rotate = np.zeros(len(ang))
+            baz = np.zeros(len(ang))
             for k, a in enumerate(ang):
                 R, T = rotate_ne_rt(tr1, tr2, a)
                 covmat = np.corrcoef(R, trZ_H)
                 cc1[k] = covmat[0, 1]
                 cstar = np.cov(trZ_H, R)/np.cov(trZ_H)
                 cc2[k] = cstar[0, 1]
-                baz.append(a)
+                SNR_rotate[k] = np.abs(R).max()/noise_rotated
+                baz[k] = a
 
-
-            # Get argument of maximum of cc2
+            # Get argument of maximum of cc:
+            ia1 = cc1.argmax()
             ia = cc2.argmax()
+            ia3 = SNR_rotate.argmax()
+
+            # Get argument of maximum of cc:
+            cc1_max = cc1.max()
+            cc2_max = cc2.max()
+            SNR_rotate_max = SNR_rotate.max()
 
             # Get azimuth and correct for angles above 360
             phi = baz[ia]
@@ -1731,39 +1739,49 @@ for i,chs in enumerate(OBS_pairs_channels):
 
             new_R, new_T = rotate_ne_rt(tr1_data_filtered, tr2_data_filtered, phi)
 
-
             ax1 = fig.add_subplot(gs[0,0])
             ax1.plot(trZ_time,new_T,'-k')
             ax1.set_xlim(0,SHIFT_LEN/2)
-            ax1.set_ylabel('HH2')
-            ax1.set_xlabel('Time (s)')
+            ax1.set_ylabel('$C_{tz}$')
+            ax1.set_xlabel('Timelag (s)')
             ax1.axvline(x=stack_stations_dist/SIGNAL_WINDOW_VMIN, ymin=0, ymax=1,color='gray',linestyle='--',lw=1)
             ax1.axvline(x=stack_stations_dist/SIGNAL_WINDOW_VMAX, ymin=0, ymax=1,color='gray',linestyle='--',lw=1)
 
-            ax2 = fig.add_subplot(gs[1,0])
+            ax2 = fig.add_subplot(gs[1,0], sharey=ax1, sharex=ax1)
             ax2.plot(trZ_time,new_R,'-k')
             ax2.plot(trZ_time,trZ_H_data_filtered,'--r')
             ax2.set_xlim(0,SHIFT_LEN/2)
-            ax2.set_ylabel('HH1')
-            ax2.set_xlabel('Time (s)')
+            ax2.set_ylabel('$C_{rz}$')
+            ax2.set_xlabel('Timelag (s)')
             ax2.axvline(x=stack_stations_dist/SIGNAL_WINDOW_VMIN, ymin=0, ymax=1,color='gray',linestyle='--',lw=1)
             ax2.axvline(x=stack_stations_dist/SIGNAL_WINDOW_VMAX, ymin=0, ymax=1,color='gray',linestyle='--',lw=1)
 
-            ax3 = fig.add_subplot(gs[2,0])
+            ax3 = fig.add_subplot(gs[2,0], sharey=ax1, sharex=ax1)
             ax3.plot(trZ_time,trZ_data_filtered,'-k')
             ax3.set_xlim(0,SHIFT_LEN/2)
-            ax3.set_ylabel('HHZ')
-            ax3.set_xlabel('Time (s)')
+            ax3.set_ylabel('$C_{zz}$')
+            ax3.set_xlabel('Timelag (s)')
             ax3.axvline(x=stack_stations_dist/SIGNAL_WINDOW_VMIN, ymin=0, ymax=1,color='gray',linestyle='--',lw=1)
             ax3.axvline(x=stack_stations_dist/SIGNAL_WINDOW_VMAX, ymin=0, ymax=1,color='gray',linestyle='--',lw=1)
 
-            ax4 = fig.add_subplot(gs[:3,1])
-            ax4.plot(ang,cc1,'ok',label='cc1')
-            ax4.plot(ang,cc2,'or',label='cc2')
-            ax4.set_ylabel('Correlation Coefficient')
+            ax4 = fig.add_subplot(gs[0,1])
+            ax4.plot(ang,cc1,'--k')
+            ax4.plot(phi,cc1_max,'*r')
+            ax4.set_ylabel('$R_{rz}$')
             ax4.set_xlabel('Orientation Angle (deg)')
-            #ax4.axvline(x=stack_stations_dist/SIGNAL_WINDOW_VMIN, ymin=0, ymax=1,color='gray',linestyle='--',lw=1)
-            #ax4.axvline(x=stack_stations_dist/SIGNAL_WINDOW_VMAX, ymin=0, ymax=1,color='gray',linestyle='--',lw=1)
+
+            ax5 = fig.add_subplot(gs[1,1], sharex=ax4)
+            ax5.plot(ang,cc2,'--k')
+            ax5.plot(phi,cc2_max,'*r')
+            ax5.set_ylabel('$S_{rz}$')
+            ax5.set_xlabel('Orientation Angle (deg)')
+
+            ax6 = fig.add_subplot(gs[2,1], sharex=ax4)
+            ax6.plot(ang,SNR_rotate,'--k')
+            ax6.plot(phi,SNR_rotate_max,'*r')
+            ax6.set_ylabel('SNR')
+            ax6.set_xlabel('Orientation Angle (deg)')
+
             plt.show()
 
     #Creating the figure
@@ -1775,7 +1793,7 @@ for i,chs in enumerate(OBS_pairs_channels):
     ax1 = fig.add_subplot(gs[0])
 
     ax1.plot(OBS_orientation,OBS_cc1_max,'ok')
-    ax1.set_ylabel('Rrz')
+    ax1.set_ylabel('$R_{rz}$')
     ax1.set_xlabel('Orientation (degrees)')
     plt.show()
 
@@ -1801,46 +1819,6 @@ for i,chs in enumerate(OBS_pairs_channels):
 		ax0.plot(date_to_plot_clock_True_static, pol_reg.predict(poly_reg.fit_transform(np.array(range(len(data_to_plot_clock_True_static))).reshape(-1, 1))), color='blue')
 
 		#--------------------------------------------------
-
-		poly_reg = PolynomialFeatures(degree=4)
-		X_poly = poly_reg.fit_transform(np.array(range(len(date_to_plot_clock_True_dynamic))).reshape(-1, 1))
-		pol_reg = LinearRegression()
-		pol_reg.fit(X_poly, data_to_plot_clock_True_dynamic)
-
-		for i,j in enumerate(data_to_plot_clock_dynamic):
-			if np.mean(data_to_plot_clock_dynamic)-sigma*np.std(data_to_plot_clock_dynamic) <= j <= np.mean(data_to_plot_clock_dynamic)+sigma*np.std(data_to_plot_clock_dynamic):
-				l1, = ax1.plot(date_to_plot_clock[i],data_to_plot_clock_dynamic[i],'ok',ms=3)
-			else:
-				l2, = ax1.plot(date_to_plot_clock[i],data_to_plot_clock_dynamic[i],'or',ms=3)
-
-		ax1.plot(date_to_plot_clock_True_dynamic, pol_reg.predict(poly_reg.fit_transform(np.array(range(len(data_to_plot_clock_True_dynamic))).reshape(-1, 1))), color='blue')
-		ax1.legend((l1,l2),('%70 data','%30 data'),loc='upper right')
-
-		#--------------------------------------------------
-
-		poly_reg = PolynomialFeatures(degree=4)
-		X_poly = poly_reg.fit_transform(np.array(range(len(date_to_plot_clock_True_absolute))).reshape(-1, 1))
-		pol_reg = LinearRegression()
-		pol_reg.fit(X_poly, data_to_plot_clock_True_absolute)
-
-		for i,j in enumerate(data_to_plot_clock_absolute):
-			if np.mean(data_to_plot_clock_absolute)-sigma*np.std(data_to_plot_clock_absolute) <= j <= np.mean(data_to_plot_clock_absolute)+sigma*np.std(data_to_plot_clock_absolute):
-				l1, = ax2.plot(date_to_plot_clock[i],data_to_plot_clock_absolute[i],'ok',ms=3)
-			else:
-				l2, = ax2.plot(date_to_plot_clock[i],data_to_plot_clock_absolute[i],'or',ms=3)
-
-		ax2.plot(date_to_plot_clock_True_absolute, pol_reg.predict(poly_reg.fit_transform(np.array(range(len(data_to_plot_clock_True_absolute))).reshape(-1, 1))), color='blue')
-		ax2.legend((l1,l2),('%70 data','%30 data'),loc='upper right')
-
-		fig.autofmt_xdate()
-
-		output_figure_CLOCK_DRIFT = ORIENTATION_OUTPUT+'CLOCK_DRIFT_FIGURES/'
-		os.makedirs(output_figure_CLOCK_DRIFT,exist_ok=True)
-		fig.savefig(output_figure_CLOCK_DRIFT+'CLOCK_DRIFT_BETWEEN_'+name_sta1+'_'+name_sta2+'.png',dpi=300)
-		plt.close()
-
-
-
 
     # # plotting:
     # # ptype=0, no plot
