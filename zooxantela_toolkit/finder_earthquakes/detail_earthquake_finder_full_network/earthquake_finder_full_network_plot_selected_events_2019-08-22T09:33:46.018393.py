@@ -16,6 +16,7 @@ from matplotlib.dates import YearLocator, MonthLocator, DayLocator, HourLocator,
 from matplotlib.patches import Ellipse
 import matplotlib.cbook as cbook
 from matplotlib.patches import Rectangle
+import matplotlib.gridspec as gridspec
 
 import obspy as op
 from obspy import read,read_inventory, UTCDateTime, Stream, Trace
@@ -82,7 +83,7 @@ OBS_LST = ['OBS17','OBS18']
 PEM = 4
 PET = 6
 
-FILTER_DATA = [1,20]
+FILTER_DATA = [1,45]
 
 #-------------------------------------------------------------------------------
 
@@ -130,30 +131,27 @@ for sta in OBS_LST:
         lst_OBS.append(b)
 
 files_INTERVAL_PERIOD_DATE = lst_INLAND+lst_OBS
+
 print('\n')
 print('==============')
 print('Finding events')
 print('==============')
 print('\n')
 
-stE = Stream()
-stN = Stream()
-stZ = Stream()
+st = Stream()
 for k in files_INTERVAL_PERIOD_DATE:
     for filename in k:
-        if 'HHZ.D' in filename:
-            stZ += read(filename)
-        elif 'HHN.D' in filename or 'HH1.D' in filename:
-            stN += read(filename)
-        else:
-            stE += read(filename)
+        st += read(filename)
 
 #===============
 #Preprocess Data
 #===============
-stZ.trim(starttime=FDAY+PEM, endtime=FDAY+PET)
+st.trim(starttime=FDAY+PEM, endtime=FDAY+PET)
 
-for tr in stZ:
+stE = Stream()
+stN = Stream()
+stZ = Stream()
+for tr in st:
     network = tr.stats.network
     name = tr.stats.station
     channel = tr.stats.channel
@@ -168,8 +166,24 @@ for tr in stZ:
     tr.detrend('linear')
     tr.taper(max_percentage=0.5)
     tr.filter('bandpass', freqmin=FILTER_DATA[0], freqmax=FILTER_DATA[1])  # optional prefiltering
+
+    if channel == 'HHZ':
+        stZ += tr
+    elif channel == 'HHN' or channel == 'HH1':
+        stN += tr
+    elif channel == 'HHE' or channel == 'HH2':
+        stE += tr
+
 stZ2 = stZ.copy()
-st_selected_time = stZ2[0].stats.starttime
+stN2 = stN.copy()
+stE2 = stE.copy()
+st_selected_time = st[0].stats.starttime
+
+print('\n')
+print('===============')
+print('Plotting events')
+print('===============')
+print('\n')
 
 # Plotting the results
 axis_major = SecondLocator(interval=1)   # every 5-second
@@ -177,66 +191,130 @@ axis_minor = MicrosecondLocator(interval=100000) # every 1-second
 axis_Fmt = DateFormatter('%H:%M:%S')
 
 plt.rcParams.update({'font.size': 20})
-fig, axes = plt.subplots(ncols=2, nrows=len(stZ),figsize=(15,15),sharex='col')
+fig = plt.figure(figsize=(30,15))
+gs = gridspec.GridSpec(nrows=5, ncols=len(stZ)*3)
 fig.suptitle('Event Date: '+FDAY.strftime('%d/%m/%Y'),y=0.95,fontsize=20)
+size_cols = [i for i in range(0,9,3)]
+#----------------------------------------------------------------------------
+for ind,traces in enumerate(stE2):
+        ax1 = fig.add_subplot(gs[0,size_cols[ind]:size_cols[ind]+3])
+        trace_amp_max = np.max(np.abs(traces.data))
+
+        ax1.set_title(traces.stats.station)
+        ax1.xaxis.set_major_locator(axis_major)
+        ax1.xaxis.set_major_formatter(axis_Fmt)
+        ax1.xaxis.set_minor_locator(axis_minor)
+        ax1.tick_params(axis='both',which='major',width=2,length=5)
+        ax1.tick_params(axis='both',which='minor',width=2,length=3)
+        ax1.plot(traces.times('matplotlib'),traces.data, 'k')
+        ax1.set_ylim(-trace_amp_max,trace_amp_max)
+        ax1.text(0.1, 0.85, traces.stats.channel, horizontalalignment='center',verticalalignment='center', transform=ax1.transAxes)
+        ax1.ticklabel_format(axis='y', style='sci')
+        if size_cols[ind] == 0:
+            ax1.set_ylabel("Velocity [m/s]")
+#----------------------------------------------------------------------------
+for ind,traces in enumerate(stN2):
+    for i in range(0,9,3):
+        ax2 = fig.add_subplot(gs[1,size_cols[ind]:size_cols[ind]+3])
+        trace_amp_max = np.max(np.abs(traces.data))
+
+        ax2.xaxis.set_major_locator(axis_major)
+        ax2.xaxis.set_major_formatter(axis_Fmt)
+        ax2.xaxis.set_minor_locator(axis_minor)
+        ax2.tick_params(axis='both',which='major',width=2,length=5)
+        ax2.tick_params(axis='both',which='minor',width=2,length=3)
+        ax2.plot(traces.times('matplotlib'),traces.data, 'k')
+        ax2.set_ylim(-trace_amp_max,trace_amp_max)
+        ax2.text(0.1, 0.85, traces.stats.channel, horizontalalignment='center',verticalalignment='center', transform=ax2.transAxes)
+        ax2.ticklabel_format(axis='y', style='sci')
+        if size_cols[ind] == 0:
+            ax2.set_ylabel("Velocity [m/s]")
 
 #----------------------------------------------------------------------------
-
 for ind,traces in enumerate(stZ2):
+    for i in range(0,9,3):
+        ax3 = fig.add_subplot(gs[2,size_cols[ind]:size_cols[ind]+3])
+
+        trace_amp_max = np.max(np.abs(traces.data))
+
+        ax3.xaxis.set_major_locator(axis_major)
+        ax3.xaxis.set_major_formatter(axis_Fmt)
+        ax3.xaxis.set_minor_locator(axis_minor)
+        ax3.tick_params(axis='both',which='major',width=2,length=5)
+        ax3.tick_params(axis='both',which='minor',width=2,length=3)
+        ax3.plot(traces.times('matplotlib'),traces.data, 'k')
+        ax3.set_ylim(-trace_amp_max,trace_amp_max)
+        ax3.text(0.1, 0.85, traces.stats.channel, horizontalalignment='center',verticalalignment='center', transform=ax3.transAxes)
+        ax3.ticklabel_format(axis='y', style='sci')
+        if size_cols[ind] == 0:
+            ax3.set_ylabel("Velocity [m/s]")
+        #----------------------------------------------------------------------------
+
+        t = traces.times('matplotlib')
+        f_min = FILTER_DATA[0]
+        f_max = round(df/2)
+
+        scalogram = cwt(traces.data, dt, 8, f_min, f_max)
+        x, y = np.meshgrid(t,np.linspace(f_min, f_max, scalogram.shape[0]))
+
+        ax4 = fig.add_subplot(gs[3,size_cols[ind]:size_cols[ind]+3])
+        ax4.xaxis.set_major_formatter(axis_Fmt)
+        ax4.xaxis.set_major_locator(axis_major)
+        ax4.xaxis.set_minor_locator(axis_minor)
+        ax4.tick_params(axis='both',which='major',width=2,length=5)
+        ax4.tick_params(axis='both',which='minor',width=2,length=3)
+
+
+        im = ax4.pcolormesh(x, y, np.abs(scalogram), shading='auto', cmap='viridis')
+        if size_cols[ind] == 0:
+            ax4.set_ylabel("Frequency [Hz]")
+        ax4.set_ylim(f_min, f_max)
+
+        axins = inset_axes(ax4,
+                           width="40%",
+                           height="5%",
+                           loc='upper left',
+                           bbox_to_anchor=(0.60, 0.1, 1, 1),
+                           bbox_transform=ax4.transAxes,
+                           borderpad=0,
+                           )
+
+        plt.colorbar(im, cax=axins, orientation="horizontal", ticklocation='top')
+        plt.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=None, hspace=0.4)
+
     #----------------------------------------------------------------------------
+for ind,traces in enumerate(stE2):
+        ax5 = fig.add_subplot(gs[4,size_cols[ind]])
+        ax5.plot(stE2[ind].data,stN2[ind].data, 'k')
+        ax5.text(0.1, 0.85, 'X-Y', horizontalalignment='center',verticalalignment='center', transform=ax5.transAxes)
+        #ax5.ticklabel_format(axis='y', style='sci')
+        #ax5.ticklabel_format(axis='y', style='sci')
+        #ax5.set_ylabel("Velocity [m/s]")
+        #ax5.set_ylabel("Velocity [m/s]")
 
-    ax1 = axes[ind,0]
-
-    trace_amp_max = np.max(np.abs(traces.data))
-
-    if ind == 0:
-        ax1.set_title('Filter: '+str(FILTER_DATA[0])+'-'+str(FILTER_DATA[1])+' Hz')
-
-    ax1.xaxis.set_major_locator(axis_major)
-    ax1.xaxis.set_major_formatter(axis_Fmt)
-    ax1.xaxis.set_minor_locator(axis_minor)
-    ax1.tick_params(axis='both',which='major',width=2,length=5)
-    ax1.tick_params(axis='both',which='minor',width=2,length=3)
-    ax1.plot(traces.times('matplotlib'),traces.data, 'k')
-    ax1.set_ylim(-trace_amp_max,trace_amp_max)
-    ax1.text(0.1, 0.85, traces.stats.station, horizontalalignment='center',verticalalignment='center', transform=ax1.transAxes)
-    ax1.ticklabel_format(axis='y', style='sci')
-    ax1.set_ylabel("Velocity [m/s]")
-
-    t = traces.times('matplotlib')
-    f_min = FILTER_DATA[0]
-    f_max = round(df/2)
-
-    scalogram = cwt(traces.data, dt, 8, f_min, f_max)
-    x, y = np.meshgrid(t,np.linspace(f_min, f_max, scalogram.shape[0]))
-
-    ax4 = axes[ind,1]
-    ax4.xaxis.set_major_formatter(axis_Fmt)
-    ax4.xaxis.set_major_locator(axis_major)
-    ax4.xaxis.set_minor_locator(axis_minor)
-    ax4.tick_params(axis='both',which='major',width=2,length=5)
-    ax4.tick_params(axis='both',which='minor',width=2,length=3)
-
-
-    im = ax4.pcolormesh(x, y, np.abs(scalogram), shading='auto', cmap='viridis')
-    ax4.set_ylabel("Frequency [Hz]")
-    ax4.set_ylim(f_min, f_max)
-
-    axins = inset_axes(ax4,
-                       width="40%",
-                       height="5%",
-                       loc='upper left',
-                       bbox_to_anchor=(0.60, 0.1, 1, 1),
-                       bbox_transform=ax4.transAxes,
-                       borderpad=0,
-                       )
-
-    plt.colorbar(im, cax=axins, orientation="horizontal", ticklocation='top')
-    plt.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=None, hspace=0.4)
 
     #----------------------------------------------------------------------------
+        ax6 = fig.add_subplot(gs[4,size_cols[ind]+1])
+        ax6.plot(stE2[ind].data,stZ2[ind].data, 'k')
+        ax6.text(0.1, 0.85, 'X-Z', horizontalalignment='center',verticalalignment='center', transform=ax6.transAxes)
+        #ax5.ticklabel_format(axis='y', style='sci')
+        #ax5.ticklabel_format(axis='y', style='sci')
+        #ax5.set_ylabel("Velocity [m/s]")
+        #ax5.set_ylabel("Velocity [m/s]")
 
-    daily_event_output = EARTHQUAKE_FINDER_OUTPUT+'/EVENTS_SELECTED_PLOT/'
-    os.makedirs(daily_event_output,exist_ok=True)
-    fig.savefig(daily_event_output+NETWORK+'_'+st_selected_time.strftime('%Y_%m_%d_%H_%M_%S_%f')+'.png', dpi=300, facecolor='w', edgecolor='w')
-    plt.close()
+
+    #----------------------------------------------------------------------------
+        ax7 = fig.add_subplot(gs[4,size_cols[ind]+2])
+        ax7.plot(stN2[ind].data,stZ2[ind].data, 'k')
+        ax7.text(0.1, 0.85, 'Y-Z', horizontalalignment='center',verticalalignment='center', transform=ax7.transAxes)
+        #ax5.ticklabel_format(axis='y', style='sci')
+        #ax5.ticklabel_format(axis='y', style='sci')
+        #ax5.set_ylabel("Velocity [m/s]")
+        #ax5.set_ylabel("Velocity [m/s]")
+
+
+#----------------------------------------------------------------------------
+daily_event_output = EARTHQUAKE_FINDER_OUTPUT+'/EVENTS_SELECTED_PLOT/'
+os.makedirs(daily_event_output,exist_ok=True)
+fig.savefig(daily_event_output+NETWORK+'_'+st_selected_time.strftime('%Y_%m_%d_%H_%M_%S_%f')+'.png', dpi=300, facecolor='w', edgecolor='w')
+plt.close()
