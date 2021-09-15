@@ -1,8 +1,8 @@
 ###############################################################################
 #
 # This is an example of configuration file, wherein global paths and parameters
-# related to the analysis of quality of seismological data are defined. At least 
-# one file should reside in the folder in which you intend to run your scripts. 
+# related to the analysis of quality of seismological data are defined. At least
+# one file should reside in the folder in which you intend to run your scripts.
 # The configuration file(s) can have any name, as long as the extension is 'cnf':
 # e.g., 'analysis.cnf', 'caninana_config.cnf', 'myconfig.cnf', 'test.cnf'...
 #
@@ -12,8 +12,8 @@
 # - [local_evt]            : parameters to compare local event data
 # - [event]                : parameters to compare event data
 #
-# Before using the scripts, you should at least make sure that the paths in 
-# section [paths] are consistent with your own files and folders organization. 
+# Before using the scripts, you should at least make sure that the paths in
+# section [paths] are consistent with your own files and folders organization.
 #
 ###############################################################################
 
@@ -23,8 +23,7 @@
 #======
 
 # directory of raw files
-#DIR_DATA = /home/diogoloc/dados_posdoc/ON_MAR/obs_data_MSEED/
-DIR_DATA = /home/diogoloc/dados_posdoc/ON_MAR/data/2019/
+DIR_DATA = /home/diogoloc/dados_posdoc/ON_MAR/obs_data_MSEED/
 
 # directory of raw status files
 DIR_STATUS = /home/diogoloc/dados_posdoc/ON_MAR/obs_data/STATUS_FILE/
@@ -45,8 +44,7 @@ OUTPUT_EV_DIR = /home/diogoloc/dados_posdoc/ON_MAR/EVENTS/
 XML_FILE = /home/diogoloc/dados_posdoc/ON_MAR/XML_OBS/ON.xml
 
 #STA CSV FILE path
-#STA_CSV_FILE  = /home/diogoloc/dados_posdoc/ON_MAR/sta_coord/OBS_ZOOXANTELA.txt
-STA_CSV_FILE  = /home/diogoloc/dados_posdoc/ON_MAR/sta_coord/RSIS_ZOOXANTELA.txt
+STA_CSV_FILE  = /home/diogoloc/dados_posdoc/ON_MAR/sta_coord/OBS_ZOOXANTELA.txt
 
 #Local events FILE path
 LOCAL_CSV_FILE  = /home/diogoloc/dados_posdoc/ON_MAR/local_events/boletim2001p.txt
@@ -71,9 +69,9 @@ FINAL_DATE = 2020,8,1
 #Percentage fo the days to process and plot the PPSD?
 DAY_PERCENTAGE = 2
 
-#Restricts the data that is included in the stack by time of day and weekday. 
-#Monday is 1, Sunday is 7, -1 for any day of week. 
-#For example, using time_of_weekday=[(-1, 22, 24)] 
+#Restricts the data that is included in the stack by time of day and weekday.
+#Monday is 1, Sunday is 7, -1 for any day of week.
+#For example, using time_of_weekday=[(-1, 22, 24)]
 #only individual spectra that have a starttime in between 10pm and 12am are used in the stack for all days of week
 #time_of_weekday=[(TIME_OF_WEEKDAY_DAY, TIME_OF_WEEKDAY_START_HOUR, TIME_OF_WEEKDAY_FINAL_HOUR)])
 TIME_OF_WEEKDAY_DAY = -1
@@ -81,14 +79,14 @@ TIME_OF_WEEKDAY_START_HOUR = 0
 TIME_OF_WEEKDAY_FINAL_HOUR = 24
 
 #Extracting PSD values for given period in seconds.
-#Selects the period bin whose center period is closest to the specified period. 
+#Selects the period bin whose center period is closest to the specified period.
 PERIOD_PSD = 10
 
-#Maximum and minimum amplitude of the PSD (sensor). 
+#Maximum and minimum amplitude of the PSD (sensor).
 AMP_PSD_MIN = -120
 AMP_PSD_MAX = -80
 
-#Maximum and minimum amplitude of the PSD (hydrophones). 
+#Maximum and minimum amplitude of the PSD (hydrophones).
 AMP_PSD_HYDROPHONE_MIN = -60
 AMP_PSD_HYDROPHONE_MAX = 60
 
@@ -102,7 +100,7 @@ LOCAL_EVENT_START_DATE = 2019-06-01
 #Local event final date
 LOCAL_EVENT_FINAL_DATE = 2020-07-01
 
-#Minimum event magnitude 
+#Minimum event magnitude
 LOCAL_EV_MAGNITUDE_MIN = 2
 
 #Shapefile to filter local event data
@@ -124,15 +122,15 @@ PORT = 18001
 #======
 
 #Taup_time model to calculate travel times
-TAUPY_MODEL = iasp91 
+TAUPY_MODEL = iasp91
 
-#Minimum event distance 
+#Minimum event distance
 EV_GCARC_MIN = 0
 
-#Maximum event distance 
+#Maximum event distance
 EV_GCARC_MAX = 90
 
-#Minimum event magnitude 
+#Minimum event magnitude
 EV_MAGNITUDE_MB = 7
 
 #Date event initial  (exemple: 2008-01-01T00:00:00)

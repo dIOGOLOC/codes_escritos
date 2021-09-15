@@ -67,7 +67,7 @@ MSEED_DIR = '/home/diogoloc/dados_posdoc/ON_MAR/obs_data_MSEED/'
 NETWORK = 'ON'
 
 # Escolha uma estação:
-STATION = 'OBS19'
+STATION = 'OBS22'
 
 # Escolha um canal:
 CHANNEL = 'HHZ'
@@ -79,7 +79,7 @@ num_processes = 8
 FIGURES_OUTPUT = '/home/diogoloc/dados_posdoc/ON_MAR/Figuras/'
 
 # Data inicial e final da aquisição
-INITIAL_DATE = '2019-08-02'
+INITIAL_DATE = '2019-08-01'
 FINAL_DATE = '2020-06-17'
 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
