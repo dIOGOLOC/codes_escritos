@@ -174,6 +174,7 @@ print('\n')
 # initializing list of stations by scanning name of miniseed files
 
 dates_earthquakes = filelist_png(basedir=EARTHQUAKE_FINDER_FILES)
+dates_earthquakes = sorted(dates_earthquakes)[::-1]
 
 print('===============================')
 print('Scanning name of miniseed files')
@@ -322,7 +323,7 @@ for FDAY in dates_earthquakes:
             #------------------------------------------------------------------------------------------
 
             ax2 = fig.add_subplot(gs[2,ind],sharex=ax3)
-            traces2 = stZ2.select(station=traces.stats.station)[0]
+            traces2 = stX2.select(station=traces.stats.station)[0]
             trace_amp_max2 = np.max(np.abs(traces2.data))
 
             ax2.xaxis.set_major_locator(axis_major)

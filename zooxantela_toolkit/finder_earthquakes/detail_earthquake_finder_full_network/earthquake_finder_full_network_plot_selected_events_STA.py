@@ -54,6 +54,7 @@ import cartopy.feature as cfeature
 
 from pyasdf import ASDFDataSet
 from obspy.signal.trigger import classic_sta_lta, trigger_onset, coincidence_trigger,recursive_sta_lta
+from obspy.signal.trigger import plot_trigger
 
 # ====================================================================================================
 # Configuration file
@@ -78,12 +79,28 @@ NETWORK = 'ON'
 
 STATIONS_LST = []
 
-OBS_LST = ['OBS17','OBS18','OBS22']
+OBS_LST = ['OBS17','OBS18','OBS20','OBS22']
 
 PEM = 10
 PET = 60
 
+#Low-cut frequency (Hz) and High-cut frequency (Hz) for bandpass filter
 FILTER_DATA = [0.5,40]
+
+#Length of the short-term average window (seconds)
+stalen = 0.5
+
+#Length of the long-term average window (seconds)
+ltalen = 5
+
+#sta/lta ratio to trigger a detection/pick
+trig_on = 4
+
+#sta/lta ratio to turn the trigger off - no further picks\
+trig_off = 2
+
+#Show picks on waveform.
+VERBOSE_MODE = True
 
 #-------------------------------------------------------------------------------
 
@@ -236,134 +253,11 @@ axis_major = SecondLocator(interval=30)   # every 5-second
 axis_minor = SecondLocator(interval=5) # every 1-second
 axis_Fmt = DateFormatter('%H:%M:%S')
 
-plt.rcParams.update({'font.size': 20})
-fig = plt.figure(figsize=(30,15))
-gs = gridspec.GridSpec(nrows=5, ncols=len(stZ)*3)
-fig.suptitle('Event Date: '+FDAY.strftime('%d/%m/%Y'),y=0.95,fontsize=20)
-size_cols = [i for i in range(0,9,3)]
-#----------------------------------------------------------------------------
-for ind,traces in enumerate(stE2):
-        ax1 = fig.add_subplot(gs[0,size_cols[ind]:size_cols[ind]+3])
-        trace_amp_max = np.max(np.abs(traces.data))
-
-        ax1.set_title(traces.stats.station)
-        ax1.xaxis.set_major_locator(axis_major)
-        ax1.xaxis.set_major_formatter(axis_Fmt)
-        ax1.xaxis.set_minor_locator(axis_minor)
-        ax1.tick_params(axis='both',which='major',width=2,length=5)
-        ax1.tick_params(axis='both',which='minor',width=2,length=3)
-        ax1.plot(traces.times('matplotlib'),traces.data, 'k')
-        ax1.set_ylim(-trace_amp_max,trace_amp_max)
-        ax1.text(0.1, 0.85, traces.stats.channel, horizontalalignment='center',verticalalignment='center', transform=ax1.transAxes)
-        ax1.ticklabel_format(axis='y', style='sci')
-        if size_cols[ind] == 0:
-            ax1.set_ylabel("Velocity [m/s]")
-        plt.setp(ax1.get_xticklabels(), visible=False)
-
-#----------------------------------------------------------------------------
-for ind,traces in enumerate(stN2):
-    for i in range(0,9,3):
-        ax2 = fig.add_subplot(gs[1,size_cols[ind]:size_cols[ind]+3],sharex=ax1)
-        trace_amp_max = np.max(np.abs(traces.data))
-
-        ax2.xaxis.set_major_locator(axis_major)
-        ax2.xaxis.set_major_formatter(axis_Fmt)
-        ax2.xaxis.set_minor_locator(axis_minor)
-        ax2.tick_params(axis='both',which='major',width=2,length=5)
-        ax2.tick_params(axis='both',which='minor',width=2,length=3)
-        ax2.plot(traces.times('matplotlib'),traces.data, 'k')
-        ax2.set_ylim(-trace_amp_max,trace_amp_max)
-        ax2.text(0.1, 0.85, traces.stats.channel, horizontalalignment='center',verticalalignment='center', transform=ax2.transAxes)
-        ax2.ticklabel_format(axis='y', style='sci')
-        if size_cols[ind] == 0:
-            ax2.set_ylabel("Velocity [m/s]")
-        plt.setp(ax2.get_xticklabels(), visible=False)
-
-#----------------------------------------------------------------------------
-for ind,traces in enumerate(stZ2):
-    for i in range(0,9,3):
-        ax3 = fig.add_subplot(gs[2,size_cols[ind]:size_cols[ind]+3],sharex=ax2)
-
-        trace_amp_max = np.max(np.abs(traces.data))
-
-        ax3.xaxis.set_major_locator(axis_major)
-        ax3.xaxis.set_major_formatter(axis_Fmt)
-        ax3.xaxis.set_minor_locator(axis_minor)
-        ax3.tick_params(axis='both',which='major',width=2,length=5)
-        ax3.tick_params(axis='both',which='minor',width=2,length=3)
-        ax3.plot(traces.times('matplotlib'),traces.data, 'k')
-        ax3.set_ylim(-trace_amp_max,trace_amp_max)
-        ax3.text(0.1, 0.85, traces.stats.channel, horizontalalignment='center',verticalalignment='center', transform=ax3.transAxes)
-        ax3.ticklabel_format(axis='y', style='sci')
-        if size_cols[ind] == 0:
-            ax3.set_ylabel("Velocity [m/s]")
-        plt.setp(ax3.get_xticklabels(), visible=False)
-
-        #----------------------------------------------------------------------------
-
-        t = traces.times('matplotlib')
-        f_min = FILTER_DATA[0]
-        f_max = FILTER_DATA[1]
-
-        scalogram = cwt(traces.data, dt, 8, f_min, f_max)
-        x, y = np.meshgrid(t,np.linspace(f_min, f_max, scalogram.shape[0]))
-
-        ax4 = fig.add_subplot(gs[3,size_cols[ind]:size_cols[ind]+3],sharex=ax3)
-        ax4.xaxis.set_major_formatter(axis_Fmt)
-        ax4.xaxis.set_major_locator(axis_major)
-        ax4.xaxis.set_minor_locator(axis_minor)
-        ax4.tick_params(axis='both',which='major',width=2,length=5)
-        ax4.tick_params(axis='both',which='minor',width=2,length=3)
-
-
-        im = ax4.pcolormesh(x, y, np.abs(scalogram), shading='auto', cmap='viridis')
-        if size_cols[ind] == 0:
-            ax4.set_ylabel("Frequency [Hz]")
-        ax4.set_ylim(f_min, f_max)
-
-        axins = inset_axes(ax4,
-                           width="40%",
-                           height="5%",
-                           loc='upper left',
-                           bbox_to_anchor=(0.60, 0.1, 1, 1),
-                           bbox_transform=ax4.transAxes,
-                           borderpad=0,
-                           )
-
-        plt.colorbar(im, cax=axins, orientation="horizontal", ticklocation='top')
-        plt.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=None, hspace=0.4)
-
-    #----------------------------------------------------------------------------
-    smooth_factor = 50
-for ind,traces in enumerate(stE2):
-        ax5 = fig.add_subplot(gs[4,size_cols[ind]])
-        #ax5.plot(stE2[ind].data,stN2[ind].data, 'k')
-        ax5.plot(smooth(stE2[ind].data,smooth_factor),smooth(stN2[ind].data,smooth_factor), 'k')
-        ax5.text(0.1, 0.85, 'Y-X', horizontalalignment='center',verticalalignment='center', transform=ax5.transAxes)
-
-    #----------------------------------------------------------------------------
-        ax6 = fig.add_subplot(gs[4,size_cols[ind]+1])
-        #ax6.plot(stE2[ind].data,stZ2[ind].data, 'k')
-        ax6.plot(smooth(stE2[ind].data,smooth_factor),smooth(stZ2[ind].data,smooth_factor), 'k')
-        ax6.text(0.1, 0.85, 'Z-X', horizontalalignment='center',verticalalignment='center', transform=ax6.transAxes)
-
-    #----------------------------------------------------------------------------
-        ax7 = fig.add_subplot(gs[4,size_cols[ind]+2])
-        #ax7.plot(stN2[ind].data,stZ2[ind].data, 'k')
-        ax7.plot(smooth(stN2[ind].data,smooth_factor),smooth(stZ2[ind].data,smooth_factor), 'k')
-        ax7.text(0.1, 0.85, 'Z-Y', horizontalalignment='center',verticalalignment='center', transform=ax7.transAxes)
-
-#----------------------------------------------------------------------------
-daily_event_output = EARTHQUAKE_FINDER_OUTPUT+'/EVENTS_SELECTED_PLOT/'
-os.makedirs(daily_event_output,exist_ok=True)
-fig.savefig(daily_event_output+NETWORK+'_'+traces.stats.starttime.strftime('%Y_%m_%d_%H_%M_%S_%f')+'.png', dpi=300, facecolor='w', edgecolor='w')
-plt.close()
-
 #----------------------------------------------------------------------------
 
 plt.rcParams.update({'font.size': 15})
 fig = plt.figure(figsize=(30,15))
-gs = gridspec.GridSpec(nrows=4, ncols=len(stX2))
+gs = gridspec.GridSpec(nrows=5, ncols=len(stX2))
 fig.suptitle('Event Date: '+FDAY.strftime('%d/%m/%Y'),y=0.95,fontsize=20)
 #----------------------------------------------------------------------------
 for ind,traces in enumerate(stX2):
@@ -471,11 +365,32 @@ for ind,traces in enumerate(stX2):
 
         plt.colorbar(im, cax=axins, orientation="horizontal", ticklocation='top')
         plt.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=None, hspace=0.4)
+        plt.setp(ax4.get_xticklabels(), visible=False)
 
+        #-------------------------------------------------------------------------------------------------------------------------------
+        ax5 = fig.add_subplot(gs[4,ind],sharex=ax2)
+
+        cft = classic_sta_lta(traces.data, int(stalen * df), int(ltalen * df))
+        triggers = trigger_onset(cft, trig_on, trig_off)
+        t = np.arange(npts, dtype=np.float32)/df
+
+        on_off = np.array(trigger_onset(cft, trig_on, trig_off))
+        time_on = traces.stats.starttime+float((on_off[:,0]/df)[0])
+        time_off = traces.stats.starttime+float((on_off[:,1]/df)[0])
+
+        ax1.axvline(time_on.matplotlib_date, color='blue', lw=1, ls='--')
+        ax1.axvline(time_off.matplotlib_date, color='red', lw=1, ls='--')
+
+        ax2.axvline(time_on.matplotlib_date, color='blue', lw=1, ls='--')
+        ax2.axvline(time_off.matplotlib_date, color='red', lw=1, ls='--')
+
+        ax5.plot(traces.times('matplotlib'), cft, 'k')
+        ax5.axhline(trig_on, color='red', lw=1, ls='--')
+        ax5.axhline(trig_off, color='blue', lw=1, ls='--')
+plt.show()
 #-------------------------------------------------------------------------------
-daily_event_output = EARTHQUAKE_FINDER_OUTPUT+'/EVENTS_SELECTED_PLOT/'
+daily_event_output = EARTHQUAKE_FINDER_OUTPUT+'/EVENTS_SELECTED_PLOT_STA/'
 os.makedirs(daily_event_output,exist_ok=True)
 fig.savefig(daily_event_output+NETWORK+'_'+traces.stats.starttime.strftime('%Y_%m_%d_%H_%M_%S_%f')+'_hydrophone.png', dpi=300, facecolor='w', edgecolor='w')
 plt.close()
-
 #-------------------------------------------------------------------------------
