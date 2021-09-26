@@ -69,21 +69,21 @@ EARTHQUAKE_FINDER_OUTPUT = '/home/diogoloc/dados_posdoc/ON_MAR/Figuras/EVENTS_SE
 
 CHANNEL_LST = ['HHZ.D','HHN.D','HHE.D','HH1.D','HH2.D','HHX.D']
 
-DATE_DAY = '2019-12-24T16:47:20.00'
+DATE_DAY = '2019-12-07T12:18:54'
 
 FDAY = UTCDateTime(DATE_DAY)
 INTERVAL_PERIOD_DATE = str(FDAY.year)+'.'+"%03d" % FDAY.julday
 
 NETWORK = 'ON'
 
-STATIONS_LST = []
+STATIONS_LST = ['VAS01','DUB01']
 
-OBS_LST = ['OBS17','OBS18','OBS22']
+OBS_LST = ['OBS17']
 
-PEM = 10
-PET = 60
+PEM = 120
+PET = 120
 
-FILTER_DATA = [0.5,40]
+FILTER_DATA = [1,45]
 
 #-------------------------------------------------------------------------------
 

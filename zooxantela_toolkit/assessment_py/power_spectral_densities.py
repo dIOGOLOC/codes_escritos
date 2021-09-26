@@ -1,5 +1,5 @@
 '''
-Script to estimate probabilistic power spectral densities for 
+Script to estimate probabilistic power spectral densities for
 one combination of network/station/location/channel/sampling_rate.
 (https://docs.obspy.org/tutorial/code_snippets/probabilistic_power_spectral_density.html)
 
@@ -7,7 +7,7 @@ Calculations are based on the routine used by [McNamara2004]:
 McNamara, D. E. and Buland, R. P. (2004),
 Ambient Noise Levels in the Continental United States,
 Bulletin of the Seismological Society of America, 94 (4), 1517-1527.
-http://www.bssaonline.org/content/94/4/1517.abstract. 
+http://www.bssaonline.org/content/94/4/1517.abstract.
 
 
 For information on New High/Low Noise Model see [Peterson1993]:
@@ -54,20 +54,27 @@ def calc_PSD(file):
     sta_name = l.stats.station
     NETWORK_CODE = l.stats.network
     sta_channel = l.stats.channel
-        
+
     time_data = l.stats.starttime
     time_data_year = '{:04}'.format(time_data.year)
     time_data_julday = '{:03}'.format(time_data.julday)
     time_data_hour = '{:02}'.format(time_data.hour)
     time_data_minute = '{:02}'.format(time_data.minute)
 
-    inv = obspy.read_inventory(XML_FILE)
+    inv = obspy.read_inventory(XML_FILE+'ON.'+sta_name+'.xml')
 
-    ppsd = PPSD(l.stats, inv)
-    ppsd.add(st) 
-    os.makedirs(OUTPUT_PSD_DIR+'/'+sta_name+'/'+sta_channel+'.PPSD'+'/',exist_ok=True)
-    ppsd.save_npz(OUTPUT_PSD_DIR+'/'+sta_name+'/'+sta_channel+'.PPSD'+'/'+NETWORK_CODE+'.'+sta_name+'..'+sta_channel+'.PPSD'+'.'+time_data_year+'.'+time_data_julday+'.npz')
-    
+    if sta_channel == 'HHX':
+        ppsd = PPSD(l.stats,inv,special_handling='hydrophone')
+        ppsd.add(st)
+        os.makedirs(OUTPUT_PSD_DIR+'/'+sta_name+'/'+sta_channel+'.PPSD'+'/',exist_ok=True)
+        ppsd.save_npz(OUTPUT_PSD_DIR+'/'+sta_name+'/'+sta_channel+'.PPSD'+'/'+NETWORK_CODE+'.'+sta_name+'..'+sta_channel+'.PPSD'+'.'+time_data_year+'.'+time_data_julday+'.npz')
+
+    else:
+        ppsd = PPSD(l.stats, inv)
+        ppsd.add(st)
+        os.makedirs(OUTPUT_PSD_DIR+'/'+sta_name+'/'+sta_channel+'.PPSD'+'/',exist_ok=True)
+        ppsd.save_npz(OUTPUT_PSD_DIR+'/'+sta_name+'/'+sta_channel+'.PPSD'+'/'+NETWORK_CODE+'.'+sta_name+'..'+sta_channel+'.PPSD'+'.'+time_data_year+'.'+time_data_julday+'.npz')
+
     return 0
 
 
@@ -82,7 +89,7 @@ def plot_PSD(directory):
 
 	[ppsd.add_npz(i) for i in files[1:]]
 
-	ppsd.calculate_histogram(starttime=UTCDateTime(INITIAL_DATE),endtime=UTCDateTime(FINAL_DATE),time_of_weekday=[(TIME_OF_WEEKDAY_DAY, TIME_OF_WEEKDAY_START_HOUR, TIME_OF_WEEKDAY_FINAL_HOUR)])    
+	ppsd.calculate_histogram(starttime=UTCDateTime(INITIAL_DATE),endtime=UTCDateTime(FINAL_DATE),time_of_weekday=[(TIME_OF_WEEKDAY_DAY, TIME_OF_WEEKDAY_START_HOUR, TIME_OF_WEEKDAY_FINAL_HOUR)])
 	folder_output = OUTPUT_FIGURE_DIR+'WINDOWED_'+str(int(TIME_OF_WEEKDAY_START_HOUR))+'_'+str(int(TIME_OF_WEEKDAY_FINAL_HOUR))+'/'+ppsd.station+'/'
 	os.makedirs(folder_output,exist_ok=True)
 	ppsd.plot(cmap=pqlx,show_coverage=False,filename=folder_output+ppsd.network+'.'+ppsd.station+'.'+ppsd.channel+'.'+str(ppsd.times_processed[0].year)+'.pdf')
@@ -98,14 +105,14 @@ def plot_PSD_hydrophone(directory):
 
     [ppsd.add_npz(i) for i in files[1:]]
 
-    ppsd.calculate_histogram(starttime=UTCDateTime(INITIAL_DATE),endtime=UTCDateTime(FINAL_DATE),time_of_weekday=[(TIME_OF_WEEKDAY_DAY, TIME_OF_WEEKDAY_START_HOUR, TIME_OF_WEEKDAY_FINAL_HOUR)])    
+    ppsd.calculate_histogram(starttime=UTCDateTime(INITIAL_DATE),endtime=UTCDateTime(FINAL_DATE),time_of_weekday=[(TIME_OF_WEEKDAY_DAY, TIME_OF_WEEKDAY_START_HOUR, TIME_OF_WEEKDAY_FINAL_HOUR)])
     folder_output = OUTPUT_FIGURE_DIR+'WINDOWED_'+str(int(TIME_OF_WEEKDAY_START_HOUR))+'_'+str(int(TIME_OF_WEEKDAY_FINAL_HOUR))+'/'+ppsd.station+'/'
     os.makedirs(folder_output,exist_ok=True)
     #ppsd.plot(cmap=pqlx,show_coverage=False,show_noise_models=False,filename=folder_output+ppsd.network+'.'+ppsd.station+'.'+ppsd.channel+'.'+str(ppsd.times_processed[0].year)+'.pdf')
 
 
     filename = folder_output+ppsd.network+'.'+ppsd.station+'.'+ppsd.channel+'.'+str(ppsd.times_processed[0].year)+'.pdf'
-    
+
     percentiles=[0, 25, 50, 75, 100]
     period_lim=(0.01, 179)
     cumulative_number_of_colors=20
@@ -136,7 +143,7 @@ def plot_PSD_hydrophone(directory):
     ax.xaxis.set_major_formatter(FormatStrFormatter("%g"))
 
     data = (ppsd.current_histogram*100.0/(ppsd.current_histogram_count or 1))
-    
+
     xedges = ppsd.period_xedges
 
     fig.ppsd.meshgrid = np.meshgrid(xedges, ppsd.db_bin_edges)
@@ -144,7 +151,7 @@ def plot_PSD_hydrophone(directory):
     fig.ppsd.quadmesh = ppsd
 
     cb = plt.colorbar(ppsd, ax=ax)
-    cb.set_clim(*fig.ppsd.color_limits)
+    #cb.set_clim(*fig.ppsd.color_limits)
     cb.set_label(fig.ppsd.label)
     fig.ppsd.colorbar = cb
 
@@ -159,7 +166,7 @@ def plot_PSD_hydrophone(directory):
 # ====================================
 
 def plot_PPSD_by_period_sensor(directory_data):
-    
+
     data_lista = []
 
     print('Looking for data in the directory = '+directory_data)
@@ -175,11 +182,11 @@ def plot_PPSD_by_period_sensor(directory_data):
     dataframe_lista = []
     #create a empty dataframe with pandas
     print("Extracting data from PPSD header")
-    
-    for j in tqdm(data_lista):                
+
+    for j in tqdm(data_lista):
         #Reading header from data
         ppsd = PPSD.load_npz(j,allow_pickle=True)
-                
+
         #----------------------------
         #Dataframe starting
 
@@ -195,15 +202,15 @@ def plot_PPSD_by_period_sensor(directory_data):
         time_flat_time_lst = [[]]*24
         for g,h in enumerate(np.arange(24)):
             lst_time = []
-            for x,c in enumerate(flat_time_lst):        
-                if c.hour == h:         
+            for x,c in enumerate(flat_time_lst):
+                if c.hour == h:
                     lst_time.append(ppsd.extract_psd_values(PERIOD_PSD)[0][x])
             time_flat_time_lst[g] = lst_time
 
-        AMPLITUDE_HOUR = [[]]*24        
+        AMPLITUDE_HOUR = [[]]*24
         for q,w in enumerate(time_flat_time_lst):
             AMPLITUDE_HOUR[q] = np.mean(w)
-          
+
 
         dataframe_lista.append(pd.DataFrame([[network],[station],[channel],[DATETIME],[AMPLITUDE_HOUR]], index=['NETWORK', 'STATION', 'CHANNEL', 'DATETIME','AMPLITUDE_HOUR']).T)
 
@@ -221,9 +228,9 @@ def plot_PPSD_by_period_sensor(directory_data):
 
         channel_lista = list(set(df_sta['CHANNEL']))
         channel_lista = sorted(channel_lista)
-        
+
         # ==========================================================
-        # Calculating datetime between INITIAL_DATE and  FINAL_DATE     
+        # Calculating datetime between INITIAL_DATE and  FINAL_DATE
         # ==========================================================
 
         datatime_initial = datetime.datetime(obspy.UTCDateTime(INITIAL_DATE).year,obspy.UTCDateTime(INITIAL_DATE).month,obspy.UTCDateTime(INITIAL_DATE).day)
@@ -235,7 +242,7 @@ def plot_PPSD_by_period_sensor(directory_data):
 
         xlim_initial = mdates.date2num(datatime_initial)
         xlim_final = mdates.date2num(datatime_final)
-            
+
         #----------------------------
         #Function to check if the dates in data set are inside the period chosen (INITIAL_DATE to FINAL_DATE)
 
@@ -263,14 +270,14 @@ def plot_PPSD_by_period_sensor(directory_data):
         # ====================================
         # Function to plot DATA availability
         # ====================================
-        
+
         #x axis parameters
 
         days1 = DayLocator(interval=1)   # every day
         days5 = DayLocator(interval=5)   # every day
         months = MonthLocator()  # every month
         yearsFmt = DateFormatter('%Y-%m-%d')
-        
+
         days1.MAXTICKS = 10000
 
 
@@ -298,10 +305,10 @@ def plot_PPSD_by_period_sensor(directory_data):
             ax[k].grid(b=True, which='major', color='k', linestyle='-')
             ax[k].grid(b=True, which='minor', color='k', linestyle='-')
 
-        
+
         plt.setp(ax[k].xaxis.get_majorticklabels(), fontsize=10, rotation=30)
         ax[-1].set_xlabel('Time', fontsize=20)
-        
+
         #criando a localização da barra de cores:
         axins = inset_axes(ax[0],
                             width="10%",  # width = 10% of parent_bbox width
@@ -312,7 +319,7 @@ def plot_PPSD_by_period_sensor(directory_data):
                             borderpad=0,
                            )
         cbar = fig.colorbar(im, cax=axins, orientation="horizontal", ticklocation='top',ticks=[AMP_PSD_MIN,np.mean([AMP_PSD_MIN,AMP_PSD_MAX]),AMP_PSD_MAX],label='Amplitude '+r'$[m^2/s^4/Hz][dB]$')
- 
+
         os.makedirs(OUTPUT_FIGURE_DIR,exist_ok=True)
         fig.savefig(OUTPUT_FIGURE_DIR+j+'_'+'PSD_BY_PERIOD_'+str(PERIOD_PSD)+'_'+str(obspy.UTCDateTime(INITIAL_DATE).year)+'_'+str(obspy.UTCDateTime(INITIAL_DATE).month)+'_'+str(obspy.UTCDateTime(INITIAL_DATE).day)+'_'+str(obspy.UTCDateTime(FINAL_DATE).year)+'_'+str(obspy.UTCDateTime(FINAL_DATE).month)+'_'+str(obspy.UTCDateTime(FINAL_DATE).day)+'.pdf',dpi=500)
 
@@ -321,7 +328,7 @@ def plot_PPSD_by_period_sensor(directory_data):
 # ========================================
 
 def plot_PPSD_by_period_hydrophone(directory_data):
-    
+
     data_lista = []
 
     print('Looking for data in the directory = '+directory_data)
@@ -337,11 +344,11 @@ def plot_PPSD_by_period_hydrophone(directory_data):
     dataframe_lista = []
     #create a empty dataframe with pandas
     print("Extracting data from PPSD header")
-    
-    for j in tqdm(data_lista):                
+
+    for j in tqdm(data_lista):
         #Reading header from data
         ppsd = PPSD.load_npz(j,allow_pickle=True)
-                
+
         #----------------------------
         #Dataframe starting
 
@@ -357,15 +364,15 @@ def plot_PPSD_by_period_hydrophone(directory_data):
         time_flat_time_lst = [[]]*24
         for g,h in enumerate(np.arange(24)):
             lst_time = []
-            for x,c in enumerate(flat_time_lst):        
-                if c.hour == h:         
+            for x,c in enumerate(flat_time_lst):
+                if c.hour == h:
                     lst_time.append(ppsd.extract_psd_values(PERIOD_PSD)[0][x])
             time_flat_time_lst[g] = lst_time
 
-        AMPLITUDE_HOUR = [[]]*24        
+        AMPLITUDE_HOUR = [[]]*24
         for q,w in enumerate(time_flat_time_lst):
             AMPLITUDE_HOUR[q] = np.mean(w)
-          
+
 
         dataframe_lista.append(pd.DataFrame([[network],[station],[channel],[DATETIME],[AMPLITUDE_HOUR]], index=['NETWORK', 'STATION', 'CHANNEL', 'DATETIME','AMPLITUDE_HOUR']).T)
 
@@ -383,9 +390,9 @@ def plot_PPSD_by_period_hydrophone(directory_data):
 
         channel_lista = list(set(df_sta['CHANNEL']))
         channel_lista = sorted(channel_lista)
-        
+
         # ==========================================================
-        # Calculating datetime between INITIAL_DATE and  FINAL_DATE     
+        # Calculating datetime between INITIAL_DATE and  FINAL_DATE
         # ==========================================================
 
         datatime_initial = datetime.datetime(obspy.UTCDateTime(INITIAL_DATE).year,obspy.UTCDateTime(INITIAL_DATE).month,obspy.UTCDateTime(INITIAL_DATE).day)
@@ -397,7 +404,7 @@ def plot_PPSD_by_period_hydrophone(directory_data):
 
         xlim_initial = mdates.date2num(datatime_initial)
         xlim_final = mdates.date2num(datatime_final)
-            
+
         #----------------------------
         #Function to check if the dates in data set are inside the period chosen (INITIAL_DATE to FINAL_DATE)
 
@@ -425,14 +432,14 @@ def plot_PPSD_by_period_hydrophone(directory_data):
         # ====================================
         # Function to plot DATA availability
         # ====================================
-        
+
         #x axis parameters
 
         days1 = DayLocator(interval=1)   # every day
         days5 = DayLocator(interval=5)   # every day
         months = MonthLocator()  # every month
         yearsFmt = DateFormatter('%Y-%m-%d')
-        
+
         days1.MAXTICKS = 10000
 
 
@@ -459,10 +466,10 @@ def plot_PPSD_by_period_hydrophone(directory_data):
         ax.grid(b=True, which='major', color='k', linestyle='-')
         ax.grid(b=True, which='minor', color='k', linestyle='-')
 
-        
+
         plt.setp(ax.xaxis.get_majorticklabels(), fontsize=10, rotation=30)
         ax.set_xlabel('Time', fontsize=20)
-        
+
         #criando a localização da barra de cores:
         axins = inset_axes(ax,
                             width="10%",  # width = 10% of parent_bbox width
@@ -473,6 +480,6 @@ def plot_PPSD_by_period_hydrophone(directory_data):
                             borderpad=0,
                            )
         cbar = fig.colorbar(im, cax=axins, orientation="horizontal", ticklocation='top',ticks=[AMP_PSD_MIN,np.mean([AMP_PSD_MIN,AMP_PSD_MAX]),AMP_PSD_MAX],label='Amplitude '+r'$[m^2/s^4/Hz][dB]$')
- 
+
         os.makedirs(OUTPUT_FIGURE_DIR,exist_ok=True)
         fig.savefig(OUTPUT_FIGURE_DIR+j+'_'+'PSD_BY_PERIOD_HYDROPHONE'+str(PERIOD_PSD)+'_'+str(obspy.UTCDateTime(INITIAL_DATE).year)+'_'+str(obspy.UTCDateTime(INITIAL_DATE).month)+'_'+str(obspy.UTCDateTime(INITIAL_DATE).day)+'_'+str(obspy.UTCDateTime(FINAL_DATE).year)+'_'+str(obspy.UTCDateTime(FINAL_DATE).month)+'_'+str(obspy.UTCDateTime(FINAL_DATE).day)+'.pdf',dpi=500)

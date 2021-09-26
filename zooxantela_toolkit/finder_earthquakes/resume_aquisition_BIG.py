@@ -80,7 +80,7 @@ FIGURES_OUTPUT = '/home/diogoloc/dados_posdoc/ON_MAR/Figuras/'
 
 # Data inicial e final da aquisição
 INITIAL_DATE = '2019-08-01'
-FINAL_DATE = '2020-06-17'
+FINAL_DATE = '2020-06-15'
 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

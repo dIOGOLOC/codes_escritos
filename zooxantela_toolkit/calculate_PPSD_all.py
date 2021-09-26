@@ -59,6 +59,7 @@ print('Multiprocessing PPSD')
 start_time = time.time()
 print('\n')
 #--------------------------------------------------------------------------------------------------------------------
+'''
 print('Channel: HHZ')
 result_HHZ = []
 pool = Pool(processes=NUM_PROCESS)
@@ -82,7 +83,7 @@ for result in tqdm(pool.imap_unordered(func=calc_PSD, iterable=HHN_files), total
 	result_HHN.append(result)
 print('\n')
 #--------------------------------------------------------------------------------------------------------------------
-
+'''
 print('Channel: HHX')
 result_HHX = []
 pool = Pool(processes=NUM_PROCESS)
