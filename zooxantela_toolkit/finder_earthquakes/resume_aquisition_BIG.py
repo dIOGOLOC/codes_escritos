@@ -67,7 +67,7 @@ MSEED_DIR = '/home/diogoloc/dados_posdoc/ON_MAR/obs_data_MSEED/'
 NETWORK = 'ON'
 
 # Escolha uma estação:
-STATION = 'OBS22'
+STATION = 'OBS18'
 
 # Escolha um canal:
 CHANNEL = 'HHZ'
@@ -216,9 +216,11 @@ def plot_date_file(DATAFRAME):
     fig, ax = plt.subplots(nrows=1, ncols=1,sharex=True,sharey=True,figsize=(20,4))
     plt.rcParams.update({'font.size': 20})
 
-    ax.set_title(STATION+' - '+str(data_percentage)+'% de dados',fontsize=20)
+    ax.set_title(STATION+' - '+str(data_percentage)+'% data',fontsize=20)
+    #ax.set_title(STATION+' - '+str(data_percentage)+'% de dados',fontsize=20)
 
-    im = ax.imshow(data_x_axis,extent = [xlim_initial,xlim_final,0,1],cmap=plt.cm.Greens,interpolation=None, vmin=0, vmax=24)
+    #im = ax.imshow(data_x_axis,extent = [xlim_initial,xlim_final,0,1],cmap=plt.cm.Greens,interpolation=None, vmin=0, vmax=24)
+    im = ax.imshow(data_x_axis,extent = [xlim_initial,xlim_final,0,1],cmap=plt.cm.Blues,interpolation=None, vmin=0, vmax=24)
     ax.set_xlim(datetime.datetime(obspy.UTCDateTime(INITIAL_DATE).year,obspy.UTCDateTime(INITIAL_DATE).month,obspy.UTCDateTime(INITIAL_DATE).day),datetime.datetime(obspy.UTCDateTime(FINAL_DATE).year,obspy.UTCDateTime(FINAL_DATE).month,obspy.UTCDateTime(FINAL_DATE).day))
     ax.set_aspect(10)
     ax.yaxis.set_major_locator(MultipleLocator(5))
@@ -232,6 +234,11 @@ def plot_date_file(DATAFRAME):
     ax.grid(b=True, which='minor', color='k', linestyle='-')
     plt.setp(ax.xaxis.get_majorticklabels(), fontsize=20, rotation=30)
 
+    ax.tick_params(labelcolor='white')
+    ax.xaxis.label.set_color('white')
+    ax.yaxis.label.set_color('white')
+    ax.title.set_color('white')
+
     #criando a localização da barra de cores:
     axins = inset_axes(ax,
                         width="10%",  # width = 10% of parent_bbox width
@@ -241,12 +248,15 @@ def plot_date_file(DATAFRAME):
                         bbox_transform=ax.transAxes,
                         borderpad=0,
                         )
-    cbar = fig.colorbar(im, cax=axins, orientation="horizontal", ticklocation='top',ticks=[0,12,24],label='Arquivos/dia')
+    cbar = fig.colorbar(im, cax=axins, orientation="horizontal", ticklocation='top',ticks=[0,12,24],label='Files/day')
+    #cbar = fig.colorbar(im, cax=axins, orientation="horizontal", ticklocation='top',ticks=[0,12,24],label='Arquivos/dia')
     cbar.ax.set_xticklabels(['0%','50%','100%'])
+    cbar.ax.tick_params(labelcolor='white')
+    cbar.ax.xaxis.label.set_color('white')
 
     COMPLETUDE_FIG_FOLDER = FIGURES_OUTPUT+'COMPLETUDE/'
     os.makedirs(COMPLETUDE_FIG_FOLDER,exist_ok=True)
-    fig.savefig(COMPLETUDE_FIG_FOLDER+STATION+'_'+'COMPLETUDE_BIG'+str(obspy.UTCDateTime(INITIAL_DATE).year)+'_'+str(obspy.UTCDateTime(INITIAL_DATE).month)+'_'+str(obspy.UTCDateTime(INITIAL_DATE).day)+'_'+str(obspy.UTCDateTime(FINAL_DATE).year)+'_'+str(obspy.UTCDateTime(FINAL_DATE).month)+'_'+str(obspy.UTCDateTime(FINAL_DATE).day)+'.jpg',dpi=300,bbox_inches='tight',pad_inches=0.3)
+    fig.savefig(COMPLETUDE_FIG_FOLDER+STATION+'_'+'COMPLETUDE_BIG_'+str(obspy.UTCDateTime(INITIAL_DATE).year)+'_'+str(obspy.UTCDateTime(INITIAL_DATE).month)+'_'+str(obspy.UTCDateTime(INITIAL_DATE).day)+'_'+str(obspy.UTCDateTime(FINAL_DATE).year)+'_'+str(obspy.UTCDateTime(FINAL_DATE).month)+'_'+str(obspy.UTCDateTime(FINAL_DATE).day)+'.png',facecolor='None',dpi=300,bbox_inches='tight',pad_inches=0.3)
 
 print('============')
 print('Main program')

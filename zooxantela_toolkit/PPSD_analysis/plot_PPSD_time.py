@@ -16,7 +16,7 @@ from matplotlib.ticker import MultipleLocator, FormatStrFormatter
 import matplotlib.pyplot as plt
 import glob
 from obspy.signal import PPSD
-from obspy.imaging.cm import pqlx
+from obspy.imaging.cm import pqlx,viridis
 from obspy.core.util import AttribDict
 
 # ======
@@ -42,10 +42,10 @@ INITIAL_DATE_1 = '2019,8,1'
 FINAL_DATE_1 = '2019,8,2'
 
 #PPSD start date
-INITIAL_DATE_2 = '2019,8,15'
+INITIAL_DATE_2 = '2019,8,1'
 
 #PPSD final date
-FINAL_DATE_2 = '2020-01-27'
+FINAL_DATE_2 = '2020,6,15'
 
 # =====
 # [ppsd]
@@ -150,7 +150,7 @@ def plot_PSD(files1,init_date1,fin_date1,files2,init_date2,fin_date2):
     ax.plot(periods_model_noise_hn,nlnm_hn, color='gray',ls='-', linewidth=2, zorder=10, label='High noise model')
     ax.legend(loc='lower left')
 
-    fig.ppsd.cmap = pqlx
+    fig.ppsd.cmap = 'viridis'
     fig.ppsd.label = "[%]"
     fig.ppsd.max_percentage = 30
     fig.ppsd.color_limits = (0, 30)
@@ -168,21 +168,6 @@ def plot_PSD(files1,init_date1,fin_date1,files2,init_date2,fin_date2):
     ax.set_ylabel('Amplitude [$m^2/s^4/Hz$] [dB]')
     ax.xaxis.set_major_formatter(FormatStrFormatter("%g"))
 
-    #data = (ppsd1.current_histogram*100.0/(ppsd1.current_histogram_count or 1))
-
-    #xedges1 = ppsd1.period_xedges
-
-    #fig.ppsd.meshgrid = np.meshgrid(xedges1, ppsd1.db_bin_edges)
-    #ppsd = ax.pcolormesh(fig.ppsd.meshgrid[0], fig.ppsd.meshgrid[1], data.T,cmap=fig.ppsd.cmap, zorder=-1)
-    #fig.ppsd.quadmesh = ppsd
-
-    #cb = plt.colorbar(ppsd, ax=ax)
-    #cb.set_clim(*fig.ppsd.color_limits)
-    #cb.set_label(fig.ppsd.label)
-    #fig.ppsd.colorbar = cb
-
-    #ppsd.set_clim(*fig.ppsd.color_limits)
-
     ax.grid(b=True, which="major")
     ax.grid(b=True, which="minor")
     #plt.show()
@@ -192,6 +177,81 @@ def plot_PSD(files1,init_date1,fin_date1,files2,init_date2,fin_date2):
 
 #------------------------------------------------------------------------------
 
+def plot_PSD_PQLX(files1,init_date1,fin_date1,files2,init_date2,fin_date2):
+
+    ppsd1 = PPSD.load_npz(files1[0])
+    [ppsd1.add_npz(i) for i in files1[1:]]
+    periods1, mean_1 = ppsd1.get_mean()
+    xdata1 = periods1
+    ppsd1.calculate_histogram(starttime=UTCDateTime(init_date1),endtime=UTCDateTime(fin_date1),time_of_weekday=[(TIME_OF_WEEKDAY_DAY, TIME_OF_WEEKDAY_START_HOUR, TIME_OF_WEEKDAY_FINAL_HOUR)])
+
+	#------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    ppsd2 = PPSD.load_npz(files2[0])
+    [ppsd2.add_npz(i) for i in files2[1:]]
+    periods2, mean_2 = ppsd2.get_mean()
+    xdata2 = periods2
+    ppsd2.calculate_histogram(starttime=UTCDateTime(init_date2),endtime=UTCDateTime(fin_date2),time_of_weekday=[(TIME_OF_WEEKDAY_DAY, TIME_OF_WEEKDAY_START_HOUR, TIME_OF_WEEKDAY_FINAL_HOUR)])
+	#------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    data_model_noise = np.load(NOISE_MODEL_FILE)
+    periods_model_noise_ln = data_model_noise['model_periods']
+    nlnm_ln = data_model_noise['low_noise']
+
+    periods_model_noise_hn = data_model_noise['model_periods']
+    nlnm_hn = data_model_noise['high_noise']
+	#------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    folder_output = OUTPUT_FIGURE_DIR+'TIME_ANALYSIS_WINDOWED_'+str(int(TIME_OF_WEEKDAY_START_HOUR))+'_'+str(int(TIME_OF_WEEKDAY_FINAL_HOUR))+'/'+ppsd1.station+'/'
+    os.makedirs(folder_output,exist_ok=True)
+    filename = folder_output+ppsd1.network+'.'+ppsd1.station+'.'+ppsd1.channel+'.pdf'
+
+    percentiles=[0, 25, 50, 75, 100]
+    period_lim=(0.02, 179)
+    cumulative_number_of_colors=20
+
+    fig = plt.figure()
+    fig.ppsd = AttribDict()
+    ax = fig.add_subplot(111)
+
+    period_lim=(0.01, 179)
+    ax.plot(xdata1, mean_1, ls='--',c='k', zorder=10, label='Early days')
+    ax.plot(xdata2, mean_2, ls='-',c='k', zorder=10, label='Late days')
+
+    ax.plot(periods_model_noise_ln,nlnm_ln, color='gray',ls='-', linewidth=2, zorder=10, label='Low noise model')
+    ax.plot(periods_model_noise_hn,nlnm_hn, color='gray',ls='-', linewidth=2, zorder=10, label='High noise model')
+    ax.legend(loc='lower left')
+
+    fig.ppsd.cmap = viridis
+    fig.ppsd.label = "[%]"
+    fig.ppsd.max_percentage = 30
+    fig.ppsd.color_limits = (0, 30)
+
+    ax.set_title('Noise Spectra')
+    ax.semilogx()
+    ax.set_xlabel('Period [s]')
+    ax.set_xlim(period_lim)
+    ax.set_ylim(AMP_PSD_MIN, AMP_PSD_MAX)
+    ax.set_ylabel('Amplitude [$m^2/s^4/Hz$] [dB]')
+    ax.xaxis.set_major_formatter(FormatStrFormatter("%g"))
+
+    data = (ppsd2.current_histogram*100.0/(ppsd2.current_histogram_count or 1))
+    xedges = ppsd2.period_xedges
+
+    fig.ppsd.meshgrid = np.meshgrid(xedges, ppsd2.db_bin_edges)
+    ppsd = ax.pcolormesh(fig.ppsd.meshgrid[0], fig.ppsd.meshgrid[1], data.T,cmap=fig.ppsd.cmap, zorder=-1)
+    fig.ppsd.quadmesh = ppsd
+
+    cb = plt.colorbar(ppsd, ax=ax)
+    #cb.set_clim(*fig.ppsd.color_limits)
+    cb.set_label(fig.ppsd.label)
+    fig.ppsd.colorbar = cb
+
+    ppsd.set_clim(*fig.ppsd.color_limits)
+
+    ax.grid(b=True, which="major")
+    ax.grid(b=True, which="minor")
+    plt.show()
+    #plt.savefig(filename)
+
+#------------------------------------------------------------------------------
 
 def plot_PSD_hydrophone(files1,init_date1,fin_date1,files2,init_date2,fin_date2):
 
@@ -232,7 +292,7 @@ def plot_PSD_hydrophone(files1,init_date1,fin_date1,files2,init_date2,fin_date2)
     ax.plot(xdata1, mean_1, '-k', zorder=9)
     ax.plot(xdata2, mean_2, '--g', zorder=10)
 
-    fig.ppsd.cmap = pqlx
+    fig.ppsd.cmap = viridis
     fig.ppsd.label = "[%]"
     fig.ppsd.max_percentage = 30
     fig.ppsd.color_limits = (0, 30)
@@ -249,21 +309,6 @@ def plot_PSD_hydrophone(files1,init_date1,fin_date1,files2,init_date2,fin_date2)
     ax.set_ylim(AMP_PSD_HYDROPHONE_MIN, AMP_PSD_HYDROPHONE_MAX)
     ax.set_ylabel('Amplitude [$m^2/s^4/Hz$] [dB]')
     ax.xaxis.set_major_formatter(FormatStrFormatter("%g"))
-
-    #data = (ppsd.current_histogram*100.0/(ppsd.current_histogram_count or 1))
-
-    #xedges = ppsd.period_xedges
-
-    #fig.ppsd.meshgrid = np.meshgrid(xedges, ppsd.db_bin_edges)
-    #ppsd = ax.pcolormesh(fig.ppsd.meshgrid[0], fig.ppsd.meshgrid[1], data.T,cmap=fig.ppsd.cmap, zorder=-1)
-    #fig.ppsd.quadmesh = ppsd
-
-    #cb = plt.colorbar(ppsd, ax=ax)
-    #cb.set_clim(*fig.ppsd.color_limits)
-    #cb.set_label(fig.ppsd.label)
-    #fig.ppsd.colorbar = cb
-
-    #ppsd.set_clim(*fig.ppsd.color_limits)
 
     ax.grid(b=True, which="major")
     ax.grid(b=True, which="minor")
@@ -351,6 +396,11 @@ data_HHE = []
 data_HHN = []
 data_HHX = []
 
+print('Channel: HHZ')
+for i,j in enumerate(files_HHZ1):
+	plot_PSD_PQLX(files_HHZ1[i],INITIAL_DATE_1,FINAL_DATE_1,files_HHZ2[i],INITIAL_DATE_2,FINAL_DATE_2)
+print('\n')
+
 
 #--------------------------------------------------------------------------------------------------------------------
 print('Channel: HHZ')
@@ -406,40 +456,24 @@ period_lim=(0.01, 179)
 STATIONS_colors = ['k','r','g','b','y']
 
 for i,j in enumerate(data_HHZ):
-    #ax.plot(j[0], j[1],c=STATIONS_colors[i],ls='--', zorder=9, label=STATIONS[i]+' - Early days')
-    ax.plot(j[2], j[3],c=STATIONS_colors[i],ls='-', zorder=10, label=STATIONS[i])
+    ax.plot(j[2], j[3],c=STATIONS_colors[i],ls='--', zorder=10, label=STATIONS[i])
 
-ax.plot(periods_model_noise_ln,nlnm_ln, color='gray',ls='-', linewidth=2, zorder=10, label='Low noise model')
-ax.plot(periods_model_noise_hn,nlnm_hn, color='gray',ls='-', linewidth=2, zorder=10, label='High noise model')
+ax.plot(periods_model_noise_ln,nlnm_ln, color='gray',ls='-', linewidth=2, zorder=10, label='NLNM')
+ax.plot(periods_model_noise_hn,nlnm_hn, color='gray',ls='-', linewidth=2, zorder=10, label='HLNM')
 ax.legend(loc='lower left')
 
-fig.ppsd.cmap = pqlx
+fig.ppsd.cmap = viridis
 fig.ppsd.label = "[%]"
 fig.ppsd.max_percentage = 30
 fig.ppsd.color_limits = (0, 30)
 
-ax.set_title('title')
+ax.set_title('Probabilistic Power Spectral Densities Mean')
 ax.semilogx()
 ax.set_xlabel('Period [s]')
 ax.set_xlim(period_lim)
 ax.set_ylim(AMP_PSD_MIN, AMP_PSD_MAX)
 ax.set_ylabel('Amplitude [$m^2/s^4/Hz$] [dB]')
 ax.xaxis.set_major_formatter(FormatStrFormatter("%g"))
-
-    #data = (ppsd1.current_histogram*100.0/(ppsd1.current_histogram_count or 1))
-
-    #xedges1 = ppsd1.period_xedges
-
-    #fig.ppsd.meshgrid = np.meshgrid(xedges1, ppsd1.db_bin_edges)
-    #ppsd = ax.pcolormesh(fig.ppsd.meshgrid[0], fig.ppsd.meshgrid[1], data.T,cmap=fig.ppsd.cmap, zorder=-1)
-    #fig.ppsd.quadmesh = ppsd
-
-    #cb = plt.colorbar(ppsd, ax=ax)
-    #cb.set_clim(*fig.ppsd.color_limits)
-    #cb.set_label(fig.ppsd.label)
-    #fig.ppsd.colorbar = cb
-
-    #ppsd.set_clim(*fig.ppsd.color_limits)
 
 ax.grid(b=True, which="major")
 ax.grid(b=True, which="minor")
