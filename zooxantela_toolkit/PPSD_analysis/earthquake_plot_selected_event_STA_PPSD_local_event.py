@@ -82,12 +82,12 @@ NOISE_MODEL_FILE = '/home/diogoloc/dados_posdoc/ON_MAR/sta_coord/noise_models.np
 CHANNEL_LST = ['HHZ.','HHN.','HHE.','HH1.','HH2.','HHX.']
 
 #LOCAL EVENT DATA
-DATE_DAY = '2020-02-20T08:03:30'
-Latitude_ev = -22.43
-Longitude_ev = -40.08
-mag = 2.2
+DATE_DAY = '2019-08-17T01:04:00'
+Latitude_ev = -24.56
+Longitude_ev = -41.93
+mag = 00
 mag_type = 'mR'
-ev_description = 'Margem Continental-ES'
+ev_description = 'Margem Continental-??'
 
 
 FDAY = UTCDateTime(DATE_DAY)
@@ -105,7 +105,7 @@ PEM = 20
 PET = 210
 
 #Low-cut frequency (Hz) and High-cut frequency (Hz) for bandpass filter
-FILTER_DATA = [1,10]
+FILTER_DATA = [10,30]
 
 #Length of the short-term average window (seconds)
 stalen = 1
@@ -114,10 +114,10 @@ stalen = 1
 ltalen = 30
 
 #sta/lta ratio to trigger a detection/pick
-trig_on = 3
+trig_on = 2
 
 #sta/lta ratio to turn the trigger off - no further picks\
-trig_off = 2
+trig_off = 1
 
 #Show picks on waveform.
 VERBOSE_MODE = True
