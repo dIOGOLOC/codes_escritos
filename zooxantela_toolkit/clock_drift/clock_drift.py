@@ -26,6 +26,7 @@ from obspy.geodetics.base import gps2dist_azimuth
 from obspy.signal.util import prev_pow_2
 from obspy.signal.cross_correlation import correlate as obscorr
 from obspy.signal.cross_correlation import xcorr_max
+from obspy.core.util import AttribDict
 
 import json
 import glob
@@ -51,47 +52,47 @@ import cartopy.feature as cfeature
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.linear_model import LinearRegression
 
-import pyasdf
+from pyasdf import ASDFDataSet
 
+# ==================
+# Configuration file
+# ==================
 
-#Configuration file
+# Folders input
 
-<<<<<<< Updated upstream
 MSEED_DIR_OBS = '/media/diogoloc/Backup/dados_posdoc/ON_MAR/obs_data_MSEED/'
-=======
-MSEED_DIR_OBS = '/home/diogoloc/dados_posdoc/ON_MAR/obs_data_MSEED/'
-
-MSEED_DIR_STA = '/home/diogoloc/dados_posdoc/ON_MAR/data/'
->>>>>>> Stashed changes
 
 MSEED_DIR_STA = '/media/diogoloc/Backup/dados_posdoc/ON_MAR/data/'
 
-<<<<<<< Updated upstream
-STATIONS_LST = ['ABR01','DUB01','MAN01','OBS20','TER01','ALF01','GDU01','NAN01','TIJ01','CAJ01','GUA01',
-'OBS17','PET01','TRI01','CAM01','JAC01','OBS18','RIB01','VAS01','CMC01','MAJ01','SLP01']
+# -------------------------------
+
+# Shapefile  boundary states input
+
+BOUNDARY_STATES_SHP = '/media/diogoloc/Backup/dados_posdoc/SIG_dados/Projeto_ON_MAR/shapefile/brasil_estados/UFEBRASIL.shp'
+
+# -------------------------------
+
+# Stations and OBSs information
+
+STATIONS_LST = ['ABR01','DUB01','MAN01','OBS20','OBS22','TER01','ALF01','GDU01','NAN01','TIJ01','CAJ01','GUA01','OBS17','PET01','TRI01','CAM01','JAC01','OBS18','RIB01','VAS01','CMC01','MAJ01','SLP01','PARB','CNLB','BSFB']
 
 STATIONXML_DIR = '/media/diogoloc/Backup/dados_posdoc/ON_MAR/XML_ON_OBS_CC/'
 
-CLOCK_DRIFT_OUTPUT = '/media/diogoloc/Backup/dados_posdoc/ON_MAR/CLOCK_DRIFT_OUTPUT/FIGURAS/'
+CHANNEL_LST = ['HHZ.D','HHN.D','HHE.D','HH1.D','HH2.D']
 
-JSON_FILES = '/media/diogoloc/Backup/dados_posdoc/ON_MAR/CLOCK_DRIFT_OUTPUT/JSON_FILES/'
-=======
+# -------------------------------
+
+# Folders output
+
 CLOCK_DRIFT_OUTPUT = '/home/diogoloc/dados_posdoc/ON_MAR/CLOCK_DRIFT_OUTPUT/FIGURAS/'
 
-JSON_FILES = '/home/diogoloc/dados_posdoc/ON_MAR/CLOCK_DRIFT_OUTPUT/JSON_FILES/'
->>>>>>> Stashed changes
-
-#Shapefile  boundary states
-BOUNDARY_STATES_SHP = '/media/diogoloc/Backup/dados_posdoc/SIG_dados/Projeto_ON_MAR/shapefile/brasil_estados/UFEBRASIL.shp'
-
-<<<<<<< Updated upstream
-=======
-STATIONS_LST = ['TIJ01','DUB01','RIB01','GUA01','SLP01','PET01','CAM01','ABR01','VAS01']
-
-OBS_LST = ['OBS17','OBS18','OBS20']
+ASDF_FILES = '/home/diogoloc/dados_posdoc/ON_MAR/CLOCK_DRIFT_OUTPUT/ASDF_FILES/'
 
 
->>>>>>> Stashed changes
+# -------------------------------
+
+# Input parameters
+
 FIRSTDAY = '2019-08-01'
 LASTDAY = '2020-06-01'
 
@@ -127,18 +128,18 @@ minspectSNR = 1
 #RESAMPLING
 NEW_SAMPLING_RATE = 2
 
-# ========================
+# -------------------------------
+
 # Constants and parameters
-# ========================
 
 ONESEC = datetime.timedelta(seconds=1)
 ONEDAY = datetime.timedelta(days=1)
 
-# ================
-# MULTIPROCESSING
-# ================
+# -------------------------------
 
-num_processes = 4
+# MULTIPROCESSING
+
+num_processes = 8
 
 # =================
 # Filtering by date
@@ -152,7 +153,6 @@ INTERVAL_PERIOD_DATE = [str(x.year)+'.'+"%03d" % x.julday for x in INTERVAL_PERI
 # =========
 # Functions
 # =========
-
 
 def filelist(basedir,interval_period_date):
     """
@@ -249,7 +249,6 @@ def get_stations_data(f,Amp_clip=True,onebit_norm=True,white_spectral=True):
     Gets stations daily data from miniseed file
 
     @type f: paht of the minissed file (str)
-    @rtype: list of L{StationDayData}
     """
 
     # splitting subdir/basename
@@ -260,19 +259,30 @@ def get_stations_data(f,Amp_clip=True,onebit_norm=True,white_spectral=True):
 
     network, name = filename.split('.')[0:2]
     sta_channel_id = filename.split('.D.')[0]
+    sta_channel = sta_channel_id.split('..')[1]
     time_day = filename.split('.D.')[-1]
     year_day = time_day.split('.')[0]
     julday_day = time_day.split('.')[1]
 
-    output_DATA_DAY = JSON_FILES+'DATA_DAY_FILES/'+year_day+'.'+julday_day+'/'
+    if sta_channel == 'HHZ':
+        sta_channel = 'HHZ'
+    elif sta_channel == 'HHN' or sta_channel == 'HH1':
+        sta_channel = 'HHN'
+    elif sta_channel == 'HHE' or sta_channel == 'HH2':
+        sta_channel = 'HHE'
 
-    if os.path.isfile(output_DATA_DAY+'DATA_DAY_'+sta_channel_id+'_'+year_day+'_'+julday_day+'.json'):
+    output_DATA_DAY = ASDF_FILES+'DATA_DAY_FILES/'+year_day+'.'+julday_day+'/'
+
+    if os.path.isfile(output_DATA_DAY+'DATA_DAY_'+network+'_'+name+'_'+sta_channel+'_'+year_day+'_'+julday_day+'.h5'):
         pass
 
     else:
 
         try:
             st = read(f)
+            inv = read_inventory(STATIONXML_DIR+'.'.join([network,name,'xml']))
+
+            coordinates_lst = inv[0][0]
 
             if len(st[0].data) > 1:
 
@@ -281,9 +291,11 @@ def get_stations_data(f,Amp_clip=True,onebit_norm=True,white_spectral=True):
         	    st_traces_check = []
         	    st_hours = []
         	    for k in st_traces:
-        	    	if len(k[0].data) >= 3600:
+        	    	if len(k[0].data) >= WINDOW_LENGTH:
         	    		st_traces_check.append(k)
         	    		st_hours.append(str(k[0].stats.starttime.hour)+':'+str(k[0].stats.starttime.minute))
+        	    	else:
+        	    		pass
 
         	    if len(st_hours) > MIN_WINDOWS:
 
@@ -350,29 +362,26 @@ def get_stations_data(f,Amp_clip=True,onebit_norm=True,white_spectral=True):
         		    		tr[0].data = np.require(whitedata, dtype="float32")
         		    	traces_white_spectral = traces_resample
 
-        		    traces_data_day = [ton[0].data.tolist() for ton in traces_white_spectral]
-
-
-        		    lon = inv.get_coordinates(sta_channel_id)['longitude']
-        		    lat = inv.get_coordinates(sta_channel_id)['latitude']
-
-        		    # appending new channel day data
-        		    station = StationDayData(name=name, network=network,fileID=sta_channel_id,lon=lon,lat=lat,time_day=time_day,hour_lst=st_hours,data_day=traces_data_day)
-
-        		    data_dic = {
-        						'name': station.name,
-        						'network': station.network,
-        						'fileID': station.fileID,
-        						'lon': station.lon,
-        						'lat': station.lat,
-        						'time_day': station.time_day,
-        						'hours_day': station.hour_lst,
-        						'data_day': station.data_day
-        			    		}
+        		    traces_data_day = [ton[0].data.tolist()[:WINDOW_LENGTH*100] for ton in traces_white_spectral]
 
         		    os.makedirs(output_DATA_DAY,exist_ok=True)
-        		    with open(output_DATA_DAY+'DATA_DAY_'+sta_channel_id+'_'+year_day+'_'+julday_day+'.json', 'w') as fp:
-        		    	json.dump(data_dic, fp)
+
+        		    ds = ASDFDataSet(output_DATA_DAY+'DATA_DAY_'+network+'_'+name+'_'+sta_channel+'_'+year_day+'_'+julday_day+'.h5', compression="gzip-3")
+        		    ds.add_waveforms(st, tag="raw_recording")
+        		    ds.add_stationxml(STATIONXML_DIR+'.'.join([network,name,'xml']))
+
+        		    # The type always should be camel case.
+        		    data_type_SD = 'object'
+
+        		    # Name to identify the particular piece of data.
+        		    path_SD = sta_channel_id+'.SD'
+
+        		    # Any additional parameters as a Python dictionary which will end up as
+        		    # attributes of the array.
+        		    parameters_SD = {'SD':'List of 1 hour data.', 'latitude': coordinates_lst.latitude, 'longitude': coordinates_lst.longitude, 'time_day':time_day, 'hours_day': st_hours}
+
+        		    ds.add_auxiliary_data(data=traces_data_day, data_type=data_type_SD, path=path_SD, parameters=parameters_SD)
+
             else:
                 pass
         except:
@@ -387,6 +396,14 @@ def nested_dict():
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 def crosscorr_func(stationtrace_pairs):
+
+    '''
+    PRECISO AJUSTAR! 
+    >>> adj_src = ds.auxiliary_data.AdjointSource.BW_ALFO_EHE
+    >>> adj_src.data
+    >>> adj_src.parameters
+    {'SD':'List of 1 hour data.', 'latitude': coordinates_lst.latitude, 'longitude': coordinates_lst.longitude, 'time_day':time_day, 'hours_day': st_hours}
+    '''
 
     CrossCorrelation_dic = nested_dict()
     sta1 = json.load(open(stationtrace_pairs[0]))
@@ -459,10 +476,11 @@ def crosscorr_func(stationtrace_pairs):
             plot_shape_1_SHP = cfeature.ShapelyFeature(shape_1_SHP, ccrs.PlateCarree())
             map_loc.add_feature(plot_shape_1_SHP, facecolor='none', edgecolor='k',linewidth=0.5,zorder=-1)
 
-		    # Use the cartopy interface to create a matplotlib transform object
-		    # for the Geodetic coordinate system. We will use this along with
-		    # matplotlib's offset_copy function to define a coordinate system which
-		    # translates the text by 25 pixels to the left.
+            # Use the cartopy interface to create a matplotlib transform object
+            # for the Geodetic coordinate system. We will use this along with
+            # matplotlib's offset_copy function to define a coordinate system which
+            # translates the text by 25 pixels to the left.
+
             geodetic_transform = ccrs.Geodetic()._as_mpl_transform(map_loc)
             text_transform = offset_copy(geodetic_transform, units='dots', y=0,x=80)
             text_transform_mag = offset_copy(geodetic_transform, units='dots', y=15,x=15)
@@ -473,7 +491,8 @@ def crosscorr_func(stationtrace_pairs):
 
             map_loc.text(sta1['lon'],sta1['lat'], sta1['name'],fontsize=15,verticalalignment='center', horizontalalignment='right',transform=text_transform)
             map_loc.text(sta2['lon'],sta2['lat'], sta2['name'],fontsize=15,verticalalignment='center', horizontalalignment='right',transform=text_transform)
-			#-------------------------------------------
+
+            #-------------------------------------------
 
             ax = fig.add_subplot(gs[1])
             data_to_plot = CrossCorrelation_dic['crosscorr_daily_acausal'][::-1]+CrossCorrelation_dic['crosscorr_daily_causal']
@@ -501,6 +520,7 @@ def crosscorr_stack(crosscorr_pairs_data):
 
     @type crosscorr_pairs_data: list with JSON files
     """
+
     #Reading data
 	name_sta1 = list(set([json.load(open(a))['sta1_name'] for a in crosscorr_pairs_data]))[0]
 	name_sta2 = list(set([json.load(open(a))['sta2_name'] for a in crosscorr_pairs_data]))[0]
@@ -541,49 +561,6 @@ def crosscorr_stack(crosscorr_pairs_data):
 # =======
 # Classes
 # =======
-
-class StationDayData:
-    """
-    Class to save station info: name, network, channel, files directory, coordinates, datetime and data.
-    """
-
-    def __init__(self, name, network, fileID,lon=None,lat=None,time_day=None,hour_lst=None,data_day=None):
-        """
-        @type name: str
-        @type network: str
-        @type channel: str
-        @type filesdir: str or unicode
-        @type lon: float
-        @type lat: float
-        @type time_day: year + julian day
-        @type time_day: list with hour of obspy.core.trace.Trace
-        @type data_day: list of obspy.core.trace.Trace
-        """
-        self.name = name
-        self.network = network
-        self.fileID = fileID
-        self.lon = lon
-        self.lat = lat
-        self.hour_lst = hour_lst
-        self.time_day = time_day
-        self.data_day = data_day
-
-    def __str__(self):
-        """
-        @rtype: unicode
-        """
-        # General infos of station
-        s = [u'Name    : {0}'.format(self.name),
-             u'Network : {0}'.format(self.network),
-             u'FilesID: {0}'.format(self.fileID),
-             u'Longitude:{0}'.format(self.lon),
-             u'Latitude: {0}'.format(self.lat),
-             u'Time_day: {0}'.format(self.time_day),
-            ]
-        return u'\n'.join(s)
-
-#-------------------------------------------------------------------------------
-
 
 class CrossCorrelation:
     """
@@ -690,28 +667,26 @@ print('Scanning name of miniseed files')
 print('===============================')
 print('\n')
 start_time = time.time()
-<<<<<<< Updated upstream
+
 
 files_STA = filelist(basedir=MSEED_DIR_STA,interval_period_date=INTERVAL_PERIOD_DATE)
 files_OBS = filelist(basedir=MSEED_DIR_OBS,interval_period_date=INTERVAL_PERIOD_DATE)
 files1 = files_STA+files_OBS
 
-files_final = []
+files_final_1 = []
 for i in files1:
-        files_final.append([i for sta in STATIONS_LST if sta in i])
+        files_final_1.append([i for sta in STATIONS_LST if sta in i])
 
-files = [item for sublist in files_final for item in sublist]
+files_final = [item for sublist in files_final_1 for item in sublist]
 
-=======
+files = []
+for s in files_final:
+        if any(day_s in s for day_s in CHANNEL_LST):
+                files.append(s)
 
-files_STA = filelist(basedir=MSEED_DIR_STA,interval_period_date=INTERVAL_PERIOD_DATE)
-files_OBS = filelist(basedir=MSEED_DIR_OBS,interval_period_date=INTERVAL_PERIOD_DATE)
-files = files_STA+files_OBS
-
-print('Total of Land stations files = '+str(len(files_STA)))
-print('Total of OBS stations files = '+str(len(files_OBS)))
->>>>>>> Stashed changes
 print('Total of files = '+str(len(files)))
+
+
 print("--- %.2f execution time (min) ---" % ((time.time() - start_time)/60))
 print('\n')
 
@@ -736,7 +711,7 @@ print('Calculating daily Cross-correlations:')
 print('====================================')
 print('\n')
 
-days_crosscor = sorted(glob.glob(JSON_FILES+'DATA_DAY_FILES/*'))
+days_crosscor = sorted(glob.glob(ASDF_FILES+'DATA_DAY_FILES/*'))
 
 stationtrace_pairs_lst = []
 for i,j in enumerate(days_crosscor):
@@ -752,7 +727,7 @@ for result in tqdm(pool.imap(func=crosscorr_func, iterable=stationtrace_pairs), 
 	CrossCorrelation_days_lst.append(result)
 
 print("--- %.2f execution time (min) ---" % ((time.time() - start_time)/60))
-'''
+
 print('\n')
 print('====================================')
 print('Stacking daily Cross-correlations:')
