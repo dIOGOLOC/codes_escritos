@@ -280,26 +280,25 @@ def get_stations_data(f,Amp_clip=True,onebit_norm=True,white_spectral=True):
 
         try:
             st = read(f)
-            inv = read_inventory(STATIONXML_DIR+'.'.join([network,name,'xml']))
+            st_starttime = st[0].stats.starttime
+            st_endtime = st[0].stats.endtime
 
-            coordinates_lst = inv[0][0]
-
-            if len(st[0].data) > 1:
-
+            if len(st[0].data) > WINDOW_LENGTH*100:
         	    st_traces = [k for k in st.slide(window_length=WINDOW_LENGTH, step=WINDOW_LENGTH/2)]
 
         	    st_traces_check = []
         	    st_hours = []
         	    for k in st_traces:
-        	    	if len(k[0].data) >= WINDOW_LENGTH:
+        	    	if len(k[0].data) >= WINDOW_LENGTH*100:
+        	    		k[0].data = k[0].data[:WINDOW_LENGTH*100]
         	    		st_traces_check.append(k)
         	    		st_hours.append(str(k[0].stats.starttime.hour)+':'+str(k[0].stats.starttime.minute))
         	    	else:
         	    		pass
 
         	    if len(st_hours) > MIN_WINDOWS:
-
         		    inv = read_inventory(STATIONXML_DIR+'.'.join([network,name,'xml']))
+        		    coordinates_lst = inv[0][0]
 
         		    traces_resp = [tr.remove_response(inventory=inv,output="DISP",water_level=60) for tr in st_traces_check]
         		    traces_demean = [tr.detrend('demean') for tr in traces_resp]
@@ -362,28 +361,22 @@ def get_stations_data(f,Amp_clip=True,onebit_norm=True,white_spectral=True):
         		    		tr[0].data = np.require(whitedata, dtype="float32")
         		    	traces_white_spectral = traces_resample
 
-        		    traces_data_day = [ton[0].data.tolist()[:WINDOW_LENGTH*100] for ton in traces_white_spectral]
+        		    traces_data_day = np.array([ton[0].data for ton in traces_white_spectral])
 
         		    os.makedirs(output_DATA_DAY,exist_ok=True)
 
         		    ds = ASDFDataSet(output_DATA_DAY+'DATA_DAY_'+network+'_'+name+'_'+sta_channel+'_'+year_day+'_'+julday_day+'.h5', compression="gzip-3")
-        		    ds.add_waveforms(st, tag="raw_recording")
-        		    ds.add_stationxml(STATIONXML_DIR+'.'.join([network,name,'xml']))
-
-        		    # The type always should be camel case.
-        		    data_type_SD = 'object'
+        		    ds.add_waveforms(st,tag='raw_recording')
 
         		    # Name to identify the particular piece of data.
-        		    path_SD = sta_channel_id+'.SD'
+        		    path_SD = '/AuxiliaryData/StationData/'+sta_channel_id
 
         		    # Any additional parameters as a Python dictionary which will end up as
         		    # attributes of the array.
         		    parameters_SD = {'SD':'List of 1 hour data.', 'latitude': coordinates_lst.latitude, 'longitude': coordinates_lst.longitude, 'time_day':time_day, 'hours_day': st_hours}
 
-        		    ds.add_auxiliary_data(data=traces_data_day, data_type=data_type_SD, path=path_SD, parameters=parameters_SD)
+        		    ds.add_auxiliary_data(data=traces_data_day,data_type='f',path=path_SD, parameters=parameters_SD)
 
-            else:
-                pass
         except:
             print('Problem with the file: '+f)
 
@@ -398,10 +391,10 @@ def nested_dict():
 def crosscorr_func(stationtrace_pairs):
 
     '''
-    PRECISO AJUSTAR! 
+    PRECISO AJUSTAR!
     >>> adj_src = ds.auxiliary_data.AdjointSource.BW_ALFO_EHE
     >>> adj_src.data
-    >>> adj_src.parameters
+    >>> a.auxiliary_data.object['BL.BSFB..HHZ.SD'].parameters['latitude']
     {'SD':'List of 1 hour data.', 'latitude': coordinates_lst.latitude, 'longitude': coordinates_lst.longitude, 'time_day':time_day, 'hours_day': st_hours}
     '''
 
