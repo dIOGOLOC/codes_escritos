@@ -139,7 +139,7 @@ ONEDAY = datetime.timedelta(days=1)
 
 # MULTIPROCESSING
 
-num_processes = 8
+num_processes = 12
 
 # =================
 # Filtering by date
@@ -248,7 +248,7 @@ def get_stations_data(f,Amp_clip=True,onebit_norm=True,white_spectral=True):
     """
     Gets stations daily data from miniseed file
 
-    @type f: paht of the minissed file (str)
+    @type f: path of the minissed file (str)
     """
 
     # splitting subdir/basename
@@ -389,28 +389,33 @@ def nested_dict():
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 def crosscorr_func(stationtrace_pairs):
+    """
+    Gets Cross-correlation daily data
 
-    '''
-    PRECISO AJUSTAR!
-    >>> adj_src = ds.auxiliary_data.AdjointSource.BW_ALFO_EHE
-    >>> adj_src.data
-    >>> a.auxiliary_data.object['BL.BSFB..HHZ.SD'].parameters['latitude']
-    {'SD':'List of 1 hour data.', 'latitude': coordinates_lst.latitude, 'longitude': coordinates_lst.longitude, 'time_day':time_day, 'hours_day': st_hours}
-    '''
-
+    @type stationtrace_pairs: path of the asdf file (str)
+    """
     CrossCorrelation_dic = nested_dict()
-    sta1 = json.load(open(stationtrace_pairs[0]))
-    sta2 = json.load(open(stationtrace_pairs[1]))
 
-    year_day = sta1['time_day'].split('.')[0]
-    julday_day = sta1['time_day'].split('.')[1]
+    sta1_asdf = ASDFDataSet(stationtrace_pairs[0])
+    sta2_asdf = ASDFDataSet(stationtrace_pairs[1])
 
+    sta1 = sta1_asdf.auxiliary_data.f.AuxiliaryData.StationData.list()[0]
+    sta2 = sta2_asdf.auxiliary_data.f.AuxiliaryData.StationData.list()[0]
 
-    day_crosscor_causal = CrossCorrelation(name1=sta1['name'],name2=sta2['name'],lat1=sta1['lat'],lon1=sta1['lon'],lat2=sta2['lat'],lon2=sta2['lon'],pair_time_day=sta1['time_day'])
-    day_crosscor_acausal = CrossCorrelation(name1=sta2['name'],name2=sta1['name'],lat1=sta2['lat'],lon1=sta2['lon'],lat2=sta1['lat'],lon2=sta1['lon'],pair_time_day=sta1['time_day'])
+    sta1_parameters = sta1_asdf.auxiliary_data.f.AuxiliaryData.StationData[sta1].parameters
+    sta2_parameters = sta2_asdf.auxiliary_data.f.AuxiliaryData.StationData[sta2].parameters
 
-    day_crosscor_causal.add(sta1['data_day'],sta2['data_day'],sta1['hours_day'],sta2['hours_day'])
-    day_crosscor_acausal.add(sta2['data_day'],sta1['data_day'],sta2['hours_day'],sta1['hours_day'])
+    sta1_data_day = sta1_asdf.auxiliary_data.f.AuxiliaryData.StationData[sta1].data[::]
+    sta2_data_day = sta2_asdf.auxiliary_data.f.AuxiliaryData.StationData[sta2].data[::]
+
+    year_day = sta1_parameters['time_day'].split('.')[0]
+    julday_day = sta1_parameters['time_day'].split('.')[1]
+
+    day_crosscor_causal = CrossCorrelation(name1=sta1,name2=sta2,lat1=sta1_parameters['latitude'],lon1=sta1_parameters['longitude'],lat2=sta2_parameters['latitude'],lon2=sta2_parameters['longitude'],pair_time_day=sta1_parameters['time_day'])
+    day_crosscor_acausal = CrossCorrelation(name1=sta2,name2=sta1,lat1=sta2_parameters['latitude'],lon1=sta2_parameters['longitude'],lat2=sta1_parameters['latitude'],lon2=sta1_parameters['longitude'],pair_time_day=sta1_parameters['time_day'])
+
+    day_crosscor_causal.add(sta1_data_day,sta2_data_day,sta1_parameters['hours_day'].tolist(),sta2_parameters['hours_day'].tolist())
+    day_crosscor_acausal.add(sta2_data_day,sta1_data_day,sta2_parameters['hours_day'].tolist(),sta1_parameters['hours_day'].tolist())
 
     if len(day_crosscor_acausal.dataarray) > 1:
 
@@ -420,28 +425,54 @@ def crosscorr_func(stationtrace_pairs):
 
         if raw_SNR > minspectSNR:
 
-            CrossCorrelation_dic['dist'] = round(day_crosscor_causal.dist())
-            CrossCorrelation_dic['date'] = sta1['time_day']
-            CrossCorrelation_dic['sta1_loc'] = [sta1['lat'],sta1['lon']]
-            CrossCorrelation_dic['sta1_name'] = sta1['name']
-            CrossCorrelation_dic['sta2_loc'] = [sta2['lat'],sta2['lon']]
-            CrossCorrelation_dic['sta2_name'] = sta2['name']
-            CrossCorrelation_dic['crosscorr_daily_causal_time'] = day_crosscor_causal.timearray.tolist()
-            CrossCorrelation_dic['crosscorr_daily_causal'] = day_crosscor_causal.dataarray.tolist()
-            CrossCorrelation_dic['crosscorr_daily_acausal'] = day_crosscor_acausal.dataarray.tolist()
-            CrossCorrelation_dic['crosscorr_daily_acausal_time'] = day_crosscor_acausal.timearray.tolist()
-
-            output_CrossCorrelation_DAY = JSON_FILES+'CROSS_CORR_DAY_FILES/'+year_day+'.'+julday_day+'/'
+            output_CrossCorrelation_DAY = ASDF_FILES+'CROSS_CORR_DAY_FILES/'+year_day+'.'+julday_day+'/'
             os.makedirs(output_CrossCorrelation_DAY,exist_ok=True)
-            with open(output_CrossCorrelation_DAY+'CROSS_CORR_DAY_FILES_'+sta1['name']+'_'+sta2['name']+'_'+year_day+'_'+julday_day+'.json', 'w') as fp:
-                json.dump(CrossCorrelation_dic, fp)
+
+            # ----------------------------------------------------------------------------------------------------------------------------------------------
+            cc_asdf = ASDFDataSet(output_CrossCorrelation_DAY+'CROSS_CORR_DAY_FILES_'+sta1+'_'+sta2+'_'+year_day+'_'+julday_day+'.h5', compression="gzip-3")
+
+            # Causal part of the CrossCorrelation
+            path_CC_causal = sta1+'/'+sta2+'/'
+
+            # Additional parameters of the causal part of the CrossCorrelation
+            parameters_CC_causal = {
+                            'CrossCorrelation':'Cross-correlation data.',
+                            'dist': round(day_crosscor_causal.dist()),
+                            'date': sta1_parameters['time_day'],
+                            'sta1_loc': [sta1_parameters['latitude'],sta1_parameters['longitude']],
+                            'sta1_name': sta1,
+                            'sta2_loc': [sta2_parameters['latitude'],sta2_parameters['longitude']],
+                            'sta2_name': sta2,
+                            'crosscorr_daily_causal_time':day_crosscor_causal.timearray
+                            }
+
+            cc_asdf.add_auxiliary_data(data=day_crosscor_causal.dataarray,data_type='CrossCorrelation',path=path_CC_causal, parameters=parameters_CC_causal)
+
+            # ----------------------------------------------------------------------------------------------------------------------------------------------
+
+            # Acausal part of the CrossCorrelation
+            path_CC_acausal = sta2+'/'+sta1+'/'
+
+            # Additional parameters of the acausal part of the CrossCorrelation
+            parameters_CC_acausal = {
+                            'CrossCorrelation':'Cross-correlation data.',
+                            'dist': round(day_crosscor_causal.dist()),
+                            'date': sta1_parameters['time_day'],
+                            'sta1_loc': [sta1_parameters['latitude'],sta1_parameters['longitude']],
+                            'sta1_name': sta1,
+                            'sta2_loc': [sta2_parameters['latitude'],sta2_parameters['longitude']],
+                            'sta2_name': sta2,
+                            'crosscorr_daily_acausal_time': day_crosscor_acausal.timearray
+                            }
+
+            cc_asdf.add_auxiliary_data(data=day_crosscor_acausal.dataarray,data_type='CrossCorrelation',path=path_CC_acausal, parameters=parameters_CC_acausal)
 
 		    # ============================
 		    # Plot: map and pair crosscorr
 		    # ============================
 
             fig = plt.figure(figsize=(15, 15))
-            fig.suptitle(sta1['name']+'-'+sta2['name']+' - Day - '+UTCDateTime(year=int(year_day),julday=int(julday_day)).strftime('%d/%m/%Y'),fontsize=20)
+            fig.suptitle(sta1+'-'+sta2+' - Day - '+UTCDateTime(year=int(year_day),julday=int(julday_day)).strftime('%d/%m/%Y'),fontsize=20)
 
             gs = gridspec.GridSpec(2, 1,wspace=0.2, hspace=0.5)
 
@@ -478,31 +509,31 @@ def crosscorr_func(stationtrace_pairs):
             text_transform = offset_copy(geodetic_transform, units='dots', y=0,x=80)
             text_transform_mag = offset_copy(geodetic_transform, units='dots', y=15,x=15)
 
-            map_loc.scatter(sta1['lon'],sta1['lat'], marker='^',s=200,c='k',edgecolors='w', transform=ccrs.PlateCarree())
-            map_loc.scatter(sta2['lon'],sta2['lat'], marker='^',s=200,c='k',edgecolors='w', transform=ccrs.PlateCarree())
-            map_loc.plot([sta1['lon'],sta2['lon']],[sta1['lat'],sta2['lat']],c='k', transform=ccrs.PlateCarree())
+            map_loc.scatter(sta1_parameters['longitude'],sta1_parameters['latitude'], marker='^',s=200,c='k',edgecolors='w', transform=ccrs.PlateCarree())
+            map_loc.scatter(sta2_parameters['longitude'],sta2_parameters['latitude'], marker='^',s=200,c='k',edgecolors='w', transform=ccrs.PlateCarree())
+            map_loc.plot([sta1_parameters['longitude'],sta2_parameters['longitude']],[sta1_parameters['latitude'],sta2_parameters['latitude']],c='k', transform=ccrs.PlateCarree())
 
-            map_loc.text(sta1['lon'],sta1['lat'], sta1['name'],fontsize=15,verticalalignment='center', horizontalalignment='right',transform=text_transform)
-            map_loc.text(sta2['lon'],sta2['lat'], sta2['name'],fontsize=15,verticalalignment='center', horizontalalignment='right',transform=text_transform)
+            map_loc.text(sta1_parameters['longitude'],sta1_parameters['latitude'], sta1,fontsize=15,verticalalignment='center', horizontalalignment='right',transform=text_transform)
+            map_loc.text(sta2_parameters['longitude'],sta2_parameters['latitude'], sta2,fontsize=15,verticalalignment='center', horizontalalignment='right',transform=text_transform)
 
             #-------------------------------------------
 
             ax = fig.add_subplot(gs[1])
-            data_to_plot = CrossCorrelation_dic['crosscorr_daily_acausal'][::-1]+CrossCorrelation_dic['crosscorr_daily_causal']
-            time_to_plot = [-1*i for i in CrossCorrelation_dic['crosscorr_daily_acausal_time'][::-1]] + CrossCorrelation_dic['crosscorr_daily_causal_time']
+            data_to_plot = np.flip(day_crosscor_acausal.dataarray)+day_crosscor_causal.dataarray
+            time_to_plot = np.flip(day_crosscor_acausal.timearray)*-1 + day_crosscor_causal.timearray
             ax.plot(time_to_plot,data_to_plot,color='k')
             ax.set_xlabel('time (s)',fontsize=14)
             ax.set_title('Dist = '+str(round(day_crosscor_causal.dist()))+' km',fontsize=14)
 
             output_figure_CrossCorrelation_DAY = CLOCK_DRIFT_OUTPUT+'CROSS_CORR_DAY_FIGURES/'+year_day+'.'+julday_day+'/'
             os.makedirs(output_figure_CrossCorrelation_DAY,exist_ok=True)
-            fig.savefig(output_figure_CrossCorrelation_DAY+'CROSS_CORR_DAY_FIG_'+sta1['name']+'_'+sta2['name']+'_'+year_day+'_'+julday_day+'.png')
+            fig.savefig(output_figure_CrossCorrelation_DAY+'CROSS_CORR_DAY_FIG_'+sta1+'_'+sta2+'_'+year_day+'_'+julday_day+'.png')
             plt.close('all')
 
-        return sta1['time_day']
+        return sta1_parameters['time_day']
 
     else:
-        print("Problem: CrossCorrelation between "+sta1['name']+" and "+sta2['name']+" in "+sta2['time_day'])
+        print("Problem: CrossCorrelation between "+sta1+" and "+sta2+" in "+sta1_parameters['time_day'])
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -511,10 +542,14 @@ def crosscorr_stack(crosscorr_pairs_data):
 	"""
     Stacking crosscorrelation data
 
-    @type crosscorr_pairs_data: list with JSON files
+    @type crosscorr_pairs_data: list of ASDF files
     """
 
     #Reading data
+
+    #sta1_asdf = ASDFDataSet(stationtrace_pairs[0])
+    #sta2_asdf = ASDFDataSet(stationtrace_pairs[1])
+
 	name_sta1 = list(set([json.load(open(a))['sta1_name'] for a in crosscorr_pairs_data]))[0]
 	name_sta2 = list(set([json.load(open(a))['sta2_name'] for a in crosscorr_pairs_data]))[0]
 	dist_pair = json.load(open(crosscorr_pairs_data[0]))['dist']
@@ -655,12 +690,12 @@ class CrossCorrelation:
 # Main program
 # ============
 
+'''
 print('===============================')
 print('Scanning name of miniseed files')
 print('===============================')
 print('\n')
 start_time = time.time()
-
 
 files_STA = filelist(basedir=MSEED_DIR_STA,interval_period_date=INTERVAL_PERIOD_DATE)
 files_OBS = filelist(basedir=MSEED_DIR_OBS,interval_period_date=INTERVAL_PERIOD_DATE)
@@ -678,7 +713,6 @@ for s in files_final:
                 files.append(s)
 
 print('Total of files = '+str(len(files)))
-
 
 print("--- %.2f execution time (min) ---" % ((time.time() - start_time)/60))
 print('\n')
@@ -699,6 +733,7 @@ with Pool(processes=num_processes) as p:
 print("--- %.2f execution time (min) ---" % ((time.time() - start_time)/60))
 print('\n')
 '''
+
 print('====================================')
 print('Calculating daily Cross-correlations:')
 print('====================================')
@@ -712,15 +747,15 @@ for i,j in enumerate(days_crosscor):
 	stationtrace_pairs_lst.append(list(combinations(stations_file, 2)))
 
 stationtrace_pairs = [item for sublist in stationtrace_pairs_lst for item in sublist]
-start_time = time.time()
 
+start_time = time.time()
 pool = Pool(processes=num_processes)
 CrossCorrelation_days_lst = []
 for result in tqdm(pool.imap(func=crosscorr_func, iterable=stationtrace_pairs), total=len(stationtrace_pairs)):
 	CrossCorrelation_days_lst.append(result)
 
 print("--- %.2f execution time (min) ---" % ((time.time() - start_time)/60))
-
+'''
 print('\n')
 print('====================================')
 print('Stacking daily Cross-correlations:')
