@@ -391,7 +391,7 @@ def nested_dict():
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-def crosscorr_func(stationtrace_pairs):
+def crosscorr_func(stationtrace_pairs,name_suffix='CROSS_CORR_DAY_FILES'):
     """
     Gets Cross-correlation daily data
 
@@ -416,8 +416,8 @@ def crosscorr_func(stationtrace_pairs):
 
     # ----------------------------------------------------------------------------------------------------------------------------------------------
     #Check if file exists
-    output_CrossCorrelation_DAY = ASDF_FILES+'CROSS_CORR_DAY_FILES/'+year_day+'.'+julday_day+'/'
-    if os.path.isfile(output_CrossCorrelation_DAY+'CROSS_CORR_DAY_FILES_'+sta1+'_'+sta2+'_'+year_day+'_'+julday_day+'.h5'):
+    output_CrossCorrelation_DAY = ASDF_FILES+name_suffix+'/'+year_day+'.'+julday_day+'/'
+    if os.path.isfile(output_CrossCorrelation_DAY+name_suffix+'_'+sta1+'_'+sta2+'_'+year_day+'_'+julday_day+'.h5'):
         pass
 
     else:
@@ -436,11 +436,11 @@ def crosscorr_func(stationtrace_pairs):
 
             if raw_SNR > minspectSNR:
 
-                output_CrossCorrelation_DAY = ASDF_FILES+'CROSS_CORR_DAY_FILES/'+year_day+'.'+julday_day+'/'
+                output_CrossCorrelation_DAY = ASDF_FILES+name_suffix+'/'+year_day+'.'+julday_day+'/'
                 os.makedirs(output_CrossCorrelation_DAY,exist_ok=True)
 
                 # ----------------------------------------------------------------------------------------------------------------------------------------------
-                cc_asdf = ASDFDataSet(output_CrossCorrelation_DAY+'CROSS_CORR_DAY_FILES_'+sta1+'_'+sta2+'_'+year_day+'_'+julday_day+'.h5', compression="gzip-3")
+                cc_asdf = ASDFDataSet(output_CrossCorrelation_DAY+name_suffix+'_'+sta1+'_'+sta2+'_'+year_day+'_'+julday_day+'.h5', compression="gzip-3")
 
                 # Causal part of the CrossCorrelation
                 path_CC_causal = sta1+'/'+sta2+'/'
@@ -536,9 +536,9 @@ def crosscorr_func(stationtrace_pairs):
                 ax.set_xlabel('time (s)',fontsize=14)
                 ax.set_title('Dist = '+str(round(day_crosscor_causal.dist()))+' km',fontsize=14)
 
-                output_figure_CrossCorrelation_DAY = CLOCK_DRIFT_OUTPUT+'CROSS_CORR_DAY_FIGURES/'+year_day+'.'+julday_day+'/'
+                output_figure_CrossCorrelation_DAY = CLOCK_DRIFT_OUTPUT+name_suffix+'_FIGURES/'+year_day+'.'+julday_day+'/'
                 os.makedirs(output_figure_CrossCorrelation_DAY,exist_ok=True)
-                fig.savefig(output_figure_CrossCorrelation_DAY+'CROSS_CORR_DAY_FIG_'+sta1+'_'+sta2+'_'+year_day+'_'+julday_day+'.png')
+                fig.savefig(output_figure_CrossCorrelation_DAY+name_suffix+'_FIG_'+sta1+'_'+sta2+'_'+year_day+'_'+julday_day+'.png')
                 plt.close('all')
 
             return sta1_parameters['time_day']
@@ -548,8 +548,94 @@ def crosscorr_func(stationtrace_pairs):
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-# Calculating signal-to-noise ratio
-def crosscorr_stack_asdf(crosscorr_pairs_data):
+def crosscorr_10_days_stack_func(input):
+
+    """
+    Stacking 10 days of cross-correlation daily data
+
+    @type stationtrace_pairs: path of the asdf file (str)
+    @type stack_date: date of the day - julday.year (str)
+    @type name_suffix: name of the output folder (str)
+
+    """
+    stationtrace_pairs = input[0]
+    stack_date = input[1]
+    name_suffix = input[2]
+
+    year_day = stack_date.split('.')[0]
+    julday_day = stack_date.split('.')[1]
+
+    #Reading data
+    sta1_sta2_asdf_files = [ASDFDataSet(i, mode='r') for i in stationtrace_pairs]
+    sta1 = sta1_sta2_asdf_files[0].auxiliary_data.CrossCorrelation.list()[0]
+    sta2 = sta1_sta2_asdf_files[0].auxiliary_data.CrossCorrelation.list()[1]
+
+    dist_pair = sta1_sta2_asdf_files[0].auxiliary_data.CrossCorrelation[sta1][sta2].parameters['dist']
+
+    loc_sta1 = sta1_sta2_asdf_files[0].auxiliary_data.CrossCorrelation[sta1][sta2].parameters['sta1_loc']
+    loc_sta2 = sta1_sta2_asdf_files[0].auxiliary_data.CrossCorrelation[sta1][sta2].parameters['sta2_loc']
+
+    #Stacking data
+    causal_lst = np.mean(np.array([i.auxiliary_data.CrossCorrelation[sta1][sta2].data for i in sta1_sta2_asdf_files]),axis=0)
+    acausal_lst = np.mean(np.array([i.auxiliary_data.CrossCorrelation[sta2][sta1].data for i in sta1_sta2_asdf_files]),axis=0)
+
+    causal_time = sta1_sta2_asdf_files[0].auxiliary_data.CrossCorrelation[sta1][sta2].parameters['crosscorr_daily_causal_time']
+    acausal_time = sta1_sta2_asdf_files[0].auxiliary_data.CrossCorrelation[sta2][sta1].parameters['crosscorr_daily_acausal_time']
+
+    # ----------------------------------------------------------------------------------------------------------------------------------------------
+    #Check if file exists
+    output_CrossCorrelation_DAY = ASDF_FILES+name_suffix+'/'+year_day+'.'+julday_day+'/'
+
+    if os.path.isfile(output_CrossCorrelation_DAY+name_suffix+'_'+sta1+'_'+sta2+'_'+year_day+'_'+julday_day+'.h5'):
+        pass
+
+    else:
+
+        output_CrossCorrelation_DAY = ASDF_FILES+name_suffix+'/'+year_day+'.'+julday_day+'/'
+        os.makedirs(output_CrossCorrelation_DAY,exist_ok=True)
+        cc_asdf = ASDFDataSet(output_CrossCorrelation_DAY+name_suffix+'_'+sta1+'_'+sta2+'_'+year_day+'_'+julday_day+'.h5', compression="gzip-3")
+
+        # -----------------------------------------------------------------------------------------------------------------------------------------------
+        # Causal part of the CrossCorrelation
+        path_CC_causal = sta1+'/'+sta2+'/'
+
+        # Additional parameters of the causal part of the CrossCorrelation
+        parameters_CC_causal = {
+                                'CrossCorrelation':'Cross-correlation data between '+sta1+' and '+sta2+'.',
+                                'dist': dist_pair,
+                                'date': stack_date,
+                                'sta1_loc': loc_sta1,
+                                'sta1_name': sta1,
+                                'sta2_loc': loc_sta2,
+                                'sta2_name': sta2,
+                                'crosscorr_daily_causal_time': causal_time
+                                }
+
+        cc_asdf.add_auxiliary_data(data=causal_lst,data_type='CrossCorrelation',path=path_CC_causal, parameters=parameters_CC_causal)
+
+        # -----------------------------------------------------------------------------------------------------------------------------------------------
+        # Acausal part of the CrossCorrelation
+        path_CC_acausal = sta2+'/'+sta1+'/'
+
+        # Additional parameters of the acausal part of the CrossCorrelation
+        parameters_CC_acausal = {
+                                'CrossCorrelation':'Cross-correlation data between '+sta2+' and '+sta1+'.',
+                                'dist': dist_pair,
+                                'date': stack_date,
+                                'sta1_loc': loc_sta1,
+                                'sta1_name': sta1,
+                                'sta2_loc': loc_sta2,
+                                'sta2_name': sta2,
+                                'crosscorr_daily_acausal_time': acausal_time
+                                }
+
+        cc_asdf.add_auxiliary_data(data=acausal_lst,data_type='CrossCorrelation',path=path_CC_acausal, parameters=parameters_CC_acausal)
+
+        return stack_date
+
+# ----------------------------------------------------------------------------------------------------------------------------------------------
+
+def crosscorr_stack_asdf(crosscorr_pairs_data,folder_crosscorr='CROSS_CORR_10_DAYS_STACKED_FILES',cross_name_suffix='CROSS_CORR_10_DAYS_STACKED'):
     """
     Stacking crosscorrelation data
     @type crosscorr_pairs_data: list of ASDF files
@@ -580,17 +666,17 @@ def crosscorr_stack_asdf(crosscorr_pairs_data):
 
     # ----------------------------------------------------------------------------------------------------------------------------------------------
 
-    output_CrossCorrelation_DAY = ASDF_FILES+'CROSS_CORR_STACKED_FILES/'+name_sta1+'.'+name_sta2+'/'
+    output_CrossCorrelation_DAY = ASDF_FILES+FOLDER_CROSS_CORR_NAME+'/'+name_sta1+'.'+name_sta2+'/'
     os.makedirs(output_CrossCorrelation_DAY,exist_ok=True)
 
-    cc_asdf = ASDFDataSet(output_CrossCorrelation_DAY+'CROSS_CORR_STACKED_FILES_'+name_sta1+'_'+name_sta2+'.h5', compression="gzip-3")
+    cc_asdf = ASDFDataSet(output_CrossCorrelation_DAY+cross_name_suffix+'_'+name_sta1+'_'+name_sta2+'.h5', compression="gzip-3")
 
     # Causal part of the CrossCorrelation
     path_CC_stacked_causal = name_sta1+'/'+name_sta2+'/'
 
     # Additional parameters of the causal part of the CrossCorrelation
     parameters_CC_stacked_causal = {
-                            'CrossCorrelation':'Causal part of the Cross-correlation data stacked between '+name_sta1+' and '+name_sta2+'.',
+                            'CrossCorrelation':'Causal part of the cross-correlation data stacked between '+name_sta1+' and '+name_sta2+'.',
                             'dist': dist_pair,
                             'number_days': len(crosscorr_pairs_data),
                             'sta1_name': name_sta1,
@@ -609,7 +695,7 @@ def crosscorr_stack_asdf(crosscorr_pairs_data):
 
     # Additional parameters of the acausal part of the CrossCorrelation
     parameters_CC_stacked_acausal = {
-                            'CrossCorrelation':'Acausal part of the Cross-correlation data stacked between '+name_sta2+' and '+name_sta1+'.',
+                            'CrossCorrelation':'Acausal part of the cross-correlation data stacked between '+name_sta2+' and '+name_sta1+'.',
                             'dist': dist_pair,
                             'number_days': len(crosscorr_pairs_data),
                             'sta1_name': name_sta1,
@@ -622,6 +708,7 @@ def crosscorr_stack_asdf(crosscorr_pairs_data):
     cc_asdf.add_auxiliary_data(data=data_acausal,data_type='CrossCorrelationStacked',path=path_CC_stacked_acausal, parameters=parameters_CC_stacked_acausal)
 
     return [name_sta1,name_sta2]
+
 
 # =======
 # Classes
@@ -777,7 +864,6 @@ with Pool(processes=num_processes) as p:
 print("--- %.2f execution time (min) ---" % ((time.time() - start_time)/60))
 print('\n')
 
-
 print('====================================')
 print('Calculating daily Cross-correlations:')
 print('====================================')
@@ -831,17 +917,21 @@ crosscorr_pairs_data = [[]]*len(crosscorr_pairs_names)
 for l,k in enumerate(crosscorr_pairs_names):
 	crosscorr_pairs_data[l] = [j for i,j in enumerate(crosscorr_pairs) if k in j]
 
+input_lst_crosscorr_pairs_names = []
+for l,k in enumerate(crosscorr_pairs_names):
+    input_lst_crosscorr_pairs_names.append([k,'CROSS_CORR_STACKED_FILES','CROSS_CORR_STACKED_FILES')
+
 #Stacking data
 
 start_time = time.time()
 
 pool = Pool(processes=num_processes)
 CrossCorrelation_stations_lst = []
-for result in tqdm(pool.imap(func=crosscorr_stack_asdf, iterable=crosscorr_pairs_data), total=len(crosscorr_pairs_data)):
+for result in tqdm(pool.imap(func=crosscorr_stack_asdf, iterable=input_lst_crosscorr_pairs_names), total=len(input_lst_crosscorr_pairs_names)):
 	CrossCorrelation_stations_lst.append(result)
 
 print("--- %.2f execution time (min) ---" % ((time.time() - start_time)/60))
-'''
+
 print('\n')
 print('=======================================================================')
 print('Plotting Stacked Cross-correlations according to interstation distance:')
@@ -1138,7 +1228,7 @@ plt.close()
 
 print('\n')
 print('====================================')
-print('Stacking daily Cross-correlations:')
+print('Stacking 10-day Cross-correlations:')
 print('====================================')
 print('\n')
 
@@ -1163,223 +1253,27 @@ for i in crosscorr_pairs:
 crosscorr_pairs_names = sorted(list(set(crosscorr_pairs_name_lst)))
 
 crosscorr_pairs_data = [[]]*len(crosscorr_pairs_names)
-
 for l,k in enumerate(crosscorr_pairs_names):
 	crosscorr_pairs_data[l] = [j for i,j in enumerate(crosscorr_pairs) if k in j]
 
-#Stacking data
-for i in crosscorr_pairs_data:
-	name_sta1 = list(set([json.load(open(a))['sta1_name'] for a in i]))[0]
-	name_sta2 = list(set([json.load(open(a))['sta2_name'] for a in i]))[0]
-	dist_pair = json.load(open(i[0]))['dist']
-
-	print('Pair: '+name_sta1+'-'+name_sta2+' - '+'days stacked: '+str(len(i)))
-
-	causal_lst = np.mean(np.array([json.load(open(a))['crosscorr_daily_causal'] for a in i]),axis=0)
-	acausal_lst = np.mean(np.array([json.load(open(a))['crosscorr_daily_acausal'] for a in i]),axis=0)
-
-	causal_time = np.array(json.load(open(i[0]))['crosscorr_daily_causal_time'])
-	acausal_time = np.array(json.load(open(i[0]))['crosscorr_daily_acausal_time'])
-
-	loc_sta1 = json.load(open(i[0]))['sta1_loc']
-	loc_sta2 = json.load(open(i[0]))['sta2_loc']
-
-    # ===============================
-    # Plot: map and stacked crosscorr
-    # ===============================
-
-	fig = plt.figure(figsize=(20, 7))
-	fig.suptitle(name_sta1+'-'+name_sta2+' - Dist = '+str(round(dist_pair))+' km'+' - Days stacked: '+str(len(i)),fontsize=20)
-
-	gs = gridspec.GridSpec(len(PERIOD_BANDS)+1, 2,wspace=0.2, hspace=0.5)
-
-    #-------------------------------------------
-
-	map_loc = fig.add_subplot(gs[:,0],projection=ccrs.PlateCarree())
-
-	LLCRNRLON_LARGE = -52
-	URCRNRLON_LARGE = -28
-	LLCRNRLAT_LARGE = -30
-	URCRNRLAT_LARGE = -10
-
-	map_loc.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
-	map_loc.yaxis.set_ticks_position('both')
-	map_loc.xaxis.set_ticks_position('both')
-
-	map_loc.set_xticks(np.arange(LLCRNRLON_LARGE,URCRNRLON_LARGE,3), crs=ccrs.PlateCarree())
-	map_loc.set_yticks(np.arange(LLCRNRLAT_LARGE,URCRNRLAT_LARGE,3), crs=ccrs.PlateCarree())
-	map_loc.tick_params(labelbottom=True,labeltop=True,labelleft=True,labelright=True, labelsize=15)
-
-	map_loc.grid(True,which='major',color='gray',linewidth=1,linestyle='--')
-
-	reader_1_SHP = Reader(BOUNDARY_STATES_SHP)
-	shape_1_SHP = list(reader_1_SHP.geometries())
-	plot_shape_1_SHP = cfeature.ShapelyFeature(shape_1_SHP, ccrs.PlateCarree())
-	map_loc.add_feature(plot_shape_1_SHP, facecolor='none', edgecolor='k',linewidth=0.5,zorder=-1)
-
-    # Use the cartopy interface to create a matplotlib transform object
-    # for the Geodetic coordinate system. We will use this along with
-    # matplotlib's offset_copy function to define a coordinate system which
-    # translates the text by 25 pixels to the left.
-	geodetic_transform = ccrs.Geodetic()._as_mpl_transform(map_loc)
-	text_transform = offset_copy(geodetic_transform, units='dots', y=0,x=80)
-	text_transform_mag = offset_copy(geodetic_transform, units='dots', y=-15,x=15)
-
-	map_loc.scatter(loc_sta1[1],loc_sta1[0], marker='^',s=200,c='k',edgecolors='w', transform=ccrs.PlateCarree())
-	map_loc.scatter(loc_sta2[1],loc_sta2[0], marker='^',s=200,c='k',edgecolors='w', transform=ccrs.PlateCarree())
-
-	map_loc.plot([loc_sta1[1],loc_sta2[1]],[loc_sta1[0],loc_sta2[0]], transform=ccrs.PlateCarree())
-
-	map_loc.text(loc_sta1[1],loc_sta1[0], name_sta1,fontsize=15,verticalalignment='center', horizontalalignment='right',transform=text_transform)
-	map_loc.text(loc_sta2[1],loc_sta2[0], name_sta2,fontsize=15,verticalalignment='center', horizontalalignment='right',transform=text_transform)
-	#-------------------------------------------
-
-	data_to_plot = acausal_lst[::-1] + causal_lst
-	time_to_plot = [-1*i for i in acausal_time[::-1]] + causal_time
-
-	ax = fig.add_subplot(gs[0,1])
-	ax.plot(time_to_plot, data_to_plot,color='k')
-
-	ylim = (data_to_plot.min(), data_to_plot.max())
-	ax.set_ylim(ylim)
-	ax.set_xlim(-SIGNAL2NOISE_TRAIL,SIGNAL2NOISE_TRAIL)
-	ax.set_xticklabels([])
-	ax.set_yticklabels([])
-	raw_SNR = SNR(data_to_plot,time_to_plot,dist_pair,vmin=SIGNAL_WINDOW_VMIN,vmax=SIGNAL_WINDOW_VMAX,signal2noise_trail=SIGNAL2NOISE_TRAIL,noise_window_size=NOISE_WINDOW_SIZE)
-	ax.text(x=0.1,y=0.8,s="SNR:"+str(round(raw_SNR)),horizontalalignment='center',transform=ax.transAxes,fontsize=8,bbox={'edgecolor':'w','facecolor': 'white'})
-	ax.text(x=0.9,y=0.8,s="Raw data",horizontalalignment='center',transform=ax.transAxes,fontsize=8,bbox={'edgecolor':'w','facecolor': 'white'})
-
-	# plotting band-filtered cross-correlation
-	for i,band in enumerate(PERIOD_BANDS):
-		ax = fig.add_subplot(gs[i+1,1])
-		lastplot = band is PERIOD_BANDS[-1]
-		firstplot = band is PERIOD_BANDS[0]
-
-		ax.text(x=0.9,y=0.8,s="Filter:"+str(band[0])+"-"+str(band[1])+"s",transform=ax.transAxes,horizontalalignment='center',fontsize=8,bbox={'edgecolor':'w','facecolor': 'white'})
-
-		data_to_plot_filtered = bandpass(data_to_plot, 1.0 /band[1], 1.0 / band[0], NEW_SAMPLING_RATE, corners=2, zerophase=False)
-		ax.plot(time_to_plot, data_to_plot_filtered,color='k')
-		ylim = (data_to_plot_filtered.min(), data_to_plot_filtered.max())
-		ax.set_ylim(ylim)
-		ax.set_xlim(-SIGNAL2NOISE_TRAIL,SIGNAL2NOISE_TRAIL)
-		ax.set_yticklabels([])
-
-		ax.axvline(x=dist_pair/SIGNAL_WINDOW_VMIN, ymin=0, ymax=1,color='gray',linestyle='--',lw=1)
-		ax.axvline(x=dist_pair/SIGNAL_WINDOW_VMAX, ymin=0, ymax=1,color='gray',linestyle='--',lw=1)
-		ax.axvline(x=-(dist_pair/SIGNAL_WINDOW_VMIN), ymin=0, ymax=1,color='gray',linestyle='--',lw=1)
-		ax.axvline(x=-(dist_pair/SIGNAL_WINDOW_VMAX), ymin=0, ymax=1,color='gray',linestyle='--',lw=1)
-
-
-		# Calculating SNR
-		filtered_SNR = SNR(data_to_plot_filtered,time_to_plot,dist_pair,vmin=SIGNAL_WINDOW_VMIN,vmax=SIGNAL_WINDOW_VMAX,signal2noise_trail=SIGNAL2NOISE_TRAIL,noise_window_size=NOISE_WINDOW_SIZE)
-		ax.text(x=0.1,y=0.8,s="SNR:"+str(round(filtered_SNR)),horizontalalignment='center',transform=ax.transAxes,fontsize=8,bbox={'edgecolor':'w','facecolor': 'white'})
-
-		# formatting labels
-		if not lastplot:
-			ax.set_xticklabels([])
-		if lastplot:
-		# adding label to time
-			ax.set_xlabel('Time (s)',fontsize=14)
-
-	output_figure_CrossCorrelation_DAY = CLOCK_DRIFT_OUTPUT+'CROSS_CORR_STACK_FIGURES/'
-	os.makedirs(output_figure_CrossCorrelation_DAY,exist_ok=True)
-	fig.savefig(output_figure_CrossCorrelation_DAY+'CROSS_CORR_STACK_FIG_'+name_sta1+'_'+name_sta2+'.png')
-	plt.close()
-
-
-
-
-
-
-
-
-
-print('\n')
-print('====================================')
-print('Stacking 10-day Cross-correlations:')
-print('====================================')
-print('\n')
-
-#Collecting daily list of cross-correlations
-crosscorr_days_lst = sorted(glob.glob(JSON_FILES+'CROSS_CORR_DAY_FILES/*'))
-
-crosscorr_pairs_lst = []
-for i,j in enumerate(crosscorr_days_lst):
-	crosscorr_file = sorted(glob.glob(j+'/*'))
-	crosscorr_pairs_lst.append(crosscorr_file)
-
-#Make a list of list flat
-crosscorr_pairs = [item for sublist in crosscorr_pairs_lst for item in sublist]
-
-#Separating according to pairs name
-crosscorr_pairs_name_lst = []
-for i in crosscorr_pairs:
-	# splitting subdir/basename
-	subdir, filename = os.path.split(i)
-	crosscorr_pairs_name_lst.append(filename.split("_20")[0])
-
-crosscorr_pairs_names = sorted(list(set(crosscorr_pairs_name_lst)))
-
-crosscorr_pairs_data = [[]]*len(crosscorr_pairs_names)
-for l,k in enumerate(crosscorr_pairs_names):
-	crosscorr_pairs_data[l] = [j for i,j in enumerate(crosscorr_pairs) if k in j]
-
-crosscorr_pairs_data_10_day_all = []
 for i in tqdm(crosscorr_pairs_data):
 	crosscorr_pairs_10day_data = []
 	crosscorr_pair_date_10day = []
 	for k in i:
 		subdir, filename = os.path.split(k)
-		crosscorr_pair_date = datetime.datetime.strptime(filename.split('.')[0].split('_')[-2]+'.'+filename.split('.')[0].split('_')[-1], '%Y.%j')
-		crosscorr_pair_date_10day.append(crosscorr_pair_date)
-		crosscorr_pairs_10day_data.append([file for file in i if datetime.datetime.strptime(file.split('/')[-1].split('.')[0].split('_')[-2]+'.'+file.split('/')[-1].split('.')[0].split('_')[-1], '%Y.%j') >= crosscorr_pair_date and datetime.datetime.strptime(file.split('/')[-1].split('.')[0].split('_')[-2]+'.'+file.split('/')[-1].split('.')[0].split('_')[-1], '%Y.%j') < crosscorr_pair_date+datetime.timedelta(days=10)])
+		crosscorr_pair_date = datetime.datetime.strptime(filename.split('/')[-1].split('_')[-2]+'.'+filename.split('/')[-1].split('_')[-1].split('.')[0], '%Y.%j')
+		crosscorr_pair_date_10day.append(filename.split('/')[-1].split('_')[-2]+'.'+filename.split('/')[-1].split('_')[-1].split('.')[0])
+		crosscorr_pairs_10day_data.append([file for file in i if datetime.datetime.strptime(file.split('/')[-1].split('_')[-2]+'.'+file.split('/')[-1].split('_')[-1].split('.')[0], '%Y.%j') >= crosscorr_pair_date-datetime.timedelta(days=5) and datetime.datetime.strptime(file.split('/')[-1].split('_')[-2]+'.'+file.split('/')[-1].split('_')[-1].split('.')[0], '%Y.%j') < crosscorr_pair_date+datetime.timedelta(days=5)])
 
-	year_day = filename.split('.')[0].split('_')[-2]
-	julday_day = filename.split('.')[0].split('_')[-1]
+	name_suffix_lst = ['CROSS_CORR_10_DAYS_STACKED_FILES']*len(crosscorr_pair_date_10day)
+	input_lst_crosscorr_pairs_names = [[crosscorr_pairs_10day_data[i],crosscorr_pair_date_10day[i],name_suffix_lst[i]] for i in range(len(crosscorr_pair_date_10day))]
 
 	#Stacking data
-	date_to_plot = []
-	data_to_plot = []
-	time_to_plot = []
-
-	for ind,data10 in enumerate(crosscorr_pairs_10day_data):
-
-		date_to_plot.append(crosscorr_pair_date_10day[ind])
-		name_sta1 = json.load(open(data10[0]))['sta1_name']
-		name_sta2 = json.load(open(data10[0]))['sta2_name']
-		dist_pair = json.load(open(data10[0]))['dist']
-
-		causal_lst = np.mean(np.array([json.load(open(a))['crosscorr_daily_causal'] for a in data10]),axis=0)
-		acausal_lst = np.mean(np.array([json.load(open(a))['crosscorr_daily_acausal'] for a in data10]),axis=0)
-
-		causal_time = np.array(json.load(open(data10[0]))['crosscorr_daily_causal_time'])
-		acausal_time = np.array(json.load(open(data10[0]))['crosscorr_daily_acausal_time'])
-
-		data_to_plot.append(acausal_lst[::-1] + causal_lst)
-		time_to_plot.append([-1*i for i in acausal_time[::-1]] + causal_time)
-
-		loc_sta1 = json.load(open(data10[0]))['sta1_loc']
-		loc_sta2 = json.load(open(data10[0]))['sta2_loc']
-
-	#crosscorr_stack_data_normalized_org_lst = [(2*(a-a.min())/(a.max()-a.min()))-1 for a in data_to_plot]
-	#stacked_data = sum(crosscorr_stack_data_normalized_org_lst)/len(crosscorr_stack_data_normalized_org_lst)
-	stacked_data = sum(data_to_plot)/len(data_to_plot)
-
-	CrossCorrelation_10_days_dic = nested_dict()
-	CrossCorrelation_10_days_dic['dist'] = round(dist_pair)
-	CrossCorrelation_10_days_dic['date'] = filename.split('.')[0].split('_')[-2]+'.'+filename.split('.')[0].split('_')[-1]
-	CrossCorrelation_10_days_dic['sta1_loc'] = loc_sta1
-	CrossCorrelation_10_days_dic['sta1_name'] = name_sta1
-	CrossCorrelation_10_days_dic['sta2_loc'] = loc_sta2
-	CrossCorrelation_10_days_dic['sta2_name'] = name_sta2
-	CrossCorrelation_10_days_dic['crosscorr_daily_causal_time'] = time_to_plot[0].tolist()
-	CrossCorrelation_10_days_dic['crosscorr_daily_10data'] = stacked_data.tolist()
-
-	output_CrossCorrelation_DAY = JSON_FILES+'CROSS_CORR_10_DAYS_STACKED_FILES/'+name_sta1+'.'+name_sta2+'/'
-	os.makedirs(output_CrossCorrelation_DAY,exist_ok=True)
-	with open(output_CrossCorrelation_DAY+'CROSS_CORR_10_DAYS_STACKED_'+name_sta1+'_'+name_sta2+'.json', 'w') as fp:
-		json.dump(CrossCorrelation_10_days_dic, fp)
-
+	pool = Pool(processes=num_processes)
+	CrossCorrelation_stations_lst = []
+	for result in tqdm(pool.imap(func=crosscorr_10_days_stack_func, iterable=input_lst_crosscorr_pairs_names), total=len(input_lst_crosscorr_pairs_names)):
+		CrossCorrelation_stations_lst.append(result)
+'''
 
 	#Creating the figure and plotting Stacked Cross-correlations
 	fig = plt.figure(figsize=(10, 25))
@@ -1652,6 +1546,11 @@ for j,i in enumerate(crosscorr_pairs_data):
 		crosscorr_pair_date = datetime.datetime.strptime(filename.split('.')[0].split('_')[-2]+'.'+filename.split('.')[0].split('_')[-1], '%Y.%j')
 		crosscorr_pair_date_10day.append(crosscorr_pair_date)
 		crosscorr_pairs_10day_data.append([file for file in i if datetime.datetime.strptime(file.split('/')[-1].split('.')[0].split('_')[-2]+'.'+file.split('/')[-1].split('.')[0].split('_')[-1], '%Y.%j') >= crosscorr_pair_date and datetime.datetime.strptime(file.split('/')[-1].split('.')[0].split('_')[-2]+'.'+file.split('/')[-1].split('.')[0].split('_')[-1], '%Y.%j') < crosscorr_pair_date+datetime.timedelta(days=10)])
+
+
+
+
+
 
 	#Stacking data
 	data_to_plot = []
