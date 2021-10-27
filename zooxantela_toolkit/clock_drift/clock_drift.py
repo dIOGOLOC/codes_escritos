@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+ #!/usr/bin/env python
 # coding: utf-8
 
 import time
@@ -139,7 +139,7 @@ ONEDAY = datetime.timedelta(days=1)
 
 # MULTIPROCESSING
 
-num_processes = 12
+num_processes = 6
 
 # =================
 # Filtering by date
@@ -645,7 +645,13 @@ def crosscorr_stack_asdf(input):
     cross_name_suffix = input[1]
 
     #Reading data
-    sta1_sta2_asdf_files = [ASDFDataSet(i, mode='r') for i in crosscorr_pairs_data]
+    sta1_sta2_asdf_files = []
+    for i in crosscorr_pairs_data:
+        try:
+            sta1_sta2_asdf_files.append(ASDFDataSet(i, mode='r'))
+        except:
+            print('Problem in file: '+i)
+
     name_sta1 = sta1_sta2_asdf_files[0].auxiliary_data.CrossCorrelation.list()[0]
     name_sta2 = sta1_sta2_asdf_files[0].auxiliary_data.CrossCorrelation.list()[1]
 
@@ -1355,7 +1361,7 @@ class CrossCorrelation:
 # ============
 # Main program
 # ============
-
+'''
 print('===============================')
 print('Scanning name of miniseed files')
 print('===============================')
@@ -1407,7 +1413,6 @@ print('\n')
 print("--- %.2f execution time (min) ---" % ((time.time() - start_time)/60))
 print('\n')
 
-'''
 print('====================================')
 print('Calculating daily Cross-correlations:')
 print('====================================')
@@ -1441,8 +1446,8 @@ crosscorr_days_lst = sorted(glob.glob(ASDF_FILES+'CROSS_CORR_DAY_FILES/*'))
 
 crosscorr_pairs_lst = []
 for i,j in enumerate(crosscorr_days_lst):
-	crosscorr_file = sorted(glob.glob(j+'/*'))
-	crosscorr_pairs_lst.append(crosscorr_file)
+    crosscorr_file = sorted(glob.glob(j+'/*'))
+    crosscorr_pairs_lst.append(crosscorr_file)
 
 #Make a list of list flat
 crosscorr_pairs = [item for sublist in crosscorr_pairs_lst for item in sublist]
@@ -1450,20 +1455,20 @@ crosscorr_pairs = [item for sublist in crosscorr_pairs_lst for item in sublist]
 #Separating according to pairs name
 crosscorr_pairs_name_lst = []
 for i in crosscorr_pairs:
-	# splitting subdir/basename
-	subdir, filename = os.path.split(i)
-	crosscorr_pairs_name_lst.append(filename.split("_20")[0])
+    # splitting subdir/basename
+    subdir, filename = os.path.split(i)
+    crosscorr_pairs_name_lst.append(filename.split("_20")[0])
 
 crosscorr_pairs_names = sorted(list(set(crosscorr_pairs_name_lst)))
 
 crosscorr_pairs_data = [[]]*len(crosscorr_pairs_names)
 
 for l,k in enumerate(crosscorr_pairs_names):
-	crosscorr_pairs_data[l] = [j for i,j in enumerate(crosscorr_pairs) if k in j]
+    crosscorr_pairs_data[l] = [j for i,j in enumerate(crosscorr_pairs) if k in j]
 
 input_lst_crosscorr_pairs_names = []
-for l,k in enumerate(crosscorr_pairs_names):
-    input_lst_crosscorr_pairs_names.append([k,'CROSS_CORR_STACKED_FILES')
+for l,k in enumerate(crosscorr_pairs_data):
+    input_lst_crosscorr_pairs_names.append([k,'CROSS_CORR_STACKED_FILES'])
 
 #Stacking data
 
@@ -1472,7 +1477,7 @@ start_time = time.time()
 pool = Pool(processes=num_processes)
 CrossCorrelation_stations_lst = []
 for result in tqdm(pool.imap(func=crosscorr_stack_asdf, iterable=input_lst_crosscorr_pairs_names), total=len(input_lst_crosscorr_pairs_names)):
-	CrossCorrelation_stations_lst.append(result)
+    CrossCorrelation_stations_lst.append(result)
 
 print("--- %.2f execution time (min) ---" % ((time.time() - start_time)/60))
 
@@ -1485,7 +1490,7 @@ print('\n')
 start_time = time.time()
 plot_stacked_cc_interstation_distance('CROSS_CORR_STACKED_FILES')
 print("--- %.2f execution time (min) ---" % ((time.time() - start_time)/60))
-
+'''
 print('\n')
 print('=========================================')
 print('10-day stacking daily cross-correlations:')
@@ -1534,7 +1539,7 @@ for input_crosscorr_pairs_data in tqdm(crosscorr_pairs_data,desc='10 days stacki
     pool.imap(crosscorr_10_days_stack_func,input_lst_crosscorr_pairs_names)
     pool.close()
     pool.join()
-
+'''
 print('\n')
 print('============================')
 print('Stacking Cross-correlations:')
