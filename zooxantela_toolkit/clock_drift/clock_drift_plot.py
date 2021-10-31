@@ -357,9 +357,6 @@ for l,k in enumerate(OBS_LST):
     clock_drift_files_loc_sta1_all.append(clock_drift_files_loc_sta1)
     clock_drift_files_loc_sta2_all.append(clock_drift_files_loc_sta2)
 
-clock_drift_files_loc_sta1_all = [item for sublist in clock_drift_files_loc_sta1_all for item in sublist]
-clock_drift_files_loc_sta2_all = [item for sublist in clock_drift_files_loc_sta2_all for item in sublist]
-
 '''
     #Creating the figure and plotting Clock-drift
     fig = plt.figure(figsize=(20, 10))
@@ -455,11 +452,6 @@ grdx, grdy = grid_maker(LLCRNRLON_GRID_TOM,URCRNRLON_GRID_TOM, LLCRNRLAT_GRID_TO
 paths = []
 for i,j in enumerate(clock_drift_files_loc_sta1_all):
     geo_path = geodesic(clock_drift_files_loc_sta1_all[i], clock_drift_files_loc_sta2_all[i], 100)
-
-    lons_path = np.array(geo_path[:, 0])
-    lats_path = np.array(geo_path[:, 1])
-
-    df_path = pd.DataFrame({'Station_1':,'Station_2':,'Latitude': lons_path,'Longitude': lats_path})
 
     paths.append(geo_path)
 

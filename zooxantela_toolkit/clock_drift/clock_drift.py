@@ -106,10 +106,8 @@ WINDOW_LENGTH = 3600
 #max time window (s) for cross-correlation
 SHIFT_LEN = 1800
 
-PERIOD_BANDS = [[2, 5], [7, 25], [20, 50], [50, 100]]
-# (these bands focus on periods ~7, 15, 25 seconds)
-
-FREQUENCY_BANDS = [[0.5, 1], [1, 2], [2, 3], [3, 4]]
+PERIOD_BANDS = [[3, 10], [10, 20], [20, 50]]
+# (these bands focus on periods ~7, 15, 30 seconds)
 
 # default parameters to define the signal and noise windows used to
 # estimate the SNR:
@@ -737,281 +735,306 @@ def plot_stacked_cc_interstation_distance(folder_name):
     #Make a list of list flat
     crosscorr_pairs = [item for sublist in crosscorr_pairs_lst for item in sublist]
 
-    #Creating the figure
-    fig = plt.figure(figsize=(10, 20))
-    fig.suptitle('Cross-correlations according to interstation distance',fontsize=20)
-
-    gs = gridspec.GridSpec(4, 2,wspace=0.2, hspace=0.5)
-
-    #-------------------------------------------
-
-    map_loc = fig.add_subplot(gs[0,:],projection=ccrs.PlateCarree())
-
-    LLCRNRLON_LARGE = -52
-    URCRNRLON_LARGE = -36
-    LLCRNRLAT_LARGE = -30
-    URCRNRLAT_LARGE = -10
-
-    map_loc.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
-    map_loc.yaxis.set_ticks_position('both')
-    map_loc.xaxis.set_ticks_position('both')
-
-    map_loc.set_xticks(np.arange(LLCRNRLON_LARGE,URCRNRLON_LARGE,3), crs=ccrs.PlateCarree())
-    map_loc.set_yticks(np.arange(LLCRNRLAT_LARGE,URCRNRLAT_LARGE,3), crs=ccrs.PlateCarree())
-    map_loc.tick_params(labelbottom=True,labeltop=True,labelleft=True,labelright=True, labelsize=15)
-
-    map_loc.grid(True,which='major',color='gray',linewidth=1,linestyle='--')
+    HHZ_lst = []
+    HHN_lst = []
+    HHE_lst = []
+    for i in crosscorr_pairs:
+        #PRECISO AJEITAR ISSO AQUI ....
+        if 'HHZ' in i:
+            HHZ_lst.append(i)
+        elif 'HHN' or 'HH1' in i:
+            HHN_lst.append(i)
+        elif 'HHE' or 'HH2' in i:
+            HHE_lst.append(i)
 
-    reader_1_SHP = Reader(BOUNDARY_STATES_SHP)
-    shape_1_SHP = list(reader_1_SHP.geometries())
-    plot_shape_1_SHP = cfeature.ShapelyFeature(shape_1_SHP, ccrs.PlateCarree())
-    map_loc.add_feature(plot_shape_1_SHP, facecolor='none', edgecolor='k',linewidth=0.5,zorder=-1)
-
-    crosscorr_stack_style_lst = []
-    crosscorr_stack_name_lst = []
-    crosscorr_stack_data_normalized_lst = []
-    crosscorr_stack_data_normalized_dist_lst = []
-    crosscorr_stack_data_normalized_vmin_lst = []
-    crosscorr_stack_data_normalized_vmax_lst = []
-    time_to_plot = []
+    print(HHZ_lst)
+
+    CHANNEL_fig_lst = [HHZ_lst,HHN_lst,HHE_lst]
+    chan_lst = ['HHZ','HHN','HHE']
+    for ipairs,crosscorr_pairs in enumerate(CHANNEL_fig_lst):
+
+        #Creating the figure
+        fig = plt.figure(figsize=(10, 20))
+        fig.suptitle('Cross-correlations according to interstation distance - Channel: '+chan_lst[ipairs],fontsize=20)
+
+        gs = gridspec.GridSpec(4, 2,wspace=0.2, hspace=0.5)
+
+        #-------------------------------------------
+
+        map_loc = fig.add_subplot(gs[0,:],projection=ccrs.PlateCarree())
+
+        LLCRNRLON_LARGE = -52
+        URCRNRLON_LARGE = -36
+        LLCRNRLAT_LARGE = -30
+        URCRNRLAT_LARGE = -10
 
-    for i in tqdm(crosscorr_pairs, desc='Reading c-c data'):
+        map_loc.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
+        map_loc.yaxis.set_ticks_position('both')
+        map_loc.xaxis.set_ticks_position('both')
 
-        #Reading data
-        sta1_sta2_asdf_file = ASDFDataSet(i, mode='r')
+        map_loc.set_xticks(np.arange(LLCRNRLON_LARGE,URCRNRLON_LARGE,3), crs=ccrs.PlateCarree())
+        map_loc.set_yticks(np.arange(LLCRNRLAT_LARGE,URCRNRLAT_LARGE,3), crs=ccrs.PlateCarree())
+        map_loc.tick_params(labelbottom=True,labeltop=True,labelleft=True,labelright=True, labelsize=15)
 
-        name_sta1 = sta1_sta2_asdf_file.auxiliary_data.CrossCorrelationStacked.list()[0]
-        name_sta2 = sta1_sta2_asdf_file.auxiliary_data.CrossCorrelationStacked.list()[1]
-
-        if 'OBS' in name_sta1 or 'OBS' in name_sta2:
-            crosscorr_stack_style_lst.append('k')
-            crosscorr_stack_name_lst.append(name_sta1+'-'+name_sta2)
-            dist_pair = sta1_sta2_asdf_file.auxiliary_data.CrossCorrelationStacked[name_sta1][name_sta2].parameters['dist']
-            crosscorr_stack_data_normalized_dist_lst.append(dist_pair)
-            crosscorr_stack_data_normalized_vmin_lst.append(dist_pair/SIGNAL_WINDOW_VMIN)
-            crosscorr_stack_data_normalized_vmax_lst.append(dist_pair/SIGNAL_WINDOW_VMAX)
-
-            loc_sta1 = sta1_sta2_asdf_file.auxiliary_data.CrossCorrelationStacked[name_sta1][name_sta2].parameters['sta1_loc']
-            loc_sta2 = sta1_sta2_asdf_file.auxiliary_data.CrossCorrelationStacked[name_sta1][name_sta2].parameters['sta2_loc']
-
-    	    #Stacked data
-            data_causal = sta1_sta2_asdf_file.auxiliary_data.CrossCorrelationStacked[name_sta1][name_sta2].data[::]
-            causal_time = sta1_sta2_asdf_file.auxiliary_data.CrossCorrelationStacked[name_sta1][name_sta2].parameters['crosscorr_stack_time']
-
-            data_acausal = sta1_sta2_asdf_file.auxiliary_data.CrossCorrelationStacked[name_sta2][name_sta1].data[::]
-            acausal_time = sta1_sta2_asdf_file.auxiliary_data.CrossCorrelationStacked[name_sta2][name_sta1].parameters['crosscorr_stack_time']
-
-            crosscorr_stack_data = data_acausal + data_causal
-            crosscorr_stack_data_normalized_lst.append(crosscorr_stack_data)
-            crosscorr_stack_time = acausal_time + causal_time
-            time_to_plot.append(crosscorr_stack_time)
-
-            # Use the cartopy interface to create a matplotlib transform object
-            # for the Geodetic coordinate system. We will use this along with
-            # matplotlib's offset_copy function to define a coordinate system which
-            # translates the text by 25 pixels to the left.
-            geodetic_transform = ccrs.Geodetic()._as_mpl_transform(map_loc)
-            text_transform = offset_copy(geodetic_transform, units='dots', y=0,x=80)
-            text_transform_mag = offset_copy(geodetic_transform, units='dots', y=-15,x=15)
-
-            map_loc.plot([loc_sta1[1],loc_sta2[1]],[loc_sta1[0],loc_sta2[0]],c='k',alpha=0.5, transform=ccrs.PlateCarree())
-            map_loc.scatter(loc_sta1[1],loc_sta1[0], marker='^',s=200,c='k',edgecolors='w', transform=ccrs.PlateCarree())
-            map_loc.scatter(loc_sta2[1],loc_sta2[0], marker='^',s=200,c='k',edgecolors='w', transform=ccrs.PlateCarree())
+        map_loc.grid(True,which='major',color='gray',linewidth=1,linestyle='--')
 
-    #-------------------------------------------
-    orglst = np.argsort(crosscorr_stack_data_normalized_dist_lst)
-    crosscorr_stack_name_lst
-    crosscorr_stack_name_org_lst = [crosscorr_stack_name_lst[i] for i in orglst]
-    crosscorr_stack_style_org_lst = [crosscorr_stack_style_lst[i] for i in orglst]
-    crosscorr_stack_data_normalized_dist_org_lst = [crosscorr_stack_data_normalized_dist_lst[i] for i in orglst]
-    crosscorr_stack_data_normalized_vmax_org_lst = [crosscorr_stack_data_normalized_vmax_lst[i] for i in orglst]
-    crosscorr_stack_data_normalized_vmin_org_lst = [crosscorr_stack_data_normalized_vmin_lst[i] for i in orglst]
-    crosscorr_stack_data_normalized_org_lst = [crosscorr_stack_data_normalized_lst[i] for i in orglst]
+        reader_1_SHP = Reader(BOUNDARY_STATES_SHP)
+        shape_1_SHP = list(reader_1_SHP.geometries())
+        plot_shape_1_SHP = cfeature.ShapelyFeature(shape_1_SHP, ccrs.PlateCarree())
+        map_loc.add_feature(plot_shape_1_SHP, facecolor='none', edgecolor='k',linewidth=0.5,zorder=-1)
 
+        crosscorr_stack_style_lst = []
+        crosscorr_stack_name_lst = []
+        crosscorr_stack_data_normalized_lst = []
+        crosscorr_stack_data_normalized_dist_lst = []
+        crosscorr_stack_data_normalized_vmin_lst = []
+        crosscorr_stack_data_normalized_vmax_lst = []
+        time_to_plot = []
 
-    #--------------------------------------------------------------------------------------------------------------------
-    ax2 = fig.add_subplot(gs[1,0])
-    crosscorr_stack_data_normalized_org_lsts = [bandpass(data_2_plot, 1.0/10, 1.0/2, NEW_SAMPLING_RATE, corners=2, zerophase=False) for data_2_plot in crosscorr_stack_data_normalized_org_lst]
-    crosscorr_stack_data_normalized_org_lst = [(2*(a-a.min())/(a.max()-a.min()))-1 for a in crosscorr_stack_data_normalized_org_lsts]
+        for i in tqdm(crosscorr_pairs, desc='Reading c-c data'):
 
-    y_factor = 1
-    for i,j in enumerate(crosscorr_stack_data_normalized_org_lst):
-    	ax2.plot(time_to_plot[i],[x+i/y_factor for x in crosscorr_stack_data_normalized_org_lst[i]],c=crosscorr_stack_style_org_lst[i],lw=0.5)
+            #Reading data
+            sta1_sta2_asdf_file = ASDFDataSet(i, mode='r')
 
-    ax2.set_yticks([i/y_factor for i in range(len(crosscorr_stack_data_normalized_org_lst))][::5])
-    ax2.set_yticklabels([str(int(i)) for i in crosscorr_stack_data_normalized_dist_org_lst][::5])
+            name_sta1 = sta1_sta2_asdf_file.auxiliary_data.CrossCorrelationStacked.list()[0]
+            name_sta2 = sta1_sta2_asdf_file.auxiliary_data.CrossCorrelationStacked.list()[1]
 
-    ax2.plot(savgol_filter(crosscorr_stack_data_normalized_vmax_org_lst,21,1),savgol_filter([i/y_factor for i in range(len(crosscorr_stack_data_normalized_org_lst))],21,1),ls='--',lw=1,c='gray')
-    ax2.plot(savgol_filter(crosscorr_stack_data_normalized_vmin_org_lst,21,1),savgol_filter([i/y_factor for i in range(len(crosscorr_stack_data_normalized_org_lst))],21,1),ls='--',lw=1,c='gray')
+            if 'OBS' in name_sta1 or 'OBS' in name_sta2:
+                crosscorr_stack_style_lst.append('k')
+                crosscorr_stack_name_lst.append(name_sta1+'-'+name_sta2)
+                dist_pair = sta1_sta2_asdf_file.auxiliary_data.CrossCorrelationStacked[name_sta1][name_sta2].parameters['dist']
 
-    ax2.plot(savgol_filter([-i for i in  crosscorr_stack_data_normalized_vmax_org_lst],21,1),savgol_filter([i/y_factor for i in range(len(crosscorr_stack_data_normalized_org_lst))],21,1),ls='--',lw=1,c='gray')
-    ax2.plot(savgol_filter([-i for i in  crosscorr_stack_data_normalized_vmin_org_lst],21,1),savgol_filter([i/y_factor for i in range(len(crosscorr_stack_data_normalized_org_lst))],21,1),ls='--',lw=1,c='gray')
+                loc_sta1 = sta1_sta2_asdf_file.auxiliary_data.CrossCorrelationStacked[name_sta1][name_sta2].parameters['sta1_loc']
+                loc_sta2 = sta1_sta2_asdf_file.auxiliary_data.CrossCorrelationStacked[name_sta1][name_sta2].parameters['sta2_loc']
 
-    ax2.axvline(x=0, ymin=0, ymax=1,color='k',linestyle='-',lw=1)
-    ax2.set_xlim(-SIGNAL2NOISE_TRAIL,SIGNAL2NOISE_TRAIL)
+        	    #Stacked data
+                data_causal = sta1_sta2_asdf_file.auxiliary_data.CrossCorrelationStacked[name_sta1][name_sta2].data[::]
+                causal_time = sta1_sta2_asdf_file.auxiliary_data.CrossCorrelationStacked[name_sta1][name_sta2].parameters['crosscorr_stack_time']
 
-    # adding labels
-    ax2.set_xlabel('Lapse time (s)',fontsize=14)
-    ax2.set_ylabel('Distance (km)',fontsize=14)
-    ax2.set_title('Filter: 7s-25s')
+                data_acausal = sta1_sta2_asdf_file.auxiliary_data.CrossCorrelationStacked[name_sta2][name_sta1].data[::]
+                acausal_time = sta1_sta2_asdf_file.auxiliary_data.CrossCorrelationStacked[name_sta2][name_sta1].parameters['crosscorr_stack_time']
 
-    #---------------------------------------------------------
-    ax3 = fig.add_subplot(gs[1,1])
+                crosscorr_stack_data = data_acausal + data_causal
+                crosscorr_stack_time = acausal_time + causal_time
 
-    vector_plot = np.array(crosscorr_stack_data_normalized_org_lst)
+                try:
+                    OBS_SNR = SNR(crosscorr_stack_data,crosscorr_stack_time,dist_pair,vmin=SIGNAL_WINDOW_VMIN,vmax=SIGNAL_WINDOW_VMAX,signal2noise_trail=SIGNAL2NOISE_TRAIL,noise_window_size=NOISE_WINDOW_SIZE)
+                    if OBS_SNR >= 3:
 
-    extent = [-SHIFT_LEN,SHIFT_LEN,0,len(crosscorr_stack_data_normalized_org_lst)]
-    im = ax3.imshow(vector_plot,extent=extent,origin='lower', interpolation='kaiser',aspect='auto',cmap='bwr')
-    ax3.axvline(x=0, ymin=0, ymax=1,color='k',linestyle='--')
-    ax3.set_xlim(-SIGNAL2NOISE_TRAIL,SIGNAL2NOISE_TRAIL)
+                        crosscorr_stack_data_normalized_lst.append(crosscorr_stack_data)
+                        time_to_plot.append(crosscorr_stack_time)
 
-    ax3.set_yticks([i for i in range(len(crosscorr_stack_data_normalized_org_lst))][::5])
-    ax3.set_yticklabels([str(int(i)) for i in crosscorr_stack_data_normalized_dist_org_lst][::5])
+                        crosscorr_stack_data_normalized_dist_lst.append(dist_pair)
+                        crosscorr_stack_data_normalized_vmin_lst.append(dist_pair/SIGNAL_WINDOW_VMIN)
+                        crosscorr_stack_data_normalized_vmax_lst.append(dist_pair/SIGNAL_WINDOW_VMAX)
 
-    ax3.plot(savgol_filter(crosscorr_stack_data_normalized_vmax_org_lst,21,1),savgol_filter([i for i in range(len(crosscorr_stack_data_normalized_org_lst))],21,1),ls='--',lw=1,c='gray')
-    ax3.plot(savgol_filter(crosscorr_stack_data_normalized_vmin_org_lst,21,1),savgol_filter([i for i in range(len(crosscorr_stack_data_normalized_org_lst))],21,1),ls='--',lw=1,c='gray')
+                        # Use the cartopy interface to create a matplotlib transform object
+                        # for the Geodetic coordinate system. We will use this along with
+                        # matplotlib's offset_copy function to define a coordinate system which
+                        # translates the text by 25 pixels to the left.
+                        geodetic_transform = ccrs.Geodetic()._as_mpl_transform(map_loc)
+                        text_transform = offset_copy(geodetic_transform, units='dots', y=0,x=80)
+                        text_transform_mag = offset_copy(geodetic_transform, units='dots', y=-15,x=15)
 
-    ax3.plot(savgol_filter([-i for i in  crosscorr_stack_data_normalized_vmax_org_lst],21,1),savgol_filter([i for i in range(len(crosscorr_stack_data_normalized_org_lst))],21,1),ls='--',lw=1,c='gray')
-    ax3.plot(savgol_filter([-i for i in  crosscorr_stack_data_normalized_vmin_org_lst],21,1),savgol_filter([i for i in range(len(crosscorr_stack_data_normalized_org_lst))],21,1),ls='--',lw=1,c='gray')
+                        map_loc.plot([loc_sta1[1],loc_sta2[1]],[loc_sta1[0],loc_sta2[0]],c='k',alpha=0.5, transform=ccrs.PlateCarree())
+                        map_loc.scatter(loc_sta1[1],loc_sta1[0], marker='^',s=200,c='k',edgecolors='w', transform=ccrs.PlateCarree())
+                        map_loc.scatter(loc_sta2[1],loc_sta2[0], marker='^',s=200,c='k',edgecolors='w', transform=ccrs.PlateCarree())
 
-    # adding labels
-    ax3.set_xlabel('Lapse time (s)',fontsize=14)
-    ax3.set_ylabel('Distance (km)',fontsize=14)
+                except:
+                    pass
 
-    axins = inset_axes(ax3,
-                       width="30%",  # width = 10% of parent_bbox width
-                       height="2%",  # height : 5%
-                       loc='upper left',
-                       bbox_to_anchor=(0.65, 0.03, 1, 1),
-                       bbox_transform=ax3.transAxes,
-                       borderpad=0,
-                       )
-    plt.colorbar(im, cax=axins, orientation="horizontal", ticklocation='top')
 
-    #-----------------------------------------------------------------------------------------------
-    crosscorr_stack_data_normalized_org_lst_20_50s = [bandpass(data_2_plot, 1.0/50, 1.0/20, NEW_SAMPLING_RATE, corners=2, zerophase=False) for data_2_plot in crosscorr_stack_data_normalized_org_lst]
-    crosscorr_stack_data_normalized_org_lst_20_50 = [(2*(a-a.min())/(a.max()-a.min()))-1 for a in crosscorr_stack_data_normalized_org_lst_20_50s]
+        #-------------------------------------------
+        orglst = np.argsort(crosscorr_stack_data_normalized_dist_lst)
+        crosscorr_stack_name_lst
+        crosscorr_stack_name_org_lst = [crosscorr_stack_name_lst[i] for i in orglst]
+        crosscorr_stack_style_org_lst = [crosscorr_stack_style_lst[i] for i in orglst]
+        crosscorr_stack_data_normalized_dist_org_lst = [crosscorr_stack_data_normalized_dist_lst[i] for i in orglst]
+        crosscorr_stack_data_normalized_vmax_org_lst = [crosscorr_stack_data_normalized_vmax_lst[i] for i in orglst]
+        crosscorr_stack_data_normalized_vmin_org_lst = [crosscorr_stack_data_normalized_vmin_lst[i] for i in orglst]
+        crosscorr_stack_data_normalized_org_lst = [crosscorr_stack_data_normalized_lst[i] for i in orglst]
 
-    ax4 = fig.add_subplot(gs[2,0])
-    y_factor1 = 0.5
-    for i,j in enumerate(crosscorr_stack_data_normalized_org_lst_20_50):
-    	ax4.plot(time_to_plot[i],[x+i/y_factor1 for x in crosscorr_stack_data_normalized_org_lst_20_50[i]],c=crosscorr_stack_style_org_lst[i],lw=0.5)
 
-    ax4.set_yticks([i/y_factor1 for i in range(len(crosscorr_stack_data_normalized_org_lst_20_50))][::5])
-    ax4.set_yticklabels([str(int(i)) for i in crosscorr_stack_data_normalized_dist_org_lst][::5])
+        #--------------------------------------------------------------------------------------------------------------------
+        ax2 = fig.add_subplot(gs[1,0])
+        crosscorr_stack_data_normalized_org_lsts = [bandpass(data_2_plot,1.0/PERIOD_BANDS[0][1], 1.0/PERIOD_BANDS[0][0], NEW_SAMPLING_RATE, corners=2, zerophase=False) for data_2_plot in crosscorr_stack_data_normalized_org_lst]
+        crosscorr_stack_data_normalized_org_lst = [(2*(a-a.min())/(a.max()-a.min()))-1 for a in crosscorr_stack_data_normalized_org_lsts]
 
-    ax4.plot(savgol_filter(crosscorr_stack_data_normalized_vmax_org_lst,21,1),savgol_filter([i/y_factor1 for i in range(len(crosscorr_stack_data_normalized_org_lst_20_50))],21,1),ls='--',lw=1,c='gray')
-    ax4.plot(savgol_filter(crosscorr_stack_data_normalized_vmin_org_lst,21,1),savgol_filter([i/y_factor1 for i in range(len(crosscorr_stack_data_normalized_org_lst_20_50))],21,1),ls='--',lw=1,c='gray')
+        y_factor = 1
+        sav_f = 21
 
-    ax4.plot(savgol_filter([-i for i in  crosscorr_stack_data_normalized_vmax_org_lst],21,1),savgol_filter([i/y_factor1 for i in range(len(crosscorr_stack_data_normalized_org_lst_20_50))],21,1),ls='--',lw=1,c='gray')
-    ax4.plot(savgol_filter([-i for i in  crosscorr_stack_data_normalized_vmin_org_lst],21,1),savgol_filter([i/y_factor1 for i in range(len(crosscorr_stack_data_normalized_org_lst_20_50))],21,1),ls='--',lw=1,c='gray')
+        for i,j in enumerate(crosscorr_stack_data_normalized_org_lst):
+        	ax2.plot(time_to_plot[i],[x+i/y_factor for x in crosscorr_stack_data_normalized_org_lst[i]],c=crosscorr_stack_style_org_lst[i],lw=0.5)
 
-    ax4.axvline(x=0, ymin=0, ymax=1,color='k',linestyle='-',lw=1)
-    ax4.set_xlim(-SIGNAL2NOISE_TRAIL,SIGNAL2NOISE_TRAIL)
+        ax2.set_yticks([i/y_factor for i in range(len(crosscorr_stack_data_normalized_org_lst))][::50])
+        ax2.set_yticklabels([str(int(i)) for i in crosscorr_stack_data_normalized_dist_org_lst][::50])
 
-    # adding labels
-    ax4.set_xlabel('Lapse time (s)',fontsize=14)
-    ax4.set_ylabel('Distance (km)',fontsize=14)
-    ax4.set_title('Filter: 20s-50s')
+        ax2.plot(savgol_filter(crosscorr_stack_data_normalized_vmax_org_lst,sav_f,1),savgol_filter([i/y_factor for i in range(len(crosscorr_stack_data_normalized_org_lst))],sav_f,1),ls='--',lw=1,c='gray')
+        ax2.plot(savgol_filter(crosscorr_stack_data_normalized_vmin_org_lst,sav_f,1),savgol_filter([i/y_factor for i in range(len(crosscorr_stack_data_normalized_org_lst))],sav_f,1),ls='--',lw=1,c='gray')
 
-    #---------------------------------------------------------
-    ax5 = fig.add_subplot(gs[2,1])
+        ax2.plot(savgol_filter([-i for i in  crosscorr_stack_data_normalized_vmax_org_lst],sav_f,1),savgol_filter([i/y_factor for i in range(len(crosscorr_stack_data_normalized_org_lst))],sav_f,1),ls='--',lw=1,c='gray')
+        ax2.plot(savgol_filter([-i for i in  crosscorr_stack_data_normalized_vmin_org_lst],sav_f,1),savgol_filter([i/y_factor for i in range(len(crosscorr_stack_data_normalized_org_lst))],sav_f,1),ls='--',lw=1,c='gray')
 
-    vector_plot = np.array(crosscorr_stack_data_normalized_org_lst_20_50)
+        ax2.axvline(x=0, ymin=0, ymax=1,color='k',linestyle='-',lw=1)
+        ax2.set_xlim(-SIGNAL2NOISE_TRAIL,SIGNAL2NOISE_TRAIL)
 
-    extent = [-SHIFT_LEN,SHIFT_LEN,0,len(crosscorr_stack_data_normalized_org_lst_20_50)]
-    im = ax5.imshow(vector_plot,extent=extent,origin='lower', interpolation='kaiser',aspect='auto',cmap='bwr')
-    ax5.axvline(x=0, ymin=0, ymax=1,color='k',linestyle='--')
-    ax5.set_xlim(-SIGNAL2NOISE_TRAIL,SIGNAL2NOISE_TRAIL)
+        # adding labels
+        ax2.set_xlabel('Lapse time (s)',fontsize=14)
+        ax2.set_ylabel('Distance (km)',fontsize=14)
+        ax2.set_title('Filter: '+str(PERIOD_BANDS[0][0])+'-'+str(PERIOD_BANDS[0][1])+'s')
 
-    ax5.set_yticks([i for i in range(len(crosscorr_stack_data_normalized_org_lst_20_50))][::5])
-    ax5.set_yticklabels([str(int(i)) for i in crosscorr_stack_data_normalized_dist_org_lst][::5])
+        #---------------------------------------------------------
+        ax3 = fig.add_subplot(gs[1,1])
 
-    ax5.plot(savgol_filter(crosscorr_stack_data_normalized_vmax_org_lst,21,1),savgol_filter([i for i in range(len(crosscorr_stack_data_normalized_org_lst_20_50))],21,1),ls='--',lw=1,c='gray')
-    ax5.plot(savgol_filter(crosscorr_stack_data_normalized_vmin_org_lst,21,1),savgol_filter([i for i in range(len(crosscorr_stack_data_normalized_org_lst_20_50))],21,1),ls='--',lw=1,c='gray')
+        vector_plot = np.array(crosscorr_stack_data_normalized_org_lst)
 
-    ax5.plot(savgol_filter([-i for i in  crosscorr_stack_data_normalized_vmax_org_lst],21,1),savgol_filter([i for i in range(len(crosscorr_stack_data_normalized_org_lst_20_50))],21,1),ls='--',lw=1,c='gray')
-    ax5.plot(savgol_filter([-i for i in  crosscorr_stack_data_normalized_vmin_org_lst],21,1),savgol_filter([i for i in range(len(crosscorr_stack_data_normalized_org_lst_20_50))],21,1),ls='--',lw=1,c='gray')
+        extent = [-SHIFT_LEN,SHIFT_LEN,0,len(crosscorr_stack_data_normalized_org_lst)]
+        im = ax3.imshow(vector_plot,extent=extent,origin='lower', interpolation='sinc',aspect='auto',cmap='RdBu')
+        ax3.axvline(x=0, ymin=0, ymax=1,color='k',linestyle='--')
+        ax3.set_xlim(-SIGNAL2NOISE_TRAIL,SIGNAL2NOISE_TRAIL)
 
-    # adding labels
-    ax5.set_xlabel('Lapse time (s)',fontsize=14)
-    ax5.set_ylabel('Distance (km)',fontsize=14)
+        ax3.set_yticks([i for i in range(len(crosscorr_stack_data_normalized_org_lst))][::50])
+        ax3.set_yticklabels([str(int(i)) for i in crosscorr_stack_data_normalized_dist_org_lst][::50])
 
-    axins = inset_axes(ax5,
-                       width="30%",  # width = 10% of parent_bbox width
-                       height="2%",  # height : 5%
-                       loc='upper left',
-                       bbox_to_anchor=(0.65, 0.03, 1, 1),
-                       bbox_transform=ax5.transAxes,
-                       borderpad=0,
-                       )
-    plt.colorbar(im, cax=axins, orientation="horizontal", ticklocation='top')
+        ax3.plot(savgol_filter(crosscorr_stack_data_normalized_vmax_org_lst,sav_f,1),savgol_filter([i for i in range(len(crosscorr_stack_data_normalized_org_lst))],sav_f,1),ls='--',lw=1,c='gray')
+        ax3.plot(savgol_filter(crosscorr_stack_data_normalized_vmin_org_lst,sav_f,1),savgol_filter([i for i in range(len(crosscorr_stack_data_normalized_org_lst))],sav_f,1),ls='--',lw=1,c='gray')
 
-    #-----------------------------------------------------------------------------------------------
-    crosscorr_stack_data_normalized_org_lst_50_100s = [bandpass(data_2_plot, 1.0/100, 1.0/50, NEW_SAMPLING_RATE, corners=2, zerophase=False) for data_2_plot in crosscorr_stack_data_normalized_org_lst]
-    crosscorr_stack_data_normalized_org_lst_50_100 = [(2*(a-a.min())/(a.max()-a.min()))-1 for a in crosscorr_stack_data_normalized_org_lst_50_100s]
+        ax3.plot(savgol_filter([-i for i in  crosscorr_stack_data_normalized_vmax_org_lst],sav_f,1),savgol_filter([i for i in range(len(crosscorr_stack_data_normalized_org_lst))],sav_f,1),ls='--',lw=1,c='gray')
+        ax3.plot(savgol_filter([-i for i in  crosscorr_stack_data_normalized_vmin_org_lst],sav_f,1),savgol_filter([i for i in range(len(crosscorr_stack_data_normalized_org_lst))],sav_f,1),ls='--',lw=1,c='gray')
 
-    ax6 = fig.add_subplot(gs[3,0])
-    y_factor1 = 0.5
-    for i,j in enumerate(crosscorr_stack_data_normalized_org_lst_50_100):
-    	ax6.plot(time_to_plot[i],[x+i/y_factor1 for x in crosscorr_stack_data_normalized_org_lst_50_100[i]],c=crosscorr_stack_style_org_lst[i],lw=0.5)
+        # adding labels
+        ax3.set_xlabel('Lapse time (s)',fontsize=14)
 
-    ax6.set_yticks([i/y_factor1 for i in range(len(crosscorr_stack_data_normalized_org_lst_50_100))][::5])
-    ax6.set_yticklabels([str(int(i)) for i in crosscorr_stack_data_normalized_dist_org_lst][::5])
+        axins = inset_axes(ax3,
+                           width="30%",  # width = 10% of parent_bbox width
+                           height="2%",  # height : 5%
+                           loc='upper left',
+                           bbox_to_anchor=(0.65, 0.03, 1, 1),
+                           bbox_transform=ax3.transAxes,
+                           borderpad=0,
+                           )
+        plt.colorbar(im, cax=axins, orientation="horizontal", ticklocation='top')
 
-    ax6.plot(savgol_filter(crosscorr_stack_data_normalized_vmax_org_lst,21,1),savgol_filter([i/y_factor1 for i in range(len(crosscorr_stack_data_normalized_org_lst_50_100))],21,1),ls='--',lw=1,c='gray')
-    ax6.plot(savgol_filter(crosscorr_stack_data_normalized_vmin_org_lst,21,1),savgol_filter([i/y_factor1 for i in range(len(crosscorr_stack_data_normalized_org_lst_50_100))],21,1),ls='--',lw=1,c='gray')
+        #-----------------------------------------------------------------------------------------------
+        crosscorr_stack_data_normalized_org_lst_20_50s = [bandpass(data_2_plot, 1.0/PERIOD_BANDS[1][1], 1.0/PERIOD_BANDS[1][0], NEW_SAMPLING_RATE, corners=2, zerophase=False) for data_2_plot in crosscorr_stack_data_normalized_org_lst]
+        crosscorr_stack_data_normalized_org_lst_20_50 = [(2*(a-a.min())/(a.max()-a.min()))-1 for a in crosscorr_stack_data_normalized_org_lst_20_50s]
 
-    ax6.plot(savgol_filter([-i for i in  crosscorr_stack_data_normalized_vmax_org_lst],21,1),savgol_filter([i/y_factor1 for i in range(len(crosscorr_stack_data_normalized_org_lst_50_100))],21,1),ls='--',lw=1,c='gray')
-    ax6.plot(savgol_filter([-i for i in  crosscorr_stack_data_normalized_vmin_org_lst],21,1),savgol_filter([i/y_factor1 for i in range(len(crosscorr_stack_data_normalized_org_lst_50_100))],21,1),ls='--',lw=1,c='gray')
+        ax4 = fig.add_subplot(gs[2,0])
 
-    ax6.axvline(x=0, ymin=0, ymax=1,color='k',linestyle='-',lw=1)
-    ax6.set_xlim(-SIGNAL2NOISE_TRAIL,SIGNAL2NOISE_TRAIL)
+        for i,j in enumerate(crosscorr_stack_data_normalized_org_lst_20_50):
+        	ax4.plot(time_to_plot[i],[x+i/y_factor for x in crosscorr_stack_data_normalized_org_lst_20_50[i]],c=crosscorr_stack_style_org_lst[i],lw=0.5)
 
-    # adding labels
-    ax6.set_xlabel('Lapse time (s)',fontsize=14)
-    ax6.set_ylabel('Distance (km)',fontsize=14)
-    ax6.set_title('Filter: 50s-100s')
+        ax4.set_yticks([i/y_factor for i in range(len(crosscorr_stack_data_normalized_org_lst_20_50))][::50])
+        ax4.set_yticklabels([str(int(i)) for i in crosscorr_stack_data_normalized_dist_org_lst][::50])
 
-    #---------------------------------------------------------
-    ax7 = fig.add_subplot(gs[3,1])
+        ax4.plot(savgol_filter(crosscorr_stack_data_normalized_vmax_org_lst,sav_f,1),savgol_filter([i/y_factor for i in range(len(crosscorr_stack_data_normalized_org_lst_20_50))],sav_f,1),ls='--',lw=1,c='gray')
+        ax4.plot(savgol_filter(crosscorr_stack_data_normalized_vmin_org_lst,sav_f,1),savgol_filter([i/y_factor for i in range(len(crosscorr_stack_data_normalized_org_lst_20_50))],sav_f,1),ls='--',lw=1,c='gray')
 
-    vector_plot = np.array(crosscorr_stack_data_normalized_org_lst_50_100)
+        ax4.plot(savgol_filter([-i for i in  crosscorr_stack_data_normalized_vmax_org_lst],sav_f,1),savgol_filter([i/y_factor for i in range(len(crosscorr_stack_data_normalized_org_lst_20_50))],sav_f,1),ls='--',lw=1,c='gray')
+        ax4.plot(savgol_filter([-i for i in  crosscorr_stack_data_normalized_vmin_org_lst],sav_f,1),savgol_filter([i/y_factor for i in range(len(crosscorr_stack_data_normalized_org_lst_20_50))],sav_f,1),ls='--',lw=1,c='gray')
 
-    extent = [-SHIFT_LEN,SHIFT_LEN,0,len(crosscorr_stack_data_normalized_org_lst_50_100)]
-    im = ax7.imshow(vector_plot,extent=extent,origin='lower', interpolation='kaiser',aspect='auto',cmap='bwr')
-    ax7.axvline(x=0, ymin=0, ymax=1,color='k',linestyle='--')
-    ax7.set_xlim(-SIGNAL2NOISE_TRAIL,SIGNAL2NOISE_TRAIL)
+        ax4.axvline(x=0, ymin=0, ymax=1,color='k',linestyle='-',lw=1)
+        ax4.set_xlim(-SIGNAL2NOISE_TRAIL,SIGNAL2NOISE_TRAIL)
 
-    ax7.set_yticks([i for i in range(len(crosscorr_stack_data_normalized_org_lst_50_100))][::5])
-    ax7.set_yticklabels([str(int(i)) for i in crosscorr_stack_data_normalized_dist_org_lst][::5])
+        # adding labels
+        ax4.set_xlabel('Lapse time (s)',fontsize=14)
+        ax4.set_ylabel('Distance (km)',fontsize=14)
+        ax4.set_title('Filter: '+str(PERIOD_BANDS[1][0])+'-'+str(PERIOD_BANDS[1][1])+'s')
 
+        #---------------------------------------------------------
+        ax5 = fig.add_subplot(gs[2,1])
 
-    ax7.plot(savgol_filter(crosscorr_stack_data_normalized_vmax_org_lst,21,1),savgol_filter([i for i in range(len(crosscorr_stack_data_normalized_org_lst_50_100))],21,1),ls='--',lw=1,c='gray')
-    ax7.plot(savgol_filter(crosscorr_stack_data_normalized_vmin_org_lst,21,1),savgol_filter([i for i in range(len(crosscorr_stack_data_normalized_org_lst_50_100))],21,1),ls='--',lw=1,c='gray')
+        vector_plot = np.array(crosscorr_stack_data_normalized_org_lst_20_50)
 
-    ax7.plot(savgol_filter([-i for i in  crosscorr_stack_data_normalized_vmax_org_lst],21,1),savgol_filter([i for i in range(len(crosscorr_stack_data_normalized_org_lst_50_100))],21,1),ls='--',lw=1,c='gray')
-    ax7.plot(savgol_filter([-i for i in  crosscorr_stack_data_normalized_vmin_org_lst],21,1),savgol_filter([i for i in range(len(crosscorr_stack_data_normalized_org_lst_50_100))],21,1),ls='--',lw=1,c='gray')
+        extent = [-SHIFT_LEN,SHIFT_LEN,0,len(crosscorr_stack_data_normalized_org_lst_20_50)]
+        im = ax5.imshow(vector_plot,extent=extent,origin='lower', interpolation='sinc',aspect='auto',cmap='RdBu')
+        ax5.axvline(x=0, ymin=0, ymax=1,color='k',linestyle='--')
+        ax5.set_xlim(-SIGNAL2NOISE_TRAIL,SIGNAL2NOISE_TRAIL)
 
+        ax5.set_yticks([i for i in range(len(crosscorr_stack_data_normalized_org_lst_20_50))][::50])
+        ax5.set_yticklabels([str(int(i)) for i in crosscorr_stack_data_normalized_dist_org_lst][::50])
 
-    # adding labels
-    ax7.set_xlabel('Lapse time (s)',fontsize=14)
-    ax7.set_ylabel('Distance (km)',fontsize=14)
+        ax5.plot(savgol_filter(crosscorr_stack_data_normalized_vmax_org_lst,sav_f,1),savgol_filter([i for i in range(len(crosscorr_stack_data_normalized_org_lst_20_50))],sav_f,1),ls='--',lw=1,c='gray')
+        ax5.plot(savgol_filter(crosscorr_stack_data_normalized_vmin_org_lst,sav_f,1),savgol_filter([i for i in range(len(crosscorr_stack_data_normalized_org_lst_20_50))],sav_f,1),ls='--',lw=1,c='gray')
 
-    axins = inset_axes(ax7,
-                       width="30%",  # width = 10% of parent_bbox width
-                       height="2%",  # height : 5%
-                       loc='upper left',
-                       bbox_to_anchor=(0.65, 0.03, 1, 1),
-                       bbox_transform=ax7.transAxes,
-                       borderpad=0,
-                       )
-    plt.colorbar(im, cax=axins, orientation="horizontal", ticklocation='top')
+        ax5.plot(savgol_filter([-i for i in  crosscorr_stack_data_normalized_vmax_org_lst],sav_f,1),savgol_filter([i for i in range(len(crosscorr_stack_data_normalized_org_lst_20_50))],sav_f,1),ls='--',lw=1,c='gray')
+        ax5.plot(savgol_filter([-i for i in  crosscorr_stack_data_normalized_vmin_org_lst],sav_f,1),savgol_filter([i for i in range(len(crosscorr_stack_data_normalized_org_lst_20_50))],sav_f,1),ls='--',lw=1,c='gray')
 
-    output_figure_CrossCorrelation_DAY = CLOCK_DRIFT_OUTPUT+'CROSS_CORR_STACK_INTERSTATION_DISTANCE_FIGURES/'
-    os.makedirs(output_figure_CrossCorrelation_DAY,exist_ok=True)
-    fig.savefig(output_figure_CrossCorrelation_DAY+folder_name+'_INTERSTATION_DISTANCE_FIG.png',dpi=300)
-    plt.close()
+        # adding labels
+        ax5.set_xlabel('Lapse time (s)',fontsize=14)
+
+        axins = inset_axes(ax5,
+                           width="30%",  # width = 10% of parent_bbox width
+                           height="2%",  # height : 5%
+                           loc='upper left',
+                           bbox_to_anchor=(0.65, 0.03, 1, 1),
+                           bbox_transform=ax5.transAxes,
+                           borderpad=0,
+                           )
+        plt.colorbar(im, cax=axins, orientation="horizontal", ticklocation='top')
+
+        #-----------------------------------------------------------------------------------------------
+        crosscorr_stack_data_normalized_org_lst_50_100s = [bandpass(data_2_plot, 1.0/PERIOD_BANDS[2][1], 1.0/PERIOD_BANDS[2][0], NEW_SAMPLING_RATE, corners=2, zerophase=False) for data_2_plot in crosscorr_stack_data_normalized_org_lst]
+        crosscorr_stack_data_normalized_org_lst_50_100 = [(2*(a-a.min())/(a.max()-a.min()))-1 for a in crosscorr_stack_data_normalized_org_lst_50_100s]
+
+        ax6 = fig.add_subplot(gs[3,0])
+        for i,j in enumerate(crosscorr_stack_data_normalized_org_lst_50_100):
+        	ax6.plot(time_to_plot[i],[x+i/y_factor for x in crosscorr_stack_data_normalized_org_lst_50_100[i]],c=crosscorr_stack_style_org_lst[i],lw=0.5)
+
+        ax6.set_yticks([i/y_factor for i in range(len(crosscorr_stack_data_normalized_org_lst_50_100))][::50])
+        ax6.set_yticklabels([str(int(i)) for i in crosscorr_stack_data_normalized_dist_org_lst][::50])
+
+        ax6.plot(savgol_filter(crosscorr_stack_data_normalized_vmax_org_lst,sav_f,1),savgol_filter([i/y_factor for i in range(len(crosscorr_stack_data_normalized_org_lst_50_100))],sav_f,1),ls='--',lw=1,c='gray')
+        ax6.plot(savgol_filter(crosscorr_stack_data_normalized_vmin_org_lst,sav_f,1),savgol_filter([i/y_factor for i in range(len(crosscorr_stack_data_normalized_org_lst_50_100))],sav_f,1),ls='--',lw=1,c='gray')
+
+        ax6.plot(savgol_filter([-i for i in  crosscorr_stack_data_normalized_vmax_org_lst],sav_f,1),savgol_filter([i/y_factor for i in range(len(crosscorr_stack_data_normalized_org_lst_50_100))],sav_f,1),ls='--',lw=1,c='gray')
+        ax6.plot(savgol_filter([-i for i in  crosscorr_stack_data_normalized_vmin_org_lst],sav_f,1),savgol_filter([i/y_factor for i in range(len(crosscorr_stack_data_normalized_org_lst_50_100))],sav_f,1),ls='--',lw=1,c='gray')
+
+        ax6.axvline(x=0, ymin=0, ymax=1,color='k',linestyle='-',lw=1)
+        ax6.set_xlim(-SIGNAL2NOISE_TRAIL,SIGNAL2NOISE_TRAIL)
+
+        # adding labels
+        ax6.set_xlabel('Lapse time (s)',fontsize=14)
+        ax6.set_ylabel('Distance (km)',fontsize=14)
+        ax6.set_title('Filter: '+str(PERIOD_BANDS[2][0])+'-'+str(PERIOD_BANDS[2][1])+'s')
+
+        #---------------------------------------------------------
+        ax7 = fig.add_subplot(gs[3,1])
+
+        vector_plot = np.array(crosscorr_stack_data_normalized_org_lst_50_100)
+
+        extent = [-SHIFT_LEN,SHIFT_LEN,0,len(crosscorr_stack_data_normalized_org_lst_50_100)]
+        im = ax7.imshow(vector_plot,extent=extent,origin='lower', interpolation='sinc',aspect='auto',cmap='RdBu')
+        ax7.axvline(x=0, ymin=0, ymax=1,color='k',linestyle='--')
+        ax7.set_xlim(-SIGNAL2NOISE_TRAIL,SIGNAL2NOISE_TRAIL)
+
+        ax7.set_yticks([i for i in range(len(crosscorr_stack_data_normalized_org_lst_50_100))][::50])
+        ax7.set_yticklabels([str(int(i)) for i in crosscorr_stack_data_normalized_dist_org_lst][::50])
+
+        ax7.plot(savgol_filter(crosscorr_stack_data_normalized_vmax_org_lst,sav_f,1),savgol_filter([i for i in range(len(crosscorr_stack_data_normalized_org_lst_50_100))],sav_f,1),ls='--',lw=1,c='gray')
+        ax7.plot(savgol_filter(crosscorr_stack_data_normalized_vmin_org_lst,sav_f,1),savgol_filter([i for i in range(len(crosscorr_stack_data_normalized_org_lst_50_100))],sav_f,1),ls='--',lw=1,c='gray')
+
+        ax7.plot(savgol_filter([-i for i in  crosscorr_stack_data_normalized_vmax_org_lst],sav_f,1),savgol_filter([i for i in range(len(crosscorr_stack_data_normalized_org_lst_50_100))],sav_f,1),ls='--',lw=1,c='gray')
+        ax7.plot(savgol_filter([-i for i in  crosscorr_stack_data_normalized_vmin_org_lst],sav_f,1),savgol_filter([i for i in range(len(crosscorr_stack_data_normalized_org_lst_50_100))],sav_f,1),ls='--',lw=1,c='gray')
+
+
+        # adding labels
+        ax7.set_xlabel('Lapse time (s)',fontsize=14)
+
+        axins = inset_axes(ax7,
+                           width="30%",  # width = 10% of parent_bbox width
+                           height="2%",  # height : 5%
+                           loc='upper left',
+                           bbox_to_anchor=(0.65, 0.03, 1, 1),
+                           bbox_transform=ax7.transAxes,
+                           borderpad=0,
+                           )
+        plt.colorbar(im, cax=axins, orientation="horizontal", ticklocation='top')
+
+        output_figure_CrossCorrelation_DAY = CLOCK_DRIFT_OUTPUT+'CROSS_CORR_STACK_INTERSTATION_DISTANCE_FIGURES/'
+        os.makedirs(output_figure_CrossCorrelation_DAY,exist_ok=True)
+        fig.savefig(output_figure_CrossCorrelation_DAY+folder_name+'_INTERSTATION_DISTANCE_FIG_Channel_'+chan_lst[ipairs]+'.png',dpi=300)
+        plt.close()
 
 
 # ----------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -1480,7 +1503,7 @@ for result in tqdm(pool.imap(func=crosscorr_stack_asdf, iterable=input_lst_cross
     CrossCorrelation_stations_lst.append(result)
 
 print("--- %.2f execution time (min) ---" % ((time.time() - start_time)/60))
-
+'''
 print('\n')
 print('============================================================')
 print('Plotting Staked cross-correlations by interstation distance:')
@@ -1539,7 +1562,7 @@ for input_crosscorr_pairs_data in tqdm(crosscorr_pairs_data,desc='10 days stacki
     pool.imap(crosscorr_10_days_stack_func,input_lst_crosscorr_pairs_names)
     pool.close()
     pool.join()
-'''
+
 print('\n')
 print('============================')
 print('Stacking Cross-correlations:')
@@ -1584,7 +1607,7 @@ for result in tqdm(pool.imap(func=crosscorr_stack_asdf, iterable=input_lst_cross
 	CrossCorrelation_stations_lst.append(result)
 
 print("--- %.2f execution time (min) ---" % ((time.time() - start_time)/60))
-
+'''
 print('\n')
 print('============================================================')
 print('Plotting Staked cross-correlations by interstation distance:')
@@ -1595,7 +1618,7 @@ start_time = time.time()
 plot_stacked_cc_interstation_distance('CROSS_CORR_10_DAYS_STACKED_FILES')
 print("--- %.2f execution time (min) ---" % ((time.time() - start_time)/60))
 
-
+'''
 print('\n')
 print('========================')
 print('Clock Drift Calculating:')
