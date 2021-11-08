@@ -139,7 +139,7 @@ ONEDAY = datetime.timedelta(days=1)
 
 # MULTIPROCESSING
 
-num_processes = 1
+num_processes = 10
 
 # =================
 # Filtering by date
@@ -187,26 +187,51 @@ def rotate_dir(tr1, tr2, direc):
 #-------------------------------------------------------------------------------
 
 # Calculating signal-to-noise ratio
-def SNR(data,time_data,dist,vmin=SIGNAL_WINDOW_VMIN,vmax=SIGNAL_WINDOW_VMAX,signal2noise_trail=SIGNAL2NOISE_TRAIL,noise_window_size=NOISE_WINDOW_SIZE):
-	"""
-    Signal-to-noise ratio calculated as the peak of the absolute amplitude in the signal window divided by the standard deviation in the noise window.
+def obscorr_window(data1,time_data1,data2,time_data2,dist,vmin,vmax):
+    """
+    Calculate the CrossCorrelation according to the distance between two stations.
 
+    The signal window is defined by *vmin* and *vmax*:
+        dist/*vmax* < t < dist/*vmin*
+
+    @type data1: numpy array
+    @type time_data1: numpy array
+    @type data2: numpy array
+    @type time_data2: numpy array
+    @type dist: float
+    @type vmin: float
+    @type vmax: float
+    """
+
+    # signal window
+    tmin_signal = dist/vmax
+    tmax_signal = dist/vmin
+
+    signal_window1 = (time_data1 >= tmin_signal) & (time_data1 <= tmax_signal)
+    signal_window2 = (time_data2 >= tmin_signal) & (time_data2 <= tmax_signal)
+
+    trace1 = data1[signal_window1]
+    trace2 = data2[signal_window2]
+
+    cc = obscorr(trace1,trace2,1000)
+    shift, coefficient = xcorr_max(cc)
+
+    return shift, coefficient
+
+#-------------------------------------------------------------------------------
+
+# Calculating Cross-Correlation between two traces
+def SNR(data,dist,vmin=SIGNAL_WINDOW_VMIN,vmax=SIGNAL_WINDOW_VMAX):
+	"""
     The signal window is defined by *vmin* and *vmax*:
     	dist/*vmax* < t < dist/*vmin*
 
-    The noise window starts *signal2noise_trail* after the
-    signal window and has a size of *noise_window_size*:
-
-    	t > dist/*vmin* + *signal2noise_trail*
-    	t < dist/*vmin* + *signal2noise_trail* + *noise_window_size*
-
     @type data: numpy array
-    @type time_data: numpy array
+    @type dist: float
     @type vmin: float
     @type vmax: float
-    @type signal2noise_trail: float
-    @type noise_window_size: float
     """
+
     # signal window
 	tmin_signal = dist/vmax
 	tmax_signal = dist/vmin
@@ -238,7 +263,7 @@ def Normalize(data):
 	@type data: list
 	"""
 
-	normalized_data = [2*(i-min(data)/max(data)-min(data))-1 for i in data]
+	normalized_data = [2*(i-data.min()/(data.max()-data.min()))-1 for i in data]
 
 	return normalized_data
 
@@ -878,7 +903,7 @@ def plot_stacked_cc_interstation_distance(folder_name):
         #--------------------------------------------------------------------------------------------------------------------
         ax2 = fig.add_subplot(gs[2,0])
         crosscorr_stack_data_normalized_org_lsts = [bandpass(data_2_plot,1.0/PERIOD_BANDS[0][1], 1.0/PERIOD_BANDS[0][0], NEW_SAMPLING_RATE, corners=2, zerophase=False) for data_2_plot in crosscorr_stack_data_normalized_org_lst]
-        crosscorr_stack_data_normalized_org_lst = [(2*(a-a.min())/(a.max()-a.min()))-1 for a in crosscorr_stack_data_normalized_org_lsts]
+        crosscorr_stack_data_normalized_org_lst = [Normalize(a) for a in crosscorr_stack_data_normalized_org_lsts]
 
         y_factor = 1
         sav_f = 51
@@ -937,7 +962,7 @@ def plot_stacked_cc_interstation_distance(folder_name):
 
         #-----------------------------------------------------------------------------------------------
         crosscorr_stack_data_normalized_org_lst_20_50s = [bandpass(data_2_plot, 1.0/PERIOD_BANDS[1][1], 1.0/PERIOD_BANDS[1][0], NEW_SAMPLING_RATE, corners=2, zerophase=False) for data_2_plot in crosscorr_stack_data_normalized_org_lst]
-        crosscorr_stack_data_normalized_org_lst_20_50 = [(2*(a-a.min())/(a.max()-a.min()))-1 for a in crosscorr_stack_data_normalized_org_lst_20_50s]
+        crosscorr_stack_data_normalized_org_lst_20_50 = [Normalize(a) for a in crosscorr_stack_data_normalized_org_lst_20_50s]
 
         ax4 = fig.add_subplot(gs[3,0])
 
@@ -995,7 +1020,7 @@ def plot_stacked_cc_interstation_distance(folder_name):
 
         #-----------------------------------------------------------------------------------------------
         crosscorr_stack_data_normalized_org_lst_50_100s = [bandpass(data_2_plot, 1.0/PERIOD_BANDS[2][1], 1.0/PERIOD_BANDS[2][0], NEW_SAMPLING_RATE, corners=2, zerophase=False) for data_2_plot in crosscorr_stack_data_normalized_org_lst]
-        crosscorr_stack_data_normalized_org_lst_50_100 = [(2*(a-a.min())/(a.max()-a.min()))-1 for a in crosscorr_stack_data_normalized_org_lst_50_100s]
+        crosscorr_stack_data_normalized_org_lst_50_100 = [Normalize(a) for a in crosscorr_stack_data_normalized_org_lst_50_100s]
 
         ax6 = fig.add_subplot(gs[4,0])
         for i,j in enumerate(crosscorr_stack_data_normalized_org_lst_50_100):
@@ -1222,7 +1247,7 @@ def plot_stacked_cc_interstation_distance_per_obs(folder_name):
 
             ax2 = fig.add_subplot(gs[2,0])
             crosscorr_stack_data_normalized_org_lsts = [bandpass(data_2_plot,1.0/PERIOD_BANDS[0][1], 1.0/PERIOD_BANDS[0][0], NEW_SAMPLING_RATE, corners=2, zerophase=False) for data_2_plot in crosscorr_stack_data_normalized_org_lst]
-            crosscorr_stack_data_normalized_org_lst = [(2*(a-a.min())/(a.max()-a.min()))-1 for a in crosscorr_stack_data_normalized_org_lsts]
+            crosscorr_stack_data_normalized_org_lst = [Normalize(a) for a in crosscorr_stack_data_normalized_org_lsts]
 
             for i,j in enumerate(crosscorr_stack_data_normalized_org_lst):
             	ax2.plot(time_to_plot[i],[x+i/y_factor for x in crosscorr_stack_data_normalized_org_lst[i]],c=crosscorr_stack_style_org_lst[i],lw=0.5)
@@ -1275,7 +1300,7 @@ def plot_stacked_cc_interstation_distance_per_obs(folder_name):
 
             #-----------------------------------------------------------------------------------------------
             crosscorr_stack_data_normalized_org_lst_20_50s = [bandpass(data_2_plot, 1.0/PERIOD_BANDS[1][1], 1.0/PERIOD_BANDS[1][0], NEW_SAMPLING_RATE, corners=2, zerophase=False) for data_2_plot in crosscorr_stack_data_normalized_org_lst]
-            crosscorr_stack_data_normalized_org_lst_20_50 = [(2*(a-a.min())/(a.max()-a.min()))-1 for a in crosscorr_stack_data_normalized_org_lst_20_50s]
+            crosscorr_stack_data_normalized_org_lst_20_50 = [Normalize(a) for a in crosscorr_stack_data_normalized_org_lst_20_50s]
 
             ax4 = fig.add_subplot(gs[3,0])
 
@@ -1330,7 +1355,7 @@ def plot_stacked_cc_interstation_distance_per_obs(folder_name):
 
             #-----------------------------------------------------------------------------------------------
             crosscorr_stack_data_normalized_org_lst_50_100s = [bandpass(data_2_plot, 1.0/PERIOD_BANDS[2][1], 1.0/PERIOD_BANDS[2][0], NEW_SAMPLING_RATE, corners=2, zerophase=False) for data_2_plot in crosscorr_stack_data_normalized_org_lst]
-            crosscorr_stack_data_normalized_org_lst_50_100 = [(2*(a-a.min())/(a.max()-a.min()))-1 for a in crosscorr_stack_data_normalized_org_lst_50_100s]
+            crosscorr_stack_data_normalized_org_lst_50_100 = [Normalize(a) for a in crosscorr_stack_data_normalized_org_lst_50_100s]
 
             ax6 = fig.add_subplot(gs[4,0])
             for i,j in enumerate(crosscorr_stack_data_normalized_org_lst_50_100):
@@ -1527,6 +1552,9 @@ def Calculating_clock_drift_func(iOBS):
                 loc_sta1 = [sta1_sta2_asdf_file[id].auxiliary_data.CrossCorrelation[name_sta1[id]][name_sta2[id]].parameters['sta1_loc'] for id,jd in enumerate(name_sta1)]
                 loc_sta2 = [sta1_sta2_asdf_file[id].auxiliary_data.CrossCorrelation[name_sta1[id]][name_sta2[id]].parameters['sta2_loc'] for id,jd in enumerate(name_sta1)]
 
+                causal_time = [sta1_sta2_asdf_file[id].auxiliary_data.CrossCorrelation[name_sta1[id]][name_sta2[id]].parameters['crosscorr_daily_causal_time']  for id,jd in enumerate(name_sta1)]
+                acausal_time = [sta1_sta2_asdf_file[id].auxiliary_data.CrossCorrelation[name_sta2[id]][name_sta1[id]].parameters['crosscorr_daily_acausal_time'] for id,jd in enumerate(name_sta1)]
+
                 # ------------
                 # Stacked data
                 # ------------
@@ -1546,18 +1574,20 @@ def Calculating_clock_drift_func(iOBS):
                 for k in tqdm(range(len(causal_lst)), desc=chan_lst[idch]+' drift'):
 
                     data_acausal_causal = np.array(acausal_lst[k] + causal_lst[k])
-                    data_normalized = (2*(data_acausal_causal-data_acausal_causal.min())/(data_acausal_causal.max()-data_acausal_causal.min()))-1
+                    data_normalized = np.array(Normalize(data_acausal_causal))
+                    time_acausal_causal = np.array(acausal_time[k] + causal_time[k])
 
+                    dist_pair_norm = dist_pair[k]
                     # --------------------------------------------------------
                     # Collecting daily list of 10-day stack cross-correlations
                     # --------------------------------------------------------
 
                     sta1_sta2_asdf_file_10_day = ASDFDataSet(glob.glob(ASDF_FILES+'CROSS_CORR_10_DAYS_STACKED_FILES/'+name_sta1[k]+'.'+name_sta2[k]+'/*')[0], mode='r')
                     stacked_10_day_data = sta1_sta2_asdf_file_10_day.auxiliary_data.CrossCorrelationStacked[name_sta2[k]][name_sta1[k]].data[::]+sta1_sta2_asdf_file_10_day.auxiliary_data.CrossCorrelationStacked[name_sta1[k]][name_sta2[k]].data[::]
-                    stacked_10_day_data_normalized = (2*(stacked_10_day_data-stacked_10_day_data.min())/(stacked_10_day_data.max()-stacked_10_day_data.min()))-1
+                    stacked_10_day_time = sta1_sta2_asdf_file_10_day.auxiliary_data.CrossCorrelationStacked[name_sta2[k]][name_sta1[k]].parameters['crosscorr_stack_time'] +sta1_sta2_asdf_file_10_day.auxiliary_data.CrossCorrelationStacked[name_sta1[k]][name_sta2[k]].parameters['crosscorr_stack_time']
+                    stacked_10_day_data_normalized = np.array(Normalize(stacked_10_day_data))
 
-                    cc = obscorr(stacked_10_day_data_normalized,data_normalized,SHIFT_LEN)
-                    shift_clock_drift, coefficient_clock_drift = xcorr_max(cc)
+                    shift_clock_drift, coefficient_clock_drift = obscorr_window(stacked_10_day_data_normalized,stacked_10_day_time,data_normalized,time_acausal_causal,dist_pair_norm,SIGNAL_WINDOW_VMIN,SIGNAL_WINDOW_VMAX)
 
                     # --------------------------------------------------------------------------------------
                     date_to_plot_clock.append(crosscorr_pair_date[k])
@@ -1652,33 +1682,31 @@ def Calculating_clock_drift_func(iOBS):
         yearsFmt = DateFormatter('%b-%Y')
 
         for z,x in enumerate(data_to_plot_coefficient_clock_drift_chan):
-            #print(chan_lst[z]+':',len(data_to_plot_shift_clock_drift_chan[z]))
-
             if len(x) > 1:
                 ax0 = fig.add_subplot(gs[z,1])
                 ax0.xaxis.set_major_locator(months)
                 ax0.xaxis.set_major_formatter(yearsFmt)
                 ax0.xaxis.set_minor_locator(days_minor)
-                ax0.yaxis.set_major_locator(MultipleLocator(1))
-                ax0.yaxis.set_minor_locator(MultipleLocator(0.5))
+                ax0.yaxis.set_major_locator(MultipleLocator(100))
+                ax0.yaxis.set_minor_locator(MultipleLocator(25))
                 ax0.set_ylabel('Drift ('+str(1/NEW_SAMPLING_RATE)+'s)')
                 ax0.set_title(chan_lst[z])
-                ax0.set_ylim(-2,2)
+                #ax0.set_ylim(-max(data_to_plot_shift_clock_drift_chan[z]),max(data_to_plot_shift_clock_drift_chan[z]))
+                ax0.set_ylim(-150,150)
 
                 # -------------------------------------------------------------------------------------------------------------
-                #poly_reg = PolynomialFeatures(degree=4)
-                #X_poly = poly_reg.fit_transform(np.array(range(len(data_to_plot_shift_clock_drift_chan[z]))).reshape(-1, 1))
-                #pol_reg = LinearRegression()
-                #pol_reg.fit(X_poly, data_to_plot_shift_clock_drift_chan[z])
+                poly_reg = PolynomialFeatures(degree=4)
+                X_poly = poly_reg.fit_transform(np.array(range(len(data_to_plot_shift_clock_drift_chan[z]))).reshape(-1, 1))
+                pol_reg = LinearRegression()
+                pol_reg.fit(X_poly, data_to_plot_shift_clock_drift_chan[z])
                 # -------------------------------------------------------------------------------------------------------------
 
                 for y,u in enumerate(data_to_plot_shift_clock_drift_chan[z]):
-                    #if np.mean(data_to_plot_shift_clock_drift_chan[z])-sigma*np.std(data_to_plot_shift_clock_drift_chan[z]) <= u <= np.mean(data_to_plot_shift_clock_drift_chan[z])+sigma*np.std(data_to_plot_shift_clock_drift_chan[z]):
-                    #    ax0.plot(date_to_plot_clock_chan[z][y],data_to_plot_shift_clock_drift_chan[z][y],'ok',ms=3)
-                    #else:
-                    ax0.plot(date_to_plot_clock_chan[z][y],data_to_plot_shift_clock_drift_chan[z][y],'or',ms=2)
-
-                #ax0.plot(date_to_plot_clock_chan[z], pol_reg.predict(poly_reg.fit_transform(np.array(range(len(data_to_plot_shift_clock_drift_chan[z]))).reshape(-1, 1))), color='blue')
+                    if np.mean(data_to_plot_shift_clock_drift_chan[z])-sigma*np.std(data_to_plot_shift_clock_drift_chan[z]) <= u <= np.mean(data_to_plot_shift_clock_drift_chan[z])+sigma*np.std(data_to_plot_shift_clock_drift_chan[z]):
+                        ax0.plot(date_to_plot_clock_chan[z][y],data_to_plot_shift_clock_drift_chan[z][y],'.k',ms=2)
+                    else:
+                        ax0.plot(date_to_plot_clock_chan[z][y],data_to_plot_shift_clock_drift_chan[z][y],'.r',ms=2)
+                ax0.plot(date_to_plot_clock_chan[z], pol_reg.predict(poly_reg.fit_transform(np.array(range(len(data_to_plot_shift_clock_drift_chan[z]))).reshape(-1, 1))),'--b')
 
 
             else:
@@ -1687,11 +1715,11 @@ def Calculating_clock_drift_func(iOBS):
                 ax0.xaxis.set_major_locator(months)
                 ax0.xaxis.set_major_formatter(yearsFmt)
                 ax0.xaxis.set_minor_locator(days_minor)
-                ax0.yaxis.set_major_locator(MultipleLocator(1))
-                ax0.yaxis.set_minor_locator(MultipleLocator(0.5))
+                ax0.yaxis.set_major_locator(MultipleLocator(100))
+                ax0.yaxis.set_minor_locator(MultipleLocator(25))
                 ax0.set_ylabel('Drift ('+str(1/NEW_SAMPLING_RATE)+'s)')
                 ax0.set_title(chan_lst[z])
-                ax0.set_ylim(-2,2)
+                ax0.set_ylim(-150,150)
 
 
         output_figure_CLOCK_DRIFT = CLOCK_DRIFT_OUTPUT+'CLOCK_DRIFT_FIGURES/'
@@ -1896,7 +1924,7 @@ def plot_stacked_cc_interstation_distance_per_obs_short(folder_name):
 
             #-----------------------------------------------------------------------------------------------
             crosscorr_stack_data_normalized_org_lst_20_50s = [bandpass(data_2_plot, 1.0/PERIOD_BANDS[1][1], 1.0/PERIOD_BANDS[1][0], NEW_SAMPLING_RATE, corners=2, zerophase=False) for data_2_plot in crosscorr_stack_data_normalized_org_lst]
-            crosscorr_stack_data_normalized_org_lst_20_50 = [(2*(a-a.min())/(a.max()-a.min()))-1 for a in crosscorr_stack_data_normalized_org_lst_20_50s]
+            crosscorr_stack_data_normalized_org_lst_20_50 = [Normalize(a) for a in crosscorr_stack_data_normalized_org_lst_20_50s]
 
             ax5 = fig.add_subplot(gs[3])
 
@@ -1931,7 +1959,7 @@ def plot_stacked_cc_interstation_distance_per_obs_short(folder_name):
 
             #-----------------------------------------------------------------------------------------------
             crosscorr_stack_data_normalized_org_lst_50_100s = [bandpass(data_2_plot, 1.0/PERIOD_BANDS[2][1], 1.0/PERIOD_BANDS[2][0], NEW_SAMPLING_RATE, corners=2, zerophase=False) for data_2_plot in crosscorr_stack_data_normalized_org_lst]
-            crosscorr_stack_data_normalized_org_lst_50_100 = [(2*(a-a.min())/(a.max()-a.min()))-1 for a in crosscorr_stack_data_normalized_org_lst_50_100s]
+            crosscorr_stack_data_normalized_org_lst_50_100 = [Normalize(a) for a in crosscorr_stack_data_normalized_org_lst_50_100s]
 
             ax7 = fig.add_subplot(gs[4])
 
@@ -2313,8 +2341,8 @@ print("--- %.2f execution time (min) ---" % ((time.time() - start_time)/60))
 start_time = time.time()
 plot_stacked_cc_interstation_distance_per_obs_short('CROSS_CORR_10_DAYS_STACKED_FILES')
 print("--- %.2f execution time (min) ---" % ((time.time() - start_time)/60))
-
 '''
+
 print('\n')
 print('========================')
 print('Clock Drift Calculating:')

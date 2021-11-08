@@ -62,23 +62,29 @@ MSEED_DIR_OBS = '/media/diogoloc/Backup/dados_posdoc/ON_MAR/obs_data_MSEED/'
 
 MSEED_DIR_STA = '/media/diogoloc/Backup/dados_posdoc/ON_MAR/data/'
 
-STATIONS_LST = ['ABR01','DUB01','MAN01','OBS20','TER01','ALF01','GDU01','NAN01','TIJ01','CAJ01','GUA01',
-'OBS17','PET01','TRI01','CAM01','JAC01','OBS18','RIB01','VAS01','CMC01','MAJ01','SLP01']
+# Stations and OBSs information
+
+OBS_LST = ['OBS17','OBS18','OBS20','OBS22']
+
+STATIONS_LST = ['ABR01','DUB01','MAN01','OBS20','OBS22','TER01','ALF01','GDU01','NAN01','TIJ01','CAJ01','GUA01','OBS17','PET01','TRI01','CAM01','JAC01','OBS18','RIB01','VAS01','CMC01','MAJ01','SLP01','PARB','CNLB','BSFB']
+STATIONS_LST = sorted(STATIONS_LST)
+
+STATIONXML_DIR = '/media/diogoloc/Backup/dados_posdoc/ON_MAR/XML_ON_OBS_CC/'
 
 CHANNEL_LST = ['HHZ.D','HHN.D','HHE.D','HH1.D','HH2.D']
 
-#STATIONXML_DIR = '/media/diogoloc/Backup/dados_posdoc/ON_MAR/XML_ON_OBS_CC/'
-STATIONXML_DIR = '/run/user/1000/gvfs/smb-share:server=hatabackup.local,share=dados_posdoc/ON_MAR/XML_ON_OBS_CC/'
+STATIONXML_DIR = '/media/diogoloc/Backup/dados_posdoc/ON_MAR/XML_ON_OBS_CC/'
+#STATIONXML_DIR = '/run/user/1000/gvfs/smb-share:server=hatabackup.local,share=dados_posdoc/ON_MAR/XML_ON_OBS_CC/'
 
-#ORIENTATION_OUTPUT = '/media/diogoloc/Backup/dados_posdoc/ON_MAR/ORIENTATION_OUTPUT/FIGURAS/'
-ORIENTATION_OUTPUT = '/run/user/1000/gvfs/smb-share:server=hatabackup.local,share=dados_posdoc/ON_MAR/ORIENTATION_OUTPUT/FIGURAS/'
+ORIENTATION_OUTPUT = '/media/diogoloc/Backup/dados_posdoc/ON_MAR/ORIENTATION_OUTPUT/FIGURAS/'
+#ORIENTATION_OUTPUT = '/run/user/1000/gvfs/smb-share:server=hatabackup.local,share=dados_posdoc/ON_MAR/ORIENTATION_OUTPUT/FIGURAS/'
 
-#JSON_FILES = '/media/diogoloc/Backup/dados_posdoc/ON_MAR/ORIENTATION_OUTPUT/JSON_FILES/'
-JSON_FILES = '/run/user/1000/gvfs/smb-share:server=hatabackup.local,share=dados_posdoc/ON_MAR/ORIENTATION_OUTPUT/JSON_FILES/'
+JSON_FILES = '/media/diogoloc/Backup/dados_posdoc/ON_MAR/ORIENTATION_OUTPUT/JSON_FILES/'
+#JSON_FILES = '/run/user/1000/gvfs/smb-share:server=hatabackup.local,share=dados_posdoc/ON_MAR/ORIENTATION_OUTPUT/JSON_FILES/'
 
 #Shapefile  boundary states
-#BOUNDARY_STATES_SHP = '/media/diogoloc/Backup/dados_posdoc/SIG_dados/Projeto_ON_MAR/shapefile/brasil_estados/UFEBRASIL.shp'
-BOUNDARY_STATES_SHP = '/run/user/1000/gvfs/smb-share:server=hatabackup.local,share=dados_posdoc/SIG_dados/Projeto_ON_MAR/shapefile/brasil_estados/UFEBRASIL.shp'
+BOUNDARY_STATES_SHP = '/media/diogoloc/Backup/dados_posdoc/SIG_dados/Projeto_ON_MAR/shapefile/brasil_estados/UFEBRASIL.shp'
+#BOUNDARY_STATES_SHP = '/run/user/1000/gvfs/smb-share:server=hatabackup.local,share=dados_posdoc/SIG_dados/Projeto_ON_MAR/shapefile/brasil_estados/UFEBRASIL.shp'
 
 FIRSTDAY = '2019-08-01'
 LASTDAY = '2020-06-01'
