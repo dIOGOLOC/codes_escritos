@@ -1675,7 +1675,6 @@ def Calculating_clock_drift_func(iOBS):
         map_loc.text(loc_sta2[1],loc_sta2[0], pair_sta_2,fontsize=12,verticalalignment='center', horizontalalignment='right',transform=text_transform)
 
         # ----------------------------------------------------------------------------------------------------
-
         days_major = DayLocator(interval=5)   # every 5 day
         days_minor = DayLocator(interval=1)   # every day
         months = MonthLocator()  # every month
@@ -1683,6 +1682,7 @@ def Calculating_clock_drift_func(iOBS):
 
         for z,x in enumerate(data_to_plot_coefficient_clock_drift_chan):
             if len(x) > 1:
+                # ----------------------------------------------------------------------------------------------------
                 ax0 = fig.add_subplot(gs[z,1])
                 ax0.xaxis.set_major_locator(months)
                 ax0.xaxis.set_major_formatter(yearsFmt)
@@ -1691,8 +1691,7 @@ def Calculating_clock_drift_func(iOBS):
                 ax0.yaxis.set_minor_locator(MultipleLocator(25))
                 ax0.set_ylabel('Drift ('+str(1/NEW_SAMPLING_RATE)+'s)')
                 ax0.set_title(chan_lst[z])
-                #ax0.set_ylim(-max(data_to_plot_shift_clock_drift_chan[z]),max(data_to_plot_shift_clock_drift_chan[z]))
-                ax0.set_ylim(-150,150)
+                ax0.set_ylim(-200,200)
 
                 # -------------------------------------------------------------------------------------------------------------
                 poly_reg = PolynomialFeatures(degree=4)
@@ -1700,14 +1699,24 @@ def Calculating_clock_drift_func(iOBS):
                 pol_reg = LinearRegression()
                 pol_reg.fit(X_poly, data_to_plot_shift_clock_drift_chan[z])
                 # -------------------------------------------------------------------------------------------------------------
-
                 for y,u in enumerate(data_to_plot_shift_clock_drift_chan[z]):
-                    if np.mean(data_to_plot_shift_clock_drift_chan[z])-sigma*np.std(data_to_plot_shift_clock_drift_chan[z]) <= u <= np.mean(data_to_plot_shift_clock_drift_chan[z])+sigma*np.std(data_to_plot_shift_clock_drift_chan[z]):
-                        ax0.plot(date_to_plot_clock_chan[z][y],data_to_plot_shift_clock_drift_chan[z][y],'.k',ms=2)
+                    if data_to_plot_coefficient_clock_drift_chan[z][y] > 0.3:
+                        im = ax0.scatter(date_to_plot_clock_chan[z][y],data_to_plot_shift_clock_drift_chan[z][y],c=data_to_plot_coefficient_clock_drift_chan[z][y],marker='o',edgecolors=None,cmap='magma',s=20,vmin=0,vmax=1,alpha=0.9)
                     else:
-                        ax0.plot(date_to_plot_clock_chan[z][y],data_to_plot_shift_clock_drift_chan[z][y],'.r',ms=2)
+                        im = ax0.scatter(date_to_plot_clock_chan[z][y],data_to_plot_shift_clock_drift_chan[z][y],c=data_to_plot_coefficient_clock_drift_chan[z][y],marker='o',edgecolors=None,cmap='magma',s=10,vmin=0,vmax=1,alpha=0.7)
+
                 ax0.plot(date_to_plot_clock_chan[z], pol_reg.predict(poly_reg.fit_transform(np.array(range(len(data_to_plot_shift_clock_drift_chan[z]))).reshape(-1, 1))),'--b')
 
+                if z == 0:
+                    axins = inset_axes(ax0,
+                                           width="30%",  # width = 10% of parent_bbox width
+                                           height="10%",  # height : 5%
+                                           loc='upper left',
+                                           bbox_to_anchor=(0.65,0.1, 1, 1),
+                                           bbox_transform=ax0.transAxes,
+                                           borderpad=0,
+                                           )
+                    plt.colorbar(im, cax=axins, orientation="horizontal", ticklocation='top')
 
             else:
 
@@ -1719,9 +1728,9 @@ def Calculating_clock_drift_func(iOBS):
                 ax0.yaxis.set_minor_locator(MultipleLocator(25))
                 ax0.set_ylabel('Drift ('+str(1/NEW_SAMPLING_RATE)+'s)')
                 ax0.set_title(chan_lst[z])
-                ax0.set_ylim(-150,150)
+                ax0.set_ylim(-200,200)
 
-
+        # -------------------------------------------------------------------------------------------------------------
         output_figure_CLOCK_DRIFT = CLOCK_DRIFT_OUTPUT+'CLOCK_DRIFT_FIGURES/'
         os.makedirs(output_figure_CLOCK_DRIFT,exist_ok=True)
         fig.savefig(output_figure_CLOCK_DRIFT+'CLOCK_DRIFT_BETWEEN_'+pair_sta_1+'_'+pair_sta_2+'.png',dpi=300)
