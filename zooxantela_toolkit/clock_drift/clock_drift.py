@@ -92,6 +92,8 @@ ASDF_FILES = '/home/diogoloc/dados_posdoc/ON_MAR/CLOCK_DRIFT_OUTPUT/ASDF_FILES/'
 PICKLE_FILES = '/home/diogoloc/dados_posdoc/ON_MAR/CLOCK_DRIFT_OUTPUT/PICKLE_FILES/'
 
 # -------------------------------
+#create figures?
+VERBOSE = False
 
 # Input parameters
 
@@ -139,7 +141,7 @@ ONEDAY = datetime.timedelta(days=1)
 
 # MULTIPROCESSING
 
-num_processes = 10
+num_processes = 1
 
 # =================
 # Filtering by date
@@ -750,6 +752,7 @@ def plot_stacked_cc_interstation_distance(folder_name):
     Plotting Stacked Cross-correlations according to interstation distance
     @type folder_name: folder of the cross-correlations files (str)
     '''
+    chan_lst = ['HHE-HHE','HHN-HHN','HHZ-HHZ','HHE-HHN','HHE-HHZ','HHN-HHZ']
 
     #Collecting daily list of cross-correlations
     crosscorr_days_lst = sorted(glob.glob(ASDF_FILES+folder_name+'/*'))
@@ -795,7 +798,6 @@ def plot_stacked_cc_interstation_distance(folder_name):
             HHN_HHZ_lst.append(i)
 
     CHANNEL_fig_lst = [HHE_HHE_lst,HHN_HHN_lst,HHZ_HHZ_lst,HHE_HHN_lst,HHE_HHZ_lst,HHN_HHZ_lst]
-    chan_lst = ['HHE-HHE','HHN-HHN','HHZ-HHZ','HHE-HHN','HHE-HHZ','HHN-HHZ']
 
     for ipairs,crosscorr_pairs in enumerate(CHANNEL_fig_lst):
         #Creating the figure
@@ -1419,7 +1421,6 @@ def Calculating_clock_drift_func(iOBS):
     Calculating clock drift from cross-correlation data
     @type input: name of the OBS (str)
     '''
-
     # -------------------------------------------
     # Collecting daily list of cross-correlations
     # -------------------------------------------
@@ -1524,15 +1525,21 @@ def Calculating_clock_drift_func(iOBS):
         CHANNEL_fig_lst = [HHE_HHE_lst,HHE_HHN_lst,HHE_HHZ_lst,HHN_HHN_lst,HHN_HHE_lst,HHN_HHZ_lst,HHZ_HHE_lst,HHZ_HHN_lst,HHZ_HHZ_lst]
         chan_lst = ['HHE-HHE','HHE-HHN','HHE-HHZ','HHN-HHN','HHN-HHE','HHN-HHZ','HHZ-HHE','HHZ-HHN','HHZ-HHZ']
 
+        columns_headers = ['sta_1','sta_2','distance','loc_sta1','loc_sta2']
+
         # ---------------------
         # Calculating the drift
         # ---------------------
 
-        date_to_plot_clock_chan = []
-        data_to_plot_coefficient_clock_drift_chan = []
-        data_to_plot_shift_clock_drift_chan = []
-
         for idch, i in enumerate(CHANNEL_fig_lst):
+
+            column_date_n = chan_lst[idch]+' date'
+            column_coefficient_n = chan_lst[idch]+' coefficient'
+            column_shift_n = chan_lst[idch]+' shift'
+
+            columns_headers.extend([column_date_n,column_coefficient_n,column_shift_n])
+
+            print('columns_headers:',columns_headers)
 
             if len(i) > 1:
 
@@ -1567,6 +1574,8 @@ def Calculating_clock_drift_func(iOBS):
                 sigma = 2
                 # ---------------
 
+                # ----------------------------------------------------------------------------------------------------
+
                 date_to_plot_clock = []
                 data_to_plot_coefficient_clock_drift = []
                 data_to_plot_shift_clock_drift = []
@@ -1593,149 +1602,180 @@ def Calculating_clock_drift_func(iOBS):
                     date_to_plot_clock.append(crosscorr_pair_date[k])
                     data_to_plot_coefficient_clock_drift.append(coefficient_clock_drift)
                     data_to_plot_shift_clock_drift.append(shift_clock_drift)
-                    # --------------------------------------------------------------------------------------
 
-                date_to_plot_clock_chan.append(date_to_plot_clock)
-                data_to_plot_coefficient_clock_drift_chan.append(data_to_plot_coefficient_clock_drift)
-                data_to_plot_shift_clock_drift_chan.append(data_to_plot_shift_clock_drift)
-                # ----------------------------------------------------------------------------------------------------
+                # --------------------------------------------------------------------------------------
+
+                data_drift_dic = {
+                                 column_date_n:date_to_plot_clock,
+                                 column_coefficient_n:data_to_plot_coefficient_clock_drift,
+                                 column_shift_n:data_to_plot_shift_clock_drift
+                                 }
 
             else:
 
-                date_to_plot_clock_chan.append([])
-                data_to_plot_coefficient_clock_drift_chan.append([])
-                data_to_plot_shift_clock_drift_chan.append([])
+                data_drift_dic = {
+                                 column_date_n:[],
+                                 column_coefficient_n:[],
+                                 column_shift_n:[]
+                                 }
+
+
+
+            data_drift_OBS_dic = dict(**data_drift_dic)
+            print(data_drift_OBS_dic)
+
 
         # ----------------------------------------------------------------------------------------------------
+        a = {
+            'sta_1':pair_sta_1,
+            'sta_2':pair_sta_2,
+            'distance':dist_pair[0],
+            'loc_sta1':loc_sta1[0],
+            'loc_sta2':loc_sta2[0],
+            }
 
+        # AJEITAR
+        # AJEITAR
+        # AJEITAR
+        # AJEITAR
+        # AJEITAR
+        # AJEITAR
+
+        drift_OBS_dic = {**a, **data_drift_OBS_dic}
+        clock_drift_df= pd.DataFrame.from_dict(drift_OBS_dic)
+        print(clock_drift_df)
+        # ----------------------------------------------------------------------------------------------------
+        # An arbitrary collection of objects supported by pickle.
+
+
+
+'''
         dist_pair = dist_pair[0]
         loc_sta1 = loc_sta1[0]
         loc_sta2 = loc_sta2[0]
-
+        # ----------------------------------------------------------------------------------------------------
         # An arbitrary collection of objects supported by pickle.
-        data_drift_OBS_dic = {
-                             'name_sta1': pair_sta_1,
-                             'name_sta2': pair_sta_2,
-                             'dist_pair': dist_pair,
-                             'loc_sta1': loc_sta1,
-                             'loc_sta2': loc_sta2,
-                             'date_to_plot':date_to_plot_clock_chan,
-                             'coefficient_clock_drift':data_to_plot_coefficient_clock_drift_chan,
-                             'shift_clock_drift':data_to_plot_shift_clock_drift_chan,
-                             'chan_lst':chan_lst
-                             }
+
+        for idic, ivalues in enumerate(date_to_plot_clock_chan):
+            data_drift_OBS_dic = {pair_sta_1,pair_sta_2,dist_pair,loc_sta1,loc_sta2,
+                                 date_to_plot_clock_chan[i],data_to_plot_coefficient_clock_drift_chan[i],
+                                 data_to_plot_shift_clock_drift_chan[i]
+                                 }
+
+
 
         os.makedirs(PICKLE_FILES,exist_ok=True)
         with open(PICKLE_FILES+pair_sta_1+'.'+pair_sta_2+'_clock_drift_data.pickle', 'wb') as f:
             # Pickle the 'data' dictionary using the highest protocol available.
             pickle.dump(data_drift_OBS_dic, f, pickle.HIGHEST_PROTOCOL)
 
-        # --------------------------------------------
-        # Creating the figure and plotting Clock-drift
-        # --------------------------------------------
+        if VERBOSE == True:
+            # --------------------------------------------
+            # Creating the figure and plotting Clock-drift
+            # --------------------------------------------
 
-        fig = plt.figure(figsize=(20, 15))
-        fig.suptitle('Clock-drift: '+pair_sta_1+'-'+pair_sta_2+'('+str(round(dist_pair))+' km)',fontsize=20)
-        fig.autofmt_xdate()
-        # ----------------------------------------------------------------------------------------------------
+            fig = plt.figure(figsize=(20, 15))
+            fig.suptitle('Clock-drift: '+pair_sta_1+'-'+pair_sta_2+'('+str(round(dist_pair))+' km)',fontsize=20)
+            fig.autofmt_xdate()
+            # ----------------------------------------------------------------------------------------------------
 
-        gs = gridspec.GridSpec(9, 2,wspace=0.5, hspace=0.8)
-        map_loc = fig.add_subplot(gs[:,0],projection=ccrs.PlateCarree())
+            gs = gridspec.GridSpec(9, 2,wspace=0.5, hspace=0.8)
+            map_loc = fig.add_subplot(gs[:,0],projection=ccrs.PlateCarree())
 
-        LLCRNRLON_LARGE = -52
-        URCRNRLON_LARGE = -38
-        LLCRNRLAT_LARGE = -30
-        URCRNRLAT_LARGE = -12
+            LLCRNRLON_LARGE = -52
+            URCRNRLON_LARGE = -38
+            LLCRNRLAT_LARGE = -30
+            URCRNRLAT_LARGE = -12
 
-        map_loc.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
-        map_loc.yaxis.set_ticks_position('both')
-        map_loc.xaxis.set_ticks_position('both')
+            map_loc.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
+            map_loc.yaxis.set_ticks_position('both')
+            map_loc.xaxis.set_ticks_position('both')
 
-        map_loc.set_xticks(np.arange(LLCRNRLON_LARGE,URCRNRLON_LARGE+3,3), crs=ccrs.PlateCarree())
-        map_loc.set_yticks(np.arange(LLCRNRLAT_LARGE,URCRNRLAT_LARGE+3,3), crs=ccrs.PlateCarree())
-        map_loc.tick_params(labelbottom=True, labeltop=True, labelleft=True, labelright=True, labelsize=12)
-        map_loc.grid(True,which='major',color='gray',linewidth=0.5,linestyle='--')
+            map_loc.set_xticks(np.arange(LLCRNRLON_LARGE,URCRNRLON_LARGE+3,3), crs=ccrs.PlateCarree())
+            map_loc.set_yticks(np.arange(LLCRNRLAT_LARGE,URCRNRLAT_LARGE+3,3), crs=ccrs.PlateCarree())
+            map_loc.tick_params(labelbottom=True, labeltop=True, labelleft=True, labelright=True, labelsize=12)
+            map_loc.grid(True,which='major',color='gray',linewidth=0.5,linestyle='--')
 
-        reader_1_SHP = Reader(BOUNDARY_STATES_SHP)
-        shape_1_SHP = list(reader_1_SHP.geometries())
-        plot_shape_1_SHP = cfeature.ShapelyFeature(shape_1_SHP, ccrs.PlateCarree())
-        map_loc.add_feature(plot_shape_1_SHP, facecolor='none', edgecolor='k',linewidth=0.5,zorder=-1)
-        # Use the cartopy interface to create a matplotlib transform object
-        # for the Geodetic coordinate system. We will use this along with
-        # matplotlib's offset_copy function to define a coordinate system which
-        # translates the text by 25 pixels to the left.
-        geodetic_transform = ccrs.Geodetic()._as_mpl_transform(map_loc)
-        text_transform = offset_copy(geodetic_transform, units='dots', y=50,x=100)
+            reader_1_SHP = Reader(BOUNDARY_STATES_SHP)
+            shape_1_SHP = list(reader_1_SHP.geometries())
+            plot_shape_1_SHP = cfeature.ShapelyFeature(shape_1_SHP, ccrs.PlateCarree())
+            map_loc.add_feature(plot_shape_1_SHP, facecolor='none', edgecolor='k',linewidth=0.5,zorder=-1)
+            # Use the cartopy interface to create a matplotlib transform object
+            # for the Geodetic coordinate system. We will use this along with
+            # matplotlib's offset_copy function to define a coordinate system which
+            # translates the text by 25 pixels to the left.
+            geodetic_transform = ccrs.Geodetic()._as_mpl_transform(map_loc)
+            text_transform = offset_copy(geodetic_transform, units='dots', y=50,x=100)
 
-        map_loc.plot([loc_sta1[1],loc_sta2[1]],[loc_sta1[0],loc_sta2[0]],c='k',alpha=0.5,transform=ccrs.PlateCarree())
-        map_loc.scatter(loc_sta1[1],loc_sta1[0], marker='^',s=200,c='k',edgecolors='w', transform=ccrs.PlateCarree())
-        map_loc.scatter(loc_sta2[1],loc_sta2[0], marker='^',s=200,c='k',edgecolors='w', transform=ccrs.PlateCarree())
+            map_loc.plot([loc_sta1[1],loc_sta2[1]],[loc_sta1[0],loc_sta2[0]],c='k',alpha=0.5,transform=ccrs.PlateCarree())
+            map_loc.scatter(loc_sta1[1],loc_sta1[0], marker='^',s=200,c='k',edgecolors='w', transform=ccrs.PlateCarree())
+            map_loc.scatter(loc_sta2[1],loc_sta2[0], marker='^',s=200,c='k',edgecolors='w', transform=ccrs.PlateCarree())
 
-        map_loc.text(loc_sta1[1],loc_sta1[0], pair_sta_1,fontsize=12,verticalalignment='center', horizontalalignment='right',transform=text_transform)
-        map_loc.text(loc_sta2[1],loc_sta2[0], pair_sta_2,fontsize=12,verticalalignment='center', horizontalalignment='right',transform=text_transform)
+            map_loc.text(loc_sta1[1],loc_sta1[0], pair_sta_1,fontsize=12,verticalalignment='center', horizontalalignment='right',transform=text_transform)
+            map_loc.text(loc_sta2[1],loc_sta2[0], pair_sta_2,fontsize=12,verticalalignment='center', horizontalalignment='right',transform=text_transform)
 
-        # ----------------------------------------------------------------------------------------------------
-        days_major = DayLocator(interval=5)   # every 5 day
-        days_minor = DayLocator(interval=1)   # every day
-        months = MonthLocator()  # every month
-        yearsFmt = DateFormatter('%b-%Y')
+            # ----------------------------------------------------------------------------------------------------
+            days_major = DayLocator(interval=5)   # every 5 day
+            days_minor = DayLocator(interval=1)   # every day
+            months = MonthLocator(interval=3)  # every month
+            yearsFmt = DateFormatter('%b-%Y')
 
-        for z,x in enumerate(data_to_plot_coefficient_clock_drift_chan):
-            if len(x) > 1:
-                # ----------------------------------------------------------------------------------------------------
-                ax0 = fig.add_subplot(gs[z,1])
-                ax0.xaxis.set_major_locator(months)
-                ax0.xaxis.set_major_formatter(yearsFmt)
-                ax0.xaxis.set_minor_locator(days_minor)
-                ax0.yaxis.set_major_locator(MultipleLocator(100))
-                ax0.yaxis.set_minor_locator(MultipleLocator(25))
-                ax0.set_ylabel('Drift ('+str(1/NEW_SAMPLING_RATE)+'s)')
-                ax0.set_title(chan_lst[z])
-                ax0.set_ylim(-200,200)
+            for z,x in enumerate(data_to_plot_coefficient_clock_drift_chan):
+                if len(x) > 1:
+                    # ----------------------------------------------------------------------------------------------------
+                    ax0 = fig.add_subplot(gs[z,1])
+                    ax0.xaxis.set_major_locator(months)
+                    ax0.xaxis.set_major_formatter(yearsFmt)
+                    ax0.xaxis.set_minor_locator(days_minor)
+                    ax0.yaxis.set_major_locator(MultipleLocator(100))
+                    ax0.yaxis.set_minor_locator(MultipleLocator(25))
+                    ax0.set_ylabel('Drift ('+str(1/NEW_SAMPLING_RATE)+'s)')
+                    ax0.set_title(chan_lst[z])
+                    ax0.set_ylim(-200,200)
 
-                # -------------------------------------------------------------------------------------------------------------
-                poly_reg = PolynomialFeatures(degree=4)
-                X_poly = poly_reg.fit_transform(np.array(range(len(data_to_plot_shift_clock_drift_chan[z]))).reshape(-1, 1))
-                pol_reg = LinearRegression()
-                pol_reg.fit(X_poly, data_to_plot_shift_clock_drift_chan[z])
-                # -------------------------------------------------------------------------------------------------------------
-                for y,u in enumerate(data_to_plot_shift_clock_drift_chan[z]):
-                    if data_to_plot_coefficient_clock_drift_chan[z][y] > 0.3:
-                        im = ax0.scatter(date_to_plot_clock_chan[z][y],data_to_plot_shift_clock_drift_chan[z][y],c=data_to_plot_coefficient_clock_drift_chan[z][y],marker='o',edgecolors=None,cmap='magma',s=20,vmin=0,vmax=1,alpha=0.9)
-                    else:
-                        im = ax0.scatter(date_to_plot_clock_chan[z][y],data_to_plot_shift_clock_drift_chan[z][y],c=data_to_plot_coefficient_clock_drift_chan[z][y],marker='o',edgecolors=None,cmap='magma',s=10,vmin=0,vmax=1,alpha=0.7)
+                    # -------------------------------------------------------------------------------------------------------------
+                    poly_reg = PolynomialFeatures(degree=4)
+                    X_poly = poly_reg.fit_transform(np.array(range(len(data_to_plot_shift_clock_drift_chan[z]))).reshape(-1, 1))
+                    pol_reg = LinearRegression()
+                    pol_reg.fit(X_poly, data_to_plot_shift_clock_drift_chan[z])
+                    # -------------------------------------------------------------------------------------------------------------
+                    for y,u in enumerate(data_to_plot_shift_clock_drift_chan[z]):
+                        if data_to_plot_coefficient_clock_drift_chan[z][y] > 0.3:
+                            im = ax0.scatter(date_to_plot_clock_chan[z][y],data_to_plot_shift_clock_drift_chan[z][y],c=data_to_plot_coefficient_clock_drift_chan[z][y],marker='o',edgecolors=None,cmap='magma',s=20,vmin=0,vmax=1,alpha=0.9)
+                        else:
+                            im = ax0.scatter(date_to_plot_clock_chan[z][y],data_to_plot_shift_clock_drift_chan[z][y],c=data_to_plot_coefficient_clock_drift_chan[z][y],marker='o',edgecolors=None,cmap='magma',s=10,vmin=0,vmax=1,alpha=0.7)
 
-                ax0.plot(date_to_plot_clock_chan[z], pol_reg.predict(poly_reg.fit_transform(np.array(range(len(data_to_plot_shift_clock_drift_chan[z]))).reshape(-1, 1))),'--b')
+                    ax0.plot(date_to_plot_clock_chan[z], pol_reg.predict(poly_reg.fit_transform(np.array(range(len(data_to_plot_shift_clock_drift_chan[z]))).reshape(-1, 1))),'--b')
 
-                if z == 0:
-                    axins = inset_axes(ax0,
-                                           width="30%",  # width = 10% of parent_bbox width
-                                           height="10%",  # height : 5%
-                                           loc='upper left',
-                                           bbox_to_anchor=(0.65,0.1, 1, 1),
-                                           bbox_transform=ax0.transAxes,
-                                           borderpad=0,
-                                           )
-                    plt.colorbar(im, cax=axins, orientation="horizontal", ticklocation='top')
+                    if z == 0:
+                        axins = inset_axes(ax0,
+                                               width="30%",  # width = 10% of parent_bbox width
+                                               height="10%",  # height : 5%
+                                               loc='upper left',
+                                               bbox_to_anchor=(0.65,0.1, 1, 1),
+                                               bbox_transform=ax0.transAxes,
+                                               borderpad=0,
+                                               )
+                        plt.colorbar(im, cax=axins, orientation="horizontal", ticklocation='top')
 
-            else:
+                else:
 
-                ax0 = fig.add_subplot(gs[z,1])
-                ax0.xaxis.set_major_locator(months)
-                ax0.xaxis.set_major_formatter(yearsFmt)
-                ax0.xaxis.set_minor_locator(days_minor)
-                ax0.yaxis.set_major_locator(MultipleLocator(100))
-                ax0.yaxis.set_minor_locator(MultipleLocator(25))
-                ax0.set_ylabel('Drift ('+str(1/NEW_SAMPLING_RATE)+'s)')
-                ax0.set_title(chan_lst[z])
-                ax0.set_ylim(-200,200)
+                    ax0 = fig.add_subplot(gs[z,1])
+                    ax0.xaxis.set_major_locator(months)
+                    ax0.xaxis.set_major_formatter(yearsFmt)
+                    ax0.xaxis.set_minor_locator(days_minor)
+                    ax0.yaxis.set_major_locator(MultipleLocator(100))
+                    ax0.yaxis.set_minor_locator(MultipleLocator(25))
+                    ax0.set_ylabel('Drift ('+str(1/NEW_SAMPLING_RATE)+'s)')
+                    ax0.set_title(chan_lst[z])
+                    ax0.set_ylim(-200,200)
 
-        # -------------------------------------------------------------------------------------------------------------
-        output_figure_CLOCK_DRIFT = CLOCK_DRIFT_OUTPUT+'CLOCK_DRIFT_FIGURES/'
-        os.makedirs(output_figure_CLOCK_DRIFT,exist_ok=True)
-        fig.savefig(output_figure_CLOCK_DRIFT+'CLOCK_DRIFT_BETWEEN_'+pair_sta_1+'_'+pair_sta_2+'.png',dpi=300)
-        plt.close()
-
+            # -------------------------------------------------------------------------------------------------------------
+            output_figure_CLOCK_DRIFT = CLOCK_DRIFT_OUTPUT+'CLOCK_DRIFT_FIGURES/'
+            os.makedirs(output_figure_CLOCK_DRIFT,exist_ok=True)
+            fig.savefig(output_figure_CLOCK_DRIFT+'CLOCK_DRIFT_BETWEEN_'+pair_sta_1+'_'+pair_sta_2+'.png',dpi=300)
+            plt.close()
+'''
 # ----------------------------------------------------------------------------------------------------------------------------------------------------------
 
 def plot_stacked_cc_interstation_distance_per_obs_short(folder_name):
@@ -2335,7 +2375,6 @@ for result in tqdm(pool.imap(func=crosscorr_stack_asdf, iterable=input_lst_cross
 
 print("--- %.2f execution time (min) ---" % ((time.time() - start_time)/60))
 
-
 print('\n')
 print('============================================================')
 print('Plotting Staked cross-correlations by interstation distance:')
@@ -2351,7 +2390,6 @@ start_time = time.time()
 plot_stacked_cc_interstation_distance_per_obs_short('CROSS_CORR_10_DAYS_STACKED_FILES')
 print("--- %.2f execution time (min) ---" % ((time.time() - start_time)/60))
 '''
-
 print('\n')
 print('========================')
 print('Clock Drift Calculating:')
@@ -2368,175 +2406,201 @@ print("--- %.2f execution time (min) ---" % ((time.time() - start_time)/60))
 
 '''
 print('\n')
-print('=========================')
-print('Clock Drift for each OBS:')
-print('=========================')
+print('===============================')
+print('Total Clock Drift for each OBS:')
+print('===============================')
 print('\n')
+
+
+        data_drift_OBS_dic = {
+                             'name_sta1': pair_sta_1,
+                             'name_sta2': pair_sta_2,
+                             'dist_pair': dist_pair,
+                             'loc_sta1': loc_sta1,
+                             'loc_sta2': loc_sta2,
+                             'date_to_plot':date_to_plot_clock_chan,
+                             'coefficient_clock_drift':data_to_plot_coefficient_clock_drift_chan,
+                             'shift_clock_drift':data_to_plot_shift_clock_drift_chan,
+                             'chan_lst':chan_lst
+                             }
+
 
 clock_drift_files_lst = sorted(glob.glob(PICKLE_FILES+'/*'))
 
-clock_drift_files = [[]]*len(OBS_LST)
-for l,k in enumerate(OBS_LST):
-    clock_drift_files[l] = [j for i,j in enumerate(clock_drift_files_lst) if k in j]
+for iOBS in OBS_LST:
+    clock_drift_files = [j for i,j in enumerate(clock_drift_files_lst) if iOBS in j]
+    # ----------------------------------------------------------------------------------------------------
 
-clock_drift_files_name_sta1 = [[]]*len(OBS_LST)
-clock_drift_files_name_sta2 = [[]]*len(OBS_LST)
-clock_drift_files_loc_sta1 = [[]]*len(OBS_LST)
-clock_drift_files_loc_sta2 = [[]]*len(OBS_LST)
+    clock_drift_df_lst = [pd.read_pickle(i) for i in clock_drift_files]
+    clock_drift_df= pd.DataFrame.from_dict(clock_drift_df_lst, )
 
-clock_drift_files_date_to_plot_clock_True_static = [[]]*len(OBS_LST)
-clock_drift_files_date_to_plot_clock_True_dynamic = [[]]*len(OBS_LST)
-clock_drift_files_date_to_plot_clock_True_absolute = [[]]*len(OBS_LST)
 
-clock_drift_files_data_to_plot_clock_True_static = [[]]*len(OBS_LST)
-clock_drift_files_data_to_plot_clock_True_dynamic = [[]]*len(OBS_LST)
-clock_drift_files_data_to_plot_clock_True_absolute = [[]]*len(OBS_LST)
+    for u,i in enumerate(clock_drift_df['coefficient_clock_drift'].values):
+        print(len(i))
+        for k,l in enumerate(i):
+            print(clock_drift_df['chan_lst'][k][u],':',len(l))
+    #print(len(clock_drift_df[['coefficient_clock_drift']].values[1]))
 
-for l,k in enumerate(clock_drift_files):
-    for i in k:
-        with open(i, 'rb') as f:
-            dic_pickle = pickle.load(f)
-        clock_drift_files_name_sta1[l].append(dic_pickle['name_sta1'])
-        clock_drift_files_name_sta2[l].append(dic_pickle['name_sta2'])
-        clock_drift_files_loc_sta1[l].append(dic_pickle['loc_sta1'])
-        clock_drift_files_loc_sta2[l].append(dic_pickle['loc_sta2'])
-        clock_drift_files_date_to_plot_clock_True_static[l].append(dic_pickle['date_to_plot_clock_True_static'])
-        clock_drift_files_data_to_plot_clock_True_static[l].append(dic_pickle['data_to_plot_clock_True_static'])
-        clock_drift_files_date_to_plot_clock_True_dynamic[l].append(dic_pickle['date_to_plot_clock_True_dynamic'])
-        clock_drift_files_data_to_plot_clock_True_dynamic[l].append(dic_pickle['data_to_plot_clock_True_dynamic'])
-        clock_drift_files_date_to_plot_clock_True_absolute[l].append(dic_pickle['date_to_plot_clock_True_absolute'])
-        clock_drift_files_data_to_plot_clock_True_absolute[l].append(dic_pickle['data_to_plot_clock_True_absolute'])
+    print('=====')
+    print('=====')
+    print('=====')
 
-# ----------------------------------------------------------------------------------------------------
-#Creating the figure and plotting Clock-drift
 
-for i,j in enumerate(clock_drift_files_name_sta1):
+    # ----------------------------------------------------------------------------------------------------
+    #Creating the figure and plotting Clock-drift
+    chan_lst = ['HHE-HHE','HHE-HHN','HHE-HHZ','HHN-HHN','HHN-HHE','HHN-HHZ','HHZ-HHE','HHZ-HHN','HHZ-HHZ']
 
-    fig = plt.figure(figsize=(8, 15))
-    fig.suptitle('Clock-drift total: '+OBS_LST[i],fontsize=20)
+    clock_drift_files_date_to_plot_ch = []
+    clock_drift_files_data_to_plot_coefficient_ch = []
+    clock_drift_files_data_to_plot_shift_ch = []
 
-    gs = gridspec.GridSpec(5, 1,wspace=0.2, hspace=0.5)
-    map_loc = fig.add_subplot(gs[0:2],projection=ccrs.PlateCarree())
+    for i,j in enumerate(clock_drift_files_name_sta2):
+        if 'OBS' not in clock_drift_files_name_sta1[i] and clock_drift_files_name_sta2[i]:
+            clock_drift_files_date_to_plot_ch.append([clock_drift_files_date_to_plot[i][k] for k,l in enumerate(chan_lst)])
+            clock_drift_files_data_to_plot_coefficient_ch.append([clock_drift_files_data_to_plot_coefficient[i][k] for k,l in enumerate(chan_lst)])
+            clock_drift_files_data_to_plot_shift_ch.append([clock_drift_files_data_to_plot_shift[i][k] for k,l in enumerate(chan_lst)])
 
-    LLCRNRLON_LARGE = -52
-    URCRNRLON_LARGE = -38
-    LLCRNRLAT_LARGE = -30
-    URCRNRLAT_LARGE = -12
+    clock_drift_files_date_to_plot_ch1 = []
+    clock_drift_files_data_to_plot_coefficient_ch1 = []
+    clock_drift_files_data_to_plot_shift_ch1 = []
+    for k,l in enumerate(clock_drift_files_date_to_plot_ch):
+        clock_drift_files_date_to_plot_ch1 = []
+        clock_drift_files_data_to_plot_coefficient_ch1 = []
+        clock_drift_files_data_to_plot_shift_ch1 = []
+        print(len(l[0]))
 
-    map_loc.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
-    map_loc.yaxis.set_ticks_position('both')
-    map_loc.xaxis.set_ticks_position('both')
+    print('=====')
+    print('=====')
+    print('=====')
 
-    map_loc.set_xticks(np.arange(LLCRNRLON_LARGE,URCRNRLON_LARGE+2,2), crs=ccrs.PlateCarree())
-    map_loc.set_yticks(np.arange(LLCRNRLAT_LARGE,URCRNRLAT_LARGE+2,2), crs=ccrs.PlateCarree())
-    map_loc.tick_params(labelbottom=True, labeltop=True, labelleft=True, labelright=True, labelsize=12)
-    map_loc.grid(True,which='major',color='k',linewidth=1,linestyle='-')
 
-    reader_1_SHP = Reader(BOUNDARY_STATES_SHP)
-    shape_1_SHP = list(reader_1_SHP.geometries())
-    plot_shape_1_SHP = cfeature.ShapelyFeature(shape_1_SHP, ccrs.PlateCarree())
-    map_loc.add_feature(plot_shape_1_SHP, facecolor='none', edgecolor='k',linewidth=0.5,zorder=-1)
-    # Use the cartopy interface to create a matplotlib transform object
-    # for the Geodetic coordinate system. We will use this along with
-    # matplotlib's offset_copy function to define a coordinate system which
-    # translates the text by 25 pixels to the left.
-    geodetic_transform = ccrs.Geodetic()._as_mpl_transform(map_loc)
-    text_transform = offset_copy(geodetic_transform, units='dots', y=-5,x=80)
 
-    days_major = DayLocator(interval=3)   # every day
-    days_minor = DayLocator(interval=1)   # every day
-    months = MonthLocator()  # every month
-    yearsFmt = DateFormatter('%b-%Y')
+    if OBS is not in clock_drift_files_name_sta1
+    OBS_coefficient_clock_drift_ch = [[]]*len(chan_lst)
+    OBS_shift_clock_drift_ch = [[]]*len(chan_lst)
+    for k,l in enumerate(chan_lst):
+        OBS_coefficient_clock_drift_ch[k].append(clock_drift_files_data_to_plot_coefficient[i][k])
+        OBS_shift_clock_drift_ch[k].append(clock_drift_files_data_to_plot_shift[i][k])
 
-    ax0 = fig.add_subplot(gs[2])
-    ax0.xaxis.set_major_locator(months)
-    ax0.xaxis.set_major_formatter(yearsFmt)
-    ax0.xaxis.set_minor_locator(days_minor)
-    ax0.yaxis.set_major_locator(MultipleLocator(0.1))
-    ax0.yaxis.set_minor_locator(MultipleLocator(0.01))
-    ax0.set_xlabel('Time (days)')
-    ax0.set_ylabel('Static drift (s)')
-    ax0.set_ylim(-.2,.2)
+    for w,e in enumerate(OBS_coefficient_clock_drift_ch):
+        print(chan_lst[w],': ',len(OBS_coefficient_clock_drift_ch[w]))
 
-    ax1 = fig.add_subplot(gs[3])
-    ax1.xaxis.set_major_locator(months)
-    ax1.xaxis.set_major_formatter(yearsFmt)
-    ax1.xaxis.set_minor_locator(days_minor)
-    ax1.yaxis.set_major_locator(MultipleLocator(0.1))
-    ax1.yaxis.set_minor_locator(MultipleLocator(0.01))
-    ax1.set_xlabel('Time (days)')
-    ax1.set_ylabel('Dynamic drift (s)')
-    ax1.set_ylim(-.2,.2)
 
-    ax2 = fig.add_subplot(gs[4])
-    ax2.xaxis.set_major_locator(months)
-    ax2.xaxis.set_major_formatter(yearsFmt)
-    ax2.xaxis.set_minor_locator(days_minor)
-    ax2.yaxis.set_major_locator(MultipleLocator(0.1))
-    ax2.yaxis.set_minor_locator(MultipleLocator(0.01))
-    ax2.set_xlabel('Time (days)')
-    ax2.set_ylabel('Absolute drift (s)')
-    ax2.set_ylim(-.2,.2)
 
-    sigma = 1 #70% of the data
+    OBS_coefficient_clock_drift_ch1 = [[]]*len(chan_lst)
+    OBS_shift_clock_drift_ch1 = [[]]*len(chan_lst)
+    for k,l in enumerate(chan_lst):
+        OBS_coefficient_clock_drift_ch1.append([item for sublist in OBS_coefficient_clock_drift_ch[k] for item in sublist])
+        OBS_shift_clock_drift_ch1.append([item for sublist in OBS_shift_clock_drift_ch[k] for item in sublist])
 
-    for l,w in enumerate(j):
-        map_loc.plot([clock_drift_files_loc_sta1[i][l][1],clock_drift_files_loc_sta2[i][l][1]],[clock_drift_files_loc_sta1[i][l][0],clock_drift_files_loc_sta2[i][l][0]],c='k', transform=ccrs.PlateCarree())
-        map_loc.scatter(clock_drift_files_loc_sta1[i][l][1],clock_drift_files_loc_sta1[i][l][0], marker='^',s=200,c='k',edgecolors='w', transform=ccrs.PlateCarree())
-        map_loc.scatter(clock_drift_files_loc_sta2[i][l][1],clock_drift_files_loc_sta2[i][l][0], marker='^',s=200,c='k',edgecolors='w', transform=ccrs.PlateCarree())
+    for w,e in enumerate(OBS_shift_clock_drift_ch1):
+            print(chan_lst[w],': ',e)
 
-        # ----------------------------------------------------------------------------------------------------
 
-        poly_reg = PolynomialFeatures(degree=4)
-        X_poly = poly_reg.fit_transform(np.array(range(len(clock_drift_files_data_to_plot_clock_True_static[i][l]))).reshape(-1, 1))
-        pol_reg = LinearRegression()
-        pol_reg.fit(X_poly, clock_drift_files_data_to_plot_clock_True_static[i][l])
+        # --------------------------------------------
+        # Creating the figure and plotting Clock-drift
+        # --------------------------------------------
 
-        for y,u in enumerate(clock_drift_files_data_to_plot_clock_True_static[i][l]):
-            if np.mean(clock_drift_files_data_to_plot_clock_True_static[i][l])-sigma*np.std(clock_drift_files_data_to_plot_clock_True_static[i][l]) <= u <= np.mean(clock_drift_files_data_to_plot_clock_True_static[i][l])+sigma*np.std(clock_drift_files_data_to_plot_clock_True_static[i][l]):
-                ax0.plot(clock_drift_files_date_to_plot_clock_True_static[i][l][y],clock_drift_files_data_to_plot_clock_True_static[i][l][y],'ok',ms=3)
-            else:
-                ax0.plot(clock_drift_files_date_to_plot_clock_True_static[i][l][y],clock_drift_files_data_to_plot_clock_True_static[i][l][y],'or',ms=3)
-
-        ax0.plot(clock_drift_files_date_to_plot_clock_True_static[i][l], pol_reg.predict(poly_reg.fit_transform(np.array(range(len(clock_drift_files_data_to_plot_clock_True_static[i][l]))).reshape(-1, 1))), color='blue')
-
-        # ----------------------------------------------------------------------------------------------------
-
-        poly_reg = PolynomialFeatures(degree=4)
-        X_poly = poly_reg.fit_transform(np.array(range(len(clock_drift_files_date_to_plot_clock_True_dynamic[i][l]))).reshape(-1, 1))
-        pol_reg = LinearRegression()
-        pol_reg.fit(X_poly, clock_drift_files_data_to_plot_clock_True_dynamic[i][l])
-
-        for y,u in enumerate(clock_drift_files_data_to_plot_clock_True_dynamic[i][l]):
-            if np.mean(clock_drift_files_data_to_plot_clock_True_dynamic[i][l])-sigma*np.std(clock_drift_files_data_to_plot_clock_True_dynamic[i][l]) <= u <= np.mean(clock_drift_files_data_to_plot_clock_True_dynamic[i][l])+sigma*np.std(clock_drift_files_data_to_plot_clock_True_dynamic[i][l]):
-                l1, = ax1.plot(clock_drift_files_date_to_plot_clock_True_dynamic[i][l][y],clock_drift_files_data_to_plot_clock_True_dynamic[i][l][y],'ok',ms=3)
-            else:
-                l2, = ax1.plot(clock_drift_files_date_to_plot_clock_True_dynamic[i][l][y],clock_drift_files_data_to_plot_clock_True_dynamic[i][l][y],'or',ms=3)
-
-        ax1.plot(clock_drift_files_date_to_plot_clock_True_dynamic[i][l], pol_reg.predict(poly_reg.fit_transform(np.array(range(len(clock_drift_files_data_to_plot_clock_True_dynamic[i][l]))).reshape(-1, 1))), color='blue')
-        ax1.legend((l1,l2),('%70 data','%30 data'),loc='upper right')
-
-        # ----------------------------------------------------------------------------------------------------
-
-        poly_reg = PolynomialFeatures(degree=4)
-        X_poly = poly_reg.fit_transform(np.array(range(len(clock_drift_files_date_to_plot_clock_True_absolute[i][l]))).reshape(-1, 1))
-        pol_reg = LinearRegression()
-        pol_reg.fit(X_poly, clock_drift_files_data_to_plot_clock_True_absolute[i][l])
-
-        for y,u in enumerate(clock_drift_files_data_to_plot_clock_True_absolute[i][l]):
-            if np.mean(clock_drift_files_data_to_plot_clock_True_absolute[i][l])-sigma*np.std(clock_drift_files_data_to_plot_clock_True_absolute[i][l]) <= u <= np.mean(clock_drift_files_data_to_plot_clock_True_absolute[i][l])+sigma*np.std(clock_drift_files_data_to_plot_clock_True_absolute[i][l]):
-                l1, = ax2.plot(clock_drift_files_date_to_plot_clock_True_absolute[i][l][y],clock_drift_files_data_to_plot_clock_True_absolute[i][l][y],'ok',ms=3)
-            else:
-                l2, = ax2.plot(clock_drift_files_date_to_plot_clock_True_absolute[i][l][y],clock_drift_files_data_to_plot_clock_True_absolute[i][l][y],'or',ms=3)
-
-        ax2.plot(clock_drift_files_date_to_plot_clock_True_absolute[i][l], pol_reg.predict(poly_reg.fit_transform(np.array(range(len(clock_drift_files_data_to_plot_clock_True_absolute[i][l]))).reshape(-1, 1))), color='blue')
-        ax2.legend((l1,l2),('%70 data','%30 data'),loc='upper right')
-
+        fig = plt.figure(figsize=(20, 15))
+        fig.suptitle('Clock-drift: '+pair_sta_1+'-'+pair_sta_2+'('+str(round(dist_pair))+' km)',fontsize=20)
         fig.autofmt_xdate()
         # ----------------------------------------------------------------------------------------------------
 
-    output_figure_CLOCK_DRIFT = CLOCK_DRIFT_OUTPUT+'CLOCK_DRIFT_TOTAL_FIGURES/'
-    os.makedirs(output_figure_CLOCK_DRIFT,exist_ok=True)
-    fig.savefig(output_figure_CLOCK_DRIFT+'CLOCK_DRIFT_TOTAL_'+OBS_LST[i]+'.png',dpi=300)
-    plt.close()
+        gs = gridspec.GridSpec(9, 2,wspace=0.5, hspace=0.8)
+        map_loc = fig.add_subplot(gs[:,0],projection=ccrs.PlateCarree())
+
+        LLCRNRLON_LARGE = -52
+        URCRNRLON_LARGE = -38
+        LLCRNRLAT_LARGE = -30
+        URCRNRLAT_LARGE = -12
+
+        map_loc.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
+        map_loc.yaxis.set_ticks_position('both')
+        map_loc.xaxis.set_ticks_position('both')
+
+        map_loc.set_xticks(np.arange(LLCRNRLON_LARGE,URCRNRLON_LARGE+3,3), crs=ccrs.PlateCarree())
+        map_loc.set_yticks(np.arange(LLCRNRLAT_LARGE,URCRNRLAT_LARGE+3,3), crs=ccrs.PlateCarree())
+        map_loc.tick_params(labelbottom=True, labeltop=True, labelleft=True, labelright=True, labelsize=12)
+        map_loc.grid(True,which='major',color='gray',linewidth=0.5,linestyle='--')
+
+        reader_1_SHP = Reader(BOUNDARY_STATES_SHP)
+        shape_1_SHP = list(reader_1_SHP.geometries())
+        plot_shape_1_SHP = cfeature.ShapelyFeature(shape_1_SHP, ccrs.PlateCarree())
+        map_loc.add_feature(plot_shape_1_SHP, facecolor='none', edgecolor='k',linewidth=0.5,zorder=-1)
+        # Use the cartopy interface to create a matplotlib transform object
+        # for the Geodetic coordinate system. We will use this along with
+        # matplotlib's offset_copy function to define a coordinate system which
+        # translates the text by 25 pixels to the left.
+        geodetic_transform = ccrs.Geodetic()._as_mpl_transform(map_loc)
+        text_transform = offset_copy(geodetic_transform, units='dots', y=50,x=100)
+
+        map_loc.plot([loc_sta1[1],loc_sta2[1]],[loc_sta1[0],loc_sta2[0]],c='k',alpha=0.5,transform=ccrs.PlateCarree())
+        map_loc.scatter(loc_sta1[1],loc_sta1[0], marker='^',s=200,c='k',edgecolors='w', transform=ccrs.PlateCarree())
+        map_loc.scatter(loc_sta2[1],loc_sta2[0], marker='^',s=200,c='k',edgecolors='w', transform=ccrs.PlateCarree())
+
+        map_loc.text(loc_sta1[1],loc_sta1[0], pair_sta_1,fontsize=12,verticalalignment='center', horizontalalignment='right',transform=text_transform)
+        map_loc.text(loc_sta2[1],loc_sta2[0], pair_sta_2,fontsize=12,verticalalignment='center', horizontalalignment='right',transform=text_transform)
+
+        # ----------------------------------------------------------------------------------------------------
+        days_major = DayLocator(interval=5)   # every 5 day
+        days_minor = DayLocator(interval=1)   # every day
+        months = MonthLocator(interval=3)  # every month
+        yearsFmt = DateFormatter('%b-%Y')
+
+        for z,x in enumerate(data_to_plot_coefficient_clock_drift_chan):
+            if len(x) > 1:
+                # ----------------------------------------------------------------------------------------------------
+                ax0 = fig.add_subplot(gs[z,1])
+                ax0.xaxis.set_major_locator(months)
+                ax0.xaxis.set_major_formatter(yearsFmt)
+                ax0.xaxis.set_minor_locator(days_minor)
+                ax0.yaxis.set_major_locator(MultipleLocator(100))
+                ax0.yaxis.set_minor_locator(MultipleLocator(25))
+                ax0.set_ylabel('Drift ('+str(1/NEW_SAMPLING_RATE)+'s)')
+                ax0.set_title(chan_lst[z])
+                ax0.set_ylim(-200,200)
+
+                # -------------------------------------------------------------------------------------------------------------
+                poly_reg = PolynomialFeatures(degree=4)
+                X_poly = poly_reg.fit_transform(np.array(range(len(data_to_plot_shift_clock_drift_chan[z]))).reshape(-1, 1))
+                pol_reg = LinearRegression()
+                pol_reg.fit(X_poly, data_to_plot_shift_clock_drift_chan[z])
+                # -------------------------------------------------------------------------------------------------------------
+                for y,u in enumerate(data_to_plot_shift_clock_drift_chan[z]):
+                    if data_to_plot_coefficient_clock_drift_chan[z][y] > 0.3:
+                        im = ax0.scatter(date_to_plot_clock_chan[z][y],data_to_plot_shift_clock_drift_chan[z][y],c=data_to_plot_coefficient_clock_drift_chan[z][y],marker='o',edgecolors=None,cmap='magma',s=20,vmin=0,vmax=1,alpha=0.9)
+                    else:
+                        im = ax0.scatter(date_to_plot_clock_chan[z][y],data_to_plot_shift_clock_drift_chan[z][y],c=data_to_plot_coefficient_clock_drift_chan[z][y],marker='o',edgecolors=None,cmap='magma',s=10,vmin=0,vmax=1,alpha=0.7)
+
+                ax0.plot(date_to_plot_clock_chan[z], pol_reg.predict(poly_reg.fit_transform(np.array(range(len(data_to_plot_shift_clock_drift_chan[z]))).reshape(-1, 1))),'--b')
+
+                if z == 0:
+                    axins = inset_axes(ax0,
+                                           width="30%",  # width = 10% of parent_bbox width
+                                           height="10%",  # height : 5%
+                                           loc='upper left',
+                                           bbox_to_anchor=(0.65,0.1, 1, 1),
+                                           bbox_transform=ax0.transAxes,
+                                           borderpad=0,
+                                           )
+                    plt.colorbar(im, cax=axins, orientation="horizontal", ticklocation='top')
+
+            else:
+
+                ax0 = fig.add_subplot(gs[z,1])
+                ax0.xaxis.set_major_locator(months)
+                ax0.xaxis.set_major_formatter(yearsFmt)
+                ax0.xaxis.set_minor_locator(days_minor)
+                ax0.yaxis.set_major_locator(MultipleLocator(100))
+                ax0.yaxis.set_minor_locator(MultipleLocator(25))
+                ax0.set_ylabel('Drift ('+str(1/NEW_SAMPLING_RATE)+'s)')
+                ax0.set_title(chan_lst[z])
+                ax0.set_ylim(-200,200)
+
+        # -------------------------------------------------------------------------------------------------------------
+
+        output_figure_CLOCK_DRIFT = CLOCK_DRIFT_OUTPUT+'CLOCK_DRIFT_TOTAL_FIGURES/'
+        os.makedirs(output_figure_CLOCK_DRIFT,exist_ok=True)
+        fig.savefig(output_figure_CLOCK_DRIFT+'CLOCK_DRIFT_TOTAL_'+OBS_LST[i]+'.png',dpi=300)
+        plt.close()
 '''
