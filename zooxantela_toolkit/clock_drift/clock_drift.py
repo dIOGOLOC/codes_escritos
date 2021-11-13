@@ -35,6 +35,7 @@ from numpy.fft import rfft, irfft, fft, ifft, fftfreq
 from itertools import combinations,product,compress
 from numpy.lib.stride_tricks import as_strided
 import pandas as pd
+import pyarrow.feather as feather
 from scipy.signal import spectrogram, detrend, resample,savgol_filter,decimate
 from scipy.linalg import norm
 import pickle
@@ -89,7 +90,7 @@ CLOCK_DRIFT_OUTPUT = '/home/diogoloc/dados_posdoc/ON_MAR/CLOCK_DRIFT_OUTPUT/FIGU
 
 ASDF_FILES = '/home/diogoloc/dados_posdoc/ON_MAR/CLOCK_DRIFT_OUTPUT/ASDF_FILES/'
 
-PICKLE_FILES = '/home/diogoloc/dados_posdoc/ON_MAR/CLOCK_DRIFT_OUTPUT/PICKLE_FILES/'
+FEATHER_FILES = '/home/diogoloc/dados_posdoc/ON_MAR/CLOCK_DRIFT_OUTPUT/FEATHER_FILES/'
 
 # -------------------------------
 #create figures?
@@ -141,7 +142,7 @@ ONEDAY = datetime.timedelta(days=1)
 
 # MULTIPROCESSING
 
-num_processes = 1
+num_processes = 6
 
 # =================
 # Filtering by date
@@ -1525,7 +1526,11 @@ def Calculating_clock_drift_func(iOBS):
         CHANNEL_fig_lst = [HHE_HHE_lst,HHE_HHN_lst,HHE_HHZ_lst,HHN_HHN_lst,HHN_HHE_lst,HHN_HHZ_lst,HHZ_HHE_lst,HHZ_HHN_lst,HHZ_HHZ_lst]
         chan_lst = ['HHE-HHE','HHE-HHN','HHE-HHZ','HHN-HHN','HHN-HHE','HHN-HHZ','HHZ-HHE','HHZ-HHN','HHZ-HHZ']
 
-        columns_headers = ['sta_1','sta_2','distance','loc_sta1','loc_sta2']
+        # ------------------------------------------------------------------------------------------------------
+        # Starting the value list and the columns_headers:
+        columns_headers = ['sta_1','sta_2']
+
+        data_drift_lst = [pair_sta_1,pair_sta_2]
 
         # ---------------------
         # Calculating the drift
@@ -1538,8 +1543,6 @@ def Calculating_clock_drift_func(iOBS):
             column_shift_n = chan_lst[idch]+' shift'
 
             columns_headers.extend([column_date_n,column_coefficient_n,column_shift_n])
-
-            print('columns_headers:',columns_headers)
 
             if len(i) > 1:
 
@@ -1568,11 +1571,6 @@ def Calculating_clock_drift_func(iOBS):
 
                 causal_lst = [jd.auxiliary_data.CrossCorrelation[name_sta1[id]][name_sta2[id]].data[::] for id,jd in enumerate(sta1_sta2_asdf_file)]
                 acausal_lst = [jd.auxiliary_data.CrossCorrelation[name_sta2[id]][name_sta1[id]].data[::] for id,jd in enumerate(sta1_sta2_asdf_file)]
-
-                # ---------------
-                # 96% of the data
-                sigma = 2
-                # ---------------
 
                 # ----------------------------------------------------------------------------------------------------
 
@@ -1605,71 +1603,37 @@ def Calculating_clock_drift_func(iOBS):
 
                 # --------------------------------------------------------------------------------------
 
-                data_drift_dic = {
-                                 column_date_n:date_to_plot_clock,
-                                 column_coefficient_n:data_to_plot_coefficient_clock_drift,
-                                 column_shift_n:data_to_plot_shift_clock_drift
-                                 }
+                data_drift_lst.append(date_to_plot_clock)
+                data_drift_lst.append(data_to_plot_coefficient_clock_drift)
+                data_drift_lst.append(data_to_plot_shift_clock_drift)
 
             else:
 
-                data_drift_dic = {
-                                 column_date_n:[],
-                                 column_coefficient_n:[],
-                                 column_shift_n:[]
-                                 }
-
-
-
-            data_drift_OBS_dic = dict(**data_drift_dic)
-            print(data_drift_OBS_dic)
-
+                data_drift_lst.append([])
+                data_drift_lst.append([])
+                data_drift_lst.append([])
 
         # ----------------------------------------------------------------------------------------------------
-        a = {
-            'sta_1':pair_sta_1,
-            'sta_2':pair_sta_2,
-            'distance':dist_pair[0],
-            'loc_sta1':loc_sta1[0],
-            'loc_sta2':loc_sta2[0],
-            }
+        # Creating a Pandas DataFrame:
+        column_info = [dist_pair[0],loc_sta1[0],loc_sta2[0]]
+        for i in column_info:
+            data_drift_lst.append(i)
 
-        # AJEITAR
-        # AJEITAR
-        # AJEITAR
-        # AJEITAR
-        # AJEITAR
-        # AJEITAR
+        columns_headers1 = ['distance','loc_sta1','loc_sta2']
+        for i in columns_headers1:
+            columns_headers.append(i)
 
-        drift_OBS_dic = {**a, **data_drift_OBS_dic}
-        clock_drift_df= pd.DataFrame.from_dict(drift_OBS_dic)
-        print(clock_drift_df)
+
+        clock_drift_df = pd.DataFrame(data_drift_lst, index=columns_headers).T
         # ----------------------------------------------------------------------------------------------------
-        # An arbitrary collection of objects supported by pickle.
-
-
-
-'''
-        dist_pair = dist_pair[0]
-        loc_sta1 = loc_sta1[0]
-        loc_sta2 = loc_sta2[0]
+        # Convert from pandas to Arrow and saving in feather formart file
+        os.makedirs(FEATHER_FILES,exist_ok=True)
+        file_feather_name = FEATHER_FILES+pair_sta_1+'.'+pair_sta_2+'_clock_drift_data.feather'
+        feather.write_feather(clock_drift_df, file_feather_name)
         # ----------------------------------------------------------------------------------------------------
-        # An arbitrary collection of objects supported by pickle.
-
-        for idic, ivalues in enumerate(date_to_plot_clock_chan):
-            data_drift_OBS_dic = {pair_sta_1,pair_sta_2,dist_pair,loc_sta1,loc_sta2,
-                                 date_to_plot_clock_chan[i],data_to_plot_coefficient_clock_drift_chan[i],
-                                 data_to_plot_shift_clock_drift_chan[i]
-                                 }
-
-
-
-        os.makedirs(PICKLE_FILES,exist_ok=True)
-        with open(PICKLE_FILES+pair_sta_1+'.'+pair_sta_2+'_clock_drift_data.pickle', 'wb') as f:
-            # Pickle the 'data' dictionary using the highest protocol available.
-            pickle.dump(data_drift_OBS_dic, f, pickle.HIGHEST_PROTOCOL)
 
         if VERBOSE == True:
+
             # --------------------------------------------
             # Creating the figure and plotting Clock-drift
             # --------------------------------------------
@@ -1775,7 +1739,7 @@ def Calculating_clock_drift_func(iOBS):
             os.makedirs(output_figure_CLOCK_DRIFT,exist_ok=True)
             fig.savefig(output_figure_CLOCK_DRIFT+'CLOCK_DRIFT_BETWEEN_'+pair_sta_1+'_'+pair_sta_2+'.png',dpi=300)
             plt.close()
-'''
+
 # ----------------------------------------------------------------------------------------------------------------------------------------------------------
 
 def plot_stacked_cc_interstation_distance_per_obs_short(folder_name):
@@ -2425,7 +2389,7 @@ print('\n')
                              }
 
 
-clock_drift_files_lst = sorted(glob.glob(PICKLE_FILES+'/*'))
+clock_drift_files_lst = sorted(glob.glob(FEATHER_FILES+'/*'))
 
 for iOBS in OBS_LST:
     clock_drift_files = [j for i,j in enumerate(clock_drift_files_lst) if iOBS in j]
