@@ -2353,7 +2353,7 @@ print("--- %.2f execution time (min) ---" % ((time.time() - start_time)/60))
 start_time = time.time()
 plot_stacked_cc_interstation_distance_per_obs_short('CROSS_CORR_10_DAYS_STACKED_FILES')
 print("--- %.2f execution time (min) ---" % ((time.time() - start_time)/60))
-'''
+
 print('\n')
 print('========================')
 print('Clock Drift Calculating:')
@@ -2375,194 +2375,129 @@ print('Total Clock Drift for each OBS:')
 print('===============================')
 print('\n')
 
-
-        data_drift_OBS_dic = {
-                             'name_sta1': pair_sta_1,
-                             'name_sta2': pair_sta_2,
-                             'dist_pair': dist_pair,
-                             'loc_sta1': loc_sta1,
-                             'loc_sta2': loc_sta2,
-                             'date_to_plot':date_to_plot_clock_chan,
-                             'coefficient_clock_drift':data_to_plot_coefficient_clock_drift_chan,
-                             'shift_clock_drift':data_to_plot_shift_clock_drift_chan,
-                             'chan_lst':chan_lst
-                             }
-
-
 clock_drift_files_lst = sorted(glob.glob(FEATHER_FILES+'/*'))
 
 for iOBS in OBS_LST:
-    clock_drift_files = [j for i,j in enumerate(clock_drift_files_lst) if iOBS in j]
+    clock_drift_df_lst = [pd.read_feather(j) for i,j in enumerate(clock_drift_files_lst) if iOBS in j]
     # ----------------------------------------------------------------------------------------------------
+    df = pd.concat(clock_drift_df_lst, ignore_index=True)
 
-    clock_drift_df_lst = [pd.read_pickle(i) for i in clock_drift_files]
-    clock_drift_df= pd.DataFrame.from_dict(clock_drift_df_lst, )
+    # --------------------------------------------
+    # Creating the figure and plotting Clock-drift
+    # --------------------------------------------
 
-
-    for u,i in enumerate(clock_drift_df['coefficient_clock_drift'].values):
-        print(len(i))
-        for k,l in enumerate(i):
-            print(clock_drift_df['chan_lst'][k][u],':',len(l))
-    #print(len(clock_drift_df[['coefficient_clock_drift']].values[1]))
-
-    print('=====')
-    print('=====')
-    print('=====')
-
+    fig = plt.figure(figsize=(20, 15))
+    fig.suptitle('Clock-drift: '+iOBS,fontsize=20)
+    fig.autofmt_xdate()
 
     # ----------------------------------------------------------------------------------------------------
-    #Creating the figure and plotting Clock-drift
+    gs = gridspec.GridSpec(9, 2,wspace=0.5, hspace=0.8)
+    map_loc = fig.add_subplot(gs[:,0],projection=ccrs.PlateCarree())
+
+    LLCRNRLON_LARGE = -52
+    URCRNRLON_LARGE = -38
+    LLCRNRLAT_LARGE = -30
+    URCRNRLAT_LARGE = -12
+    # ----------------------------------------------------------------------------------------------------
+
+    map_loc.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
+    map_loc.yaxis.set_ticks_position('both')
+    map_loc.xaxis.set_ticks_position('both')
+
+    map_loc.set_xticks(np.arange(LLCRNRLON_LARGE,URCRNRLON_LARGE+3,3), crs=ccrs.PlateCarree())
+    map_loc.set_yticks(np.arange(LLCRNRLAT_LARGE,URCRNRLAT_LARGE+3,3), crs=ccrs.PlateCarree())
+    map_loc.tick_params(labelbottom=True, labeltop=True, labelleft=True, labelright=True, labelsize=12)
+    map_loc.grid(True,which='major',color='gray',linewidth=0.5,linestyle='--')
+
+    reader_1_SHP = Reader(BOUNDARY_STATES_SHP)
+    shape_1_SHP = list(reader_1_SHP.geometries())
+    plot_shape_1_SHP = cfeature.ShapelyFeature(shape_1_SHP, ccrs.PlateCarree())
+    map_loc.add_feature(plot_shape_1_SHP, facecolor='none', edgecolor='k',linewidth=0.5,zorder=-1)
+    # Use the cartopy interface to create a matplotlib transform object
+    # for the Geodetic coordinate system. We will use this along with
+    # matplotlib's offset_copy function to define a coordinate system which
+    # translates the text by 25 pixels to the left.
+    geodetic_transform = ccrs.Geodetic()._as_mpl_transform(map_loc)
+    text_transform = offset_copy(geodetic_transform, units='dots', y=50,x=100)
+
+    # ----------------------------------------------------------------------------------------------------
+
+    #map_loc.plot([loc_sta1[1],loc_sta2[1]],[loc_sta1[0],loc_sta2[0]],c='k',alpha=0.5,transform=ccrs.PlateCarree())
+    #map_loc.scatter(loc_sta1[1],loc_sta1[0], marker='^',s=200,c='k',edgecolors='w', transform=ccrs.PlateCarree())
+    #map_loc.scatter(loc_sta2[1],loc_sta2[0], marker='^',s=200,c='k',edgecolors='w', transform=ccrs.PlateCarree())
+
+    #map_loc.text(loc_sta1[1],loc_sta1[0], pair_sta_1,fontsize=12,verticalalignment='center', horizontalalignment='right',transform=text_transform)
+    #map_loc.text(loc_sta2[1],loc_sta2[0], pair_sta_2,fontsize=12,verticalalignment='center', horizontalalignment='right',transform=text_transform)
+
+    # ----------------------------------------------------------------------------------------------------
+
+    days_major = DayLocator(interval=5)   # every 5 day
+    days_minor = DayLocator(interval=1)   # every day
+    months = MonthLocator(interval=3)  # every month
+    yearsFmt = DateFormatter('%b-%Y')
+
+    # ----------------------------------------------------------------------------------------------------
     chan_lst = ['HHE-HHE','HHE-HHN','HHE-HHZ','HHN-HHN','HHN-HHE','HHN-HHZ','HHZ-HHE','HHZ-HHN','HHZ-HHZ']
 
-    clock_drift_files_date_to_plot_ch = []
-    clock_drift_files_data_to_plot_coefficient_ch = []
-    clock_drift_files_data_to_plot_shift_ch = []
+    for z,i in enumerate(chan_lst):
+        clock_drift_date_to_plot = df[i+' date'].to_numpy()
+        clock_drift_data_to_plot_coefficient = df[i+' coefficient'].to_numpy()
+        clock_drift_data_to_plot_shift = df[i+' shift'].to_numpy()
+        print(type(clock_drift_data_to_plot_coefficient))
+        print(len(clock_drift_data_to_plot_coefficient[0]))
+        print(clock_drift_data_to_plot_coefficient[0])
 
-    for i,j in enumerate(clock_drift_files_name_sta2):
-        if 'OBS' not in clock_drift_files_name_sta1[i] and clock_drift_files_name_sta2[i]:
-            clock_drift_files_date_to_plot_ch.append([clock_drift_files_date_to_plot[i][k] for k,l in enumerate(chan_lst)])
-            clock_drift_files_data_to_plot_coefficient_ch.append([clock_drift_files_data_to_plot_coefficient[i][k] for k,l in enumerate(chan_lst)])
-            clock_drift_files_data_to_plot_shift_ch.append([clock_drift_files_data_to_plot_shift[i][k] for k,l in enumerate(chan_lst)])
+        if len(clock_drift_data_to_plot_shift) > 1:
+            # ----------------------------------------------------------------------------------------------------
+            ax0 = fig.add_subplot(gs[z,1])
+            ax0.xaxis.set_major_locator(months)
+            ax0.xaxis.set_major_formatter(yearsFmt)
+            ax0.xaxis.set_minor_locator(days_minor)
+            ax0.yaxis.set_major_locator(MultipleLocator(100))
+            ax0.yaxis.set_minor_locator(MultipleLocator(25))
+            ax0.set_ylabel('Drift ('+str(1/NEW_SAMPLING_RATE)+'s)')
+            ax0.set_title(chan_lst[z])
+            #ax0.set_ylim(-200,200)
+            # -------------------------------------------------------------------------------------------------------------
+            poly_reg = PolynomialFeatures(degree=1)
+            X_poly = poly_reg.fit_transform(np.array(range(len(clock_drift_data_to_plot_shift))).reshape(-1, 1))
+            pol_reg = LinearRegression()
+            pol_reg.fit(X_poly, clock_drift_data_to_plot_shift)
+            # -------------------------------------------------------------------------------------------------------------
 
-    clock_drift_files_date_to_plot_ch1 = []
-    clock_drift_files_data_to_plot_coefficient_ch1 = []
-    clock_drift_files_data_to_plot_shift_ch1 = []
-    for k,l in enumerate(clock_drift_files_date_to_plot_ch):
-        clock_drift_files_date_to_plot_ch1 = []
-        clock_drift_files_data_to_plot_coefficient_ch1 = []
-        clock_drift_files_data_to_plot_shift_ch1 = []
-        print(len(l[0]))
+            for y,u in enumerate(clock_drift_data_to_plot_shift):
+                if clock_drift_data_to_plot_coefficient > 0.3:
+                    print(df[i+' coefficient'].values[z][y])
+                    im = ax0.scatter(clock_drift_date_to_plot[y],clock_drift_data_to_plot_shift[y],c=clock_drift_data_to_plot_coefficient[y],marker='o',edgecolors=None,cmap='magma',s=20,vmin=0,vmax=1,alpha=0.9)
+                else:
+                    im = ax0.scatter(clock_drift_date_to_plot[y],clock_drift_data_to_plot_shift[y],c=clock_drift_data_to_plot_coefficient[y],marker='o',edgecolors=None,cmap='magma',s=10,vmin=0,vmax=1,alpha=0.7)
 
-    print('=====')
-    print('=====')
-    print('=====')
+                ax0.plot(clock_drift_date_to_plot, pol_reg.predict(poly_reg.fit_transform(np.array(range(len(clock_drift_data_to_plot_shift))).reshape(-1, 1))),'--b')
 
+            if z == 0:
 
-
-    if OBS is not in clock_drift_files_name_sta1
-    OBS_coefficient_clock_drift_ch = [[]]*len(chan_lst)
-    OBS_shift_clock_drift_ch = [[]]*len(chan_lst)
-    for k,l in enumerate(chan_lst):
-        OBS_coefficient_clock_drift_ch[k].append(clock_drift_files_data_to_plot_coefficient[i][k])
-        OBS_shift_clock_drift_ch[k].append(clock_drift_files_data_to_plot_shift[i][k])
-
-    for w,e in enumerate(OBS_coefficient_clock_drift_ch):
-        print(chan_lst[w],': ',len(OBS_coefficient_clock_drift_ch[w]))
-
-
-
-    OBS_coefficient_clock_drift_ch1 = [[]]*len(chan_lst)
-    OBS_shift_clock_drift_ch1 = [[]]*len(chan_lst)
-    for k,l in enumerate(chan_lst):
-        OBS_coefficient_clock_drift_ch1.append([item for sublist in OBS_coefficient_clock_drift_ch[k] for item in sublist])
-        OBS_shift_clock_drift_ch1.append([item for sublist in OBS_shift_clock_drift_ch[k] for item in sublist])
-
-    for w,e in enumerate(OBS_shift_clock_drift_ch1):
-            print(chan_lst[w],': ',e)
-
-
-        # --------------------------------------------
-        # Creating the figure and plotting Clock-drift
-        # --------------------------------------------
-
-        fig = plt.figure(figsize=(20, 15))
-        fig.suptitle('Clock-drift: '+pair_sta_1+'-'+pair_sta_2+'('+str(round(dist_pair))+' km)',fontsize=20)
-        fig.autofmt_xdate()
-        # ----------------------------------------------------------------------------------------------------
-
-        gs = gridspec.GridSpec(9, 2,wspace=0.5, hspace=0.8)
-        map_loc = fig.add_subplot(gs[:,0],projection=ccrs.PlateCarree())
-
-        LLCRNRLON_LARGE = -52
-        URCRNRLON_LARGE = -38
-        LLCRNRLAT_LARGE = -30
-        URCRNRLAT_LARGE = -12
-
-        map_loc.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
-        map_loc.yaxis.set_ticks_position('both')
-        map_loc.xaxis.set_ticks_position('both')
-
-        map_loc.set_xticks(np.arange(LLCRNRLON_LARGE,URCRNRLON_LARGE+3,3), crs=ccrs.PlateCarree())
-        map_loc.set_yticks(np.arange(LLCRNRLAT_LARGE,URCRNRLAT_LARGE+3,3), crs=ccrs.PlateCarree())
-        map_loc.tick_params(labelbottom=True, labeltop=True, labelleft=True, labelright=True, labelsize=12)
-        map_loc.grid(True,which='major',color='gray',linewidth=0.5,linestyle='--')
-
-        reader_1_SHP = Reader(BOUNDARY_STATES_SHP)
-        shape_1_SHP = list(reader_1_SHP.geometries())
-        plot_shape_1_SHP = cfeature.ShapelyFeature(shape_1_SHP, ccrs.PlateCarree())
-        map_loc.add_feature(plot_shape_1_SHP, facecolor='none', edgecolor='k',linewidth=0.5,zorder=-1)
-        # Use the cartopy interface to create a matplotlib transform object
-        # for the Geodetic coordinate system. We will use this along with
-        # matplotlib's offset_copy function to define a coordinate system which
-        # translates the text by 25 pixels to the left.
-        geodetic_transform = ccrs.Geodetic()._as_mpl_transform(map_loc)
-        text_transform = offset_copy(geodetic_transform, units='dots', y=50,x=100)
-
-        map_loc.plot([loc_sta1[1],loc_sta2[1]],[loc_sta1[0],loc_sta2[0]],c='k',alpha=0.5,transform=ccrs.PlateCarree())
-        map_loc.scatter(loc_sta1[1],loc_sta1[0], marker='^',s=200,c='k',edgecolors='w', transform=ccrs.PlateCarree())
-        map_loc.scatter(loc_sta2[1],loc_sta2[0], marker='^',s=200,c='k',edgecolors='w', transform=ccrs.PlateCarree())
-
-        map_loc.text(loc_sta1[1],loc_sta1[0], pair_sta_1,fontsize=12,verticalalignment='center', horizontalalignment='right',transform=text_transform)
-        map_loc.text(loc_sta2[1],loc_sta2[0], pair_sta_2,fontsize=12,verticalalignment='center', horizontalalignment='right',transform=text_transform)
-
-        # ----------------------------------------------------------------------------------------------------
-        days_major = DayLocator(interval=5)   # every 5 day
-        days_minor = DayLocator(interval=1)   # every day
-        months = MonthLocator(interval=3)  # every month
-        yearsFmt = DateFormatter('%b-%Y')
-
-        for z,x in enumerate(data_to_plot_coefficient_clock_drift_chan):
-            if len(x) > 1:
-                # ----------------------------------------------------------------------------------------------------
-                ax0 = fig.add_subplot(gs[z,1])
-                ax0.xaxis.set_major_locator(months)
-                ax0.xaxis.set_major_formatter(yearsFmt)
-                ax0.xaxis.set_minor_locator(days_minor)
-                ax0.yaxis.set_major_locator(MultipleLocator(100))
-                ax0.yaxis.set_minor_locator(MultipleLocator(25))
-                ax0.set_ylabel('Drift ('+str(1/NEW_SAMPLING_RATE)+'s)')
-                ax0.set_title(chan_lst[z])
-                ax0.set_ylim(-200,200)
-
-                # -------------------------------------------------------------------------------------------------------------
-                poly_reg = PolynomialFeatures(degree=4)
-                X_poly = poly_reg.fit_transform(np.array(range(len(data_to_plot_shift_clock_drift_chan[z]))).reshape(-1, 1))
-                pol_reg = LinearRegression()
-                pol_reg.fit(X_poly, data_to_plot_shift_clock_drift_chan[z])
-                # -------------------------------------------------------------------------------------------------------------
-                for y,u in enumerate(data_to_plot_shift_clock_drift_chan[z]):
-                    if data_to_plot_coefficient_clock_drift_chan[z][y] > 0.3:
-                        im = ax0.scatter(date_to_plot_clock_chan[z][y],data_to_plot_shift_clock_drift_chan[z][y],c=data_to_plot_coefficient_clock_drift_chan[z][y],marker='o',edgecolors=None,cmap='magma',s=20,vmin=0,vmax=1,alpha=0.9)
-                    else:
-                        im = ax0.scatter(date_to_plot_clock_chan[z][y],data_to_plot_shift_clock_drift_chan[z][y],c=data_to_plot_coefficient_clock_drift_chan[z][y],marker='o',edgecolors=None,cmap='magma',s=10,vmin=0,vmax=1,alpha=0.7)
-
-                ax0.plot(date_to_plot_clock_chan[z], pol_reg.predict(poly_reg.fit_transform(np.array(range(len(data_to_plot_shift_clock_drift_chan[z]))).reshape(-1, 1))),'--b')
-
-                if z == 0:
-                    axins = inset_axes(ax0,
-                                           width="30%",  # width = 10% of parent_bbox width
-                                           height="10%",  # height : 5%
-                                           loc='upper left',
-                                           bbox_to_anchor=(0.65,0.1, 1, 1),
-                                           bbox_transform=ax0.transAxes,
-                                           borderpad=0,
-                                           )
-                    plt.colorbar(im, cax=axins, orientation="horizontal", ticklocation='top')
-
-            else:
-
-                ax0 = fig.add_subplot(gs[z,1])
-                ax0.xaxis.set_major_locator(months)
-                ax0.xaxis.set_major_formatter(yearsFmt)
-                ax0.xaxis.set_minor_locator(days_minor)
-                ax0.yaxis.set_major_locator(MultipleLocator(100))
-                ax0.yaxis.set_minor_locator(MultipleLocator(25))
-                ax0.set_ylabel('Drift ('+str(1/NEW_SAMPLING_RATE)+'s)')
-                ax0.set_title(chan_lst[z])
-                ax0.set_ylim(-200,200)
-
-        # -------------------------------------------------------------------------------------------------------------
-
+                axins = inset_axes(ax0,
+                                   width="30%",  # width = 10% of parent_bbox width
+                                   height="10%",  # height : 5%
+                                   loc='upper left',
+                                   bbox_to_anchor=(0.65,0.1, 1, 1),
+                                   bbox_transform=ax0.transAxes,
+                                   borderpad=0,
+                                   )
+                plt.colorbar(im, cax=axins, orientation="horizontal", ticklocation='top')
+        else:
+            ax0 = fig.add_subplot(gs[z,1])
+            ax0.xaxis.set_major_locator(months)
+            ax0.xaxis.set_major_formatter(yearsFmt)
+            ax0.xaxis.set_minor_locator(days_minor)
+            ax0.yaxis.set_major_locator(MultipleLocator(100))
+            ax0.yaxis.set_minor_locator(MultipleLocator(25))
+            ax0.set_ylabel('Drift ('+str(1/NEW_SAMPLING_RATE)+'s)')
+            ax0.set_title(chan_lst[z])
+            #ax0.set_ylim(-200,200)
+    # -------------------------------------------------------------------------------------------------------------
+    plt.show()
+'''
         output_figure_CLOCK_DRIFT = CLOCK_DRIFT_OUTPUT+'CLOCK_DRIFT_TOTAL_FIGURES/'
         os.makedirs(output_figure_CLOCK_DRIFT,exist_ok=True)
         fig.savefig(output_figure_CLOCK_DRIFT+'CLOCK_DRIFT_TOTAL_'+OBS_LST[i]+'.png',dpi=300)
