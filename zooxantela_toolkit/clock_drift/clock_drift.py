@@ -1,4 +1,4 @@
- #!/usr/bin/env python
+#!/usr/bin/env python
 # coding: utf-8
 
 import time
@@ -21,7 +21,7 @@ from matplotlib.transforms import offset_copy
 import obspy as op
 from obspy import read,read_inventory, UTCDateTime, Stream, Trace
 from obspy.io.xseed import Parser
-from obspy.signal.filter import bandpass,lowpass
+from obspy.signal.filter import bandpass
 from obspy.geodetics.base import gps2dist_azimuth
 from obspy.signal.util import prev_pow_2
 from obspy.signal.cross_correlation import correlate as obscorr
@@ -142,7 +142,7 @@ ONEDAY = datetime.timedelta(days=1)
 
 # MULTIPROCESSING
 
-num_processes = 6
+num_processes = 10
 
 # =================
 # Filtering by date
@@ -1417,43 +1417,11 @@ def plot_stacked_cc_interstation_distance_per_obs(folder_name):
 
 # ----------------------------------------------------------------------------------------------------------------------------------------------------------
 
-def Calculating_clock_drift_func(iOBS):
-    '''
-    Calculating clock drift from cross-correlation data
-    @type input: name of the OBS (str)
-    '''
-    # -------------------------------------------
-    # Collecting daily list of cross-correlations
-    # -------------------------------------------
-
-    crosscorr_pairs = sorted(glob.glob(ASDF_FILES+'CROSS_CORR_10_DAYS_FILES/**/*.h5', recursive=True))
-
-    # --------------------------------
-    # Separating according to OBS name
-    # --------------------------------
-
-    crosscorr_pairs_obs = [i for i in crosscorr_pairs if iOBS in i]
-
-    # ------------------
-    # Separating by pair
-    # ------------------
-
-    crosscorr_pairs_name_lst = []
-    for i in crosscorr_pairs_obs:
-
-        # splitting subdir/basename
-        subdir, filename = os.path.split(i)
-        nameslst = filename.split("_20")[0]
-
-        name_sta1 = nameslst.split('_')[-2].split('..')[0]
-        name_sta2 = nameslst.split('_')[-1].split('..')[0]
-
-        if name_sta1 != name_sta2:
-            crosscorr_pairs_name_lst.append(name_sta1+'_'+name_sta2)
-
-    crosscorr_pairs_names = sorted(list(set(crosscorr_pairs_name_lst)))
-
-    for ipair in crosscorr_pairs_names:
+def Calculating_clock_drift_func(ipair):
+        '''
+        Calculating clock drift from cross-correlation data
+        @type input: name of the stations pair (str)
+        '''
 
         pair_sta_1 = ipair.split('_')[0].split('..')[0]
         pair_sta_2 = ipair.split('_')[1].split('..')[0]
@@ -1475,7 +1443,7 @@ def Calculating_clock_drift_func(iOBS):
         HHN_HHZ_lst = []
         HHZ_HHN_lst = []
 
-        for i in tqdm(crosscorr_pairs_obs,desc='pair: '+pair_sta_1+'-'+pair_sta_2):
+        for i in crosscorr_pairs_obs:
 
             if pair_sta_1 and pair_sta_2 in i:
 
@@ -1536,13 +1504,7 @@ def Calculating_clock_drift_func(iOBS):
         # Calculating the drift
         # ---------------------
 
-        for idch, i in enumerate(CHANNEL_fig_lst):
-
-            column_date_n = chan_lst[idch]+' date'
-            column_coefficient_n = chan_lst[idch]+' coefficient'
-            column_shift_n = chan_lst[idch]+' shift'
-
-            columns_headers.extend([column_date_n,column_coefficient_n,column_shift_n])
+        for idch, i in enumerate(tqdm(CHANNEL_fig_lst,desc='Drift:'+pair_sta_1+'-'+pair_sta_2)):
 
             if len(i) > 1:
 
@@ -1574,44 +1536,67 @@ def Calculating_clock_drift_func(iOBS):
 
                 # ----------------------------------------------------------------------------------------------------
 
-                date_to_plot_clock = []
-                data_to_plot_coefficient_clock_drift = []
-                data_to_plot_shift_clock_drift = []
+                for iband, per_bands in enumerate(PERIOD_BANDS):
 
-                for k in tqdm(range(len(causal_lst)), desc=chan_lst[idch]+' drift'):
+                    column_date_n = chan_lst[idch]+' date ['+str(per_bands[0])+'-'+str(per_bands[1])+' s]'
+                    column_coefficient_n = chan_lst[idch]+' coefficient ['+str(per_bands[0])+'-'+str(per_bands[1])+' s]'
+                    column_shift_n = chan_lst[idch]+' shift ['+str(per_bands[0])+'-'+str(per_bands[1])+' s]'
 
-                    data_acausal_causal = np.array(acausal_lst[k] + causal_lst[k])
-                    data_normalized = np.array(Normalize(data_acausal_causal))
-                    time_acausal_causal = np.array(acausal_time[k] + causal_time[k])
+                    columns_headers.extend([column_date_n,column_coefficient_n,column_shift_n])
 
-                    dist_pair_norm = dist_pair[k]
-                    # --------------------------------------------------------
-                    # Collecting daily list of 10-day stack cross-correlations
-                    # --------------------------------------------------------
+                    # ----------------------------------------------------------------------------------------------------
 
-                    sta1_sta2_asdf_file_10_day = ASDFDataSet(glob.glob(ASDF_FILES+'CROSS_CORR_10_DAYS_STACKED_FILES/'+name_sta1[k]+'.'+name_sta2[k]+'/*')[0], mode='r')
-                    stacked_10_day_data = sta1_sta2_asdf_file_10_day.auxiliary_data.CrossCorrelationStacked[name_sta2[k]][name_sta1[k]].data[::]+sta1_sta2_asdf_file_10_day.auxiliary_data.CrossCorrelationStacked[name_sta1[k]][name_sta2[k]].data[::]
-                    stacked_10_day_time = sta1_sta2_asdf_file_10_day.auxiliary_data.CrossCorrelationStacked[name_sta2[k]][name_sta1[k]].parameters['crosscorr_stack_time'] +sta1_sta2_asdf_file_10_day.auxiliary_data.CrossCorrelationStacked[name_sta1[k]][name_sta2[k]].parameters['crosscorr_stack_time']
-                    stacked_10_day_data_normalized = np.array(Normalize(stacked_10_day_data))
+                    date_to_plot_clock = []
+                    data_to_plot_coefficient_clock_drift = []
+                    data_to_plot_shift_clock_drift = []
 
-                    shift_clock_drift, coefficient_clock_drift = obscorr_window(stacked_10_day_data_normalized,stacked_10_day_time,data_normalized,time_acausal_causal,dist_pair_norm,SIGNAL_WINDOW_VMIN,SIGNAL_WINDOW_VMAX)
+                    for k in range(len(causal_lst)):
+
+                        data_acausal_causal = np.array(acausal_lst[k] + causal_lst[k])
+                        data_normalized = np.array(Normalize(data_acausal_causal))
+                        time_acausal_causal = np.array(acausal_time[k] + causal_time[k])
+
+                        dist_pair_norm = dist_pair[k]
+
+                        # --------------------------------------------------------
+                        # Collecting daily list of 10-day stack cross-correlations
+                        # --------------------------------------------------------
+
+                        sta1_sta2_asdf_file_10_day = ASDFDataSet(glob.glob(ASDF_FILES+'CROSS_CORR_10_DAYS_STACKED_FILES/'+name_sta1[k]+'.'+name_sta2[k]+'/*')[0], mode='r')
+                        stacked_10_day_data = sta1_sta2_asdf_file_10_day.auxiliary_data.CrossCorrelationStacked[name_sta2[k]][name_sta1[k]].data[::]+sta1_sta2_asdf_file_10_day.auxiliary_data.CrossCorrelationStacked[name_sta1[k]][name_sta2[k]].data[::]
+                        stacked_10_day_time = sta1_sta2_asdf_file_10_day.auxiliary_data.CrossCorrelationStacked[name_sta2[k]][name_sta1[k]].parameters['crosscorr_stack_time'] +sta1_sta2_asdf_file_10_day.auxiliary_data.CrossCorrelationStacked[name_sta1[k]][name_sta2[k]].parameters['crosscorr_stack_time']
+                        stacked_10_day_data_normalized = np.array(Normalize(stacked_10_day_data))
+
+                        # --------------------------------------------------------
+
+                        stacked_10_day_data_normalized_band = bandpass(stacked_10_day_data_normalized, 1.0/per_bands[1], 1.0/per_bands[0], NEW_SAMPLING_RATE, corners=2, zerophase=False)
+                        data_normalized_band = bandpass(data_normalized, 1.0/per_bands[1], 1.0/per_bands[0], NEW_SAMPLING_RATE, corners=2, zerophase=False)
+
+                        shift_clock_drift, coefficient_clock_drift = obscorr_window(stacked_10_day_data_normalized_band,stacked_10_day_time,data_normalized_band,time_acausal_causal,dist_pair_norm,SIGNAL_WINDOW_VMIN,SIGNAL_WINDOW_VMAX)
+
+                        date_to_plot_clock.append(crosscorr_pair_date[k])
+                        data_to_plot_coefficient_clock_drift.append(coefficient_clock_drift)
+                        data_to_plot_shift_clock_drift.append(shift_clock_drift)
 
                     # --------------------------------------------------------------------------------------
-                    date_to_plot_clock.append(crosscorr_pair_date[k])
-                    data_to_plot_coefficient_clock_drift.append(coefficient_clock_drift)
-                    data_to_plot_shift_clock_drift.append(shift_clock_drift)
 
-                # --------------------------------------------------------------------------------------
-
-                data_drift_lst.append(date_to_plot_clock)
-                data_drift_lst.append(data_to_plot_coefficient_clock_drift)
-                data_drift_lst.append(data_to_plot_shift_clock_drift)
+                    data_drift_lst.append(date_to_plot_clock)
+                    data_drift_lst.append(data_to_plot_coefficient_clock_drift)
+                    data_drift_lst.append(data_to_plot_shift_clock_drift)
 
             else:
 
-                data_drift_lst.append([])
-                data_drift_lst.append([])
-                data_drift_lst.append([])
+                for iband, per_bands in enumerate(PERIOD_BANDS):
+
+                    column_date_n = chan_lst[idch]+' date ['+str(per_bands[0])+'-'+str(per_bands[1])+' s]'
+                    column_coefficient_n = chan_lst[idch]+' coefficient ['+str(per_bands[0])+'-'+str(per_bands[1])+' s]'
+                    column_shift_n = chan_lst[idch]+' shift ['+str(per_bands[0])+'-'+str(per_bands[1])+' s]'
+
+                    columns_headers.extend([column_date_n,column_coefficient_n,column_shift_n])
+
+                    data_drift_lst.append([])
+                    data_drift_lst.append([])
+                    data_drift_lst.append([])
 
         # ----------------------------------------------------------------------------------------------------
         # Creating a Pandas DataFrame:
@@ -1625,6 +1610,7 @@ def Calculating_clock_drift_func(iOBS):
 
 
         clock_drift_df = pd.DataFrame(data_drift_lst, index=columns_headers).T
+
         # ----------------------------------------------------------------------------------------------------
         # Convert from pandas to Arrow and saving in feather formart file
         os.makedirs(FEATHER_FILES,exist_ok=True)
@@ -1705,9 +1691,9 @@ def Calculating_clock_drift_func(iOBS):
                     # -------------------------------------------------------------------------------------------------------------
                     for y,u in enumerate(data_to_plot_shift_clock_drift_chan[z]):
                         if data_to_plot_coefficient_clock_drift_chan[z][y] > 0.3:
-                            im = ax0.scatter(date_to_plot_clock_chan[z][y],data_to_plot_shift_clock_drift_chan[z][y],c=data_to_plot_coefficient_clock_drift_chan[z][y],marker='o',edgecolors=None,cmap='magma',s=20,vmin=0,vmax=1,alpha=0.9)
+                            im = ax0.scatter(date_to_plot_clock_chan[z][y],data_to_plot_shift_clock_drift_chan[z][y],c=data_to_plot_coefficient_clock_drift_chan[z][y],marker='o',edgecolors=None,cmap='magma',s=10,vmin=0,vmax=1,alpha=0.9)
                         else:
-                            im = ax0.scatter(date_to_plot_clock_chan[z][y],data_to_plot_shift_clock_drift_chan[z][y],c=data_to_plot_coefficient_clock_drift_chan[z][y],marker='o',edgecolors=None,cmap='magma',s=10,vmin=0,vmax=1,alpha=0.7)
+                            im = ax0.scatter(date_to_plot_clock_chan[z][y],data_to_plot_shift_clock_drift_chan[z][y],c=data_to_plot_coefficient_clock_drift_chan[z][y],marker='o',edgecolors=None,cmap='magma',s=5,vmin=0,vmax=1,alpha=0.2)
 
                     ax0.plot(date_to_plot_clock_chan[z], pol_reg.predict(poly_reg.fit_transform(np.array(range(len(data_to_plot_shift_clock_drift_chan[z]))).reshape(-1, 1))),'--b')
 
@@ -2360,13 +2346,46 @@ print('Clock Drift Calculating:')
 print('========================')
 print('\n')
 
-start_time = time.time()
-with Pool(processes=num_processes) as p:
-    max_ = len(OBS_LST)
-    with tqdm(total=max_,desc='Processing') as pbar:
-        for i, _ in enumerate(p.imap_unordered(Calculating_clock_drift_func, OBS_LST)):
-            pbar.update()
-print("--- %.2f execution time (min) ---" % ((time.time() - start_time)/60))
+for iOBS in OBS_LST:
+
+    # -------------------------------------------
+    # Collecting daily list of cross-correlations
+    # -------------------------------------------
+
+    crosscorr_pairs = sorted(glob.glob(ASDF_FILES+'CROSS_CORR_10_DAYS_FILES/**/*.h5', recursive=True))
+
+    # --------------------------------
+    # Separating according to OBS name
+    # --------------------------------
+
+    crosscorr_pairs_obs = [i for i in crosscorr_pairs if iOBS in i]
+
+    # ------------------
+    # Separating by pair
+    # ------------------
+
+    crosscorr_pairs_name_lst = []
+    for i in crosscorr_pairs_obs:
+
+        # splitting subdir/basename
+        subdir, filename = os.path.split(i)
+        nameslst = filename.split("_20")[0]
+
+        name_sta1 = nameslst.split('_')[-2].split('..')[0]
+        name_sta2 = nameslst.split('_')[-1].split('..')[0]
+
+        if name_sta1 != name_sta2:
+            crosscorr_pairs_name_lst.append(name_sta1+'_'+name_sta2)
+
+    crosscorr_pairs_names = sorted(list(set(crosscorr_pairs_name_lst)))
+
+    start_time = time.time()
+    with Pool(processes=num_processes) as p:
+        max_ = len(crosscorr_pairs_names)
+        with tqdm(total=max_,desc='Processing') as pbar:
+            for i, _ in enumerate(p.imap_unordered(Calculating_clock_drift_func, crosscorr_pairs_names)):
+                pbar.update()
+    print("--- %.2f execution time (min) ---" % ((time.time() - start_time)/60))
 
 '''
 print('\n')
@@ -2378,76 +2397,78 @@ print('\n')
 clock_drift_files_lst = sorted(glob.glob(FEATHER_FILES+'/*'))
 
 for iOBS in OBS_LST:
-    clock_drift_df_lst = [pd.read_feather(j) for i,j in enumerate(clock_drift_files_lst) if iOBS in j]
-    # ----------------------------------------------------------------------------------------------------
-    df = pd.concat(clock_drift_df_lst, ignore_index=True)
+    for iband, per_bands in enumerate(PERIOD_BANDS):
 
-    # --------------------------------------------
-    # Creating the figure and plotting Clock-drift
-    # --------------------------------------------
+        clock_drift_df_lst = [pd.read_feather(j) for i,j in enumerate(clock_drift_files_lst) if iOBS in j]
+        # ----------------------------------------------------------------------------------------------------
 
-    fig = plt.figure(figsize=(20, 15))
-    fig.suptitle('Clock-drift: '+iOBS,fontsize=20)
-    fig.autofmt_xdate()
+        df = pd.concat(clock_drift_df_lst, ignore_index=True)
 
-    # ----------------------------------------------------------------------------------------------------
-    gs = gridspec.GridSpec(9, 2,wspace=0.5, hspace=0.8)
-    map_loc = fig.add_subplot(gs[:,0],projection=ccrs.PlateCarree())
+        # --------------------------------------------
+        # Creating the figure and plotting Clock-drift
+        # --------------------------------------------
 
-    LLCRNRLON_LARGE = -52
-    URCRNRLON_LARGE = -38
-    LLCRNRLAT_LARGE = -30
-    URCRNRLAT_LARGE = -12
-    # ----------------------------------------------------------------------------------------------------
+        fig = plt.figure(figsize=(20, 15))
+        fig.suptitle('Clock-drift: '+iOBS,fontsize=20)
+        fig.autofmt_xdate()
 
-    map_loc.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
-    map_loc.yaxis.set_ticks_position('both')
-    map_loc.xaxis.set_ticks_position('both')
+        # ----------------------------------------------------------------------------------------------------
+        gs = gridspec.GridSpec(9, 2,wspace=0.5, hspace=0.8)
+        map_loc = fig.add_subplot(gs[:,0],projection=ccrs.PlateCarree())
 
-    map_loc.set_xticks(np.arange(LLCRNRLON_LARGE,URCRNRLON_LARGE+3,3), crs=ccrs.PlateCarree())
-    map_loc.set_yticks(np.arange(LLCRNRLAT_LARGE,URCRNRLAT_LARGE+3,3), crs=ccrs.PlateCarree())
-    map_loc.tick_params(labelbottom=True, labeltop=True, labelleft=True, labelright=True, labelsize=12)
-    map_loc.grid(True,which='major',color='gray',linewidth=0.5,linestyle='--')
+        LLCRNRLON_LARGE = -52
+        URCRNRLON_LARGE = -38
+        LLCRNRLAT_LARGE = -30
+        URCRNRLAT_LARGE = -12
+        # ----------------------------------------------------------------------------------------------------
 
-    reader_1_SHP = Reader(BOUNDARY_STATES_SHP)
-    shape_1_SHP = list(reader_1_SHP.geometries())
-    plot_shape_1_SHP = cfeature.ShapelyFeature(shape_1_SHP, ccrs.PlateCarree())
-    map_loc.add_feature(plot_shape_1_SHP, facecolor='none', edgecolor='k',linewidth=0.5,zorder=-1)
-    # Use the cartopy interface to create a matplotlib transform object
-    # for the Geodetic coordinate system. We will use this along with
-    # matplotlib's offset_copy function to define a coordinate system which
-    # translates the text by 25 pixels to the left.
-    geodetic_transform = ccrs.Geodetic()._as_mpl_transform(map_loc)
-    text_transform = offset_copy(geodetic_transform, units='dots', y=50,x=100)
+        map_loc.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
+        map_loc.yaxis.set_ticks_position('both')
+        map_loc.xaxis.set_ticks_position('both')
 
-    # ----------------------------------------------------------------------------------------------------
+        map_loc.set_xticks(np.arange(LLCRNRLON_LARGE,URCRNRLON_LARGE+3,3), crs=ccrs.PlateCarree())
+        map_loc.set_yticks(np.arange(LLCRNRLAT_LARGE,URCRNRLAT_LARGE+3,3), crs=ccrs.PlateCarree())
+        map_loc.tick_params(labelbottom=True, labeltop=True, labelleft=True, labelright=True, labelsize=12)
+        map_loc.grid(True,which='major',color='gray',linewidth=0.5,linestyle='--')
 
-    #map_loc.plot([loc_sta1[1],loc_sta2[1]],[loc_sta1[0],loc_sta2[0]],c='k',alpha=0.5,transform=ccrs.PlateCarree())
-    #map_loc.scatter(loc_sta1[1],loc_sta1[0], marker='^',s=200,c='k',edgecolors='w', transform=ccrs.PlateCarree())
-    #map_loc.scatter(loc_sta2[1],loc_sta2[0], marker='^',s=200,c='k',edgecolors='w', transform=ccrs.PlateCarree())
+        reader_1_SHP = Reader(BOUNDARY_STATES_SHP)
+        shape_1_SHP = list(reader_1_SHP.geometries())
+        plot_shape_1_SHP = cfeature.ShapelyFeature(shape_1_SHP, ccrs.PlateCarree())
+        map_loc.add_feature(plot_shape_1_SHP, facecolor='none', edgecolor='k',linewidth=0.5,zorder=-1)
+        # Use the cartopy interface to create a matplotlib transform object
+        # for the Geodetic coordinate system. We will use this along with
+        # matplotlib's offset_copy function to define a coordinate system which
+        # translates the text by 25 pixels to the left.
+        geodetic_transform = ccrs.Geodetic()._as_mpl_transform(map_loc)
+        text_transform = offset_copy(geodetic_transform, units='dots', y=10,x=20)
 
-    #map_loc.text(loc_sta1[1],loc_sta1[0], pair_sta_1,fontsize=12,verticalalignment='center', horizontalalignment='right',transform=text_transform)
-    #map_loc.text(loc_sta2[1],loc_sta2[0], pair_sta_2,fontsize=12,verticalalignment='center', horizontalalignment='right',transform=text_transform)
+        # ----------------------------------------------------------------------------------------------------
+        for ista,staname in enumerate(df['sta_1'].tolist()):
+            map_loc.plot([df['loc_sta1'][ista][1],df['loc_sta2'][ista][1]],[df['loc_sta1'][ista][0],df['loc_sta2'][ista][0]],c='k',alpha=0.5,transform=ccrs.PlateCarree())
+            map_loc.scatter(df['loc_sta1'][ista][1],df['loc_sta1'][ista][0], marker='^',s=200,c='k',edgecolors='w', transform=ccrs.PlateCarree())
+            map_loc.scatter(df['loc_sta2'][ista][1],df['loc_sta2'][ista][0], marker='^',s=200,c='k',edgecolors='w', transform=ccrs.PlateCarree())
 
-    # ----------------------------------------------------------------------------------------------------
+            if iOBS in df['sta_1'][ista]:
+                map_loc.text(df['loc_sta1'][ista][1],df['loc_sta1'][ista][0], iOBS,color='r',fontsize=12,verticalalignment='center', horizontalalignment='right',transform=text_transform)
 
-    days_major = DayLocator(interval=5)   # every 5 day
-    days_minor = DayLocator(interval=1)   # every day
-    months = MonthLocator(interval=3)  # every month
-    yearsFmt = DateFormatter('%b-%Y')
+            if iOBS in df['sta_2'][ista]:
+                map_loc.text(df['loc_sta2'][ista][1],df['loc_sta2'][ista][0], iOBS,color='r',fontsize=12,verticalalignment='center', horizontalalignment='right',transform=text_transform)
 
-    # ----------------------------------------------------------------------------------------------------
-    chan_lst = ['HHE-HHE','HHE-HHN','HHE-HHZ','HHN-HHN','HHN-HHE','HHN-HHZ','HHZ-HHE','HHZ-HHN','HHZ-HHZ']
+        # ----------------------------------------------------------------------------------------------------
 
-    for z,i in enumerate(chan_lst):
-        clock_drift_date_to_plot = df[i+' date'].to_numpy()
-        clock_drift_data_to_plot_coefficient = df[i+' coefficient'].to_numpy()
-        clock_drift_data_to_plot_shift = df[i+' shift'].to_numpy()
-        print(type(clock_drift_data_to_plot_coefficient))
-        print(len(clock_drift_data_to_plot_coefficient[0]))
-        print(clock_drift_data_to_plot_coefficient[0])
+        days_major = DayLocator(interval=5)   # every 5 day
+        days_minor = DayLocator(interval=1)   # every day
+        months = MonthLocator(interval=3)  # every month
+        yearsFmt = DateFormatter('%b-%Y')
 
-        if len(clock_drift_data_to_plot_shift) > 1:
+        # ----------------------------------------------------------------------------------------------------
+        chan_lst = ['HHE-HHE','HHE-HHN','HHE-HHZ','HHN-HHN','HHN-HHE','HHN-HHZ','HHZ-HHE','HHZ-HHN','HHZ-HHZ']
+
+        for z,i in enumerate(chan_lst):
+            clock_drift_date_to_plot = np.array([item for sublist in df[i+' date ['+str(per_bands[0])+'-'+str(per_bands[1])+' s]'].tolist() for item in sublist])
+            clock_drift_data_to_plot_coefficient = np.array([abs(num) for num in [item for sublist in df[i+' coefficient ['+str(per_bands[0])+'-'+str(per_bands[1])+' s]'].tolist() for item in sublist]])
+            clock_drift_data_to_plot_shift = np.array([item for sublist in df[i+' shift ['+str(per_bands[0])+'-'+str(per_bands[1])+' s]'].tolist() for item in sublist])
+
             # ----------------------------------------------------------------------------------------------------
             ax0 = fig.add_subplot(gs[z,1])
             ax0.xaxis.set_major_locator(months)
@@ -2456,23 +2477,26 @@ for iOBS in OBS_LST:
             ax0.yaxis.set_major_locator(MultipleLocator(100))
             ax0.yaxis.set_minor_locator(MultipleLocator(25))
             ax0.set_ylabel('Drift ('+str(1/NEW_SAMPLING_RATE)+'s)')
-            ax0.set_title(chan_lst[z])
-            #ax0.set_ylim(-200,200)
+            ax0.set_title(chan_lst[z]+' ['+str(per_bands[0])+'-'+str(per_bands[1])+' s]')
+            ax0.set_ylim(-100,100)
+            ax0.set_xlim(clock_drift_date_to_plot[0],clock_drift_date_to_plot[-1])
+
             # -------------------------------------------------------------------------------------------------------------
-            poly_reg = PolynomialFeatures(degree=1)
-            X_poly = poly_reg.fit_transform(np.array(range(len(clock_drift_data_to_plot_shift))).reshape(-1, 1))
+            mask = clock_drift_data_to_plot_coefficient >= 0.5
+            mask_ = clock_drift_data_to_plot_coefficient < 0.5
+            # -------------------------------------------------------------------------------------------------------------
+
+            poly_reg = PolynomialFeatures(degree=3)
+            X_poly = poly_reg.fit_transform(np.array(range(len(clock_drift_data_to_plot_shift[mask]))).reshape(-1, 1))
             pol_reg = LinearRegression()
-            pol_reg.fit(X_poly, clock_drift_data_to_plot_shift)
+            pol_reg.fit(X_poly, clock_drift_data_to_plot_shift[mask])
             # -------------------------------------------------------------------------------------------------------------
 
-            for y,u in enumerate(clock_drift_data_to_plot_shift):
-                if clock_drift_data_to_plot_coefficient > 0.3:
-                    print(df[i+' coefficient'].values[z][y])
-                    im = ax0.scatter(clock_drift_date_to_plot[y],clock_drift_data_to_plot_shift[y],c=clock_drift_data_to_plot_coefficient[y],marker='o',edgecolors=None,cmap='magma',s=20,vmin=0,vmax=1,alpha=0.9)
-                else:
-                    im = ax0.scatter(clock_drift_date_to_plot[y],clock_drift_data_to_plot_shift[y],c=clock_drift_data_to_plot_coefficient[y],marker='o',edgecolors=None,cmap='magma',s=10,vmin=0,vmax=1,alpha=0.7)
+            im = ax0.scatter(clock_drift_date_to_plot[mask],clock_drift_data_to_plot_shift[mask],c=clock_drift_data_to_plot_coefficient[mask],marker='o',edgecolors=None,cmap='viridis_r',s=20,vmin=0,vmax=1,alpha=0.9)
 
-                ax0.plot(clock_drift_date_to_plot, pol_reg.predict(poly_reg.fit_transform(np.array(range(len(clock_drift_data_to_plot_shift))).reshape(-1, 1))),'--b')
+            ax0.scatter(clock_drift_date_to_plot[mask_],clock_drift_data_to_plot_shift[mask_],c=clock_drift_data_to_plot_coefficient[mask_],marker='o',edgecolors=None,cmap='viridis_r',s=5,vmin=0,vmax=1,alpha=0.1)
+
+            ax0.plot(clock_drift_date_to_plot[mask], pol_reg.predict(poly_reg.fit_transform(np.array(range(len(clock_drift_data_to_plot_shift[mask]))).reshape(-1, 1))),'-k')
 
             if z == 0:
 
@@ -2485,21 +2509,12 @@ for iOBS in OBS_LST:
                                    borderpad=0,
                                    )
                 plt.colorbar(im, cax=axins, orientation="horizontal", ticklocation='top')
-        else:
-            ax0 = fig.add_subplot(gs[z,1])
-            ax0.xaxis.set_major_locator(months)
-            ax0.xaxis.set_major_formatter(yearsFmt)
-            ax0.xaxis.set_minor_locator(days_minor)
-            ax0.yaxis.set_major_locator(MultipleLocator(100))
-            ax0.yaxis.set_minor_locator(MultipleLocator(25))
-            ax0.set_ylabel('Drift ('+str(1/NEW_SAMPLING_RATE)+'s)')
-            ax0.set_title(chan_lst[z])
-            #ax0.set_ylim(-200,200)
-    # -------------------------------------------------------------------------------------------------------------
-    plt.show()
+
+        # -------------------------------------------------------------------------------------------------------------
+        plt.show()
 '''
-        output_figure_CLOCK_DRIFT = CLOCK_DRIFT_OUTPUT+'CLOCK_DRIFT_TOTAL_FIGURES/'
-        os.makedirs(output_figure_CLOCK_DRIFT,exist_ok=True)
-        fig.savefig(output_figure_CLOCK_DRIFT+'CLOCK_DRIFT_TOTAL_'+OBS_LST[i]+'.png',dpi=300)
-        plt.close()
+            output_figure_CLOCK_DRIFT = CLOCK_DRIFT_OUTPUT+'CLOCK_DRIFT_TOTAL_FIGURES/'
+            os.makedirs(output_figure_CLOCK_DRIFT,exist_ok=True)
+            fig.savefig(output_figure_CLOCK_DRIFT+'CLOCK_DRIFT_TOTAL_'+OBS_LST[i]+'.png',dpi=300)
+            plt.close()
 '''
