@@ -111,8 +111,8 @@ WINDOW_LENGTH = 3600
 #max time window (s) for cross-correlation
 SHIFT_LEN = 1800
 
-PERIOD_BANDS = [[2, 5], [5, 10], [10, 30]]
-# (these bands focus on periods ~3, 7, 20 seconds)
+PERIOD_BANDS = [[5, 10], [10, 30], [50, 100]]
+# (these bands focus on periods 7, 20 and 70 seconds)
 
 # default parameters to define the signal and noise windows used to
 # estimate the SNR:
@@ -2339,7 +2339,7 @@ print("--- %.2f execution time (min) ---" % ((time.time() - start_time)/60))
 start_time = time.time()
 plot_stacked_cc_interstation_distance_per_obs_short('CROSS_CORR_10_DAYS_STACKED_FILES')
 print("--- %.2f execution time (min) ---" % ((time.time() - start_time)/60))
-
+'''
 print('\n')
 print('========================')
 print('Clock Drift Calculating:')
@@ -2387,7 +2387,7 @@ for iOBS in OBS_LST:
                 pbar.update()
     print("--- %.2f execution time (min) ---" % ((time.time() - start_time)/60))
 
-'''
+
 print('\n')
 print('===============================')
 print('Total Clock Drift for each OBS:')
@@ -2396,10 +2396,23 @@ print('\n')
 
 clock_drift_files_lst = sorted(glob.glob(FEATHER_FILES+'/*'))
 
+clock_drift_files = []
+
+for i,j in enumerate(clock_drift_files_lst):
+    # splitting subdir/basename
+    subdir, filename = os.path.split(j)
+    pair_sta_1 = filename.split('_')[0].split('.')[1]
+    pair_sta_2 = filename.split('_')[0].split('.')[3]
+
+    if 'OBS' in pair_sta_1 and 'OBS' in pair_sta_2:
+        pass
+    else:
+        clock_drift_files.append(j)
+
 for iOBS in OBS_LST:
     for iband, per_bands in enumerate(PERIOD_BANDS):
 
-        clock_drift_df_lst = [pd.read_feather(j) for i,j in enumerate(clock_drift_files_lst) if iOBS in j]
+        clock_drift_df_lst = [pd.read_feather(j) for i,j in enumerate(clock_drift_files) if iOBS in j]
         # ----------------------------------------------------------------------------------------------------
 
         df = pd.concat(clock_drift_df_lst, ignore_index=True)
@@ -2482,21 +2495,22 @@ for iOBS in OBS_LST:
             ax0.set_xlim(clock_drift_date_to_plot[0],clock_drift_date_to_plot[-1])
 
             # -------------------------------------------------------------------------------------------------------------
-            mask = clock_drift_data_to_plot_coefficient >= 0.5
-            mask_ = clock_drift_data_to_plot_coefficient < 0.5
+            mask = clock_drift_data_to_plot_coefficient >= 0.4
+            mask_ = clock_drift_data_to_plot_coefficient < 0.4
             # -------------------------------------------------------------------------------------------------------------
 
-            poly_reg = PolynomialFeatures(degree=3)
+            poly_reg = PolynomialFeatures(degree=4)
             X_poly = poly_reg.fit_transform(np.array(range(len(clock_drift_data_to_plot_shift[mask]))).reshape(-1, 1))
             pol_reg = LinearRegression()
-            pol_reg.fit(X_poly, clock_drift_data_to_plot_shift[mask])
+            pol_reg.fit(X_poly,  clock_drift_data_to_plot_shift[mask])
+
             # -------------------------------------------------------------------------------------------------------------
 
             im = ax0.scatter(clock_drift_date_to_plot[mask],clock_drift_data_to_plot_shift[mask],c=clock_drift_data_to_plot_coefficient[mask],marker='o',edgecolors=None,cmap='viridis_r',s=20,vmin=0,vmax=1,alpha=0.9)
 
             ax0.scatter(clock_drift_date_to_plot[mask_],clock_drift_data_to_plot_shift[mask_],c=clock_drift_data_to_plot_coefficient[mask_],marker='o',edgecolors=None,cmap='viridis_r',s=5,vmin=0,vmax=1,alpha=0.1)
 
-            ax0.plot(clock_drift_date_to_plot[mask], pol_reg.predict(poly_reg.fit_transform(np.array(range(len(clock_drift_data_to_plot_shift[mask]))).reshape(-1, 1))),'-k')
+            ax0.plot(clock_drift_date_to_plot[mask], pol_reg.predict(poly_reg.fit_transform(np.array(range(len(clock_drift_data_to_plot_shift[mask]))).reshape(-1, 1))),'--b')
 
             if z == 0:
 
@@ -2511,10 +2525,7 @@ for iOBS in OBS_LST:
                 plt.colorbar(im, cax=axins, orientation="horizontal", ticklocation='top')
 
         # -------------------------------------------------------------------------------------------------------------
-        plt.show()
-'''
-            output_figure_CLOCK_DRIFT = CLOCK_DRIFT_OUTPUT+'CLOCK_DRIFT_TOTAL_FIGURES/'
-            os.makedirs(output_figure_CLOCK_DRIFT,exist_ok=True)
-            fig.savefig(output_figure_CLOCK_DRIFT+'CLOCK_DRIFT_TOTAL_'+OBS_LST[i]+'.png',dpi=300)
-            plt.close()
-'''
+        output_figure_CLOCK_DRIFT = CLOCK_DRIFT_OUTPUT+'CLOCK_DRIFT_TOTAL_FIGURES/'
+        os.makedirs(output_figure_CLOCK_DRIFT,exist_ok=True)
+        fig.savefig(output_figure_CLOCK_DRIFT+'CLOCK_DRIFT_TOTAL_'+iOBS+'_'+str(per_bands[0])+'_'+str(per_bands[1])+'s.png',dpi=300)
+        plt.close()
