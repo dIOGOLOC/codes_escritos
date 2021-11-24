@@ -48,7 +48,6 @@ import cartopy.crs as ccrs
 from cartopy.io.shapereader import Reader
 import cartopy.feature as cfeature
 
-from sklearn.preprocessing import PolynomialFeatures
 from sklearn.linear_model import LinearRegression
 
 from pyasdf import ASDFDataSet
@@ -59,15 +58,15 @@ from pyasdf import ASDFDataSet
 
 # Folders input
 
-MSEED_DIR_OBS = '/media/diogoloc/Backup/dados_posdoc/ON_MAR/obs_data_MSEED/'
+MSEED_DIR_OBS = '/home/diogoloc/dados_posdoc/ON_MAR/obs_data_MSEED/'
 
-MSEED_DIR_STA = '/media/diogoloc/Backup/dados_posdoc/ON_MAR/data/'
+MSEED_DIR_STA = '/home/diogoloc/dados_posdoc/ON_MAR/data/'
 
 # -------------------------------
 
 # Shapefile  boundary states input
 
-BOUNDARY_STATES_SHP = '/media/diogoloc/Backup/dados_posdoc/SIG_dados/Projeto_ON_MAR/shapefile/brasil_estados/UFEBRASIL.shp'
+BOUNDARY_STATES_SHP = '/home/diogoloc/SIG_dados/Projeto_ON_MAR/shapefile/brasil_estados/brasil_estados.shp'
 
 # -------------------------------
 
@@ -78,7 +77,7 @@ OBS_LST = ['OBS17','OBS18','OBS20','OBS22']
 STATIONS_LST = ['ABR01','DUB01','MAN01','OBS20','OBS22','TER01','ALF01','GDU01','NAN01','TIJ01','CAJ01','GUA01','OBS17','PET01','TRI01','CAM01','JAC01','OBS18','RIB01','VAS01','CMC01','MAJ01','SLP01','PARB','CNLB','BSFB']
 STATIONS_LST = sorted(STATIONS_LST)
 
-STATIONXML_DIR = '/media/diogoloc/Backup/dados_posdoc/ON_MAR/XML_ON_OBS_CC/'
+STATIONXML_DIR = '/home/diogoloc/dados_posdoc/ON_MAR/XML_ON_OBS_CC/'
 
 CHANNEL_LST = ['HHZ.D','HHN.D','HHE.D','HH1.D','HH2.D']
 
@@ -142,7 +141,7 @@ ONEDAY = datetime.timedelta(days=1)
 
 # MULTIPROCESSING
 
-num_processes = 10
+num_processes = 12
 
 # =================
 # Filtering by date
@@ -224,7 +223,7 @@ def obscorr_window(data1,time_data1,data2,time_data2,dist,vmin,vmax):
 #-------------------------------------------------------------------------------
 
 # Calculating Cross-Correlation between two traces
-def SNR(data,dist,vmin=SIGNAL_WINDOW_VMIN,vmax=SIGNAL_WINDOW_VMAX):
+def SNR(data,time_data,dist,vmin=SIGNAL_WINDOW_VMIN,vmax=SIGNAL_WINDOW_VMAX,signal2noise_trail=SIGNAL2NOISE_TRAIL,noise_window_size=NOISE_WINDOW_SIZE):
 	"""
     The signal window is defined by *vmin* and *vmax*:
     	dist/*vmax* < t < dist/*vmin*
@@ -753,7 +752,6 @@ def plot_stacked_cc_interstation_distance(folder_name):
     Plotting Stacked Cross-correlations according to interstation distance
     @type folder_name: folder of the cross-correlations files (str)
     '''
-    chan_lst = ['HHE-HHE','HHN-HHN','HHZ-HHZ','HHE-HHN','HHE-HHZ','HHN-HHZ']
 
     #Collecting daily list of cross-correlations
     crosscorr_days_lst = sorted(glob.glob(ASDF_FILES+folder_name+'/*'))
@@ -766,39 +764,68 @@ def plot_stacked_cc_interstation_distance(folder_name):
     #Make a list of list flat
     crosscorr_pairs = [item for sublist in crosscorr_pairs_lst for item in sublist]
 
+    # ---------------------
+    # Separating by channel
+    # ---------------------
+
     HHE_HHE_lst = []
     HHN_HHN_lst = []
     HHZ_HHZ_lst = []
 
     HHE_HHN_lst = []
+    HHN_HHE_lst = []
+
     HHE_HHZ_lst = []
+    HHZ_HHE_lst = []
+
     HHN_HHZ_lst = []
+    HHZ_HHN_lst = []
 
     for i in crosscorr_pairs:
-        # splitting subdir/basename
-        subdir, filename = os.path.split(i)
-        name_pair1 = filename.split('.h5')[0].split('_')[-1]
-        name_pair2 = filename.split('.h5')[0].split('_')[-2]
+            # splitting subdir/basename
+            subdir, filename = os.path.split(i)
+            nameslst = filename.split("_20")[0]
 
-        if 'HHE' in name_pair1 and 'HHE' in name_pair2 or 'HH2' in name_pair1 and 'HH2' in name_pair2 or 'HH2' in name_pair1 and 'HHE' in name_pair2  or 'HHE' in name_pair1 and 'HH2' in name_pair2:
-            HHE_HHE_lst.append(i)
+            name_pair1 = nameslst.split('_')[-2]
+            name_pair2 = nameslst.split('_')[-1].split('.h5')[0]
 
-        if 'HHN' in name_pair1 and 'HHN' in name_pair2 or 'HH1' in name_pair1 and 'HH1' in name_pair2 or 'HHN' in name_pair1 and 'HH1' in name_pair2 or 'HH1' in name_pair1 and 'HHN' in name_pair2:
-            HHN_HHN_lst.append(i)
+            name1 = name_pair1.split('..')[0]
+            name2 = name_pair2.split('..')[0]
 
-        if 'HHZ' in name_pair1 and 'HHZ' in name_pair2:
-            HHZ_HHZ_lst.append(i)
+            channel_sta1 = name_pair1.split('..')[1]
+            channel_sta2 = name_pair2.split('..')[1]
 
-        if 'HHE' in name_pair1 and 'HHN' in name_pair2 or 'HHN' in name_pair1 and 'HHE' in name_pair2 or 'HH2' in name_pair1 and 'HHN' in name_pair2 or 'HHN' in name_pair1 and 'HH2' in name_pair2 or 'HHE' in name_pair1 and 'HH1' in name_pair2 or 'HH1' in name_pair1 and 'HHE' in name_pair2 or 'HH2' in name_pair1 and 'HH1' in name_pair2 or 'HH1' in name_pair1 and 'HH2' in name_pair2:
-            HHE_HHN_lst.append(i)
+            # ------------------------------------------------------------------------------------------------------
+            if channel_sta1 == 'HHE' and channel_sta2 == 'HHE' or channel_sta1 == 'HH2' and channel_sta2 == 'HH2' or channel_sta1 == 'HH2' and channel_sta2 == 'HHE' or  channel_sta1 == 'HHE' and channel_sta2 == 'HH2':
+                HHE_HHE_lst.append(i)
+            # ------------------------------------------------------------------------------------------------------
+            if channel_sta1 == 'HHN' and channel_sta2 == 'HHN' or channel_sta1 == 'HH1' and channel_sta2 == 'HH1' or channel_sta1 == 'HHN' and channel_sta2 == 'HH1' or channel_sta1 == 'HH1' and channel_sta2 == 'HHN':
+                HHN_HHN_lst.append(i)
+            # ------------------------------------------------------------------------------------------------------
+            if channel_sta1 == 'HHZ' and channel_sta2 == 'HHZ':
+                HHZ_HHZ_lst.append(i)
+            # ------------------------------------------------------------------------------------------------------
+            if channel_sta1 == 'HHE' and channel_sta2 == 'HHN' or channel_sta1 == 'HH2' and channel_sta2 == 'HHN' or channel_sta1 == 'HHE' and channel_sta2 == 'HH1' or channel_sta1 == 'HH2' and channel_sta2 == 'HH1':
+                HHE_HHN_lst.append(i)
+            # ------------------------------------------------------------------------------------------------------
+            if channel_sta1 == 'HHN' and channel_sta2 == 'HHE' or channel_sta1 == 'HH1' and channel_sta2 == 'HHE' or channel_sta1 == 'HHN' and channel_sta2 == 'HH2' or channel_sta1 == 'HH1' and channel_sta2 == 'HH2':
+                HHN_HHE_lst.append(i)
+            # ------------------------------------------------------------------------------------------------------
+            if channel_sta1 == 'HHE' and channel_sta2 == 'HHZ' or channel_sta1 == 'HH2' and channel_sta2 == 'HHZ':
+                HHE_HHZ_lst.append(i)
+            # ------------------------------------------------------------------------------------------------------
+            if channel_sta1 == 'HHZ' and channel_sta2 == 'HHE' or channel_sta1 == 'HHZ' and channel_sta2 == 'HH2':
+                HHZ_HHE_lst.append(i)
+            # ------------------------------------------------------------------------------------------------------
+            if channel_sta1 == 'HHN' and channel_sta2 == 'HHZ' or channel_sta1 == 'HH1' and channel_sta2 == 'HHZ':
+                HHN_HHZ_lst.append(i)
+            # ------------------------------------------------------------------------------------------------------
+            if channel_sta1 == 'HHZ' and channel_sta2 == 'HHN' or channel_sta1 == 'HHZ' and channel_sta2 == 'HH1':
+                HHZ_HHN_lst.append(i)
+            # ------------------------------------------------------------------------------------------------------
 
-        if 'HHE' in name_pair1 and 'HHZ' in name_pair2 or 'HHZ' in name_pair1 and 'HHE' in name_pair2 or 'HH2' in name_pair1 and 'HHZ' in name_pair2 or 'HHZ' in name_pair1 and 'HH2' in name_pair2:
-            HHE_HHZ_lst.append(i)
-
-        if 'HHZ' in name_pair1 and 'HHN' in name_pair2 or 'HHN' in name_pair1 and 'HHZ' in name_pair2 or 'HHZ' in name_pair1 and 'HH1' in name_pair2 or 'HH1' in name_pair1 and 'HHZ' in name_pair2:
-            HHN_HHZ_lst.append(i)
-
-    CHANNEL_fig_lst = [HHE_HHE_lst,HHN_HHN_lst,HHZ_HHZ_lst,HHE_HHN_lst,HHE_HHZ_lst,HHN_HHZ_lst]
+    CHANNEL_fig_lst = [HHE_HHE_lst,HHE_HHN_lst,HHE_HHZ_lst,HHN_HHN_lst,HHN_HHE_lst,HHN_HHZ_lst,HHZ_HHE_lst,HHZ_HHN_lst,HHZ_HHZ_lst]
+    chan_lst = ['HHE-HHE','HHE-HHN','HHE-HHZ','HHN-HHN','HHN-HHE','HHN-HHZ','HHZ-HHE','HHZ-HHN','HHZ-HHZ']
 
     for ipairs,crosscorr_pairs in enumerate(CHANNEL_fig_lst):
         #Creating the figure
@@ -902,14 +929,18 @@ def plot_stacked_cc_interstation_distance(folder_name):
         crosscorr_stack_data_normalized_vmin_org_lst = [crosscorr_stack_data_normalized_vmin_lst[i] for i in orglst]
         crosscorr_stack_data_normalized_org_lst = [crosscorr_stack_data_normalized_lst[i] for i in orglst]
 
-
         #--------------------------------------------------------------------------------------------------------------------
         ax2 = fig.add_subplot(gs[2,0])
         crosscorr_stack_data_normalized_org_lsts = [bandpass(data_2_plot,1.0/PERIOD_BANDS[0][1], 1.0/PERIOD_BANDS[0][0], NEW_SAMPLING_RATE, corners=2, zerophase=False) for data_2_plot in crosscorr_stack_data_normalized_org_lst]
         crosscorr_stack_data_normalized_org_lst = [Normalize(a) for a in crosscorr_stack_data_normalized_org_lsts]
 
-        y_factor = 1
+        #--------------------------------------------------------------------------------------------------------------------
+        y_factor = 5
         sav_f = 51
+
+        type_interpolation='None'
+        type_cmap='seismic'
+        #--------------------------------------------------------------------------------------------------------------------
 
         for i,j in enumerate(crosscorr_stack_data_normalized_org_lst):
         	ax2.plot(time_to_plot[i],[x+i/y_factor for x in crosscorr_stack_data_normalized_org_lst[i]],c=crosscorr_stack_style_org_lst[i],lw=0.5)
@@ -937,7 +968,7 @@ def plot_stacked_cc_interstation_distance(folder_name):
         vector_plot = np.array(crosscorr_stack_data_normalized_org_lst)
 
         extent = [-SHIFT_LEN,SHIFT_LEN,0,len(crosscorr_stack_data_normalized_org_lst)]
-        im = ax3.imshow(vector_plot,extent=extent,origin='lower', interpolation='sinc',aspect='auto',cmap='RdBu')
+        im = ax3.imshow(vector_plot,extent=extent,origin='lower', interpolation=type_interpolation,aspect='auto',cmap=type_cmap)
         ax3.axvline(x=0, ymin=0, ymax=1,color='k',linestyle='--')
         ax3.set_xlim(-SIGNAL2NOISE_TRAIL,SIGNAL2NOISE_TRAIL)
 
@@ -993,9 +1024,8 @@ def plot_stacked_cc_interstation_distance(folder_name):
         ax5 = fig.add_subplot(gs[3,1])
 
         vector_plot = np.array(crosscorr_stack_data_normalized_org_lst_20_50)
-
         extent = [-SHIFT_LEN,SHIFT_LEN,0,len(crosscorr_stack_data_normalized_org_lst_20_50)]
-        im = ax5.imshow(vector_plot,extent=extent,origin='lower', interpolation='sinc',aspect='auto',cmap='RdBu')
+        im = ax5.imshow(vector_plot,extent=extent,origin='lower', interpolation=type_interpolation,aspect='auto',cmap=type_cmap)
         ax5.axvline(x=0, ymin=0, ymax=1,color='k',linestyle='--')
         ax5.set_xlim(-SIGNAL2NOISE_TRAIL,SIGNAL2NOISE_TRAIL)
 
@@ -1052,7 +1082,7 @@ def plot_stacked_cc_interstation_distance(folder_name):
         vector_plot = np.array(crosscorr_stack_data_normalized_org_lst_50_100)
 
         extent = [-SHIFT_LEN,SHIFT_LEN,0,len(crosscorr_stack_data_normalized_org_lst_50_100)]
-        im = ax7.imshow(vector_plot,extent=extent,origin='lower', interpolation='sinc',aspect='auto',cmap='RdBu')
+        im = ax7.imshow(vector_plot,extent=extent,origin='lower', interpolation=type_interpolation,aspect='auto',cmap=type_cmap)
         ax7.axvline(x=0, ymin=0, ymax=1,color='k',linestyle='--')
         ax7.set_xlim(-SIGNAL2NOISE_TRAIL,SIGNAL2NOISE_TRAIL)
 
@@ -1064,7 +1094,6 @@ def plot_stacked_cc_interstation_distance(folder_name):
 
         ax7.plot(savgol_filter([-i for i in  crosscorr_stack_data_normalized_vmax_org_lst],sav_f,1),savgol_filter([i for i in range(len(crosscorr_stack_data_normalized_org_lst_50_100))],sav_f,1),ls='--',lw=0.5,c='r')
         ax7.plot(savgol_filter([-i for i in  crosscorr_stack_data_normalized_vmin_org_lst],sav_f,1),savgol_filter([i for i in range(len(crosscorr_stack_data_normalized_org_lst_50_100))],sav_f,1),ls='--',lw=0.5,c='r')
-
 
         # adding labels
         ax7.set_xlabel('Lapse time (s)',fontsize=14)
@@ -1103,40 +1132,68 @@ def plot_stacked_cc_interstation_distance_per_obs(folder_name):
     #Make a list of list flat
     crosscorr_pairs = [item for sublist in crosscorr_pairs_lst for item in sublist]
 
+    # ---------------------
+    # Separating by channel
+    # ---------------------
+
     HHE_HHE_lst = []
     HHN_HHN_lst = []
     HHZ_HHZ_lst = []
 
     HHE_HHN_lst = []
+    HHN_HHE_lst = []
+
     HHE_HHZ_lst = []
+    HHZ_HHE_lst = []
+
     HHN_HHZ_lst = []
+    HHZ_HHN_lst = []
 
     for i in crosscorr_pairs:
-        # splitting subdir/basename
-        subdir, filename = os.path.split(i)
-        name_pair1 = filename.split('.h5')[0].split('_')[-1]
-        name_pair2 = filename.split('.h5')[0].split('_')[-2]
+            # splitting subdir/basename
+            subdir, filename = os.path.split(i)
+            nameslst = filename.split("_20")[0]
 
-        if 'HHE' in name_pair1 and 'HHE' in name_pair2 or 'HH2' in name_pair1 and 'HH2' in name_pair2 or 'HH2' in name_pair1 and 'HHE' in name_pair2  or 'HHE' in name_pair1 and 'HH2' in name_pair2:
-            HHE_HHE_lst.append(i)
+            name_pair1 = nameslst.split('_')[-2]
+            name_pair2 = nameslst.split('_')[-1].split('.h5')[0]
 
-        if 'HHN' in name_pair1 and 'HHN' in name_pair2 or 'HH1' in name_pair1 and 'HH1' in name_pair2 or 'HHN' in name_pair1 and 'HH1' in name_pair2 or 'HH1' in name_pair1 and 'HHN' in name_pair2:
-            HHN_HHN_lst.append(i)
+            name1 = name_pair1.split('..')[0]
+            name2 = name_pair2.split('..')[0]
 
-        if 'HHZ' in name_pair1 and 'HHZ' in name_pair2:
-            HHZ_HHZ_lst.append(i)
+            channel_sta1 = name_pair1.split('..')[1]
+            channel_sta2 = name_pair2.split('..')[1]
 
-        if 'HHE' in name_pair1 and 'HHN' in name_pair2 or 'HHN' in name_pair1 and 'HHE' in name_pair2 or 'HH2' in name_pair1 and 'HHN' in name_pair2 or 'HHN' in name_pair1 and 'HH2' in name_pair2 or 'HHE' in name_pair1 and 'HH1' in name_pair2 or 'HH1' in name_pair1 and 'HHE' in name_pair2 or 'HH2' in name_pair1 and 'HH1' in name_pair2 or 'HH1' in name_pair1 and 'HH2' in name_pair2:
-            HHE_HHN_lst.append(i)
+            # ------------------------------------------------------------------------------------------------------
+            if channel_sta1 == 'HHE' and channel_sta2 == 'HHE' or channel_sta1 == 'HH2' and channel_sta2 == 'HH2' or channel_sta1 == 'HH2' and channel_sta2 == 'HHE' or  channel_sta1 == 'HHE' and channel_sta2 == 'HH2':
+                HHE_HHE_lst.append(i)
+            # ------------------------------------------------------------------------------------------------------
+            if channel_sta1 == 'HHN' and channel_sta2 == 'HHN' or channel_sta1 == 'HH1' and channel_sta2 == 'HH1' or channel_sta1 == 'HHN' and channel_sta2 == 'HH1' or channel_sta1 == 'HH1' and channel_sta2 == 'HHN':
+                HHN_HHN_lst.append(i)
+            # ------------------------------------------------------------------------------------------------------
+            if channel_sta1 == 'HHZ' and channel_sta2 == 'HHZ':
+                HHZ_HHZ_lst.append(i)
+            # ------------------------------------------------------------------------------------------------------
+            if channel_sta1 == 'HHE' and channel_sta2 == 'HHN' or channel_sta1 == 'HH2' and channel_sta2 == 'HHN' or channel_sta1 == 'HHE' and channel_sta2 == 'HH1' or channel_sta1 == 'HH2' and channel_sta2 == 'HH1':
+                HHE_HHN_lst.append(i)
+            # ------------------------------------------------------------------------------------------------------
+            if channel_sta1 == 'HHN' and channel_sta2 == 'HHE' or channel_sta1 == 'HH1' and channel_sta2 == 'HHE' or channel_sta1 == 'HHN' and channel_sta2 == 'HH2' or channel_sta1 == 'HH1' and channel_sta2 == 'HH2':
+                HHN_HHE_lst.append(i)
+            # ------------------------------------------------------------------------------------------------------
+            if channel_sta1 == 'HHE' and channel_sta2 == 'HHZ' or channel_sta1 == 'HH2' and channel_sta2 == 'HHZ':
+                HHE_HHZ_lst.append(i)
+            # ------------------------------------------------------------------------------------------------------
+            if channel_sta1 == 'HHZ' and channel_sta2 == 'HHE' or channel_sta1 == 'HHZ' and channel_sta2 == 'HH2':
+                HHZ_HHE_lst.append(i)
+            # ------------------------------------------------------------------------------------------------------
+            if channel_sta1 == 'HHN' and channel_sta2 == 'HHZ' or channel_sta1 == 'HH1' and channel_sta2 == 'HHZ':
+                HHN_HHZ_lst.append(i)
+            # ------------------------------------------------------------------------------------------------------
+            if channel_sta1 == 'HHZ' and channel_sta2 == 'HHN' or channel_sta1 == 'HHZ' and channel_sta2 == 'HH1':
+                HHZ_HHN_lst.append(i)
+            # ------------------------------------------------------------------------------------------------------
 
-        if 'HHE' in name_pair1 and 'HHZ' in name_pair2 or 'HHZ' in name_pair1 and 'HHE' in name_pair2 or 'HH2' in name_pair1 and 'HHZ' in name_pair2 or 'HHZ' in name_pair1 and 'HH2' in name_pair2:
-            HHE_HHZ_lst.append(i)
-
-        if 'HHZ' in name_pair1 and 'HHN' in name_pair2 or 'HHN' in name_pair1 and 'HHZ' in name_pair2 or 'HHZ' in name_pair1 and 'HH1' in name_pair2 or 'HH1' in name_pair1 and 'HHZ' in name_pair2:
-            HHN_HHZ_lst.append(i)
-
-    CHANNEL_fig_lst = [HHE_HHE_lst,HHN_HHN_lst,HHZ_HHZ_lst,HHE_HHN_lst,HHE_HHZ_lst,HHN_HHZ_lst]
-    chan_lst = ['HHE-HHE','HHN-HHN','HHZ-HHZ','HHE-HHN','HHE-HHZ','HHN-HHZ']
+    CHANNEL_fig_lst = [HHE_HHE_lst,HHE_HHN_lst,HHE_HHZ_lst,HHN_HHN_lst,HHN_HHE_lst,HHN_HHZ_lst,HHZ_HHE_lst,HHZ_HHN_lst,HHZ_HHZ_lst]
+    chan_lst = ['HHE-HHE','HHE-HHN','HHE-HHZ','HHN-HHN','HHN-HHE','HHN-HHZ','HHZ-HHE','HHZ-HHN','HHZ-HHZ']
 
     for iOBS in OBS_LST:
 
@@ -1149,7 +1206,7 @@ def plot_stacked_cc_interstation_distance_per_obs(folder_name):
 
             #-------------------------------------------
 
-            map_loc = fig.add_subplot(gs[:2,:],projection=ccrs.PlateCarree())
+            map_loc = fig.add_subplot(gs[:2,:],projecCalculating_clock_drift_function=ccrs.PlateCarree())
 
             LLCRNRLON_LARGE = -52
             URCRNRLON_LARGE = -38
@@ -1684,9 +1741,12 @@ def Calculating_clock_drift_func(ipair):
                     ax0.set_ylim(-200,200)
 
                     # -------------------------------------------------------------------------------------------------------------
-                    poly_reg = PolynomialFeatures(degree=4)
-                    X_poly = poly_reg.fit_transform(np.array(range(len(data_to_plot_shift_clock_drift_chan[z]))).reshape(-1, 1))
-                    pol_reg = LinearRegression()
+                    slope, intercept, r, p, std_err = stats.linregress(x, y)
+
+                    def myfunc(x):
+                      return slope * x + intercept
+
+                    mymodel = list(map(myfunc, x))
                     pol_reg.fit(X_poly, data_to_plot_shift_clock_drift_chan[z])
                     # -------------------------------------------------------------------------------------------------------------
                     for y,u in enumerate(data_to_plot_shift_clock_drift_chan[z]):
@@ -1745,44 +1805,74 @@ def plot_stacked_cc_interstation_distance_per_obs_short(folder_name):
     #Make a list of list flat
     crosscorr_pairs = [item for sublist in crosscorr_pairs_lst for item in sublist]
 
+    # ---------------------
+    # Separating by channel
+    # ---------------------
+
     HHE_HHE_lst = []
     HHN_HHN_lst = []
     HHZ_HHZ_lst = []
 
     HHE_HHN_lst = []
+    HHN_HHE_lst = []
+
     HHE_HHZ_lst = []
+    HHZ_HHE_lst = []
+
     HHN_HHZ_lst = []
+    HHZ_HHN_lst = []
 
     for i in crosscorr_pairs:
+
         # splitting subdir/basename
         subdir, filename = os.path.split(i)
-        name_pair1 = filename.split('.h5')[0].split('_')[-1]
-        name_pair2 = filename.split('.h5')[0].split('_')[-2]
+        nameslst = filename.split("_20")[0]
 
-        if 'HHE' in name_pair1 and 'HHE' in name_pair2 or 'HH2' in name_pair1 and 'HH2' in name_pair2 or 'HH2' in name_pair1 and 'HHE' in name_pair2  or 'HHE' in name_pair1 and 'HH2' in name_pair2:
+        name_pair1 = nameslst.split('_')[-2]
+        name_pair2 = nameslst.split('_')[-1].split('.h5')[0]
+
+        name1 = name_pair1.split('..')[0]
+        name2 = name_pair2.split('..')[0]
+
+        channel_sta1 = name_pair1.split('..')[1]
+        channel_sta2 = name_pair2.split('..')[1]
+
+
+        # ------------------------------------------------------------------------------------------------------
+        if channel_sta1 == 'HHE' and channel_sta2 == 'HHE' or channel_sta1 == 'HH2' and channel_sta2 == 'HH2' or channel_sta1 == 'HH2' and channel_sta2 == 'HHE' or  channel_sta1 == 'HHE' and channel_sta2 == 'HH2':
             HHE_HHE_lst.append(i)
-
-        if 'HHN' in name_pair1 and 'HHN' in name_pair2 or 'HH1' in name_pair1 and 'HH1' in name_pair2 or 'HHN' in name_pair1 and 'HH1' in name_pair2 or 'HH1' in name_pair1 and 'HHN' in name_pair2:
+        # ------------------------------------------------------------------------------------------------------
+        if channel_sta1 == 'HHN' and channel_sta2 == 'HHN' or channel_sta1 == 'HH1' and channel_sta2 == 'HH1' or channel_sta1 == 'HHN' and channel_sta2 == 'HH1' or channel_sta1 == 'HH1' and channel_sta2 == 'HHN':
             HHN_HHN_lst.append(i)
-
-        if 'HHZ' in name_pair1 and 'HHZ' in name_pair2:
+        # ------------------------------------------------------------------------------------------------------
+        if channel_sta1 == 'HHZ' and channel_sta2 == 'HHZ':
             HHZ_HHZ_lst.append(i)
-
-        if 'HHE' in name_pair1 and 'HHN' in name_pair2 or 'HHN' in name_pair1 and 'HHE' in name_pair2 or 'HH2' in name_pair1 and 'HHN' in name_pair2 or 'HHN' in name_pair1 and 'HH2' in name_pair2 or 'HHE' in name_pair1 and 'HH1' in name_pair2 or 'HH1' in name_pair1 and 'HHE' in name_pair2 or 'HH2' in name_pair1 and 'HH1' in name_pair2 or 'HH1' in name_pair1 and 'HH2' in name_pair2:
+        # ------------------------------------------------------------------------------------------------------
+        if channel_sta1 == 'HHE' and channel_sta2 == 'HHN' or channel_sta1 == 'HH2' and channel_sta2 == 'HHN' or channel_sta1 == 'HHE' and channel_sta2 == 'HH1' or channel_sta1 == 'HH2' and channel_sta2 == 'HH1':
             HHE_HHN_lst.append(i)
-
-        if 'HHE' in name_pair1 and 'HHZ' in name_pair2 or 'HHZ' in name_pair1 and 'HHE' in name_pair2 or 'HH2' in name_pair1 and 'HHZ' in name_pair2 or 'HHZ' in name_pair1 and 'HH2' in name_pair2:
+        # ------------------------------------------------------------------------------------------------------
+        if channel_sta1 == 'HHN' and channel_sta2 == 'HHE' or channel_sta1 == 'HH1' and channel_sta2 == 'HHE' or channel_sta1 == 'HHN' and channel_sta2 == 'HH2' or channel_sta1 == 'HH1' and channel_sta2 == 'HH2':
+            HHN_HHE_lst.append(i)
+        # ------------------------------------------------------------------------------------------------------
+        if channel_sta1 == 'HHE' and channel_sta2 == 'HHZ' or channel_sta1 == 'HH2' and channel_sta2 == 'HHZ':
             HHE_HHZ_lst.append(i)
-
-        if 'HHZ' in name_pair1 and 'HHN' in name_pair2 or 'HHN' in name_pair1 and 'HHZ' in name_pair2 or 'HHZ' in name_pair1 and 'HH1' in name_pair2 or 'HH1' in name_pair1 and 'HHZ' in name_pair2:
+        # ------------------------------------------------------------------------------------------------------
+        if channel_sta1 == 'HHZ' and channel_sta2 == 'HHE' or channel_sta1 == 'HHZ' and channel_sta2 == 'HH2':
+            HHZ_HHE_lst.append(i)
+        # ------------------------------------------------------------------------------------------------------
+        if channel_sta1 == 'HHN' and channel_sta2 == 'HHZ' or channel_sta1 == 'HH1' and channel_sta2 == 'HHZ':
             HHN_HHZ_lst.append(i)
+        # ------------------------------------------------------------------------------------------------------
+        if channel_sta1 == 'HHZ' and channel_sta2 == 'HHN' or channel_sta1 == 'HHZ' and channel_sta2 == 'HH1':
+            HHZ_HHN_lst.append(i)
+        # ------------------------------------------------------------------------------------------------------
 
-    CHANNEL_fig_lst = [HHE_HHE_lst,HHN_HHN_lst,HHZ_HHZ_lst,HHE_HHN_lst,HHE_HHZ_lst,HHN_HHZ_lst]
-    chan_lst = ['HHE-HHE','HHN-HHN','HHZ-HHZ','HHE-HHN','HHE-HHZ','HHN-HHZ']
+    CHANNEL_fig_lst = [HHE_HHE_lst,HHE_HHN_lst,HHE_HHZ_lst,HHN_HHN_lst,HHN_HHE_lst,HHN_HHZ_lst,HHZ_HHE_lst,HHZ_HHN_lst,HHZ_HHZ_lst]
+    chan_lst = ['HHE-HHE','HHE-HHN','HHE-HHZ','HHN-HHN','HHN-HHE','HHN-HHZ','HHZ-HHE','HHZ-HHN','HHZ-HHZ']
 
     for iOBS in OBS_LST:
-
         for ipairs,crosscorr_pairs in enumerate(CHANNEL_fig_lst):
+
             #Creating the figure
             fig = plt.figure(figsize=(10, 30))
             fig.suptitle(iOBS+': CrossCorrelation '+chan_lst[ipairs],fontsize=20)
@@ -1873,7 +1963,6 @@ def plot_stacked_cc_interstation_distance_per_obs_short(folder_name):
                     except:
                         pass
 
-
             #-------------------------------------------
             orglst = np.argsort(crosscorr_stack_data_normalized_dist_lst)
             crosscorr_stack_name_org_lst = [crosscorr_stack_name_lst[i] for i in orglst]
@@ -1885,9 +1974,9 @@ def plot_stacked_cc_interstation_distance_per_obs_short(folder_name):
 
             #--------------------------------------------------------------------------------------------------------------------
             #plot parameters
-            sav_f = 11
+            sav_f = 5
             cmap_interpolation = 'RdBu'
-            type_interpolation = 'sinc'
+            type_interpolation = 'None'
             #--------------------------------------------------------------------------------------------------------------------
 
             ax3 = fig.add_subplot(gs[2])
@@ -2330,7 +2419,7 @@ print('============================================================')
 print('Plotting Staked cross-correlations by interstation distance:')
 print('============================================================')
 print('\n')
-
+'''
 start_time = time.time()
 plot_stacked_cc_interstation_distance('CROSS_CORR_10_DAYS_STACKED_FILES')
 print("--- %.2f execution time (min) ---" % ((time.time() - start_time)/60))
@@ -2489,28 +2578,55 @@ for iOBS in OBS_LST:
             ax0.xaxis.set_minor_locator(days_minor)
             ax0.yaxis.set_major_locator(MultipleLocator(100))
             ax0.yaxis.set_minor_locator(MultipleLocator(25))
-            ax0.set_ylabel('Drift ('+str(1/NEW_SAMPLING_RATE)+'s)')
+            #ax0.set_ylabel('Drift ('+str(1/NEW_SAMPLING_RATE)+'s)')
+            ax0.set_ylabel('Drift (s)')
             ax0.set_title(chan_lst[z]+' ['+str(per_bands[0])+'-'+str(per_bands[1])+' s]')
-            ax0.set_ylim(-100,100)
+            ax0.set_ylim(-200,200)
             ax0.set_xlim(clock_drift_date_to_plot[0],clock_drift_date_to_plot[-1])
 
             # -------------------------------------------------------------------------------------------------------------
-            mask = clock_drift_data_to_plot_coefficient >= 0.4
-            mask_ = clock_drift_data_to_plot_coefficient < 0.4
+            mask = clock_drift_data_to_plot_coefficient >= data_coefficient_mean_85
+            mask_ = clock_drift_data_to_plot_coefficient < data_coefficient_mean_85
+            # -------------------------------------------------------------------------------------------------------------
+            if len(clock_drift_date_to_plot[mask]) > 1:
+                #Simple Linear Regression With scikit-learn
+
+                #Provide data:
+                x = np.array(range(len(clock_drift_date_to_plot[mask]))).reshape((-1, 1))
+                y = clock_drift_data_to_plot_shift[mask]
+
+                #Create a model and fit it:
+                model = LinearRegression()
+
+                #It’s time to start using the model. First, you need to call .fit() on model:
+                model.fit(x, y)
+
+                #Get results:
+                #coefficient of determination
+                r_sq = model.score(x, y)
+                #intercept:
+                intercept = model.intercept_
+                #slope:
+                slope = model.coef_[0]
+
+                x_pred = np.arange(start=clock_drift_date_to_plot[0],stop=clock_drift_date_to_plot[-1],step=ONEDAY)
+                #Predict response (y_pred = model.intercept_ + model.coef_ * x):
+                y_pred = model.predict(np.array(range(len(x_pred))).reshape((-1, 1)))
+
+                ax0.plot(x_pred, y_pred/NEW_SAMPLING_RATE,'--k',alpha=0.7)
+
+                # these are matplotlib.patch.Patch properties
+                props = dict(boxstyle='round', facecolor='white', alpha=0.5)
+                ax0.text(0.9, 0.8, '$CC_{av}:$'+str(round(data_coefficient_mean,2)), horizontalalignment='center',verticalalignment='center', transform=ax0.transAxes,bbox=props)
+
+            else:
+                pass
+
             # -------------------------------------------------------------------------------------------------------------
 
-            poly_reg = PolynomialFeatures(degree=4)
-            X_poly = poly_reg.fit_transform(np.array(range(len(clock_drift_data_to_plot_shift[mask]))).reshape(-1, 1))
-            pol_reg = LinearRegression()
-            pol_reg.fit(X_poly,  clock_drift_data_to_plot_shift[mask])
+            im = ax0.scatter(clock_drift_date_to_plot[mask],clock_drift_data_to_plot_shift[mask]/NEW_SAMPLING_RATE,c=clock_drift_data_to_plot_coefficient[mask],marker='o',edgecolors=None,cmap='viridis_r',s=20,vmin=0,vmax=1,alpha=0.9)
 
-            # -------------------------------------------------------------------------------------------------------------
-
-            im = ax0.scatter(clock_drift_date_to_plot[mask],clock_drift_data_to_plot_shift[mask],c=clock_drift_data_to_plot_coefficient[mask],marker='o',edgecolors=None,cmap='viridis_r',s=20,vmin=0,vmax=1,alpha=0.9)
-
-            ax0.scatter(clock_drift_date_to_plot[mask_],clock_drift_data_to_plot_shift[mask_],c=clock_drift_data_to_plot_coefficient[mask_],marker='o',edgecolors=None,cmap='viridis_r',s=5,vmin=0,vmax=1,alpha=0.1)
-
-            ax0.plot(clock_drift_date_to_plot[mask], pol_reg.predict(poly_reg.fit_transform(np.array(range(len(clock_drift_data_to_plot_shift[mask]))).reshape(-1, 1))),'--b')
+            ax0.scatter(clock_drift_date_to_plot[mask_],clock_drift_data_to_plot_shift[mask_]/NEW_SAMPLING_RATE,c=clock_drift_data_to_plot_coefficient[mask_],marker='o',edgecolors=None,cmap='viridis_r',s=2,vmin=0,vmax=1,alpha=0.1)
 
             if z == 0:
 
@@ -2518,7 +2634,7 @@ for iOBS in OBS_LST:
                                    width="30%",  # width = 10% of parent_bbox width
                                    height="10%",  # height : 5%
                                    loc='upper left',
-                                   bbox_to_anchor=(0.65,0.1, 1, 1),
+                                   bbox_to_anchor=(0.7,0.2, 1, 1),
                                    bbox_transform=ax0.transAxes,
                                    borderpad=0,
                                    )
@@ -2529,3 +2645,4 @@ for iOBS in OBS_LST:
         os.makedirs(output_figure_CLOCK_DRIFT,exist_ok=True)
         fig.savefig(output_figure_CLOCK_DRIFT+'CLOCK_DRIFT_TOTAL_'+iOBS+'_'+str(per_bands[0])+'_'+str(per_bands[1])+'s.png',dpi=300)
         plt.close()
+'''
