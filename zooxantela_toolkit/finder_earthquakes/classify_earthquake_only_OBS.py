@@ -25,7 +25,7 @@ from obspy.geodetics.base import gps2dist_azimuth
 from obspy.signal.util import prev_pow_2
 from obspy.signal.tf_misfit import cwt
 import pywt
-from scipy.stats import moment,kurtosis,skew
+import scipy.stats as stats
 
 import json
 import glob
@@ -37,7 +37,7 @@ from numpy.lib.stride_tricks import as_strided
 import pandas as pd
 from scipy.signal import spectrogram, detrend, resample,savgol_filter
 from scipy.linalg import norm
-from sklearn.preprocessing import normalize as normalize_matrix
+from sklearn.preprocessing import normalize
 
 import random
 import collections
@@ -132,7 +132,10 @@ dt = tr.stats.delta
 df = tr.stats.sampling_rate
 datetime_window = tr.stats.starttime
 EVENT_LENGTH_MIN = tr.stats.endtime-tr.stats.starttime
-#----------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------
+# Time Series --> Spectrogram
+# ----------------------------------------------------------------------------
 
 tr_data = obs_HHZ_standard_pattern_waveform[0]
 trim_data = tr_data.copy()
@@ -153,13 +156,14 @@ x, y = np.meshgrid(
 t,
 np.linspace(f_min, f_max, scalogram_pattern.shape[0]))
 
-event_pattern = normalize_matrix(np.abs(scalogram_pattern), axis=1, norm='max')
-
-# ------------------------------------------------------------------------------
-
+# Normalizing data
+event_pattern = normalize(np.abs(scalogram_pattern), axis=1, norm='max')
+# ----------------------------------------------------------------------------
+# Spectral Image --> Wavelet Transform
+# ----------------------------------------------------------------------------
+#
 # 2D Discrete Wavelet Transform.
 # compress image
-
 #                            -------------------
 #                            |        |        |
 #                            | cA(LL) | cH(LH) |
@@ -169,41 +173,73 @@ event_pattern = normalize_matrix(np.abs(scalogram_pattern), axis=1, norm='max')
 #                            | cV(HL) | cD(HH) |
 #                            |        |        |
 #                            -------------------
-
 # ------------------------------------------------------------------------------
+coeffs = pywt.dwt2(event_pattern, 'db1')
+cA, lst_c = coeffs
+# normalize each coefficient array independently for better visibility
+cA /= np.abs(cA).max()
 
-wavelet_pattern,wavelet = pywt.dwt2(event_pattern, 'db1')
+lst_c_ = []
+for coef in lst_c:
+    lst_c_.append([d/np.abs(d).max() for d in coef])
 
-        L = len(coeffs)
-        cA = coeffs[0]
-        for i in range(1,L):
-            (cH, cV, cD) = coeffs[i]
-            cA = np.concatenate((np.concatenate((cA, cV),axis= 1),np.concatenate((cH, cD),axis = 1)),axis=0)
-        return cA
+cH, cV, cD = lst_c_
+haar_image = np.concatenate((np.concatenate((cA, cV),axis= 1),np.concatenate((cH, cD),axis = 1)),axis=0)
 
-x, y = np.meshgrid(
-np.linspace(t[0], t[-1], wavelet_pattern.shape[1]),
-np.linspace(f_min, f_max, wavelet_pattern.shape[0]))
+# ----------------------------------------------------------------------------
+# Wavelet Transform --> Top Coefficients
+# ----------------------------------------------------------------------------
+# Key discriminative features are concentrated in a few # wavelet coefficients
+# with highest deviation:
+# – Deviation defined by median/MAD over entire data set
+# – Keep only sign (+ or -) of these coefficients, set rest to 0
+#  Data compression, robust to noise
 
+shape = haar_image.shape
 
+medians = []
+for i in range(shape[1]):
+    medians.append(np.median(haar_image[:, i]))
+haar_medians = np.array(medians)
 
+mad = []
+for i in range(shape[1]):
+    tmp = abs(haar_image[:, i] - medians[i])
+    mad.append(np.median(tmp))
+haar_absdevs = np.array(mad)
 
-#----------------------------------------------------------------------------
+haar_image_top = (haar_image - haar_medians)/haar_absdevs
+haar_image_top = np.sign(haar_image_top)
+
+# ----------------------------------------------------------------------------
+# Top Coefficients è Binary Fingerprint
+# ----------------------------------------------------------------------------
+# Fingerprint must be compact and sparse to store in database
+# – Convert top coefficients to a binary sequence of 0’s, 1’s
+# • Negative: 01, Zero: 00, Positive: 10
 # Plotting the results
+
+
+# ----------------------------------------------------------------------------
+# Plotting
+# ----------------------------------------------------------------------------
+
 axis_major = SecondLocator(interval=5)   # every 5-second
 axis_minor = SecondLocator(interval=1)   # every 1-second
 axis_Fmt = DateFormatter('%H:%M:%S')
 
 plt.rcParams.update({'font.size': 12})
-fig, axes = plt.subplots(ncols=1, nrows=2,figsize=(20,20),sharex='col')
-plt.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=None, hspace=0.4)
+fig = plt.figure(figsize=(20,20))
+gs = fig.add_gridspec(3, 3)
+plt.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=None, hspace=0.5)
 #----------------------------------------------------------------------------
-
-ax1 = axes[0]
-ax4 = axes[1]
-
+ax1 = fig.add_subplot(gs[0, :])
+ax2 = fig.add_subplot(gs[1, :])
+ax3 = fig.add_subplot(gs[2, 0])
+ax4 = fig.add_subplot(gs[2, 1])
+ax5 = fig.add_subplot(gs[2, 2])
+#-----------------------
 ax1.set_title('Channel: HHZ')
-
 ax1.xaxis.set_major_formatter(axis_Fmt)
 ax1.xaxis.set_major_locator(axis_major)
 ax1.xaxis.set_minor_locator(axis_minor)
@@ -213,35 +249,66 @@ ax1.plot(trim_data.times('matplotlib'),trim_data.data, color='k', linewidth=2)
 ax1.text(0.05, 0.9, tr.stats.station, horizontalalignment='center',verticalalignment='center', transform=ax1.transAxes,bbox={'facecolor': 'white', 'alpha': 0.5, 'pad': 0.2, 'boxstyle': 'round'})
 
 #----------------------------------------------------------------------------
-ax4.set_title('Continuous Wavelet Transform')
+ax2.set_title('Continuous Wavelet Transform')
 fig.suptitle('Event Date: '+datetime_window.strftime('%d/%m/%Y'),y=0.95,fontsize=25)
 
-ax4.xaxis.set_major_formatter(axis_Fmt)
-ax4.xaxis.set_major_locator(axis_major)
-ax4.xaxis.set_minor_locator(axis_minor)
-ax4.tick_params(axis='both',which='major',width=2,length=5)
-ax4.tick_params(axis='both',which='minor',width=2,length=3)
+ax2.xaxis.set_major_formatter(axis_Fmt)
+ax2.xaxis.set_major_locator(axis_major)
+ax2.xaxis.set_minor_locator(axis_minor)
+ax2.tick_params(axis='both',which='major',width=2,length=5)
+ax2.tick_params(axis='both',which='minor',width=2,length=3)
 
-#im = ax4.pcolormesh(x, y, np.abs(wavelet_pattern),shading='auto', cmap='viridis')
-im = ax4.pcolormesh(x, y, np.abs(wavelet_pattern),shading='auto', cmap='viridis')
-ax4.set_ylabel("Frequency [Hz]")
-ax4.text(0.05, 0.9, tr.stats.station, horizontalalignment='center',verticalalignment='center', transform=ax4.transAxes,bbox={'facecolor': 'white', 'alpha': 0.5, 'pad': 0.2, 'boxstyle': 'round'})
+im = ax2.pcolormesh(x, y, event_pattern,shading='auto', cmap='plasma')
+ax2.set_ylabel("Frequency [Hz]")
+ax2.text(0.05, 0.9, tr.stats.station, horizontalalignment='center',verticalalignment='center', transform=ax2.transAxes,bbox={'facecolor': 'white', 'alpha': 0.5, 'pad': 0.2, 'boxstyle': 'round'})
 
-
-axins = inset_axes(ax4,
+axins = inset_axes(ax2,
                     width="30%",
                     height="5%",
                     loc='upper left',
                     bbox_to_anchor=(0.650, 0.1, 1, 1),
-                    bbox_transform=ax4.transAxes,
+                    bbox_transform=ax2.transAxes,
                     borderpad=0,
                     )
 
 plt.colorbar(im, cax=axins, orientation="horizontal", ticklocation='top')
 
-plt.show()
+#----------------------------------------------------------------------------
+ax3.set_title('|Haar transform|')
 
+im3 = ax3.pcolormesh(haar_image, cmap='plasma')
+ax3.set_xlabel('wavelet transform x index')
+ax3.set_ylabel('wavelet transform y index')
+axins3 = inset_axes(ax3,
+                    width="20%",
+                    height="5%",
+                    loc='upper left',
+                    bbox_to_anchor=(0.75, 0.1, 1, 1),
+                    bbox_transform=ax3.transAxes,
+                    borderpad=0,
+                    )
+
+plt.colorbar(im3, cax=axins3, orientation="horizontal", ticklocation='top')
+#----------------------------------------------------------------------------
+
+ax4.set_title('Top Coefficients')
+
+im4 = ax4.pcolormesh(haar_image_top, cmap='gray')
+ax4.set_xlabel('wavelet transform x index')
+ax4.set_ylabel('wavelet transform y index')
+axins4 = inset_axes(ax4,
+                    width="20%",
+                    height="5%",
+                    loc='upper left',
+                    bbox_to_anchor=(0.75, 0.1, 1, 1),
+                    bbox_transform=ax4.transAxes,
+                    borderpad=0,
+                    )
+
+plt.colorbar(im4, cax=axins4, orientation="horizontal", ticklocation='top')
+plt.show()
 '''
+
 EVENT_FOLDER_H5 = [i for i in sorted(glob.glob(ASDF_FILES+'EVENT_DATA_FILES/'+NETWORK+'/**/**')) if OBS_NAME in i]
 EVENT_FOLDER_H5 = EVENT_FOLDER_H5[:5]
 
