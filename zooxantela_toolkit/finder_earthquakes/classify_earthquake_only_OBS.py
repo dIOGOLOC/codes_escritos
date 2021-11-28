@@ -59,11 +59,14 @@ from obspy.signal.trigger import classic_sta_lta, trigger_onset, coincidence_tri
 # Configuration file
 # ==================
 
-EARTHQUAKE_FINDER_OUTPUT = '/home/diogoloc/dados_posdoc/ON_MAR/EARTHQUAKE_FINDER_NETWORK_OUTPUT/FIGURAS/'
+EARTHQUAKE_FINDER_OUTPUT = '/media/diogoloc/Backup/dados_posdoc/ON_MAR/EARTHQUAKE_FINDER_NETWORK_OUTPUT/FIGURAS/'
+#EARTHQUAKE_FINDER_OUTPUT = '/home/diogoloc/dados_posdoc/ON_MAR/EARTHQUAKE_FINDER_NETWORK_OUTPUT/FIGURAS/'
 
-ASDF_FILES = '/home/diogoloc/dados_posdoc/ON_MAR/EARTHQUAKE_FINDER_NETWORK_OUTPUT/ASDF_FILES/'
+#ASDF_FILES = '/home/diogoloc/dados_posdoc/ON_MAR/EARTHQUAKE_FINDER_NETWORK_OUTPUT/ASDF_FILES/'
+ASDF_FILES = '/media/diogoloc/Backup/dados_posdoc/ON_MAR/EARTHQUAKE_FINDER_NETWORK_OUTPUT/ASDF_FILES/'
 
-STATIONXML_DIR = '/home/diogoloc/dados_posdoc/ON_MAR/XML_ON_OBS_CC/'
+#STATIONXML_DIR = '/home/diogoloc/dados_posdoc/ON_MAR/XML_ON_OBS_CC/'
+STATIONXML_DIR = '/media/diogoloc/Backup/dados_posdoc/ON_MAR/XML_ON_OBS_CC/'
 
 FILTER_DATA = [5,15]
 
@@ -88,7 +91,8 @@ THRON = 3
 THROFF = 0.5
 
 PEM = 1
-PET = 11
+PET = 10
+
 
 DTINY = np.finfo(0.0).tiny
 
@@ -113,7 +117,8 @@ print('\n')
 EVENT_STANDARD_TIME = UTCDateTime(EVENT_PATTERN_DATE)
 EVENT_STANDARD_TIME_STR = str(EVENT_STANDARD_TIME.year)+'.'+"%03d" % EVENT_STANDARD_TIME.julday
 
-obs_HHZ_standard_pattern = '/home/diogoloc/dados_posdoc/ON_MAR/obs_data_MSEED/ON/'+OBS_NAME+'/HHZ.D/ON.'+OBS_NAME+'..HHZ.D.'+EVENT_STANDARD_TIME_STR
+#obs_HHZ_standard_pattern = '/home/diogoloc/dados_posdoc/ON_MAR/obs_data_MSEED/ON/'+OBS_NAME+'/HHZ.D/ON.'+OBS_NAME+'..HHZ.D.'+EVENT_STANDARD_TIME_STR
+obs_HHZ_standard_pattern = '/media/diogoloc/Backup/dados_posdoc/ON_MAR/obs_data_MSEED/ON/'+OBS_NAME+'/HHZ.D/ON.'+OBS_NAME+'..HHZ.D.'+EVENT_STANDARD_TIME_STR
 
 obs_HHZ_standard_pattern_waveform = read(obs_HHZ_standard_pattern)
 tr = obs_HHZ_standard_pattern_waveform[0]
@@ -152,12 +157,11 @@ f_max = FILTER_DATA[-1]
 
 scalogram_pattern = cwt(trim_data.data, dt, 8, f_min, f_max)
 
-x, y = np.meshgrid(
-t,
-np.linspace(f_min, f_max, scalogram_pattern.shape[0]))
+x, y = np.meshgrid(t,np.linspace(f_min, f_max, scalogram_pattern.shape[0]))
 
 # Normalizing data
-event_pattern = normalize(np.abs(scalogram_pattern), axis=1, norm='max')
+#event_pattern = normalize(np.abs(scalogram_pattern), axis=1, norm='l2')
+event_pattern = np.abs(scalogram_pattern)
 # ----------------------------------------------------------------------------
 # Spectral Image --> Wavelet Transform
 # ----------------------------------------------------------------------------
@@ -209,7 +213,7 @@ for i in range(shape[1]):
 haar_absdevs = np.array(mad)
 
 haar_image_top = (haar_image - haar_medians)/haar_absdevs
-haar_image_top = np.sign(haar_image_top)
+#haar_image_top = np.sign(haar_image_top)
 
 # ----------------------------------------------------------------------------
 # Top Coefficients è Binary Fingerprint
@@ -219,6 +223,8 @@ haar_image_top = np.sign(haar_image_top)
 # • Negative: 01, Zero: 00, Positive: 10
 # Plotting the results
 
+binaryFingerprints_bool = haar_image_top > 0
+binaryFingerprint = 1*binaryFingerprints_bool
 
 # ----------------------------------------------------------------------------
 # Plotting
@@ -229,12 +235,12 @@ axis_minor = SecondLocator(interval=1)   # every 1-second
 axis_Fmt = DateFormatter('%H:%M:%S')
 
 plt.rcParams.update({'font.size': 12})
-fig = plt.figure(figsize=(20,20))
+fig = plt.figure(figsize=(30,30))
 gs = fig.add_gridspec(3, 3)
 plt.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=None, hspace=0.5)
 #----------------------------------------------------------------------------
 ax1 = fig.add_subplot(gs[0, :])
-ax2 = fig.add_subplot(gs[1, :])
+ax2 = fig.add_subplot(gs[1, :],sharex=ax1)
 ax3 = fig.add_subplot(gs[2, 0])
 ax4 = fig.add_subplot(gs[2, 1])
 ax5 = fig.add_subplot(gs[2, 2])
@@ -306,6 +312,25 @@ axins4 = inset_axes(ax4,
                     )
 
 plt.colorbar(im4, cax=axins4, orientation="horizontal", ticklocation='top')
+
+#----------------------------------------------------------------------------
+
+ax5.set_title('Binary Fingerprint')
+
+im5 = ax5.pcolormesh(binaryFingerprint, cmap='gray')
+ax5.set_xlabel('wavelet transform x index')
+ax5.set_ylabel('wavelet transform y index')
+axins5 = inset_axes(ax5,
+                    width="20%",
+                    height="5%",
+                    loc='upper left',
+                    bbox_to_anchor=(0.75, 0.1, 1, 1),
+                    bbox_transform=ax5.transAxes,
+                    borderpad=0,
+                    )
+
+plt.colorbar(im5, cax=axins5, orientation="horizontal", ticklocation='top')
+#----------------------------------------------------------------------------
 plt.show()
 '''
 
