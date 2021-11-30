@@ -3,7 +3,7 @@ Script to get local events informations from some text file:
 
 An example of LOCAL_CSV_FILE is shown bellow:
 
- YEAR MMDD HHMMSS  LAT. LONG.  ERR ST DEPTH MAG. T CAT Io  AREA LOCALITY   COMMENTS 
+ YEAR MMDD HHMMSS  LAT. LONG.  ERR ST DEPTH MAG. T CAT Io  AREA LOCALITY   COMMENTS
  2001 0107 035015  -17.70 -44.70  10 MG   0.  3.4  1  I   -       Pirapora     (UnB)
  2001 0123 092131  -05.28 -39.42  50 CE   0.  3.3  1  I   -       Quixeramobim (IAG,UFRN)
  2001 0221 152021  -11.28 -74.51  10 PU  33.  5.5  0  I   2       Central Peru (IRIS)AC-IIMM
@@ -41,27 +41,29 @@ dic_local_event = {
 		'mag':[]}
 
 for i,j in enumerate(local_event_info_txt):
-	try:
-		time_str = j[0]+'-'+j[1][:2]+'-'+j[1][2:]+'T'+j[2][:2]+':'+j[2][2:4]+':'+j[2][4:]
-		time = datetime.fromisoformat(j[0]+'-'+j[1][:2]+'-'+j[1][2:]+'T'+j[2][:2]+':'+j[2][2:4]+':'+j[2][4:])
-		
-		point = Point(float(j[4]), float(j[3])) # an x,y tuple
-		shp = shapefile.Reader(SHP_AREA_DELIMITER) #open the shapefile
-		if datetime.fromisoformat(LOCAL_EVENT_START_DATE) <= time <= datetime.fromisoformat(LOCAL_EVENT_FINAL_DATE) and point.within(shape(shp.shapes())) == True and float(j[6]) >= LOCAL_EV_MAGNITUDE_MIN:
-			dic_local_event['ev_timeUTC'].append(time_str)
-			print('Event '+str(i+1)+' - '+str(time_str))
-			dic_local_event['evla'].append(float(j[3]))
-			dic_local_event['evlo'].append(float(j[4]))
-			dic_local_event['evdp'].append(float(j[5]))
-			dic_local_event['mag'].append(float(j[6]))
-	except:
-		print('Error in Local event time '+' - line '+str(i+1)+' or Point out of the study area')
+    try:
+        time_str = j[0]+'-'+j[1][:2]+'-'+j[1][2:]+'T'+j[2][:2]+':'+j[2][2:4]+':'+j[2][4:]
+        time = datetime.fromisoformat(j[0]+'-'+j[1][:2]+'-'+j[1][2:]+'T'+j[2][:2]+':'+j[2][2:4]+':'+j[2][4:])
 
+        point = Point(float(j[4]), float(j[3])) # an x,y tuple
+        shp = shapefile.Reader(SHP_AREA_DELIMITER) #open the shapefile
+        polygon = shape(shp.shapeRecords()[0].shape.__geo_interface__) # 1 polygon
+
+        if datetime.fromisoformat(LOCAL_EVENT_START_DATE) <= time <= datetime.fromisoformat(LOCAL_EVENT_FINAL_DATE) and polygon.contains(point) == True and float(j[6]) >= LOCAL_EV_MAGNITUDE_MIN:
+            dic_local_event['ev_timeUTC'].append(time_str)
+            print('Event '+str(i+1)+' - '+str(time_str))
+            dic_local_event['evla'].append(float(j[3]))
+            dic_local_event['evlo'].append(float(j[4]))
+            dic_local_event['evdp'].append(float(j[5]))
+            dic_local_event['mag'].append(float(j[6]))
+
+    except:
+        print('Error in Local event time '+' - line '+str(i+1)+' or Point out of the study area')
 
 print('\n')
 print('Number of Events: '+str(len(dic_local_event['mag'])))
 print('\n')
-		
+
 print('Saving Event Parameters in JSON file')
 print('\n')
 

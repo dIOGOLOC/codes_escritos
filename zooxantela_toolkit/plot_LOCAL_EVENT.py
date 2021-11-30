@@ -88,9 +88,9 @@ for i in EVENT_dir:
 
 print('Ploting Station x Event')
 start_time = time.time()
-'''
+
 for i,j in enumerate(lst_eventsZ):
-  plot_map_event_data(lst_eventsZ[i],lst_eventsN[i],lst_eventsE[i],EVENT_dir[i],'Local/',4,16.0)
+  plot_map_event_data(lst_eventsZ[i],lst_eventsN[i],lst_eventsE[i],EVENT_dir[i],'Local/',10,20)
 
 #-------------------------------------------------------------------------------------------------------------------
 '''
@@ -111,9 +111,9 @@ for i in EVENT_dir:
 #--------------------------------------------------------------------------------------------------------------------
 for i,j in enumerate(lst_eventsX):
     if len(j) != 0:
-        plot_map_event_data_hydrophone(lst_eventsX[i],EVENT_dir[i],'Local/',4,16.0)
+        plot_map_event_data_hydrophone(lst_eventsX[i],EVENT_dir[i],'Local/',2,20)
 
 #--------------------------------------------------------------------------------------------------------------------
-
+'''
 print("--- %.2f execution time (min) ---" % ((time.time() - start_time)/60))
 print('\n')

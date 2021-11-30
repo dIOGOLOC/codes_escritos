@@ -1,5 +1,5 @@
 '''
-Script to trim event data of large earthquakes 
+Script to trim event data of large earthquakes
 (https://docs.obspy.org/packages/autogen/obspy.core.stream.Stream.trim.html#obspy.core.stream.Stream.trim)
 and plot a mosaic of event raw and filtered data.
 '''
@@ -13,6 +13,7 @@ from obspy.taup import TauPyModel
 import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
 from obspy.io.sac.sactrace import SACTrace
+from obspy.signal.trigger import classic_sta_lta, trigger_onset, coincidence_trigger,recursive_sta_lta,plot_trigger
 
 import numpy as np
 import pandas as pd
@@ -24,10 +25,12 @@ from matplotlib.transforms import offset_copy
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature
 from cartopy.io.shapereader import Reader
+import cartopy.io.img_tiles as cimgt
+from cartopy.mpl.ticker import (LongitudeFormatter, LatitudeFormatter,LatitudeLocator,LongitudeLocator)
 
 from parameters_py.config import (
 					DIR_DATA,TAUPY_MODEL,EV_GCARC_MIN,EV_GCARC_MAX,CUT_BEFORE_P,CUT_AFTER_P,XML_FILE,
-					OUTPUT_EV_DIR,OUTPUT_FIGURE_DIR,BOUNDARY_STATES_SHP
+					OUTPUT_EV_DIR,OUTPUT_FIGURE_DIR,BOUNDARY_STATES_SHP,LOCAL_EV_DISTANCE_MIN
 							   )
 # ===============================
 # Function to cut and plot event:
@@ -46,27 +49,27 @@ def cut_data_by_event(knetwk,kstnm,stla,stlo,ev_timeUTC,ev_julday,ev_year,ev_mon
 
 		#Reference time
 		starttime = (op.UTCDateTime(ev_timeUTC)+arr.time)-CUT_BEFORE_P
-		endtime = (op.UTCDateTime(ev_timeUTC)+arr.time)+CUT_AFTER_P	
+		endtime = (op.UTCDateTime(ev_timeUTC)+arr.time)+CUT_AFTER_P
 
 		########################################################################################################################################################
-		#STREAM 
+		#STREAM
 
 		#-----------------------------------
 		#Component E
 
 		if os.path.isfile(DIR_DATA+knetwk+'/'+kstnm+'/HHE.D'+'/'+knetwk+'.'+kstnm+'..HHE.D.'+'{:04}'.format(op.UTCDateTime(ev_timeUTC).year)+'.'+'{:03}'.format(op.UTCDateTime(ev_timeUTC).julday)) == True:
-		
-			#Creating Event Directory 
+
+			#Creating Event Directory
 			event_directory = OUTPUT_EV_DIR+'Regional/'+knetwk+'/'+kstnm+'/'+'{:04}'.format(op.UTCDateTime(ev_timeUTC).year)+'/'+'{:03}'.format(op.UTCDateTime(ev_timeUTC).julday)+'/'+'{:04}'.format(op.UTCDateTime(ev_timeUTC).year)+'.'+'{:03}'.format(op.UTCDateTime(ev_timeUTC).julday)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).hour)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).minute)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).second)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).microsecond)[:3]
 			os.makedirs(event_directory, exist_ok=True)
 
 			stE = read(DIR_DATA+knetwk+'/'+kstnm+'/HHE.D'+'/'+knetwk+'.'+kstnm+'..HHE.D.'+'{:04}'.format(op.UTCDateTime(ev_timeUTC).year)+'.'+'{:03}'.format(op.UTCDateTime(ev_timeUTC).julday))
-			stE.trim(starttime,endtime)		
+			stE.trim(starttime,endtime)
 
 			headerHHE = {
 						'kstnm': kstnm, 'kcmpnm': 'HHE','knetwk':knetwk,
-						'stla': float(stla), 'stlo': float(stlo), 
-						'evdp': float(ev_depth), 'evla': float(ev_lat), 'evlo': float(ev_long), 'mag': float(ev_mag), 
+						'stla': float(stla), 'stlo': float(stlo),
+						'evdp': float(ev_depth), 'evla': float(ev_lat), 'evlo': float(ev_long), 'mag': float(ev_mag),
 						'nzhour': int(starttime.hour), 'nzjday': int(starttime.julday), 'nzmin': int(starttime.minute),'nzmsec': int('{:03}'.format(starttime.microsecond)[:3]), 'nzsec': int(starttime.second), 'nzyear': int(starttime.year),
 						'cmpaz': 90.0, 'cmpinc': 90.0,'dist': float(dist/1000), 'gcarc': float(gcarc),'az': float(az), 'baz': float(baz),
 						'o':float(CUT_BEFORE_P),
@@ -75,22 +78,22 @@ def cut_data_by_event(knetwk,kstnm,stla,stlo,ev_timeUTC,ev_julday,ev_year,ev_mon
 
 			sacHHE = SACTrace(data=stE[0].data, **headerHHE)
 			sacHHE.write(event_directory+'/'+knetwk+'.'+kstnm+'.'+'{:04}'.format(op.UTCDateTime(ev_timeUTC).year)+'.'+'{:03}'.format(op.UTCDateTime(ev_timeUTC).julday)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).hour)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).minute)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).second)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).microsecond)[:3]+'.E')
-									
+
 		#-----------------------------------
 		#Component N
 		if os.path.isfile(DIR_DATA+knetwk+'/'+kstnm+'/HHN.D'+'/'+knetwk+'.'+kstnm+'..HHN.D.'+'{:04}'.format(op.UTCDateTime(ev_timeUTC).year)+'.'+'{:03}'.format(op.UTCDateTime(ev_timeUTC).julday)) == True:
-				
-			#Creating Event Directory 
+
+			#Creating Event Directory
 			event_directory = OUTPUT_EV_DIR+'Regional/'+knetwk+'/'+kstnm+'/'+'{:04}'.format(op.UTCDateTime(ev_timeUTC).year)+'/'+'{:03}'.format(op.UTCDateTime(ev_timeUTC).julday)+'/'+'{:04}'.format(op.UTCDateTime(ev_timeUTC).year)+'.'+'{:03}'.format(op.UTCDateTime(ev_timeUTC).julday)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).hour)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).minute)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).second)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).microsecond)[:3]
 			os.makedirs(event_directory, exist_ok=True)
 
 			stN = read(DIR_DATA+knetwk+'/'+kstnm+'/HHN.D'+'/'+knetwk+'.'+kstnm+'..HHN.D.'+'{:04}'.format(op.UTCDateTime(ev_timeUTC).year)+'.'+'{:03}'.format(op.UTCDateTime(ev_timeUTC).julday))
-			stN.trim(starttime,endtime)		
+			stN.trim(starttime,endtime)
 
 			headerHHY = {
 						'kstnm': kstnm, 'kcmpnm': 'HHN','knetwk':knetwk,
 						'stla': float(stla), 'stlo': float(stlo),
-						'evdp': float(ev_depth), 'evla': float(ev_lat), 'evlo': float(ev_long), 'mag': float(ev_mag), 
+						'evdp': float(ev_depth), 'evla': float(ev_lat), 'evlo': float(ev_long), 'mag': float(ev_mag),
 						'nzhour': int(starttime.hour), 'nzjday': int(starttime.julday), 'nzmin': int(starttime.minute), 'nzmsec': int('{:03}'.format(starttime.microsecond)[:3]),'nzsec': int(starttime.second),'nzyear': int(starttime.year),
 						'cmpaz': 0.0, 'cmpinc': 90.0, 'dist': float(dist/1000), 'gcarc': float(gcarc), 'az': float(az), 'baz': float(baz),
 						'o':float(CUT_BEFORE_P),
@@ -99,24 +102,24 @@ def cut_data_by_event(knetwk,kstnm,stla,stlo,ev_timeUTC,ev_julday,ev_year,ev_mon
 
 			sacHHY = SACTrace(data=stN[0].data, **headerHHY)
 			sacHHY.write(event_directory+'/'+knetwk+'.'+kstnm+'.'+'{:04}'.format(op.UTCDateTime(ev_timeUTC).year)+'.'+'{:03}'.format(op.UTCDateTime(ev_timeUTC).julday)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).hour)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).minute)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).second)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).microsecond)[:3]+'.N')
-						
+
 		#-----------------------------------
 		#Component Z
 
 		if os.path.isfile(DIR_DATA+knetwk+'/'+kstnm+'/HHZ.D'+'/'+knetwk+'.'+kstnm+'..HHZ.D.'+'{:04}'.format(op.UTCDateTime(ev_timeUTC).year)+'.'+'{:03}'.format(op.UTCDateTime(ev_timeUTC).julday)) == True:
 
-			#Creating Event Directory 
+			#Creating Event Directory
 			event_directory = OUTPUT_EV_DIR+'Regional/'+knetwk+'/'+kstnm+'/'+'{:04}'.format(op.UTCDateTime(ev_timeUTC).year)+'/'+'{:03}'.format(op.UTCDateTime(ev_timeUTC).julday)+'/'+'{:04}'.format(op.UTCDateTime(ev_timeUTC).year)+'.'+'{:03}'.format(op.UTCDateTime(ev_timeUTC).julday)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).hour)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).minute)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).second)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).microsecond)[:3]
 			os.makedirs(event_directory, exist_ok=True)
 
 			stZ = read(DIR_DATA+knetwk+'/'+kstnm+'/HHZ.D'+'/'+knetwk+'.'+kstnm+'..HHZ.D.'+'{:04}'.format(op.UTCDateTime(ev_timeUTC).year)+'.'+'{:03}'.format(op.UTCDateTime(ev_timeUTC).julday))
-			stZ.trim(starttime,endtime)	
-			
+			stZ.trim(starttime,endtime)
+
 			headerHHZ = {
 						'kstnm': kstnm, 'kcmpnm': 'HHZ','knetwk':knetwk,
-						'stla': float(stla), 'stlo': float(stlo), 
-						'evdp': float(ev_depth), 'evla': float(ev_lat), 'evlo': float(ev_long), 'mag': float(ev_mag), 
-						'nzhour': int(starttime.hour),'nzjday': int(starttime.julday), 'nzmin': int(starttime.minute), 'nzmsec': int('{:03}'.format(starttime.microsecond)[:3]),'nzsec': int(starttime.second),'nzyear': int(starttime.year),	
+						'stla': float(stla), 'stlo': float(stlo),
+						'evdp': float(ev_depth), 'evla': float(ev_lat), 'evlo': float(ev_long), 'mag': float(ev_mag),
+						'nzhour': int(starttime.hour),'nzjday': int(starttime.julday), 'nzmin': int(starttime.minute), 'nzmsec': int('{:03}'.format(starttime.microsecond)[:3]),'nzsec': int(starttime.second),'nzyear': int(starttime.year),
 						'cmpaz': 0.0, 'cmpinc': 0.0, 'dist': float(dist/1000), 'gcarc': float(gcarc), 'az': float(az), 'baz': float(baz),
 						'o':float(CUT_BEFORE_P),
 						'delta':stZ[0].stats.delta
@@ -129,18 +132,18 @@ def cut_data_by_event(knetwk,kstnm,stla,stlo,ev_timeUTC,ev_julday,ev_year,ev_mon
 		#Component X
 		if os.path.isfile(DIR_DATA+knetwk+'/'+kstnm+'/HHX.D'+'/'+knetwk+'.'+kstnm+'..HHX.D.'+'{:04}'.format(op.UTCDateTime(ev_timeUTC).year)+'.'+'{:03}'.format(op.UTCDateTime(ev_timeUTC).julday)) == True:
 
-			#Creating Event Directory 
+			#Creating Event Directory
 			event_directory = OUTPUT_EV_DIR+'Regional/'+knetwk+'/'+kstnm+'/'+'{:04}'.format(op.UTCDateTime(ev_timeUTC).year)+'/'+'{:03}'.format(op.UTCDateTime(ev_timeUTC).julday)+'/'+'{:04}'.format(op.UTCDateTime(ev_timeUTC).year)+'.'+'{:03}'.format(op.UTCDateTime(ev_timeUTC).julday)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).hour)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).minute)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).second)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).microsecond)[:3]
 			os.makedirs(event_directory, exist_ok=True)
 
 			stX = read(DIR_DATA+knetwk+'/'+kstnm+'/HHX.D'+'/'+knetwk+'.'+kstnm+'..HHX.D.'+'{:04}'.format(op.UTCDateTime(ev_timeUTC).year)+'.'+'{:03}'.format(op.UTCDateTime(ev_timeUTC).julday))
-			stX.trim(starttime,endtime)	
-			
+			stX.trim(starttime,endtime)
+
 			headerHHX = {
-						'kstnm': kstnm, 'kcmpnm': 'HHX','knetwk':knetwk, 
-						'stla': float(stla), 'stlo': float(stlo), 
-						'evdp': float(ev_depth), 'evla': float(ev_lat), 'evlo': float(ev_long), 'mag': float(ev_mag), 
-						'nzhour': int(starttime.hour),'nzjday': int(starttime.julday), 'nzmin': int(starttime.minute), 'nzmsec': int('{:03}'.format(starttime.microsecond)[:3]),'nzsec': int(starttime.second),'nzyear': int(starttime.year),	
+						'kstnm': kstnm, 'kcmpnm': 'HHX','knetwk':knetwk,
+						'stla': float(stla), 'stlo': float(stlo),
+						'evdp': float(ev_depth), 'evla': float(ev_lat), 'evlo': float(ev_long), 'mag': float(ev_mag),
+						'nzhour': int(starttime.hour),'nzjday': int(starttime.julday), 'nzmin': int(starttime.minute), 'nzmsec': int('{:03}'.format(starttime.microsecond)[:3]),'nzsec': int(starttime.second),'nzyear': int(starttime.year),
 						'dist': float(dist/1000), 'gcarc': float(gcarc), 'az': float(az), 'baz': float(baz),
 						'o':float(CUT_BEFORE_P),
 						'delta':stX[0].stats.delta
@@ -160,13 +163,15 @@ def plot_event_data(event_lst, inv, event_name,folder_name,lf,hf):
 		st.detrend("demean")
 		st.taper(max_percentage=0.05, type="hann")
 
-		#for tr in st:
-			#tr.remove_response(inventory=inv,output="VEL",water_level=60)
-		
+		if st[0].stats.channel != 'HHX':
+			for tr in st:
+				pre_filt = [0.001, 0.005, 45., 50.]
+				tr.remove_response(inventory=inv,pre_filt=pre_filt,output="DISP",water_level=60)
+
 		fig, axes = plt.subplots(len(st),2, sharex=True,figsize=(20, 15))
 
 		cols = ['Raw Data', 'Filterd Data ('+str(lf)+' Hz to '+str(hf)+' Hz)']
-		
+
 		for ax, col in zip(axes[0], cols):
 			ax.set_title(col)
 
@@ -183,7 +188,7 @@ def plot_event_data(event_lst, inv, event_name,folder_name,lf,hf):
 		axes[i,1].set_xlabel('Time after P (s)')
 		fig.suptitle('Event - '+event_name)
 		os.makedirs(OUTPUT_FIGURE_DIR+'EVENTS/'+folder_name,exist_ok=True)
-		fig.savefig(OUTPUT_FIGURE_DIR+'EVENTS/'+folder_name+'Event - '+event_name+'.pdf')
+		fig.savefig(OUTPUT_FIGURE_DIR+'EVENTS/'+folder_name+'Event - '+event_name+'.png')
 		plt.tight_layout()
 
 	else:
@@ -192,13 +197,15 @@ def plot_event_data(event_lst, inv, event_name,folder_name,lf,hf):
 		st.detrend("demean")
 		st.taper(max_percentage=0.05, type="hann")
 
-		#for tr in st:
-			#tr.remove_response(inventory=inv,output="VEL",water_level=60)
-		
+		if st[0].stats.channel != 'HHX':
+			for tr in st:
+				pre_filt = [0.001, 0.005, 45., 50.]
+				tr.remove_response(inventory=inv,pre_filt=pre_filt,output="DISP",water_level=60)
+
 		fig, axes = plt.subplots(1,2, sharex=True,figsize=(20, 15))
 
 		cols = ['Raw Data', 'Filterd Data ('+str(lf)+' Hz to '+str(hf)+' Hz)']
-		
+
 		for i,j in enumerate(st):
 			axes[0].plot(j.times(),j.data,'k')
 			axes[0].set_xlim(5,100)
@@ -215,14 +222,14 @@ def plot_event_data(event_lst, inv, event_name,folder_name,lf,hf):
 
 		fig.suptitle('Event - '+event_name)
 		os.makedirs(OUTPUT_FIGURE_DIR+'EVENTS/'+folder_name,exist_ok=True)
-		fig.savefig(OUTPUT_FIGURE_DIR+'EVENTS/'+folder_name+'Event - '+event_name+'.pdf')
+		fig.savefig(OUTPUT_FIGURE_DIR+'EVENTS/'+folder_name+'Event - '+event_name+'.png')
 		plt.tight_layout()
 
 def plot_map_event_data(event_lstZ,event_lstN,event_lstE,event_name,folder_name,lf,hf):
 		stZ = Stream()
 		for i in event_lstZ:
 			temp_z = read(i)
-			if round(temp_z[0].stats.sac.dist) < 500:
+			if round(temp_z[0].stats.sac.dist) < LOCAL_EV_DISTANCE_MIN:
 				stZ += temp_z
 
 		stZ.detrend("linear")
@@ -233,7 +240,7 @@ def plot_map_event_data(event_lstZ,event_lstN,event_lstE,event_name,folder_name,
 		stN = Stream()
 		for i in event_lstN:
 			temp_N = read(i)
-			if round(temp_N[0].stats.sac.dist) < 500:
+			if round(temp_N[0].stats.sac.dist) < LOCAL_EV_DISTANCE_MIN:
 				stN += read(i)
 
 		stN.detrend("linear")
@@ -244,7 +251,7 @@ def plot_map_event_data(event_lstZ,event_lstN,event_lstE,event_name,folder_name,
 		stE = Stream()
 		for i in event_lstE:
 			temp_E = read(i)
-			if round(temp_E[0].stats.sac.dist) < 500:
+			if round(temp_E[0].stats.sac.dist) < LOCAL_EV_DISTANCE_MIN:
 				stE += read(i)
 
 		stE.detrend("linear")
@@ -252,51 +259,71 @@ def plot_map_event_data(event_lstZ,event_lstN,event_lstE,event_name,folder_name,
 		stE.taper(max_percentage=0.05, type="hann")
 		stE.filter('bandpass',freqmin=lf, freqmax=hf)
 
-		#-------------------------------------------
+		# -----------------------------------------------------------------------
+		# MAP
+		# -----------------------------------------------------------------------
 
-		fig = plt.figure(figsize=(30, 10))
+		fig = plt.figure(figsize=(10, 10))
 		event_date = event_name.split('.')
-		print(UTCDateTime(year=int(event_date[0]),julday=int(event_date[1])))
-		fig.suptitle('Dia do Evento - '+UTCDateTime(year=int(event_date[0]),julday=int(event_date[1])).strftime('%d/%m/%Y')+' - Magnitude:'+str(stZ[0].stats.sac.mag),fontsize=20)
-
-		gs = gridspec.GridSpec(len(stZ), 4,wspace=0.2, hspace=0.5)
-
+		gs = gridspec.GridSpec(nrows=1, ncols=1)
 		#-------------------------------------------
+		crs = ccrs.Orthographic(central_longitude=-40, central_latitude=-20)
+		map_loc = fig.add_subplot(gs[0],projection=crs)
 
-		map_loc = fig.add_subplot(gs[:,0],projection=ccrs.PlateCarree())
-		
-		LLCRNRLON_LARGE = -50
-		URCRNRLON_LARGE = -35
-		LLCRNRLAT_LARGE = -28
-		URCRNRLAT_LARGE = -16
+		LLCRNRLON_LARGE = -52
+		URCRNRLON_LARGE = -28
+		LLCRNRLAT_LARGE = -30
+		URCRNRLAT_LARGE = -12
 
-		BOUNDARY_1_SHP = BOUNDARY_STATES_SHP
+		# Create a Stamen Terrain instance.
+		stamen_terrain = cimgt.StamenTerrain()
 
-		map_loc.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
+		# Add the Stamen data at zoom level 8.
+		map_loc.add_image(stamen_terrain, 10)
+
+		# Create a feature for States/Admin 1 regions at 1:50m from Natural Earth
+		states_provinces = cfeature.NaturalEarthFeature(
+														category='cultural',
+														name='admin_1_states_provinces_lines',
+														scale='50m',
+														facecolor='none'
+														)
+
+		map_loc.add_feature(cfeature.LAND,)
+		map_loc.add_feature(cfeature.COASTLINE)
+		map_loc.add_feature(states_provinces, edgecolor='k',linewidth=0.5)
+
+		gl = map_loc.gridlines(color='gray',linewidth=0.5,linestyle='--',draw_labels=True)
+
+		gl.xlocator = LongitudeLocator(4)
+		gl.ylocator = LatitudeLocator(4)
+		gl.xformatter = LongitudeFormatter()
+		gl.yformatter = LatitudeFormatter()
+
+		gl.xlabel_style = {'size': 15, 'color': 'gray'}
+		gl.xlabel_style = {'color': 'black', 'weight': 'bold'}
+		gl.ylabel_style = {'size': 15, 'color': 'gray'}
+		gl.ylabel_style = {'color': 'black', 'weight': 'bold'}
+
 		map_loc.yaxis.set_ticks_position('both')
 		map_loc.xaxis.set_ticks_position('both')
-
-		map_loc.set_xticks(np.arange(LLCRNRLON_LARGE,URCRNRLON_LARGE,3), crs=ccrs.PlateCarree())
-		map_loc.set_yticks(np.arange(LLCRNRLAT_LARGE,URCRNRLAT_LARGE,3), crs=ccrs.PlateCarree())
-		map_loc.tick_params(labelbottom=True,labeltop=True,labelleft=True,labelright=True, labelsize=15)
-
-		map_loc.grid(True,which='major',color='gray',linewidth=1,linestyle='--')
-
-		reader_1_SHP = Reader(BOUNDARY_1_SHP)
-		shape_1_SHP = list(reader_1_SHP.geometries())
-		plot_shape_1_SHP = cfeature.ShapelyFeature(shape_1_SHP, ccrs.PlateCarree())
-		map_loc.add_feature(plot_shape_1_SHP, facecolor='none', edgecolor='k',linewidth=3,zorder=-1)
+		map_loc.tick_params(labelbottom=True,labeltop=True,labelleft=True,labelright=True)
 
 		# Use the cartopy interface to create a matplotlib transform object
 		# for the Geodetic coordinate system. We will use this along with
 		# matplotlib's offset_copy function to define a coordinate system which
 		# translates the text by 25 pixels to the left.
 		geodetic_transform = ccrs.Geodetic()._as_mpl_transform(map_loc)
-		text_transform = offset_copy(geodetic_transform, units='dots', y=0,x=60)
-		text_transform_mag = offset_copy(geodetic_transform, units='dots', y=-15,x=15)
+		text_transform = offset_copy(geodetic_transform, units='dots', y=17,x=33)
+		text_transform_mag = offset_copy(geodetic_transform, units='dots', y=-25,x=20)
 
-		stlo = [] 
-		stla = [] 
+		#Plotting event
+		map_loc.plot(stZ[0].stats.sac.evlo, stZ[0].stats.sac.evla, marker='*', color='red', markersize=20,transform=ccrs.PlateCarree())
+		map_loc.text(stZ[0].stats.sac.evlo, stZ[0].stats.sac.evla, str(stZ[0].stats.sac.mag),fontsize=15,verticalalignment='center', horizontalalignment='right',transform=text_transform_mag)
+
+		#Plotting stations
+		stlo = []
+		stla = []
 		station_name = []
 		gcarc_lst = []
 		for i,j in enumerate(stZ):
@@ -307,29 +334,35 @@ def plot_map_event_data(event_lstZ,event_lstN,event_lstE,event_name,folder_name,
 
 		gcarc_sort = np.argsort(gcarc_lst)
 
-		map_loc.scatter(stlo, stla, marker='^',s=200,c='k',edgecolors='w', transform=ccrs.Geodetic())
+		map_loc.scatter(stlo, stla, marker='^',s=200,c='k',edgecolors='w', transform=ccrs.PlateCarree())
 
 		for i,j in enumerate(station_name):
-		    map_loc.text(stlo[i], stla[i], station_name[i],fontsize=15,
-		            verticalalignment='center', horizontalalignment='right',
-		            transform=text_transform)
-		             
-		map_loc.plot(stZ[0].stats.sac.evlo, stZ[0].stats.sac.evla, marker='*', color='red', markersize=15,transform=ccrs.Geodetic())
-		map_loc.text(stZ[0].stats.sac.evlo, stZ[0].stats.sac.evla, str(stZ[0].stats.sac.mag),fontsize=15,
-		            verticalalignment='center', horizontalalignment='right',
-		            transform=text_transform_mag)
+			map_loc.text(stlo[i], stla[i], station_name[i],fontsize=12,verticalalignment='center', horizontalalignment='right',transform=text_transform,bbox=dict(facecolor='white',edgecolor='none', alpha=0.5, boxstyle='round'))
+
+		#Saving figure
+		os.makedirs(OUTPUT_FIGURE_DIR+'EVENTS/'+folder_name,exist_ok=True)
+		fig.savefig(OUTPUT_FIGURE_DIR+'EVENTS/'+folder_name+'MAP_Event - '+event_name+'.png')
+
+		# -----------------------------------------------------------------------
+		# Waveforms
+		# -----------------------------------------------------------------------
+
+		fig, axes = plt.subplots(nrows=len(stZ), ncols=3, sharex='col',figsize=(20, 20))
+		event_date = event_name.split('.')
+		fig.suptitle('Dia do Evento - '+UTCDateTime(year=int(event_date[0]),julday=int(event_date[1])).strftime('%d/%m/%Y')+' - Magnitude:'+str(stZ[0].stats.sac.mag),fontsize=20)
 
 		#-------------------------------------------
 
-		minutes = mdates.MinuteLocator()   # every year
-		seconds = mdates.SecondLocator()  # every second
+		minutes = mdates.MinuteLocator(3)   # every minute
+		#seconds = mdates.SecondLocator(1)  # every second
+		seconds = mdates.MinuteLocator(1)  # every second
 		years_fmt = mdates.DateFormatter('%H-%M-%S')
 
 		for i,j in enumerate(gcarc_sort):
-				ax = fig.add_subplot(gs[i,1])
+				ax = axes[i,0]
 				ax.plot(stZ[j].times("matplotlib"),stZ[j].data,color='k')
 
-				ax.set_xlim((stZ[j].times("utcdatetime")[0]-10).matplotlib_date,(stZ[j].times("utcdatetime")[0]+200).matplotlib_date)
+				ax.set_xlim((stZ[j].times("utcdatetime")[0]-100).matplotlib_date,(stZ[j].times("utcdatetime")[0]+300).matplotlib_date)
 				ax.set_yticks([])
 				ax.set_title(stZ[j].id+' - dist='+str(int(round(stZ[j].stats.sac.dist)))+' km',fontsize=15)
 
@@ -339,10 +372,10 @@ def plot_map_event_data(event_lstZ,event_lstN,event_lstE,event_name,folder_name,
 				ax.xaxis.set_minor_locator(seconds)
 
 				#--------------------------------------------------------------
-				ax = fig.add_subplot(gs[i,2])
+				ax = axes[i,1]
 				ax.plot(stN[j].times('matplotlib'),stN[j].data,color='k')
 
-				ax.set_xlim((stN[j].times("utcdatetime")[0]-10).matplotlib_date,(stN[j].times("utcdatetime")[0]+200).matplotlib_date)
+				ax.set_xlim((stN[j].times("utcdatetime")[0]-100).matplotlib_date,(stN[j].times("utcdatetime")[0]+300).matplotlib_date)
 				ax.set_yticks([])
 				ax.set_title(stN[j].id+' - dist='+str(int(round(stN[j].stats.sac.dist)))+' km',fontsize=15)
 
@@ -352,10 +385,10 @@ def plot_map_event_data(event_lstZ,event_lstN,event_lstE,event_name,folder_name,
 				ax.xaxis.set_minor_locator(seconds)
 
 				#--------------------------------------------------------------
-				ax = fig.add_subplot(gs[i,3])
+				ax = axes[i,2]
 				ax.plot(stE[j].times('matplotlib'),stE[j].data,color='k')
 
-				ax.set_xlim((stE[j].times("utcdatetime")[0]-10).matplotlib_date,(stE[j].times("utcdatetime")[0]+200).matplotlib_date)
+				ax.set_xlim((stE[j].times("utcdatetime")[0]-100).matplotlib_date,(stE[j].times("utcdatetime")[0]+300).matplotlib_date)
 				ax.set_yticks([])
 				ax.set_title(stE[j].id+' - dist='+str(int(round(stE[j].stats.sac.dist)))+' km',fontsize=15)
 
@@ -365,7 +398,179 @@ def plot_map_event_data(event_lstZ,event_lstN,event_lstE,event_name,folder_name,
 				ax.xaxis.set_minor_locator(seconds)
 
 		os.makedirs(OUTPUT_FIGURE_DIR+'EVENTS/'+folder_name,exist_ok=True)
-		fig.savefig(OUTPUT_FIGURE_DIR+'EVENTS/'+folder_name+'Stations_Event - '+event_name+'.pdf')
+		fig.savefig(OUTPUT_FIGURE_DIR+'EVENTS/'+folder_name+'Stations_Event_'+event_name+'_mag_'+str(stZ[0].stats.sac.mag)+'.png')
+
+
+		# -----------------------------------------------------------------------
+		# LTA/STA
+		# -----------------------------------------------------------------------
+
+		stalen = 4
+		ltalen = 10
+		trig_on = 1.5
+		trig_off = 0.5
+
+		npts = stZ[0].stats.npts
+		dt = stZ[0].stats.delta
+		df = stZ[0].stats.sampling_rate
+
+		# -----------------------------------------------------------------------
+
+		fig, axes = plt.subplots(nrows=len(stZ), ncols=3, sharex='col',figsize=(20, 20))
+		event_date = event_name.split('.')
+		fig.suptitle('Dia do Evento - '+UTCDateTime(year=int(event_date[0]),julday=int(event_date[1])).strftime('%d/%m/%Y')+' - Magnitude:'+str(stZ[0].stats.sac.mag),fontsize=20)
+
+		#-------------------------------------------
+
+		minutes = mdates.MinuteLocator(3)   # every minute
+		#seconds = mdates.SecondLocator(1)  # every second
+		seconds = mdates.MinuteLocator(1)  # every second
+		years_fmt = mdates.DateFormatter('%H-%M-%S')
+		for i,j in enumerate(gcarc_sort):
+				ax = axes[i,0]
+				# format the ticks
+				ax.xaxis.set_major_locator(minutes)
+				ax.xaxis.set_major_formatter(years_fmt)
+				ax.xaxis.set_minor_locator(seconds)
+
+				cft_Z = classic_sta_lta(stZ[j].data, int(stalen * df), int(ltalen * df))
+				on_off_Z = np.array(trigger_onset(cft_Z, trig_on, trig_off))
+
+				#plot_trigger(stZ[j], cft_Z, trig_on, trig_off, show=True)
+
+				on_Z = float((on_off_Z[:,0]/df)[0])
+				off_Z = float((on_off_Z[:,1]/df)[0])
+
+				time_on_Z = stZ[j].stats.starttime+on_Z
+				time_off_Z = stZ[j].stats.starttime+off_Z
+
+				ax.plot(stZ[j].times('matplotlib'), cft_Z, 'k')
+				ax.axhline(trig_on, color='red', lw=1, ls='--')
+				ax.axhline(trig_off, color='blue', lw=1, ls='--')
+
+				#--------------------------------------------------------------
+				ax = axes[i,1]
+				# format the ticks
+				ax.xaxis.set_major_locator(minutes)
+				ax.xaxis.set_major_formatter(years_fmt)
+				ax.xaxis.set_minor_locator(seconds)
+
+				cft_N = classic_sta_lta(stN[j].data, int(stalen * df), int(ltalen * df))
+				on_off_N= np.array(trigger_onset(cft_N, trig_on, trig_off))
+
+				on_N = float((on_off_N[:,0]/df)[0])
+				off_N = float((on_off_N[:,1]/df)[0])
+
+				time_on_N = stN[j].stats.starttime+on_N
+				time_off_N = stN[j].stats.starttime+off_N
+
+				ax.plot(stN[j].times('matplotlib'), cft_N, 'k')
+				ax.axhline(trig_on, color='red', lw=1, ls='--')
+				ax.axhline(trig_off, color='blue', lw=1, ls='--')
+
+				#--------------------------------------------------------------
+				ax = axes[i,2]
+				# format the ticks
+				ax.xaxis.set_major_locator(minutes)
+				ax.xaxis.set_major_formatter(years_fmt)
+				ax.xaxis.set_minor_locator(seconds)
+
+				cft_E = classic_sta_lta(stE[j].data, int(stalen * df), int(ltalen * df))
+				on_off_E = np.array(trigger_onset(cft_E, trig_on, trig_off))
+
+				on_E = float((on_off_E[:,0]/df)[0])
+				off_E = float((on_off_E[:,1]/df)[0])
+
+				time_on_E = stE[j].stats.starttime+on_E
+				time_off_E = stE[j].stats.starttime+off_E
+
+				ax.plot(stE[j].times('matplotlib'), cft_E, 'k')
+				ax.axhline(trig_on, color='red', lw=1, ls='--')
+				ax.axhline(trig_off, color='blue', lw=1, ls='--')
+
+		os.makedirs(OUTPUT_FIGURE_DIR+'EVENTS/'+folder_name,exist_ok=True)
+		fig.savefig(OUTPUT_FIGURE_DIR+'EVENTS/'+folder_name+'Stations_Event_LTA_STA_'+event_name+'_mag_'+str(stZ[0].stats.sac.mag)+'.png')
+
+		'''
+
+		# ----------------------------------------------------------------------
+		# triggered event
+		# ----------------------------------------------------------------------
+		st_all = stZ+stN+stE
+
+		trig = coincidence_trigger("classicstalta", trig_on, trig_off, st_all, 2, sta=stalen, lta=ltalen,details=True)
+
+		for tri in trig:
+			if any('OBS' in string for string in list(set(tri['stations']))):
+				event_date = tri['time'].strftime('%d_%m_%Y')
+
+				stZ_selected = Stream()
+				stN_selected = Stream()
+				stE_selected = Stream()
+
+				for id,sta_sel in enumerate(list(set(tri['stations']))):
+					st1 = stZ.select(station=sta_sel,channel='HHZ')
+					st2 = stN.select(station=sta_sel,channel='HHN')
+					st3 = stE.select(station=sta_sel,channel='HHE')
+
+					stZ_selected.append(st1[0])
+					stN_selected.append(st2[0])
+					stE_selected.append(st3[0])
+
+					stZ_selected.trim(tri['time']-5,tri['time']+tri['duration']+10)
+					stN_selected.trim(tri['time']-5,tri['time']+tri['duration']+10)
+					stE_selected.trim(tri['time']-5,tri['time']+tri['duration']+10)
+
+				if len(stZ_selected) > 2:
+
+					#------------------------------------------
+					gcarc_lst = [k.stats.sac.gcarc for k in stZ_selected]
+					gcarc_sort = np.argsort(gcarc_lst)
+					print(gcarc_sort)
+					#------------------------------------------
+					fig, axes = plt.subplots(nrows=len(stZ_selected), ncols=3, figsize=(20, 20))
+					fig.suptitle('Dia do Evento - '+stZ_selected[0].stats.starttime.strftime('%d/%m/%Y')+' - Magnitude:'+str(stZ_selected[0].stats.sac.mag),fontsize=20)
+					#-------------------------------------------
+
+					minutes = mdates.MinuteLocator(3)   # every minute
+					#seconds = mdates.SecondLocator(1)  # every second
+					seconds = mdates.MinuteLocator(1)  # every second
+					years_fmt = mdates.DateFormatter('%H-%M-%S')
+
+					for i,j in enumerate(gcarc_sort):
+						ax = axes[i,0]
+						ax.plot(stZ_selected[i].times("matplotlib"),stZ_selected[i].data,color='k')
+						ax.set_title(stZ_selected[i].id+' - dist='+str(int(round(stZ_selected[i].stats.sac.dist)))+' km',fontsize=15)
+
+						# format the ticks
+						ax.xaxis.set_major_locator(minutes)
+						ax.xaxis.set_major_formatter(years_fmt)
+						ax.xaxis.set_minor_locator(seconds)
+
+						#--------------------------------------------------------------
+
+						ax = axes[i,1]
+						ax.plot(stN_selected[i].times('matplotlib'),stN_selected[i].data,color='k')
+						ax.set_title(stN_selected[i].id+' - dist='+str(int(round(stN_selected[i].stats.sac.dist)))+' km',fontsize=15)
+
+						# format the ticks
+						ax.xaxis.set_major_locator(minutes)
+						ax.xaxis.set_major_formatter(years_fmt)
+						ax.xaxis.set_minor_locator(seconds)
+
+						#--------------------------------------------------------------
+						ax = axes[i,2]
+						ax.plot(stE_selected[i].times('matplotlib'),stE_selected[i].data,color='k')
+						ax.set_title(stE_selected[i].id+' - dist='+str(int(round(stE_selected[i].stats.sac.dist)))+' km',fontsize=15)
+
+						# format the ticks
+						ax.xaxis.set_major_locator(minutes)
+						ax.xaxis.set_major_formatter(years_fmt)
+						ax.xaxis.set_minor_locator(seconds)
+
+					os.makedirs(OUTPUT_FIGURE_DIR+'EVENTS/'+folder_name,exist_ok=True)
+					fig.savefig(OUTPUT_FIGURE_DIR+'EVENTS/'+folder_name+'Stations_Event_Trig_'+event_date+'.png')
+		'''
 
 def plot_map_event_data_hydrophone(event_lstX,event_name,folder_name,lf,hf):
 	if len(event_lstX) > 1:
@@ -379,80 +584,106 @@ def plot_map_event_data_hydrophone(event_lstX,event_name,folder_name,lf,hf):
 		stZ.taper(max_percentage=0.05, type="hann")
 		stZ.filter('bandpass',freqmin=lf, freqmax=hf)
 
-		fig = plt.figure(figsize=(30, 10))
-		event_date = event_name.split('.')
-		print(UTCDateTime(year=int(event_date[0]),julday=int(event_date[1])))
-		fig.suptitle('Dia do Evento - '+UTCDateTime(year=int(event_date[0]),julday=int(event_date[1])).strftime('%d/%m/%Y')+' - Magnitude:'+str(stZ[0].stats.sac.mag),fontsize=20)
-
-		gs = gridspec.GridSpec(len(stZ), 2,wspace=0.2, hspace=0.5)
-
 		#-------------------------------------------
 
-		map_loc = fig.add_subplot(gs[:,0],projection=ccrs.PlateCarree())
-			
-		LLCRNRLON_LARGE = -50
-		URCRNRLON_LARGE = -35
-		LLCRNRLAT_LARGE = -28
-		URCRNRLAT_LARGE = -16
+		fig = plt.figure(figsize=(10, 10))
+		event_date = event_name.split('.')
+		gs = gridspec.GridSpec(nrows=1, ncols=1)
+		#-------------------------------------------
+		crs = ccrs.Orthographic(central_longitude=-40, central_latitude=-20)
+		map_loc = fig.add_subplot(gs[0],projection=crs)
 
-		BOUNDARY_1_SHP = BOUNDARY_STATES_SHP
+		LLCRNRLON_LARGE = -52
+		URCRNRLON_LARGE = -28
+		LLCRNRLAT_LARGE = -30
+		URCRNRLAT_LARGE = -12
 
-		map_loc.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
+		# Create a Stamen Terrain instance.
+		stamen_terrain = cimgt.StamenTerrain()
+
+		# Add the Stamen data at zoom level 8.
+		map_loc.add_image(stamen_terrain, 10)
+
+		# Create a feature for States/Admin 1 regions at 1:50m from Natural Earth
+		states_provinces = cfeature.NaturalEarthFeature(
+														category='cultural',
+														name='admin_1_states_provinces_lines',
+														scale='50m',
+														facecolor='none'
+														)
+
+		map_loc.add_feature(cfeature.LAND,)
+		map_loc.add_feature(cfeature.COASTLINE)
+		map_loc.add_feature(states_provinces, edgecolor='k',linewidth=0.5)
+
+		gl = map_loc.gridlines(color='gray',linewidth=0.5,linestyle='--',draw_labels=True)
+
+		gl.xlocator = LongitudeLocator(4)
+		gl.ylocator = LatitudeLocator(4)
+		gl.xformatter = LongitudeFormatter()
+		gl.yformatter = LatitudeFormatter()
+
+		gl.xlabel_style = {'size': 15, 'color': 'gray'}
+		gl.xlabel_style = {'color': 'black', 'weight': 'bold'}
+		gl.ylabel_style = {'size': 15, 'color': 'gray'}
+		gl.ylabel_style = {'color': 'black', 'weight': 'bold'}
+
 		map_loc.yaxis.set_ticks_position('both')
 		map_loc.xaxis.set_ticks_position('both')
-		map_loc.set_xticks(np.arange(LLCRNRLON_LARGE,URCRNRLON_LARGE,3), crs=ccrs.PlateCarree())
-		map_loc.set_yticks(np.arange(LLCRNRLAT_LARGE,URCRNRLAT_LARGE,3), crs=ccrs.PlateCarree())
 		map_loc.tick_params(labelbottom=True,labeltop=True,labelleft=True,labelright=True, labelsize=15)
-		map_loc.grid(True,which='major',color='gray',linewidth=1,linestyle='--')
 
-		reader_1_SHP = Reader(BOUNDARY_1_SHP)
-		shape_1_SHP = list(reader_1_SHP.geometries())
-		plot_shape_1_SHP = cfeature.ShapelyFeature(shape_1_SHP, ccrs.PlateCarree())
-		map_loc.add_feature(plot_shape_1_SHP, facecolor='none', edgecolor='k',linewidth=3,zorder=-1)
 
 		# Use the cartopy interface to create a matplotlib transform object
 		# for the Geodetic coordinate system. We will use this along with
 		# matplotlib's offset_copy function to define a coordinate system which
 		# translates the text by 25 pixels to the left.
 		geodetic_transform = ccrs.Geodetic()._as_mpl_transform(map_loc)
-		text_transform = offset_copy(geodetic_transform, units='dots', y=0,x=60)
-		text_transform_mag = offset_copy(geodetic_transform, units='dots', y=-15,x=15)
+		text_transform = offset_copy(geodetic_transform, units='dots', y=17,x=33)
+		text_transform_mag = offset_copy(geodetic_transform, units='dots', y=-25,x=20)
 
-		stlo = [] 
-		stla = [] 
+		stlo = []
+		stla = []
 		station_name = []
 		gcarc_lst = []
 		for i,j in enumerate(stZ):
-		    stlo.append(j.stats.sac.stlo)
-		    stla.append(j.stats.sac.stla)
-		    station_name.append(j.stats.station)
-		    gcarc_lst.append(j.stats.sac.gcarc)
+			    stlo.append(j.stats.sac.stlo)
+			    stla.append(j.stats.sac.stla)
+			    station_name.append(j.stats.station)
+			    gcarc_lst.append(j.stats.sac.gcarc)
 
 		gcarc_sort = np.argsort(gcarc_lst)
 
 		map_loc.scatter(stlo, stla, marker='^',s=200,c='k',edgecolors='w', transform=ccrs.PlateCarree())
 
 		for i,j in enumerate(station_name):
-		    map_loc.text(stlo[i], stla[i], station_name[i],fontsize=15,
-		            verticalalignment='center', horizontalalignment='right',
-		            transform=text_transform)
-		             
-		map_loc.plot(stZ[0].stats.sac.evlo, stZ[0].stats.sac.evla, marker='*', color='red', markersize=15,transform=ccrs.Geodetic())
-		map_loc.text(stZ[0].stats.sac.evlo, stZ[0].stats.sac.evla, str(stZ[0].stats.sac.mag),fontsize=15,
-		            verticalalignment='center', horizontalalignment='right',
-		            transform=text_transform_mag)
+			map_loc.text(stlo[i], stla[i], station_name[i],fontsize=12,verticalalignment='center', horizontalalignment='right',transform=text_transform,bbox=dict(facecolor='white',edgecolor='none', alpha=0.5, boxstyle='round'))
+
+		map_loc.plot(stZ[0].stats.sac.evlo, stZ[0].stats.sac.evla, marker='*', color='red', markersize=20,transform=ccrs.PlateCarree())
+		map_loc.text(stZ[0].stats.sac.evlo, stZ[0].stats.sac.evla, str(stZ[0].stats.sac.mag),fontsize=15,verticalalignment='center', horizontalalignment='right',transform=text_transform_mag)
+
+		os.makedirs(OUTPUT_FIGURE_DIR+'EVENTS/'+folder_name,exist_ok=True)
+		fig.savefig(OUTPUT_FIGURE_DIR+'EVENTS/'+folder_name+'MAP_Event_hydrophone_'+event_name+'.png')
+
+		# -----------------------------------------------------------------------
+		# Waveforms
+		# -----------------------------------------------------------------------
+
+		fig, axes = plt.subplots(nrows=len(stZ), ncols=1, sharex='col',figsize=(20, 20))
+		event_date = event_name.split('.')
+		fig.suptitle('Dia do Evento - '+UTCDateTime(year=int(event_date[0]),julday=int(event_date[1])).strftime('%d/%m/%Y')+' - Magnitude:'+str(stZ[0].stats.sac.mag),fontsize=20)
 
 		#-------------------------------------------
 
-		minutes = mdates.MinuteLocator()   # every year
-		seconds = mdates.SecondLocator()  # every second
+		minutes = mdates.MinuteLocator(2)   # every year
+		#seconds = mdates.SecondLocator(60)  # every second
+		seconds = mdates.MinuteLocator(1)  # every second
 		years_fmt = mdates.DateFormatter('%H-%M-%S')
 
 		for i,j in enumerate(gcarc_sort):
-			ax = fig.add_subplot(gs[i,1])
+			ax = axes[i]
 			ax.plot(stZ[j].times("matplotlib"),stZ[j].data,color='k')
 
-			ax.set_xlim((stZ[j].times("utcdatetime")[0]-10).matplotlib_date,(stZ[j].times("utcdatetime")[0]+200).matplotlib_date)
+			ax.set_xlim((stZ[j].times("utcdatetime")[0]-50).matplotlib_date,(stZ[j].times("utcdatetime")[0]+200).matplotlib_date)
 			ax.set_yticks([])
 			ax.set_title(stZ[j].id+' - dist='+str(int(round(stZ[j].stats.sac.dist)))+' km',fontsize=15)
 
@@ -462,8 +693,8 @@ def plot_map_event_data_hydrophone(event_lstX,event_name,folder_name,lf,hf):
 			ax.xaxis.set_minor_locator(seconds)
 
 		os.makedirs(OUTPUT_FIGURE_DIR+'EVENTS/'+folder_name,exist_ok=True)
-		fig.savefig(OUTPUT_FIGURE_DIR+'EVENTS/'+folder_name+'Stations_Event_hydrophone - '+event_name+'.pdf')
-	
+		fig.savefig(OUTPUT_FIGURE_DIR+'EVENTS/'+folder_name+'Stations_Event_hydrophone_'+event_name+'.png')
+
 	#-------------------------------------------
 
 	if len(event_lstX) == 1:
@@ -473,46 +704,64 @@ def plot_map_event_data_hydrophone(event_lstX,event_name,folder_name,lf,hf):
 		stZ.detrend("demean")
 		stZ.taper(max_percentage=0.05, type="hann")
 		stZ.filter('bandpass',freqmin=lf, freqmax=hf)
-		
 
-		fig = plt.figure(figsize=(30, 10))
-		event_date = event_name.split('.')
-		print(UTCDateTime(year=int(event_date[0]),julday=int(event_date[1])))
-		fig.suptitle('Dia do Evento - '+UTCDateTime(year=int(event_date[0]),julday=int(event_date[1])).strftime('%d/%m/%Y')+' - Magnitude:'+str(stZ[0].stats.sac.mag),fontsize=20)
-
-		gs = gridspec.GridSpec(1, 2,wspace=0.2, hspace=0.5)
 
 		#-------------------------------------------
 
-		map_loc = fig.add_subplot(gs[0],projection=ccrs.PlateCarree())
-			
-		LLCRNRLON_LARGE = -50
-		URCRNRLON_LARGE = -35
-		LLCRNRLAT_LARGE = -28
-		URCRNRLAT_LARGE = -16
+		fig = plt.figure(figsize=(10, 10))
+		event_date = event_name.split('.')
+		gs = gridspec.GridSpec(nrows=1, ncols=1)
+		#-------------------------------------------
+		crs = ccrs.Orthographic(central_longitude=-40, central_latitude=-20)
+		map_loc = fig.add_subplot(gs[0],projection=crs)
 
-		BOUNDARY_1_SHP = BOUNDARY_STATES_SHP
+		LLCRNRLON_LARGE = -52
+		URCRNRLON_LARGE = -28
+		LLCRNRLAT_LARGE = -30
+		URCRNRLAT_LARGE = -12
 
-		map_loc.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
+		# Create a Stamen Terrain instance.
+		stamen_terrain = cimgt.StamenTerrain()
+
+		# Add the Stamen data at zoom level 8.
+		map_loc.add_image(stamen_terrain, 10)
+
+		# Create a feature for States/Admin 1 regions at 1:50m from Natural Earth
+		states_provinces = cfeature.NaturalEarthFeature(
+														category='cultural',
+														name='admin_1_states_provinces_lines',
+														scale='50m',
+														facecolor='none'
+														)
+
+		map_loc.add_feature(cfeature.LAND,)
+		map_loc.add_feature(cfeature.COASTLINE)
+		map_loc.add_feature(states_provinces, edgecolor='k',linewidth=0.5)
+
+		gl = map_loc.gridlines(color='gray',linewidth=0.5,linestyle='--',draw_labels=True)
+
+		gl.xlocator = LongitudeLocator(4)
+		gl.ylocator = LatitudeLocator(4)
+		gl.xformatter = LongitudeFormatter()
+		gl.yformatter = LatitudeFormatter()
+
+		gl.xlabel_style = {'size': 20, 'color': 'gray'}
+		gl.xlabel_style = {'color': 'black', 'weight': 'bold'}
+		gl.ylabel_style = {'size': 20, 'color': 'gray'}
+		gl.ylabel_style = {'color': 'black', 'weight': 'bold'}
+
 		map_loc.yaxis.set_ticks_position('both')
 		map_loc.xaxis.set_ticks_position('both')
-		map_loc.set_xticks(np.arange(LLCRNRLON_LARGE,URCRNRLON_LARGE,3), crs=ccrs.PlateCarree())
-		map_loc.set_yticks(np.arange(LLCRNRLAT_LARGE,URCRNRLAT_LARGE,3), crs=ccrs.PlateCarree())
 		map_loc.tick_params(labelbottom=True,labeltop=True,labelleft=True,labelright=True, labelsize=15)
-		map_loc.grid(True,which='major',color='gray',linewidth=1,linestyle='--')
 
-		reader_1_SHP = Reader(BOUNDARY_1_SHP)
-		shape_1_SHP = list(reader_1_SHP.geometries())
-		plot_shape_1_SHP = cfeature.ShapelyFeature(shape_1_SHP, ccrs.PlateCarree())
-		map_loc.add_feature(plot_shape_1_SHP, facecolor='none', edgecolor='k',linewidth=3,zorder=-1)
 
 		# Use the cartopy interface to create a matplotlib transform object
 		# for the Geodetic coordinate system. We will use this along with
 		# matplotlib's offset_copy function to define a coordinate system which
 		# translates the text by 25 pixels to the left.
 		geodetic_transform = ccrs.Geodetic()._as_mpl_transform(map_loc)
-		text_transform = offset_copy(geodetic_transform, units='dots', y=0,x=60)
-		text_transform_mag = offset_copy(geodetic_transform, units='dots', y=-15,x=15)
+		text_transform = offset_copy(geodetic_transform, units='dots', y=17,x=33)
+		text_transform_mag = offset_copy(geodetic_transform, units='dots', y=-25,x=20)
 
 		stlo = stZ[0].stats.sac.stlo
 		stla = stZ[0].stats.sac.stla
@@ -521,9 +770,12 @@ def plot_map_event_data_hydrophone(event_lstX,event_name,folder_name,lf,hf):
 
 		map_loc.scatter(stlo, stla, marker='^',s=200,c='k',edgecolors='w', transform=ccrs.PlateCarree())
 
-		map_loc.text(stlo, stla, station_name,fontsize=15,verticalalignment='center', horizontalalignment='right',transform=text_transform)
+		map_loc.text(stlo, stla, station_name,fontsize=15,verticalalignment='center', horizontalalignment='right',transform=text_transform,bbox=dict(facecolor='white',edgecolor='none', alpha=0.5, boxstyle='round'))
 		map_loc.plot(stZ[0].stats.sac.evlo, stZ[0].stats.sac.evla, marker='*', color='red', markersize=15,transform=ccrs.Geodetic())
 		map_loc.text(stZ[0].stats.sac.evlo, stZ[0].stats.sac.evla, str(stZ[0].stats.sac.mag),fontsize=15,verticalalignment='center', horizontalalignment='right',transform=text_transform_mag)
+
+		os.makedirs(OUTPUT_FIGURE_DIR+'EVENTS/'+folder_name,exist_ok=True)
+		fig.savefig(OUTPUT_FIGURE_DIR+'EVENTS/'+folder_name+'MAP_Event_hydrophone_'+event_name+'.png')
 
 		#-------------------------------------------
 
@@ -544,4 +796,4 @@ def plot_map_event_data_hydrophone(event_lstX,event_name,folder_name,lf,hf):
 		ax.xaxis.set_minor_locator(seconds)
 
 		os.makedirs(OUTPUT_FIGURE_DIR+'EVENTS/'+folder_name,exist_ok=True)
-		fig.savefig(OUTPUT_FIGURE_DIR+'EVENTS/'+folder_name+'Stations_Event_hydrophone - '+event_name+'.pdf')
+		fig.savefig(OUTPUT_FIGURE_DIR+'EVENTS/'+folder_name+'Stations_Event_hydrophone_'+event_name+'.png')

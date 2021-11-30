@@ -87,7 +87,7 @@ BOUNDARY_STATES_SHP = config.get('paths', 'BOUNDARY_STATES_SHP')
 # -----
 
 #Number worker processes
-NUM_PROCESS = config.getint('ppsd', 'NUM_PROCESS') 
+NUM_PROCESS = config.getint('ppsd', 'NUM_PROCESS')
 
 #PPSD start date
 INITIAL_DATE = config.get('ppsd', 'INITIAL_DATE')
@@ -98,24 +98,24 @@ FINAL_DATE = config.get('ppsd', 'FINAL_DATE')
 #Percentage fo the days to process and plot the PPSD?
 DAY_PERCENTAGE = config.getint('ppsd', 'DAY_PERCENTAGE')
 
-#Restricts the data that is included in the stack by time of day and weekday. 
-#Monday is 1, Sunday is 7, -1 for any day of week. 
-#For example, using time_of_weekday=[(-1, 22, 24)] 
+#Restricts the data that is included in the stack by time of day and weekday.
+#Monday is 1, Sunday is 7, -1 for any day of week.
+#For example, using time_of_weekday=[(-1, 22, 24)]
 #only individual spectra that have a starttime in between 10pm and 12am are used in the stack for all days of week
 #time_of_weekday=[(TIME_OF_WEEKDAY_DAY, TIME_OF_WEEKDAY_START_HOUR, TIME_OF_WEEKDAY_FINAL_HOUR)])
 TIME_OF_WEEKDAY_DAY = config.getint('ppsd', 'TIME_OF_WEEKDAY_DAY')
-TIME_OF_WEEKDAY_START_HOUR = config.getint('ppsd', 'TIME_OF_WEEKDAY_START_HOUR') 
-TIME_OF_WEEKDAY_FINAL_HOUR = config.getint('ppsd', 'TIME_OF_WEEKDAY_FINAL_HOUR') 
+TIME_OF_WEEKDAY_START_HOUR = config.getint('ppsd', 'TIME_OF_WEEKDAY_START_HOUR')
+TIME_OF_WEEKDAY_FINAL_HOUR = config.getint('ppsd', 'TIME_OF_WEEKDAY_FINAL_HOUR')
 
 #Extracting PSD values for given period in seconds.
-#Selects the period bin whose center period is closest to the specified period. 
+#Selects the period bin whose center period is closest to the specified period.
 PERIOD_PSD = config.getfloat('ppsd', 'PERIOD_PSD')
 
-#Maximum and minimum amplitude of the PSD. 
+#Maximum and minimum amplitude of the PSD.
 AMP_PSD_MIN = config.getfloat('ppsd', 'AMP_PSD_MIN')
 AMP_PSD_MAX = config.getfloat('ppsd', 'AMP_PSD_MAX')
 
-#Maximum and minimum amplitude of the PSD (hydrophones). 
+#Maximum and minimum amplitude of the PSD (hydrophones).
 AMP_PSD_HYDROPHONE_MIN = config.getfloat('ppsd', 'AMP_PSD_HYDROPHONE_MIN')
 AMP_PSD_HYDROPHONE_MAX = config.getfloat('ppsd', 'AMP_PSD_HYDROPHONE_MAX')
 
@@ -129,8 +129,11 @@ LOCAL_EVENT_START_DATE  = config.get('local_evt', 'LOCAL_EVENT_START_DATE')
 #Local event final date
 LOCAL_EVENT_FINAL_DATE  = config.get('local_evt', 'LOCAL_EVENT_FINAL_DATE')
 
-#Minimum event magnitude 
+#Minimum event magnitude
 LOCAL_EV_MAGNITUDE_MIN = config.getfloat('local_evt', 'LOCAL_EV_MAGNITUDE_MIN')
+
+#Minimum event distance
+LOCAL_EV_DISTANCE_MIN = config.getfloat('local_evt', 'LOCAL_EV_DISTANCE_MIN')
 
 #Shapefile to filter local event data
 SHP_AREA_DELIMITER = config.get('local_evt', 'SHP_AREA_DELIMITER')
@@ -151,16 +154,16 @@ PORT = config.get('local_evt', 'PORT')
 # ------
 
 #Taup_time model to calculate travel times
-TAUPY_MODEL = config.get('event', 'TAUPY_MODEL') 
+TAUPY_MODEL = config.get('event', 'TAUPY_MODEL')
 
-#Minimum event distance 
+#Minimum event distance
 EV_GCARC_MIN = config.getfloat('event', 'EV_GCARC_MIN')
 
-#Maximum event distance 
+#Maximum event distance
 EV_GCARC_MAX = config.getfloat('event', 'EV_GCARC_MAX')
 
 
-#Minimum event magnitude 
+#Minimum event magnitude
 EV_MAGNITUDE_MB = config.getfloat('event', 'EV_MAGNITUDE_MB')
 
 #Date event initial  (exemple: 2008-01-01T00:00:00)

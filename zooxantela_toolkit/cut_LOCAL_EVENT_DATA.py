@@ -11,20 +11,20 @@ import json
 from multiprocessing import Pool
 
 # =====================================
-# Importing trim data script_py 
+# Importing trim data script_py
 # =====================================
 
 from visual_py.local_event_download_plot import cut_data_by_local_event
 
 # ==================================================
-#  Importing some parameters from configuration file 
+#  Importing some parameters from configuration file
 # ==================================================
 
 from parameters_py.config import (OUTPUT_JSON_FILE_DIR,
 								 )
 
 # ============================================
-#  Importing station dictionary from JSON file 
+#  Importing station dictionary from JSON file
 # ============================================
 
 print('\n')
@@ -46,9 +46,8 @@ for i in kstnm:
 print('\n')
 
 # ==================================================
-#  Importing Local Event dictionary from JSON file 
+#  Importing Local Event dictionary from JSON file
 # ==================================================
-
 
 print('\n')
 print('Looking for Events data in JSON file in '+OUTPUT_JSON_FILE_DIR)
@@ -78,7 +77,7 @@ print('\n')
 
 for i,j in enumerate(kstnm):
 	print('Station: '+kstnm[i])
-	[cut_data_by_local_event(knetwk=knetwk[i],kstnm=kstnm[i],stla=stla[i],stlo=stlo[i],evla=evla[k],evlo=evlo[k],evdp=evdp[k],evmag=mag[k],ev_timeUTC=ev_timeUTC[k]) 
+	[cut_data_by_local_event(knetwk=knetwk[i],kstnm=kstnm[i],stla=stla[i],stlo=stlo[i],evla=evla[k],evlo=evlo[k],evdp=evdp[k],evmag=mag[k],ev_timeUTC=ev_timeUTC[k])
 						for k,l in enumerate(mag)]
 
 print('Finished!')

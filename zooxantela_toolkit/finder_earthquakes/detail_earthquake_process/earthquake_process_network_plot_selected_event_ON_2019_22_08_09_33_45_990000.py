@@ -178,10 +178,10 @@ for tr in stZ:
     inv = read_inventory(STATIONXML_DIR+'.'.join([network,name,'xml']))
     pre_filt = [0.001, 0.005, 45., 50.]
     tr.remove_response(inventory=inv,pre_filt=pre_filt,output="VEL",water_level=60)
-    tr.filter('bandpass', freqmin=FILTER_DATA[0], freqmax=FILTER_DATA[1])  # optional prefiltering
     tr.detrend('demean')
     tr.detrend('linear')
     tr.taper(max_percentage=0.05)
+    tr.filter('bandpass', freqmin=FILTER_DATA[0], freqmax=FILTER_DATA[1])  # optional prefiltering
 
 stZ2 = stZ.copy()
 

@@ -52,7 +52,6 @@ LOCAL_CSV_FILE  = /home/diogoloc/dados_posdoc/ON_MAR/local_events/boletim2001p.t
 #Shapefile  boundary states
 BOUNDARY_STATES_SHP = /home/diogoloc/SIG_dados/Projeto_ON_MAR/shapefile/brasil_estados/brasil_estados.shp
 
-
 #=====
 [ppsd]
 #=====
@@ -101,10 +100,14 @@ LOCAL_EVENT_START_DATE = 2019-06-01
 LOCAL_EVENT_FINAL_DATE = 2020-07-01
 
 #Minimum event magnitude
-LOCAL_EV_MAGNITUDE_MIN = 2
+LOCAL_EV_MAGNITUDE_MIN = 0
+
+#Minimum event distance
+LOCAL_EV_DISTANCE_MIN = 500
 
 #Shapefile to filter local event data
-SHP_AREA_DELIMITER = /home/diogoloc/SIG_dados/Projeto_ON_MAR/shapefile/area_batimetria/area_mar.shp
+#SHP_AREA_DELIMITER = /home/diogoloc/SIG_dados/Projeto_ON_MAR/shapefile/area_batimetria/area_mar.shp
+SHP_AREA_DELIMITER = /home/diogoloc/SIG_dados/Projeto_ON_MAR/shapefile/area_batimetria/area_ON_projeto.shp
 
 #Time to trim the seismogram before P-wave arrival
 CUT_BEFORE_P_LOCAL = 10
@@ -131,7 +134,7 @@ EV_GCARC_MIN = 0
 EV_GCARC_MAX = 90
 
 #Minimum event magnitude
-EV_MAGNITUDE_MB = 7
+EV_MAGNITUDE_MB = 5
 
 #Date event initial  (exemple: 2008-01-01T00:00:00)
 INITIAL_DATE_EVENT = 2019-05-01T00:00:00

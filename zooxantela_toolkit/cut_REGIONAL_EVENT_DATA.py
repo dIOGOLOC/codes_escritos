@@ -12,23 +12,23 @@ import json
 from multiprocessing import Pool
 
 # =====================================
-# Importing trim data script_py 
+# Importing trim data script_py
 # =====================================
 
-from visual_py.event_plot import cut_data_by_event,plot_event_data,plot_event_dataset
+from visual_py.event_plot import cut_data_by_event
 
 
 # ==================================================
-#  Importing some parameters from configuration file 
+#  Importing some parameters from configuration file
 # ==================================================
 
 from parameters_py.config import (
-										DIR_DATA,TAUPY_MODEL,EV_GCARC_MIN,EV_GCARC_MAX,OUTPUT_JSON_FILE_DIR,OUTPUT_EV_DIR
-				   )
+								 DIR_DATA,TAUPY_MODEL,EV_GCARC_MIN,EV_GCARC_MAX,OUTPUT_JSON_FILE_DIR,OUTPUT_EV_DIR
+								 )
 
 
 # ============================================
-#  Importing station dictionary from JSON file 
+#  Importing station dictionary from JSON file
 # ============================================
 
 print('\n')
@@ -49,7 +49,7 @@ for i in kstnm:
 print('\n')
 
 # ============================================
-#  Importing Event dictionary from JSON file 
+#  Importing Event dictionary from JSON file
 # ============================================
 
 
@@ -89,7 +89,7 @@ for i,j in enumerate(kstnm):
 	print('Station: '+kstnm[i])
 	[cut_data_by_event(knetwk=knetwk[i],kstnm=kstnm[i],stla=stla[i],stlo=stlo[i],ev_timeUTC=ev_timeUTC[k],ev_julday=ev_julday[k],ev_year=ev_year[k],ev_month=ev_month[k],
 						ev_day=evla[k],ev_hour=ev_hour[k],ev_minute=ev_minute[k],ev_second=ev_second[k],ev_microsecond=ev_microsecond[k],
-						ev_lat=evla[k],ev_long=evlo[k],ev_depth=evdp[k],ev_mag=mag[k]) 
+						ev_lat=evla[k],ev_long=evlo[k],ev_depth=evdp[k],ev_mag=mag[k])
 						for k,l in enumerate(ev_year)]
 
 print('Cutting finished!')
