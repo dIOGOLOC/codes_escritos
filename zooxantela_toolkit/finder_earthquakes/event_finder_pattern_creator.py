@@ -82,25 +82,26 @@ BINARY_FILES = '/media/diogoloc/Backup/dados_posdoc/ON_MAR/EARTHQUAKE_FINDER_NET
 # ==========
 
 #Type of event:
-EVENT_TYPE = 'AIRGUN'
+EVENT_TYPE = 'EVENT_HARMONIC'
 
 #Bandpass frequency (Hz) - minimum and maximum:
-FILTER_DATA = [5,15]
+FILTER_DATA = [2,20]
 
 NETWORK = 'ON'
 
-OBS_NAME = 'OBS17'
+OBS_NAME = 'OBS18'
 
 CHANNEL = 'HHZ'
 
 #Datetime of the event: string with year,month,day,hour,minute,second:
-EVENT_PATTERN_DATE = '2019,08,04,20,46,58'
+#EVENT_PATTERN_DATE = '2019,08,04,20,46,58' #airgun
+EVENT_PATTERN_DATE = '2020,02,28,19,53,20'
 
 #Time before the event starttime
-PEM = 2
+PEM = 1
 
 #Time after the event starttime
-PET = 13
+PET = 6
 
 #Spectral image length (samples)
 spectral_length = 32

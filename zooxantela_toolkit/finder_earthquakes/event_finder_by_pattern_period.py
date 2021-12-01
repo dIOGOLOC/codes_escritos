@@ -104,7 +104,7 @@ CHANNEL = 'HHZ'
 spectral_length = 32
 
 #Spectral image lag (samples)
-TIME_WINDOW_LAG = 0.5
+TIME_WINDOW_LAG = 2
 
 #Time window length (same of the standard_pattern_binary)
 TIME_WINDOW = 7
@@ -126,12 +126,26 @@ DTINY = np.finfo(0.0).tiny
 ONESEC = datetime.timedelta(seconds=1)
 ONEDAY = datetime.timedelta(days=1)
 
+# =================
+# Filtering by date
+# =================
+
+FIRSTDAY = '2020,02,20'
+LASTDAY = '2020,03,08'
+
+fday = UTCDateTime(FIRSTDAY)
+lday = UTCDateTime(LASTDAY)
+
+INTERVAL_PERIOD = [UTCDateTime(x.astype(str)) for x in np.arange(fday.datetime,lday.datetime+ONEDAY,ONEDAY)]
+INTERVAL_PERIOD_DATE = [str(x.year)+'.'+"%03d" % x.julday for x in INTERVAL_PERIOD]
+
+
 # ================
 # MULTIPROCESSING
 # ================
 
 #Number of threads
-num_processes = 8
+num_processes = 4
 
 # =========
 # Functions
@@ -417,28 +431,15 @@ print('Loading events files retrieved by LTA/STA procedure')
 print('===================================================')
 print('\n')
 
-EVENT_FOLDER_H5 = [i for i in sorted(glob.glob(ASDF_FILES+'EVENT_DATA_FILES/'+NETWORK+'/**/**')) if OBS_NAME in i]
-
-file_hour_lst = []
-
-for data_h5 in EVENT_FOLDER_H5:
-    _date_str = data_h5.split('_')[-8:-4]
-    file_hour_lst.append(','.join(_date_str))
-
-hour_lst_data = sorted(list(set(file_hour_lst)))
-
 #----------------------------------------------------------------------------
 
-for data_h5 in tqdm(hour_lst_data,desc='File loop'):
+for data_h5 in tqdm(INTERVAL_PERIOD_DATE,desc='File loop'):
 
-    file_hour =  UTCDateTime(data_h5)
-    file__TIME_STR = str(file_hour.year)+'.'+"%03d" % file_hour.julday
+    file__TIME_STR = data_h5
     obs_day_files = MSEED_FOLDER+'/'+NETWORK+'/'+OBS_NAME+'/'+CHANNEL+'.D/'+NETWORK+'.'+OBS_NAME+'..'+CHANNEL+'.D.'+file__TIME_STR
-    obs_day_waveform = read(obs_day_files)
-    tr_hour = obs_day_waveform[0]
-    tr_hour.trim(file_hour,file_hour+3600)
+    obs_day_waveform = read(obs_day_files)[0]
 
-    slide_data = [k for k in tr_hour.slide(window_length=TIME_WINDOW, step=TIME_WINDOW_LAG,include_partial_windows=False, nearest_sample=True)]
+    slide_data = [k for k in obs_day_waveform.slide(window_length=TIME_WINDOW, step=TIME_WINDOW_LAG,include_partial_windows=False, nearest_sample=True)]
 
     input_data_lst = []
     for slided_data in slide_data:
