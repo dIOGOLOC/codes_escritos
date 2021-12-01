@@ -85,23 +85,23 @@ BINARY_FILES = '/media/diogoloc/Backup/dados_posdoc/ON_MAR/EARTHQUAKE_FINDER_NET
 EVENT_TYPE = 'EVENT_HARMONIC'
 
 #Bandpass frequency (Hz) - minimum and maximum:
-FILTER_DATA = [2,20]
+FILTER_DATA = [10,40]
 
 NETWORK = 'ON'
 
-OBS_NAME = 'OBS18'
+OBS_NAME = 'OBS22'
 
 CHANNEL = 'HHZ'
 
 #Datetime of the event: string with year,month,day,hour,minute,second:
 #EVENT_PATTERN_DATE = '2019,08,04,20,46,58' #airgun
-EVENT_PATTERN_DATE = '2020,02,28,19,53,20'
+EVENT_PATTERN_DATE = '2019,12,07,12,19,40'
 
 #Time before the event starttime
-PEM = 1
+PEM = 2
 
 #Time after the event starttime
-PET = 6
+PET = 3
 
 #Spectral image length (samples)
 spectral_length = 32
@@ -137,7 +137,7 @@ def fingerprint_creator(obspy_trace,freqmin,freqmax,fp_length):
     tr.remove_response(inventory=inv,output="DISP",pre_filt=pre_filt,water_level=60)
     tr.detrend('demean')
     tr.detrend('linear')
-    tr.taper(max_percentage=0.1, type="hann")
+    tr.taper(max_percentage=0.2, type="hann")
     tr.filter('bandpass', freqmin=freqmin, freqmax=freqmax)
 
     npts = tr.stats.npts
