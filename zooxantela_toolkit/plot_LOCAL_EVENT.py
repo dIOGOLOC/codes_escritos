@@ -80,20 +80,8 @@ lst_eventsE = []
 for i in EVENT_dir:
   lst_eventsE.append([k for k in HHE_files if i in k ])
 
-#-------------------------------------------------------------------------------------------------------------------
+#--------------------------------------------------------------------------------------------------------------------
 
-# ===================
-# Ploting EVENT files
-# ===================
-
-print('Ploting Station x Event')
-start_time = time.time()
-
-for i,j in enumerate(lst_eventsZ):
-  plot_map_event_data(lst_eventsZ[i],lst_eventsN[i],lst_eventsE[i],EVENT_dir[i],'Local/',10,20)
-
-#-------------------------------------------------------------------------------------------------------------------
-'''
 HHX_files = []
 
 for root, dirs, files in os.walk(OUTPUT_EV_DIR+'Local/'):
@@ -108,12 +96,49 @@ lst_eventsX = []
 for i in EVENT_dir:
   lst_eventsX.append([k for k in HHX_files if i in k ])
 
+
+# -------------------------------------
+# Saving all files into a MSEED stream:
+# -------------------------------------
+
+for i,j in enumerate(lst_eventsZ):
+	event_name_info = j[0].split('/')[-2]
+	st_all = Stream()
+
+	z = [read(k)[0] for k in lst_eventsZ[i]]
+	n = [read(k)[0] for k in lst_eventsN[i]]
+	e = [read(k)[0] for k in lst_eventsE[i]]
+
+	[st_all.append(z1) for z1 in z]
+	[st_all.append(n1) for n1 in n]
+	[st_all.append(e1) for e1 in e]
+
+	output = OUTPUT_EV_DIR+'Local/NETWORK_MSEED_FILES/'+event_name_info+'/'
+	os.makedirs(output,exist_ok=True)
+	st_all.write(output+'event_'+event_name_info+'.mseed')
+
+# ===================
+# Ploting EVENT files
+# ===================
+
+print('Ploting Station x Event')
+start_time = time.time()
+
+for i,j in enumerate(lst_eventsZ):
+  plot_map_event_data(lst_eventsZ[i],lst_eventsN[i],lst_eventsE[i],EVENT_dir[i],'Local/',10,20)
+
+
+#-------------------------------------------------------------------------------------------------------------------
+'''
+
+
 #--------------------------------------------------------------------------------------------------------------------
 for i,j in enumerate(lst_eventsX):
     if len(j) != 0:
         plot_map_event_data_hydrophone(lst_eventsX[i],EVENT_dir[i],'Local/',2,20)
 
 #--------------------------------------------------------------------------------------------------------------------
-'''
+
 print("--- %.2f execution time (min) ---" % ((time.time() - start_time)/60))
 print('\n')
+'''
