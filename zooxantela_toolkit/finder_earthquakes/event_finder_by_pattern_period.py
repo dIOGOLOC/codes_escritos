@@ -92,11 +92,11 @@ standard_pattern_binary = '/media/diogoloc/Backup/dados_posdoc/ON_MAR/EARTHQUAKE
 EVENT_TYPE = 'EVENT_HARMONIC'
 
 #Bandpass frequency (Hz) - minimum and maximum
-FILTER_DATA = [2,20]
+FILTER_DATA = [10,40]
 
 NETWORK = 'ON'
 
-OBS_NAME = 'OBS18'
+OBS_NAME = 'OBS22'
 
 CHANNEL = 'HHZ'
 
@@ -107,7 +107,7 @@ spectral_length = 32
 TIME_WINDOW_LAG = 2
 
 #Time window length (same of the standard_pattern_binary)
-TIME_WINDOW = 7
+TIME_WINDOW = 5
 
 #Number of wavelet coefficients to keep
 k_coef = 200
@@ -115,7 +115,7 @@ k_coef = 200
 #The Jaccard index or Jaccard similarity coefficient threshold
 #defined as the size of the intersection divided by the size of the union of two sets,
 #is used to compare sets
-JACC_COEFF_THR = 0.5
+JACC_COEFF_THR = 0.6
 
 # =========
 # Constants
@@ -130,8 +130,8 @@ ONEDAY = datetime.timedelta(days=1)
 # Filtering by date
 # =================
 
-FIRSTDAY = '2020,02,20'
-LASTDAY = '2020,03,08'
+FIRSTDAY = '2019,12,01'
+LASTDAY = '2019,12,15'
 
 fday = UTCDateTime(FIRSTDAY)
 lday = UTCDateTime(LASTDAY)
