@@ -26,7 +26,7 @@ import cartopy.crs as ccrs
 import cartopy.feature as cfeature
 from cartopy.io.shapereader import Reader
 import cartopy.io.img_tiles as cimgt
-from cartopy.mpl.ticker import (LongitudeFormatter, LatitudeFormatter,LatitudeLocator,LongitudeLocator)
+from cartopy.mpl.ticker import LongitudeFormatter, LatitudeFormatter,LatitudeLocator,LongitudeLocator
 
 from parameters_py.config import (
 					DIR_DATA,TAUPY_MODEL,EV_GCARC_MIN,EV_GCARC_MAX,CUT_BEFORE_P,CUT_AFTER_P,XML_FILE,
@@ -491,87 +491,6 @@ def plot_map_event_data(event_lstZ,event_lstN,event_lstE,event_name,folder_name,
 		os.makedirs(OUTPUT_FIGURE_DIR+'EVENTS/'+folder_name,exist_ok=True)
 		fig.savefig(OUTPUT_FIGURE_DIR+'EVENTS/'+folder_name+'Stations_Event_LTA_STA_'+event_name+'_mag_'+str(stZ[0].stats.sac.mag)+'.png')
 
-		'''
-
-		# ----------------------------------------------------------------------
-		# triggered event
-		# ----------------------------------------------------------------------
-		st_all = stZ+stN+stE
-
-		trig = coincidence_trigger("classicstalta", trig_on, trig_off, st_all, 2, sta=stalen, lta=ltalen,details=True)
-
-		for tri in trig:
-			if any('OBS' in string for string in list(set(tri['stations']))):
-				event_date = tri['time'].strftime('%d_%m_%Y')
-
-				stZ_selected = Stream()
-				stN_selected = Stream()
-				stE_selected = Stream()
-
-				for id,sta_sel in enumerate(list(set(tri['stations']))):
-					st1 = stZ.select(station=sta_sel,channel='HHZ')
-					st2 = stN.select(station=sta_sel,channel='HHN')
-					st3 = stE.select(station=sta_sel,channel='HHE')
-
-					stZ_selected.append(st1[0])
-					stN_selected.append(st2[0])
-					stE_selected.append(st3[0])
-
-					stZ_selected.trim(tri['time']-5,tri['time']+tri['duration']+10)
-					stN_selected.trim(tri['time']-5,tri['time']+tri['duration']+10)
-					stE_selected.trim(tri['time']-5,tri['time']+tri['duration']+10)
-
-				if len(stZ_selected) > 2:
-
-					#------------------------------------------
-					gcarc_lst = [k.stats.sac.gcarc for k in stZ_selected]
-					gcarc_sort = np.argsort(gcarc_lst)
-					print(gcarc_sort)
-					#------------------------------------------
-					fig, axes = plt.subplots(nrows=len(stZ_selected), ncols=3, figsize=(20, 20))
-					fig.suptitle('Dia do Evento - '+stZ_selected[0].stats.starttime.strftime('%d/%m/%Y')+' - Magnitude:'+str(stZ_selected[0].stats.sac.mag),fontsize=20)
-					#-------------------------------------------
-
-					minutes = mdates.MinuteLocator(3)   # every minute
-					#seconds = mdates.SecondLocator(1)  # every second
-					seconds = mdates.MinuteLocator(1)  # every second
-					years_fmt = mdates.DateFormatter('%H-%M-%S')
-
-					for i,j in enumerate(gcarc_sort):
-						ax = axes[i,0]
-						ax.plot(stZ_selected[i].times("matplotlib"),stZ_selected[i].data,color='k')
-						ax.set_title(stZ_selected[i].id+' - dist='+str(int(round(stZ_selected[i].stats.sac.dist)))+' km',fontsize=15)
-
-						# format the ticks
-						ax.xaxis.set_major_locator(minutes)
-						ax.xaxis.set_major_formatter(years_fmt)
-						ax.xaxis.set_minor_locator(seconds)
-
-						#--------------------------------------------------------------
-
-						ax = axes[i,1]
-						ax.plot(stN_selected[i].times('matplotlib'),stN_selected[i].data,color='k')
-						ax.set_title(stN_selected[i].id+' - dist='+str(int(round(stN_selected[i].stats.sac.dist)))+' km',fontsize=15)
-
-						# format the ticks
-						ax.xaxis.set_major_locator(minutes)
-						ax.xaxis.set_major_formatter(years_fmt)
-						ax.xaxis.set_minor_locator(seconds)
-
-						#--------------------------------------------------------------
-						ax = axes[i,2]
-						ax.plot(stE_selected[i].times('matplotlib'),stE_selected[i].data,color='k')
-						ax.set_title(stE_selected[i].id+' - dist='+str(int(round(stE_selected[i].stats.sac.dist)))+' km',fontsize=15)
-
-						# format the ticks
-						ax.xaxis.set_major_locator(minutes)
-						ax.xaxis.set_major_formatter(years_fmt)
-						ax.xaxis.set_minor_locator(seconds)
-
-					os.makedirs(OUTPUT_FIGURE_DIR+'EVENTS/'+folder_name,exist_ok=True)
-					fig.savefig(OUTPUT_FIGURE_DIR+'EVENTS/'+folder_name+'Stations_Event_Trig_'+event_date+'.png')
-		'''
-
 def plot_map_event_data_hydrophone(event_lstX,event_name,folder_name,lf,hf):
 	if len(event_lstX) > 1:
 		stZ = Stream()
@@ -599,7 +518,7 @@ def plot_map_event_data_hydrophone(event_lstX,event_name,folder_name,lf,hf):
 		URCRNRLAT_LARGE = -12
 
 		# Create a Stamen Terrain instance.
-		stamen_terrain = cimgt.StamenTerrain()
+		stamen_terrain = cimgt.Stamen('terrain-background') 
 
 		# Add the Stamen data at zoom level 8.
 		map_loc.add_image(stamen_terrain, 10)

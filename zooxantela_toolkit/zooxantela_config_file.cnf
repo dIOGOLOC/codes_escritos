@@ -41,7 +41,7 @@ OUTPUT_PSD_DIR = /home/diogoloc/dados_posdoc/ON_MAR/obs_data_PSD_MSD/
 OUTPUT_EV_DIR = /home/diogoloc/dados_posdoc/ON_MAR/EVENTS/
 
 #XML File
-XML_FILE = /home/diogoloc/dados_posdoc/ON_MAR/XML_OBS/
+XML_FILE = /home/diogoloc/dados_posdoc/ON_MAR/XML_ON_OBS_CC/
 
 #STA CSV FILE path
 STA_CSV_FILE  = /home/diogoloc/dados_posdoc/ON_MAR/sta_coord/OBS_ZOOXANTELA.txt

@@ -58,10 +58,10 @@ import pyasdf
 
 #Configuration file
 
-MSEED_DIR_OBS = '/run/user/1000/gvfs/smb-share:server=hatabackup.local,share=on_mar/obs_data_MSEED/'
+MSEED_DIR_OBS = '/run/user/1000/gvfs/smb-share:server=hatabackup.local,share=dados_posdoc/ON_MAR/obs_data_MSEED/'
 
 #MSEED_DIR_STA = '/media/diogoloc/Backup/dados_posdoc/ON_MAR/data/'
-MSEED_DIR_STA = '/run/user/1000/gvfs/smb-share:server=hatabackup.local,share=on_mar/data/'
+MSEED_DIR_STA = '/run/user/1000/gvfs/smb-share:server=hatabackup.local,share=dados_posdoc/ON_MAR/data/'
 
 # Stations and OBSs information
 
@@ -71,7 +71,7 @@ STATIONS_LST = ['ABR01','DUB01','MAN01','OBS20','OBS22','TER01','ALF01','GDU01',
 STATIONS_LST = sorted(STATIONS_LST)
 
 #STATIONXML_DIR = '/media/diogoloc/Backup/dados_posdoc/ON_MAR/XML_ON_OBS_CC/'
-STATIONXML_DIR = '/run/user/1000/gvfs/smb-share:server=hatabackup.local,share=on_mar/XML_ON_OBS_CC/'
+STATIONXML_DIR = '/run/user/1000/gvfs/smb-share:server=hatabackup.local,share=dados_posdoc/ON_MAR/XML_ON_OBS_CC/'
 
 CHANNEL_LST = ['HHZ.D','HHN.D','HHE.D','HH1.D','HH2.D']
 
@@ -1605,18 +1605,11 @@ print('============================')
 print('\n')
 
 #Collecting daily list of cross-correlations
-crosscorr_days_lst= sorted(glob.glob(JSON_FILES+'CROSS_CORR_STACKED_FILES/*'))
-crosscorr_pairs_lst = []
-for i,j in enumerate(crosscorr_days_lst):
-	crosscorr_file = sorted(glob.glob(j+'/*'))
-	crosscorr_pairs_lst.append(crosscorr_file)
-
-#Make a list of list flat
-crosscorr_pairs = [item for sublist in crosscorr_pairs_lst for item in sublist]
+crosscorr_pairs= sorted(glob.glob(JSON_FILES+'CROSS_CORR_10_DAYS_STACKED_FILES/**/*.json'))
 
 #Separating according to pairs name
 
-OBS_lst = ['OBS17','OBS18','OBS20']
+OBS_lst = ['OBS17','OBS18','OBS20','OBS20']
 OBS_pairs = []
 
 for i,j in enumerate(OBS_lst):
@@ -1632,6 +1625,63 @@ for i,j in enumerate(OBS_pairs):
         # Splitting subdir/basename to find OBSs pairs
         subdir, filename = os.path.split(pair_folder)
         pair = subdir.split("/")[-1]
+
+        name1_ch = pair.split('-')[0]
+        name2_ch = pair.split('-')[1]
+
+        name1 = name1_ch.split('.')[0]
+        name2 = name2_ch.split('.')[0]
+
+        channel_sta1 = name1_ch.split('.')[1]
+        channel_sta2 = name2_ch.split('.')[1]
+
+        if name1+'.'+channel_sta1 != name2+'.'+channel_sta2:
+            print(name1,'.',channel_sta1,'-',name2,'.',channel_sta2)
+
+'''
+
+        name1 = name_pair1.split('..')[0]
+        name2 = name_pair2.split('..')[0]
+
+        channel_sta1 = name_pair1.split('..')[1]
+        channel_sta2 = name_pair2.split('..')[1]
+
+            # ------------------------------------------------------------------------------------------------------
+            if channel_sta1 == 'HHE' and channel_sta2 == 'HHE' or channel_sta1 == 'HH2' and channel_sta2 == 'HH2' or channel_sta1 == 'HH2' and channel_sta2 == 'HHE' or  channel_sta1 == 'HHE' and channel_sta2 == 'HH2':
+                HHE_HHE_lst.append(i)
+            # ------------------------------------------------------------------------------------------------------
+            if channel_sta1 == 'HHN' and channel_sta2 == 'HHN' or channel_sta1 == 'HH1' and channel_sta2 == 'HH1' or channel_sta1 == 'HHN' and channel_sta2 == 'HH1' or channel_sta1 == 'HH1' and channel_sta2 == 'HHN':
+                HHN_HHN_lst.append(i)
+            # ------------------------------------------------------------------------------------------------------
+            if channel_sta1 == 'HHZ' and channel_sta2 == 'HHZ':
+                HHZ_HHZ_lst.append(i)
+            # ------------------------------------------------------------------------------------------------------
+            if channel_sta1 == 'HHE' and channel_sta2 == 'HHN' or channel_sta1 == 'HH2' and channel_sta2 == 'HHN' or channel_sta1 == 'HHE' and channel_sta2 == 'HH1' or channel_sta1 == 'HH2' and channel_sta2 == 'HH1':
+                HHE_HHN_lst.append(i)
+            # ------------------------------------------------------------------------------------------------------
+            if channel_sta1 == 'HHN' and channel_sta2 == 'HHE' or channel_sta1 == 'HH1' and channel_sta2 == 'HHE' or channel_sta1 == 'HHN' and channel_sta2 == 'HH2' or channel_sta1 == 'HH1' and channel_sta2 == 'HH2':
+                HHN_HHE_lst.append(i)
+            # ------------------------------------------------------------------------------------------------------
+            if channel_sta1 == 'HHE' and channel_sta2 == 'HHZ' or channel_sta1 == 'HH2' and channel_sta2 == 'HHZ':
+                HHE_HHZ_lst.append(i)
+            # ------------------------------------------------------------------------------------------------------
+            if channel_sta1 == 'HHZ' and channel_sta2 == 'HHE' or channel_sta1 == 'HHZ' and channel_sta2 == 'HH2':
+                HHZ_HHE_lst.append(i)
+            # ------------------------------------------------------------------------------------------------------
+            if channel_sta1 == 'HHN' and channel_sta2 == 'HHZ' or channel_sta1 == 'HH1' and channel_sta2 == 'HHZ':
+                HHN_HHZ_lst.append(i)
+            # ------------------------------------------------------------------------------------------------------
+            if channel_sta1 == 'HHZ' and channel_sta2 == 'HHN' or channel_sta1 == 'HHZ' and channel_sta2 == 'HH1':
+                HHZ_HHN_lst.append(i)
+            # ------------------------------------------------------------------------------------------------------
+
+    CHANNEL_fig_lst = [HHE_HHE_lst,HHE_HHN_lst,HHE_HHZ_lst,HHN_HHN_lst,HHN_HHE_lst,HHN_HHZ_lst,HHZ_HHE_lst,HHZ_HHN_lst,HHZ_HHZ_lst]
+    chan_lst = ['HHE-HHE','HHE-HHN','HHE-HHZ','HHN-HHN','HHN-HHE','HHN-HHZ','HHZ-HHE','HHZ-HHN','HHZ-HHZ']
+
+
+
+
+
 
         # Separating OBSs pairs per channel:
 
@@ -1802,7 +1852,7 @@ for i,chs in enumerate(OBS_pairs_channels):
     ax1.set_xlabel('Orientation (degrees)')
     plt.show()
 
-'''
+
 
 
 
@@ -1823,6 +1873,28 @@ for i,chs in enumerate(OBS_pairs_channels):
 
 		ax0.plot(date_to_plot_clock_True_static, pol_reg.predict(poly_reg.fit_transform(np.array(range(len(data_to_plot_clock_True_static))).reshape(-1, 1))), color='blue')
 
+		#--------------------------------------------------
+		#--------------------------------------------------
+		#--------------------------------------------------
+		#--------------------------------------------------
+		#--------------------------------------------------
+		#--------------------------------------------------
+		#--------------------------------------------------
+		#--------------------------------------------------
+		#--------------------------------------------------
+		#--------------------------------------------------
+		#--------------------------------------------------
+		#--------------------------------------------------
+		#--------------------------------------------------
+		#--------------------------------------------------
+		#--------------------------------------------------
+		#--------------------------------------------------
+		#--------------------------------------------------
+		#--------------------------------------------------
+		#--------------------------------------------------
+		#--------------------------------------------------
+		#--------------------------------------------------
+		#--------------------------------------------------
 		#--------------------------------------------------
 
     # # plotting:

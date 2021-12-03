@@ -62,46 +62,46 @@ from obspy.signal.trigger import classic_sta_lta, trigger_onset, coincidence_tri
 # Input and output folders
 # ========================
 
-MSEED_FOLDER = '/media/diogoloc/Backup/dados_posdoc/ON_MAR/obs_data_MSEED/'
-#MSEED_FOLDER = '/home/diogoloc/dados_posdoc/ON_MAR/obs_data_MSEED/'
+#MSEED_FOLDER = '/media/diogoloc/Backup/dados_posdoc/ON_MAR/obs_data_MSEED/'
+MSEED_FOLDER = '/home/diogoloc/dados_posdoc/ON_MAR/obs_data_MSEED/'
 
-EARTHQUAKE_FINDER_OUTPUT = '/media/diogoloc/Backup/dados_posdoc/ON_MAR/EARTHQUAKE_FINDER_NETWORK_OUTPUT/FIGURAS/'
-#EARTHQUAKE_FINDER_OUTPUT = '/home/diogoloc/dados_posdoc/ON_MAR/EARTHQUAKE_FINDER_NETWORK_OUTPUT/FIGURAS/'
+#EARTHQUAKE_FINDER_OUTPUT = '/media/diogoloc/Backup/dados_posdoc/ON_MAR/EARTHQUAKE_FINDER_NETWORK_OUTPUT/FIGURAS/'
+EARTHQUAKE_FINDER_OUTPUT = '/home/diogoloc/dados_posdoc/ON_MAR/EARTHQUAKE_FINDER_NETWORK_OUTPUT/FIGURAS/'
 
-#ASDF_FILES = '/home/diogoloc/dados_posdoc/ON_MAR/EARTHQUAKE_FINDER_NETWORK_OUTPUT/ASDF_FILES/'
-ASDF_FILES = '/media/diogoloc/Backup/dados_posdoc/ON_MAR/EARTHQUAKE_FINDER_NETWORK_OUTPUT/ASDF_FILES/'
+ASDF_FILES = '/home/diogoloc/dados_posdoc/ON_MAR/EARTHQUAKE_FINDER_NETWORK_OUTPUT/ASDF_FILES/'
+#ASDF_FILES = '/media/diogoloc/Backup/dados_posdoc/ON_MAR/EARTHQUAKE_FINDER_NETWORK_OUTPUT/ASDF_FILES/'
 
-#STATIONXML_DIR = '/home/diogoloc/dados_posdoc/ON_MAR/XML_ON_OBS_CC/'
-STATIONXML_DIR = '/media/diogoloc/Backup/dados_posdoc/ON_MAR/XML_ON_OBS_CC/'
+STATIONXML_DIR = '/home/diogoloc/dados_posdoc/ON_MAR/XML_ON_OBS_CC/'
+#STATIONXML_DIR = '/media/diogoloc/Backup/dados_posdoc/ON_MAR/XML_ON_OBS_CC/'
 
 BINARY_FILES = '/home/diogoloc/dados_posdoc/ON_MAR/EARTHQUAKE_FINDER_NETWORK_OUTPUT/BINARY_FILES/'
-BINARY_FILES = '/media/diogoloc/Backup/dados_posdoc/ON_MAR/EARTHQUAKE_FINDER_NETWORK_OUTPUT/BINARY_FILES/'
+#BINARY_FILES = '/media/diogoloc/Backup/dados_posdoc/ON_MAR/EARTHQUAKE_FINDER_NETWORK_OUTPUT/BINARY_FILES/'
 
 # ==========
 # Parameters
 # ==========
 
 #Type of event:
-EVENT_TYPE = 'EVENT_HARMONIC'
+EVENT_TYPE = 'airgun'
 
 #Bandpass frequency (Hz) - minimum and maximum:
-FILTER_DATA = [2,20]
+FILTER_DATA = [5,15]
 
 NETWORK = 'ON'
 
-OBS_NAME = 'OBS18'
+OBS_NAME = 'OBS17'
 
 CHANNEL = 'HHZ'
 
 #Datetime of the event: string with year,month,day,hour,minute,second:
-#EVENT_PATTERN_DATE = '2019,08,04,20,46,58' #airgun
-EVENT_PATTERN_DATE = '2020,02,28,19,53,20'
+EVENT_PATTERN_DATE = '2019,08,04,20,46,58' #airgun
+#EVENT_PATTERN_DATE = '2020,02,28,19,53,20'
 
 #Time before the event starttime
 PEM = 1
 
 #Time after the event starttime
-PET = 6
+PET = 15
 
 #Spectral image length (samples)
 spectral_length = 32
