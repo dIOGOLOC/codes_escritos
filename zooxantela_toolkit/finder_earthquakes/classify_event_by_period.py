@@ -91,11 +91,11 @@ standard_pattern_binary = '/home/diogoloc/dados_posdoc/ON_MAR/EARTHQUAKE_FINDER_
 # ==========
 
 #Bandpass frequency (Hz) - minimum and maximum
-FILTER_DATA = [10,40]
+FILTER_DATA = [4,16]
 
 NETWORK = 'ON'
 
-OBS_NAME = ['OBS17','OBS18','OBS20','OBS22']
+OBS_NAME = ['OBS17','OBS18','OBS20','OBS22','ALF01','DUB01','RIB01']
 
 CHANNEL = 'HHZ'
 
@@ -106,20 +106,20 @@ CHANNEL = 'HHZ'
 DTINY = np.finfo(0.0).tiny
 
 ONESEC = datetime.timedelta(seconds=1)
-MINUTES30 = datetime.timedelta(minutes=30)
+ONEHOUR = datetime.timedelta(hours=1)
 ONEDAY = datetime.timedelta(days=1)
 
 # =================
 # Filtering by date
 # =================
 
-FIRSTDAY = '2019,12,07,11'
-LASTDAY = '2019,12,08,11'
+FIRSTDAY = '2020,02,20,07'
+LASTDAY = '2020,02,21,07'
 
 fday = UTCDateTime(FIRSTDAY)
 lday = UTCDateTime(LASTDAY)
 
-INTERVAL_PERIOD = [UTCDateTime(x.astype(str)) for x in np.arange(fday.datetime,lday.datetime+MINUTES30,MINUTES30)]
+INTERVAL_PERIOD = [UTCDateTime(x.astype(str)) for x in np.arange(fday.datetime,lday.datetime+ONEHOUR,ONEHOUR)]
 INTERVAL_PERIOD_DATE = [str(x.year)+'.'+"%03d" % x.julday for x in INTERVAL_PERIOD]
 
 # =========
@@ -148,10 +148,12 @@ for iperid,period_date in enumerate(tqdm(INTERVAL_PERIOD_DATE,desc='File loop'))
 
     st = Stream()
     for file in obs_day_files:
-        if 'HHX' not in file and 'OBS19' not in file:
+        #if 'HHX' not in file and 'OBS19' not in file:
+        #if 'HHX' not in file and 'OBS19' not in file:
+        if 'OBS19' not in file:
             st.append(read(file)[0])
 
-    st.trim(starttime=INTERVAL_PERIOD[iperid], endtime=INTERVAL_PERIOD[iperid]+MINUTES30)
-
+    st.trim(starttime=INTERVAL_PERIOD[iperid], endtime=INTERVAL_PERIOD[iperid]+ONEHOUR)
+    st.filter("bandpass", freqmin=FILTER_DATA[0], freqmax=FILTER_DATA[1])
     # Start the Snuffler
-    st.snuffle(inventory=inv)
+    st.fiddle(inventory=inv)
