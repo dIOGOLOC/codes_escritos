@@ -31,7 +31,7 @@ STATIONS = ['OBS17','OBS18','OBS19','OBS20','OBS22']
 OUTPUT_PSD_DIR = '/home/diogoloc/dados_posdoc/ON_MAR/obs_data_PSD_MSD/'
 
 #Directory to save Figures
-OUTPUT_FIGURE_DIR = '/home/diogoloc/dados_posdoc/ON_MAR/Figuras/PQLX/'
+OUTPUT_FIGURE_DIR = '/home/diogoloc/dados_posdoc/ON_MAR/Figuras/PQLX/RELATORIO_JAN_2022/'
 
 #Directory witg noise models
 NOISE_MODEL_FILE = '/home/diogoloc/dados_posdoc/ON_MAR/sta_coord/noise_models.npz'
@@ -144,18 +144,21 @@ def plot_PSD_PQLX(files2_lst,init_date2,fin_date2,channel):
 		ax.plot(xdata2, mean_2, ls=stations_line_style[i],c='k', zorder=10, label=STATIONS[i])
 	#------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-	ax.plot(periods_model_noise_ln,nlnm_ln, color='gray',ls='-', linewidth=2, zorder=10, label='Noise model limits')
+	#ax.plot(periods_model_noise_ln,nlnm_ln, color='gray',ls='-', linewidth=2, zorder=10, label='Noise model limits')
+	ax.plot(periods_model_noise_ln,nlnm_ln, color='gray',ls='-', linewidth=2, zorder=10, label='Limites Ruído')
 	ax.plot(periods_model_noise_hn,nlnm_hn, color='gray',ls='-', linewidth=2, zorder=10)
 	ax.legend(loc='lower left')
 
-	fig.ppsd.cmap = 'Blues_r'
+	fig.ppsd.cmap = pqlx
 	fig.ppsd.label = "[%]"
 	fig.ppsd.max_percentage = 30
 	fig.ppsd.color_limits = (0, 30)
 
-	ax.set_title('Noise Spectra ('+channel+')')
+	#ax.set_title('Noise Spectra ('+channel+')') #eng
+	ax.set_title('Espectro do Ruído ('+channel+')') #ptbr
 	ax.semilogx()
-	ax.set_xlabel('Period [s]')
+	#ax.set_xlabel('Period [s]') #eng
+	ax.set_xlabel('Período [s]') #ptbr
 	ax.set_xlim(period_lim)
 	ax.set_ylim(AMP_PSD_MIN, AMP_PSD_MAX)
 	ax.set_ylabel('Amplitude [$m^2/s^4/Hz$] [dB]')
@@ -174,21 +177,21 @@ def plot_PSD_PQLX(files2_lst,init_date2,fin_date2,channel):
 	cb = plt.colorbar(ppsd, ax=ax)
 	#cb.set_clim(*fig.ppsd.color_limits)
 	cb.set_label(fig.ppsd.label)
-	cb.ax.tick_params(labelcolor='white')
-	cb.ax.yaxis.label.set_color('white')
+	cb.ax.tick_params(labelcolor='black')
+	cb.ax.yaxis.label.set_color('black')
 
 	fig.ppsd.colorbar = cb
 
 	ppsd.set_clim(*fig.ppsd.color_limits)
 
-	ax.tick_params(labelcolor='white')
-	ax.xaxis.label.set_color('white')
-	ax.yaxis.label.set_color('white')
-	ax.title.set_color('white')
+	ax.tick_params(labelcolor='black')
+	ax.xaxis.label.set_color('black')
+	ax.yaxis.label.set_color('black')
+	ax.title.set_color('black')
 
 	ax.grid(b=True, which="major")
 	#ax.grid(b=True, which="minor")
-	plt.savefig(filename,facecolor='None',dpi=300,bbox_inches='tight',pad_inches=0.3)
+	plt.savefig(filename,facecolor='white',dpi=300,bbox_inches='tight',pad_inches=0.3)
 
 #------------------------------------------------------------------------------
 
@@ -236,14 +239,16 @@ def plot_PSD_PQLX_all(files2_lst,init_date2,fin_date2,channel):
         xdata2 = periods2
         ppsd2.calculate_histogram(starttime=UTCDateTime(init_date2),endtime=UTCDateTime(fin_date2),time_of_weekday=[(TIME_OF_WEEKDAY_DAY, TIME_OF_WEEKDAY_START_HOUR, TIME_OF_WEEKDAY_FINAL_HOUR)])
 
-        ax[i].plot(xdata2, mean_2, ls='--',c='k', zorder=10, label='mean')
+        #ax[i].plot(xdata2, mean_2, ls='--',c='k', zorder=10, label='mean') #eng
+        ax[i].plot(xdata2, mean_2, ls='--',c='k', zorder=10, label='média') #ptbr
         #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-        ax[i].plot(periods_model_noise_ln,nlnm_ln, color='gray',ls='-', linewidth=2, zorder=10, label='Noise model limits')
+        #ax[i].plot(periods_model_noise_ln,nlnm_ln, color='gray',ls='-', linewidth=2, zorder=10, label='Noise model limits') #eng
+        ax[i].plot(periods_model_noise_ln,nlnm_ln, color='gray',ls='-', linewidth=2, zorder=10, label='Limites Ruído') #ptbr
         ax[i].plot(periods_model_noise_hn,nlnm_hn, color='gray',ls='-', linewidth=2, zorder=10)
         ax[i].legend(loc='lower left')
 
-        fig.ppsd.cmap = 'Blues_r'
+        fig.ppsd.cmap = pqlx
         fig.ppsd.label = "[%]"
         fig.ppsd.max_percentage = 30
         fig.ppsd.color_limits = (0, 30)
@@ -264,7 +269,8 @@ def plot_PSD_PQLX_all(files2_lst,init_date2,fin_date2,channel):
             pass
 
         if ax[i] not in [ax1,ax2,ax3]:
-            ax[i].set_xlabel('Period [s]')
+            #ax[i].set_xlabel('Period [s]')
+            ax[i].set_xlabel('Período [s]')
         else:
             pass
 
@@ -285,10 +291,10 @@ def plot_PSD_PQLX_all(files2_lst,init_date2,fin_date2,channel):
         ppsd = ax[i].pcolormesh(fig.ppsd.meshgrid[0], fig.ppsd.meshgrid[1], data.T,cmap=fig.ppsd.cmap, zorder=-1)
         fig.ppsd.quadmesh = ppsd
 
-        ax[i].tick_params(labelcolor='white')
-        ax[i].xaxis.label.set_color('white')
-        ax[i].yaxis.label.set_color('white')
-        ax[i].title.set_color('white')
+        ax[i].tick_params(labelcolor='black')
+        ax[i].xaxis.label.set_color('black')
+        ax[i].yaxis.label.set_color('black')
+        ax[i].title.set_color('black')
         ax[i].tick_params(bottom=True, top=True, left=True, right=True)
         ax[i].grid(b=True, which="major")
         #ax[i].grid(b=True, which="minor")
@@ -296,12 +302,12 @@ def plot_PSD_PQLX_all(files2_lst,init_date2,fin_date2,channel):
     cbar_ax = fig.add_axes([0.8, 0.15, 0.025, 0.3])
     cb = plt.colorbar(ppsd, cax=cbar_ax)
     cb.set_label(fig.ppsd.label)
-    cb.ax.tick_params(labelcolor='white')
-    cb.ax.yaxis.label.set_color('white')
+    cb.ax.tick_params(labelcolor='black')
+    cb.ax.yaxis.label.set_color('black')
     fig.ppsd.colorbar = cb
 
     ppsd.set_clim(*fig.ppsd.color_limits)
-    plt.savefig(filename,facecolor='None',dpi=300,bbox_inches='tight',pad_inches=0.3)
+    plt.savefig(filename,facecolor='white',dpi=300,bbox_inches='tight',pad_inches=0.3)
 
 #------------------------------------------------------------------------------
 

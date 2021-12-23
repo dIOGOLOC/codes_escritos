@@ -18,14 +18,14 @@ Module that parses global parameters from a configuration file at first import,
 to make them available to the other parts of the program.
 
 More information in:
-https://wiki.python.org/moin/ConfigParserExamples
+http://moho.iag.usp.br/eq/bulletin/
 
-Input:
-Configuration file, wherein global paths and parameters are defined.
+
+Inputs:
+LOCAL_CSV_FILE
+
 
 Outputs:
-The module provides a parser for simple configuration files consisting of groups
-of named values.
 
 """
 
@@ -186,6 +186,7 @@ EV_GCARC_MIN = config.getfloat('event', 'EV_GCARC_MIN')
 
 #Maximum event distance
 EV_GCARC_MAX = config.getfloat('event', 'EV_GCARC_MAX')
+
 
 #Minimum event magnitude
 EV_MAGNITUDE_MB = config.getfloat('event', 'EV_MAGNITUDE_MB')

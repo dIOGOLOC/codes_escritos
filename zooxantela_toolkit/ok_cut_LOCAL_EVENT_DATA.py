@@ -1,7 +1,51 @@
 #!/usr/bin/python -u
-"""
-Scritp to download and cut local events data
-"""
+'''
+--------------------------------------------------------------------------------
+ Function to trim/plot local the dataset according to local events time
+--------------------------------------------------------------------------------
+
+Author: Diogo L.O.C. (locdiogo@gmail.com)
+
+
+Last Date: 12/2021
+
+
+Project: Monitoramento Sismo-Oceanográfico
+P. Number: 2015/00515-6
+
+
+Description:
+This code will trim and plot the local datase according to a given an event time
+and a list of stations.
+
+More information in:
+https://docs.obspy.org/packages/autogen/obspy.core.stream.Stream.trim.html
+
+
+Inputs:
+JSON file with event description:
+    ev_timeUTC: event time in UTC (str)
+    ev_year: year of the event
+    ev_month: month of the event
+    ev_day: day of the event
+    ev_julday: julian day of the event
+    ev_hour: hour of the event
+    ev_minute: minute of the event
+    ev_second: second of the event
+    ev_microsecond: microsecond of the event
+    evla: latitude of the event
+    evlo: longitude of the event
+    evdp: depth of the event
+    mag: magnitude of the event
+
+Outputs:
+Event traces (format: SAC)
+
+Examples of Usage (in command line):
+   >> python cut_LOCAL_EVENT_DATA.py
+
+'''
+
 import numpy as np
 import obspy
 import os
