@@ -1,7 +1,43 @@
 #!/usr/bin/python -u
-"""
-Scritp to get information from status files (m8,m9,m0 e me folders)
-"""
+
+'''
+--------------------------------------------------------------------------------
+      Getting and Plotting information from status files (Guralp format)
+--------------------------------------------------------------------------------
+
+Author: Diogo L.O.C. (locdiogo@gmail.com)
+
+
+Last Date: 12/2021
+
+
+Project: Monitoramento Sismo-Oceanográfico
+P. Number: 2015/00515-6
+
+
+Description:
+This code will retrieve and plot information from status files recorded by a
+Güralp digitiser.
+
+
+More information in:
+https://www.guralp.com/documents/DM24.pdf
+
+
+Inputs:
+Status digitiser files (m8,m9,m0 e me folders).
+Description:
+• 00 is the digitiser status stream (notice no sample rate),
+• M8, M9, MA are sensor mass positions for Z, N, E channels
+• MB, ME, MF are three of the optional eight 16bit channels available
+
+Outputs:
+Images of the status file according to the date (format: PDF)
+
+Examples of Usage (in command line):
+   >> python get_STATUS_FILE_INFORMATION.py
+
+'''
 
 import time
 from tqdm import tqdm

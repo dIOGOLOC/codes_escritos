@@ -1,7 +1,36 @@
 #!/usr/bin/python -u
-"""
-Scritp to estimate probabilistic power spectral densities for each .SAC file
-"""
+
+'''
+--------------------------------------------------------------------------------
+       Function to plot local the dataset according to local events time
+--------------------------------------------------------------------------------
+
+Author: Diogo L.O.C. (locdiogo@gmail.com)
+
+
+Last Date: 12/2021
+
+
+Project: Monitoramento Sismo-Oceanográfico
+P. Number: 2015/00515-6
+
+
+Description:
+This code will plot the local dataset according to a given list of an events.
+
+
+Inputs:
+Event traces (format: SAC)
+
+
+Outputs:
+Figures (PDF)
+
+
+Examples of Usage (in command line):
+   >> python plot_LOCAL_EVENT.py
+
+'''
 
 import time
 import os

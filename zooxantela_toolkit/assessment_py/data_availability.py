@@ -1,7 +1,34 @@
+
 '''
-Script to get information about the header of the raw data
+
+--------------------------------------------------------------------------------
+          Function to get information about the header of the raw data
+--------------------------------------------------------------------------------
+
+Author: Diogo L.O.C. (locdiogo@gmail.com)
+
+
+Last Date: 12/2021
+
+
+Project: Monitoramento Sismo-Oceanográfico
+P. Number: 2015/00515-6
+
+
+Description:
+This code will retrieve information about the header of the raw data for each
+daily file and plot a mosaic the the Data availability.
+
+
+More information in:
 (https://docs.obspy.org/packages/autogen/obspy.core.stream.read.html#obspy.core.stream.read)
-and plot a mosaic the the Data availability.
+
+Inputs:
+Daily .SAC file
+
+Outputs:
+Images of the quantity of files per hour (format: PDF)
+
 '''
 
 import matplotlib.pyplot as plt
