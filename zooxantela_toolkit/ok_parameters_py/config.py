@@ -187,7 +187,6 @@ EV_GCARC_MIN = config.getfloat('event', 'EV_GCARC_MIN')
 #Maximum event distance
 EV_GCARC_MAX = config.getfloat('event', 'EV_GCARC_MAX')
 
-
 #Minimum event magnitude
 EV_MAGNITUDE_MB = config.getfloat('event', 'EV_MAGNITUDE_MB')
 

@@ -1,5 +1,5 @@
 # ------------------------------------------------------------------------------
-#                   Collecting information of a local events
+#                 Configuration file of the computational routines
 # ------------------------------------------------------------------------------
 #
 # Author: Diogo L.O.C. (locdiogo@gmail.com)
@@ -20,10 +20,10 @@
 # e.g., 'analysis.cnf', 'caninana_config.cnf', 'myconfig.cnf', 'test.cnf'...
 #
 # The parameters are divided in several sections:
-# - [paths]                : default paths to input/output folders
-# - [ppsd]            : parameters to estimate PPSD
-# - [local_evt]            : parameters to compare local event data
-# - [event]                : parameters to compare event data
+# - [paths]           : default paths to input/output folders
+# - [ppsd]            : parameters to estimate and plot PPSD
+# - [local_evt]       : parameters to compare local event data
+# - [event]           : parameters to compare event data
 #
 # Before using the scripts, you should at least make sure that the paths in
 # section [paths] are consistent with your own files and folders organization.

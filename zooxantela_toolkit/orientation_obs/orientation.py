@@ -786,7 +786,6 @@ for i in crosscorr_pairs:
 crosscorr_pairs_names = sorted(list(set(crosscorr_pairs_name_lst)))
 
 crosscorr_pairs_data = [[]]*len(crosscorr_pairs_names)
-
 for l,k in enumerate(crosscorr_pairs_names):
 	crosscorr_pairs_data[l] = [j for i,j in enumerate(crosscorr_pairs) if k in j]
 
@@ -1608,7 +1607,6 @@ print('\n')
 crosscorr_pairs= sorted(glob.glob(JSON_FILES+'CROSS_CORR_10_DAYS_STACKED_FILES/**/*.json'))
 
 #Separating according to pairs name
-
 OBS_lst = ['OBS17','OBS18','OBS20','OBS20']
 OBS_pairs = []
 
@@ -1616,11 +1614,16 @@ for i,j in enumerate(OBS_lst):
     temp = [sta for sta in crosscorr_pairs if j in sta]
     OBS_pairs.append(temp)
 
-OBS_pairs_channels = []
 for i,j in enumerate(OBS_pairs):
-    temp_HHZ = []
-    temp_HHE = []
-    temp_HHN = []
+    HHE_HHE_lst = []
+    HHN_HHN_lst = []
+    HHZ_HHZ_lst = []
+    HHE_HHN_lst = []
+    HHN_HHE_lst = []
+    HHE_HHZ_lst = []
+    HHZ_HHE_lst = []
+    HHN_HHZ_lst = []
+    HHZ_HHN_lst = []
     for pair_folder in j:
         # Splitting subdir/basename to find OBSs pairs
         subdir, filename = os.path.split(pair_folder)
@@ -1635,54 +1638,45 @@ for i,j in enumerate(OBS_pairs):
         channel_sta1 = name1_ch.split('.')[1]
         channel_sta2 = name2_ch.split('.')[1]
 
+
         if name1+'.'+channel_sta1 != name2+'.'+channel_sta2:
-            print(name1,'.',channel_sta1,'-',name2,'.',channel_sta2)
-
-'''
-
-        name1 = name_pair1.split('..')[0]
-        name2 = name_pair2.split('..')[0]
-
-        channel_sta1 = name_pair1.split('..')[1]
-        channel_sta2 = name_pair2.split('..')[1]
-
             # ------------------------------------------------------------------------------------------------------
             if channel_sta1 == 'HHE' and channel_sta2 == 'HHE' or channel_sta1 == 'HH2' and channel_sta2 == 'HH2' or channel_sta1 == 'HH2' and channel_sta2 == 'HHE' or  channel_sta1 == 'HHE' and channel_sta2 == 'HH2':
-                HHE_HHE_lst.append(i)
+                HHE_HHE_lst.append(j)
             # ------------------------------------------------------------------------------------------------------
             if channel_sta1 == 'HHN' and channel_sta2 == 'HHN' or channel_sta1 == 'HH1' and channel_sta2 == 'HH1' or channel_sta1 == 'HHN' and channel_sta2 == 'HH1' or channel_sta1 == 'HH1' and channel_sta2 == 'HHN':
-                HHN_HHN_lst.append(i)
+                HHN_HHN_lst.append(j)
             # ------------------------------------------------------------------------------------------------------
             if channel_sta1 == 'HHZ' and channel_sta2 == 'HHZ':
-                HHZ_HHZ_lst.append(i)
+                HHZ_HHZ_lst.append(j)
             # ------------------------------------------------------------------------------------------------------
             if channel_sta1 == 'HHE' and channel_sta2 == 'HHN' or channel_sta1 == 'HH2' and channel_sta2 == 'HHN' or channel_sta1 == 'HHE' and channel_sta2 == 'HH1' or channel_sta1 == 'HH2' and channel_sta2 == 'HH1':
-                HHE_HHN_lst.append(i)
+                HHE_HHN_lst.append(j)
             # ------------------------------------------------------------------------------------------------------
             if channel_sta1 == 'HHN' and channel_sta2 == 'HHE' or channel_sta1 == 'HH1' and channel_sta2 == 'HHE' or channel_sta1 == 'HHN' and channel_sta2 == 'HH2' or channel_sta1 == 'HH1' and channel_sta2 == 'HH2':
-                HHN_HHE_lst.append(i)
+                HHN_HHE_lst.append(j)
             # ------------------------------------------------------------------------------------------------------
             if channel_sta1 == 'HHE' and channel_sta2 == 'HHZ' or channel_sta1 == 'HH2' and channel_sta2 == 'HHZ':
-                HHE_HHZ_lst.append(i)
+                HHE_HHZ_lst.append(j)
             # ------------------------------------------------------------------------------------------------------
             if channel_sta1 == 'HHZ' and channel_sta2 == 'HHE' or channel_sta1 == 'HHZ' and channel_sta2 == 'HH2':
-                HHZ_HHE_lst.append(i)
+                HHZ_HHE_lst.append(j)
             # ------------------------------------------------------------------------------------------------------
             if channel_sta1 == 'HHN' and channel_sta2 == 'HHZ' or channel_sta1 == 'HH1' and channel_sta2 == 'HHZ':
-                HHN_HHZ_lst.append(i)
+                HHN_HHZ_lst.append(j)
             # ------------------------------------------------------------------------------------------------------
             if channel_sta1 == 'HHZ' and channel_sta2 == 'HHN' or channel_sta1 == 'HHZ' and channel_sta2 == 'HH1':
-                HHZ_HHN_lst.append(i)
+                HHZ_HHN_lst.append(j)
             # ------------------------------------------------------------------------------------------------------
 
-    CHANNEL_fig_lst = [HHE_HHE_lst,HHE_HHN_lst,HHE_HHZ_lst,HHN_HHN_lst,HHN_HHE_lst,HHN_HHZ_lst,HHZ_HHE_lst,HHZ_HHN_lst,HHZ_HHZ_lst]
-    chan_lst = ['HHE-HHE','HHE-HHN','HHE-HHZ','HHN-HHN','HHN-HHE','HHN-HHZ','HHZ-HHE','HHZ-HHN','HHZ-HHZ']
+        OBS_pairs_channels = [HHE_HHE_lst,HHE_HHN_lst,HHE_HHZ_lst,HHN_HHN_lst,HHN_HHE_lst,HHN_HHZ_lst,HHZ_HHE_lst,HHZ_HHN_lst,HHZ_HHZ_lst]
+        chan_lst = ['HHE-HHE','HHE-HHN','HHE-HHZ','HHN-HHN','HHN-HHE','HHN-HHZ','HHZ-HHE','HHZ-HHN','HHZ-HHZ']
 
 
+        for i in HHE_HHE_lst:
+            print(i)
 
-
-
-
+'''
         # Separating OBSs pairs per channel:
 
         if OBS_lst[i]+'_HHE' in pair and OBS_lst[i]+'_HHE.'+OBS_lst[i]+'_HHZ' not in pair:
@@ -1695,7 +1689,7 @@ for i,j in enumerate(OBS_pairs):
             if '_HHZ' in pair.split(OBS_lst[i]+'_HHZ')[0] or '_HHZ' in pair.split(OBS_lst[i]+'_HHZ')[1]:
                 temp_HHZ.append(pair_folder)
 
-    OBS_pairs_channels.append([temp_HHE,temp_HHN,temp_HHZ])
+    OBS_pairs_channels.append([HHE_HHE_lst,HHN_HHN_lst,HHN_HHZ_lst])
 
 for i,chs in enumerate(OBS_pairs_channels):
     OBS_orientation = []
