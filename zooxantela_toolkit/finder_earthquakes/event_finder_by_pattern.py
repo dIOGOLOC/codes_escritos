@@ -62,27 +62,27 @@ from obspy.signal.trigger import classic_sta_lta, trigger_onset, coincidence_tri
 # Input and output folders
 # ========================
 
-#MSEED_FOLDER = '/media/diogoloc/Backup/dados_posdoc/ON_MAR/obs_data_MSEED/'
-MSEED_FOLDER = '/home/diogoloc/dados_posdoc/ON_MAR/obs_data_MSEED/'
+MSEED_FOLDER = '/media/diogoloc/Backup/dados_posdoc/ON_MAR/obs_data_MSEED/'
+#MSEED_FOLDER = '/home/diogoloc/dados_posdoc/ON_MAR/obs_data_MSEED/'
 
-#EARTHQUAKE_FINDER_OUTPUT = '/media/diogoloc/Backup/dados_posdoc/ON_MAR/EARTHQUAKE_FINDER_NETWORK_OUTPUT/FIGURAS/'
-EARTHQUAKE_FINDER_OUTPUT = '/home/diogoloc/dados_posdoc/ON_MAR/EARTHQUAKE_FINDER_NETWORK_OUTPUT/FIGURAS/'
+EARTHQUAKE_FINDER_OUTPUT = '/media/diogoloc/Backup/dados_posdoc/ON_MAR/EARTHQUAKE_FINDER_NETWORK_OUTPUT/FIGURAS/'
+#EARTHQUAKE_FINDER_OUTPUT = '/home/diogoloc/dados_posdoc/ON_MAR/EARTHQUAKE_FINDER_NETWORK_OUTPUT/FIGURAS/'
 
-ASDF_FILES = '/home/diogoloc/dados_posdoc/ON_MAR/EARTHQUAKE_FINDER_NETWORK_OUTPUT/ASDF_FILES/'
-#ASDF_FILES = '/media/diogoloc/Backup/dados_posdoc/ON_MAR/EARTHQUAKE_FINDER_NETWORK_OUTPUT/ASDF_FILES/'
+#ASDF_FILES = '/home/diogoloc/dados_posdoc/ON_MAR/EARTHQUAKE_FINDER_NETWORK_OUTPUT/ASDF_FILES/'
+ASDF_FILES = '/media/diogoloc/Backup/dados_posdoc/ON_MAR/EARTHQUAKE_FINDER_NETWORK_OUTPUT/ASDF_FILES/'
 
-STATIONXML_DIR = '/home/diogoloc/dados_posdoc/ON_MAR/XML_ON_OBS_CC/'
-#STATIONXML_DIR = '/media/diogoloc/Backup/dados_posdoc/ON_MAR/XML_ON_OBS_CC/'
+#STATIONXML_DIR = '/home/diogoloc/dados_posdoc/ON_MAR/XML_ON_OBS_CC/'
+STATIONXML_DIR = '/media/diogoloc/Backup/dados_posdoc/ON_MAR/XML_ON_OBS_CC/'
 
-BINARY_FILES = '/home/diogoloc/dados_posdoc/ON_MAR/EARTHQUAKE_FINDER_NETWORK_OUTPUT/BINARY_FILES/'
-#BINARY_FILES = '/media/diogoloc/Backup/dados_posdoc/ON_MAR/EARTHQUAKE_FINDER_NETWORK_OUTPUT/BINARY_FILES/'
+#BINARY_FILES = '/home/diogoloc/dados_posdoc/ON_MAR/EARTHQUAKE_FINDER_NETWORK_OUTPUT/BINARY_FILES/'
+BINARY_FILES = '/media/diogoloc/Backup/dados_posdoc/ON_MAR/EARTHQUAKE_FINDER_NETWORK_OUTPUT/BINARY_FILES/'
 
 # ===================================
 # Loading standard_pattern event file
 # ===================================
 
-standard_pattern_binary = '/home/diogoloc/dados_posdoc/ON_MAR/EARTHQUAKE_FINDER_NETWORK_OUTPUT/BINARY_FILES/AIRGUN/AIRGUN_standard_pattern_date_2019_08_04_20_46_58.npy'
-#standard_pattern_binary = '/media/diogoloc/Backup/dados_posdoc/ON_MAR/EARTHQUAKE_FINDER_NETWORK_OUTPUT/BINARY_FILES/AIRGUN/AIRGUN_standard_pattern_date_2019_08_04_20_46_58.npy'
+#standard_pattern_binary = '/home/diogoloc/dados_posdoc/ON_MAR/EARTHQUAKE_FINDER_NETWORK_OUTPUT/BINARY_FILES/AIRGUN/AIRGUN_standard_pattern_date_2019_08_04_20_46_58.npy'
+standard_pattern_binary = '/media/diogoloc/Backup/dados_posdoc/ON_MAR/EARTHQUAKE_FINDER_NETWORK_OUTPUT/BINARY_FILES/AIRGUN/AIRGUN_standard_pattern_date_2019_08_04_20_46_58.npy'
 
 # ==========
 # Parameters
@@ -92,7 +92,7 @@ standard_pattern_binary = '/home/diogoloc/dados_posdoc/ON_MAR/EARTHQUAKE_FINDER_
 EVENT_TYPE = 'AIRGUN'
 
 #Bandpass frequency (Hz) - minimum and maximum
-FILTER_DATA = [2,20]
+FILTER_DATA = [4,10]
 
 NETWORK = 'ON'
 
@@ -104,10 +104,10 @@ CHANNEL = 'HHZ'
 spectral_length = 32
 
 #Spectral image lag (samples)
-TIME_WINDOW_LAG = 0.5
+TIME_WINDOW_LAG = 1
 
 #Time window length (same of the standard_pattern_binary)
-TIME_WINDOW = 7
+TIME_WINDOW = 14
 
 #Number of wavelet coefficients to keep
 k_coef = 200
@@ -115,7 +115,7 @@ k_coef = 200
 #The Jaccard index or Jaccard similarity coefficient threshold
 #defined as the size of the intersection divided by the size of the union of two sets,
 #is used to compare sets
-JACC_COEFF_THR = 0.5
+JACC_COEFF_THR = 0.52
 
 # =========
 # Constants
@@ -131,7 +131,7 @@ ONEDAY = datetime.timedelta(days=1)
 # ================
 
 #Number of threads
-num_processes = 8
+num_processes = 4
 
 # =========
 # Functions
@@ -363,7 +363,7 @@ def plot_binary_image(input):
 
         folder_output = EARTHQUAKE_FINDER_OUTPUT+NETWORK+'.'+OBS_NAME+'.'+CHANNEL+'/'+EVENT_TYPE+'_PATTERN_SELECTED/'
         os.makedirs(folder_output,exist_ok=True)
-        fig.savefig(folder_output+NETWORK+'_'+OBS_NAME+'_'+CHANNEL+'_'+EVENT_TYPE+'_'+trim_data.stats.starttime.strftime('%Y_%d_%m_%H_%M_%S_%f')+'.png', dpi=300, facecolor='w', edgecolor='w')
+        fig.savefig(folder_output+NETWORK+'_'+OBS_NAME+'_'+CHANNEL+'_'+EVENT_TYPE+'_'+trim_data.stats.starttime.strftime('%Y_%d_%m_%H_%M_%S_%f')+'.png', dpi=150, facecolor='w', edgecolor='w')
         plt.close(fig)
 
 #-------------------------------------------------------------------------------
