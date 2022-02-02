@@ -79,13 +79,6 @@ STATIONXML_DIR = '/home/diogoloc/dados_posdoc/ON_MAR/XML_ON_OBS_CC/'
 BINARY_FILES = '/home/diogoloc/dados_posdoc/ON_MAR/EARTHQUAKE_FINDER_NETWORK_OUTPUT/BINARY_FILES/'
 #BINARY_FILES = '/media/diogoloc/Backup/dados_posdoc/ON_MAR/EARTHQUAKE_FINDER_NETWORK_OUTPUT/BINARY_FILES/'
 
-# ===================================
-# Loading standard_pattern event file
-# ===================================
-
-standard_pattern_binary = '/home/diogoloc/dados_posdoc/ON_MAR/EARTHQUAKE_FINDER_NETWORK_OUTPUT/BINARY_FILES/AIRGUN/AIRGUN_standard_pattern_date_2019_08_04_20_46_58.npy'
-#standard_pattern_binary = '/media/diogoloc/Backup/dados_posdoc/ON_MAR/EARTHQUAKE_FINDER_NETWORK_OUTPUT/BINARY_FILES/AIRGUN/AIRGUN_standard_pattern_date_2019_08_04_20_46_58.npy'
-
 # ==========
 # Parameters
 # ==========
@@ -95,7 +88,7 @@ FILTER_DATA = [4,16]
 
 NETWORK = 'ON'
 
-OBS_NAME = ['OBS17','OBS18','OBS20','OBS22','ALF01','DUB01','RIB01']
+OBS_NAME = ['OBS17','OBS18']
 
 CHANNEL = 'HHZ'
 
@@ -106,20 +99,20 @@ CHANNEL = 'HHZ'
 DTINY = np.finfo(0.0).tiny
 
 ONESEC = datetime.timedelta(seconds=1)
-ONEHOUR = datetime.timedelta(hours=1)
+HOUR12 = datetime.timedelta(hours=12)
 ONEDAY = datetime.timedelta(days=1)
 
 # =================
 # Filtering by date
 # =================
 
-FIRSTDAY = '2020,02,20,07'
-LASTDAY = '2020,02,21,07'
+FIRSTDAY = '2019,12,07,00'
+LASTDAY = '2019,12,08,00'
 
 fday = UTCDateTime(FIRSTDAY)
 lday = UTCDateTime(LASTDAY)
 
-INTERVAL_PERIOD = [UTCDateTime(x.astype(str)) for x in np.arange(fday.datetime,lday.datetime+ONEHOUR,ONEHOUR)]
+INTERVAL_PERIOD = [UTCDateTime(x.astype(str)) for x in np.arange(fday.datetime,lday.datetime+HOUR12,HOUR12)]
 INTERVAL_PERIOD_DATE = [str(x.year)+'.'+"%03d" % x.julday for x in INTERVAL_PERIOD]
 
 # =========
@@ -148,12 +141,12 @@ for iperid,period_date in enumerate(tqdm(INTERVAL_PERIOD_DATE,desc='File loop'))
 
     st = Stream()
     for file in obs_day_files:
+        if 'HHX' not in file and 'OBS19' not in file and 'OBS22' not in file and 'OBS20' not in file:
         #if 'HHX' not in file and 'OBS19' not in file:
-        #if 'HHX' not in file and 'OBS19' not in file:
-        if 'OBS19' not in file:
+        #if 'HHX' not in file:
             st.append(read(file)[0])
 
-    st.trim(starttime=INTERVAL_PERIOD[iperid], endtime=INTERVAL_PERIOD[iperid]+ONEHOUR)
+    st.trim(starttime=INTERVAL_PERIOD[iperid], endtime=INTERVAL_PERIOD[iperid]+HOUR12)
     st.filter("bandpass", freqmin=FILTER_DATA[0], freqmax=FILTER_DATA[1])
     # Start the Snuffler
     st.fiddle(inventory=inv)

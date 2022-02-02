@@ -57,9 +57,9 @@ from obspy.signal.trigger import classic_sta_lta, trigger_onset, coincidence_tri
 
 #Configuration file
 
-EARTHQUAKE_FINDER_OUTPUT = '/media/diogoloc/Backup/dados_posdoc/ON_MAR/EARTHQUAKE_FINDER_NETWORK_OUTPUT/FIGURAS/'
+EARTHQUAKE_FINDER_OUTPUT = '/run/user/1000/gvfs/smb-share:server=hatabackup.local,share=on_mar/EARTHQUAKE_FINDER_NETWORK_OUTPUT/FIGURAS/'
 
-ASDF_FILES = '/media/diogoloc/Backup/dados_posdoc/ON_MAR/EARTHQUAKE_FINDER_NETWORK_OUTPUT/ASDF_FILES/'
+ASDF_FILES = '/run/user/1000/gvfs/smb-share:server=hatabackup.local,share=on_mar/EARTHQUAKE_FINDER_NETWORK_OUTPUT/ASDF_FILES/'
 
 FILTER_DATA = [0.1,45]
 
