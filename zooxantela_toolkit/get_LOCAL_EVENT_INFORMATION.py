@@ -1,13 +1,13 @@
 #!/usr/bin/python -u
 '''
 --------------------------------------------------------------------------------
-                   Collecting information of a local events
+            Function to collect information of a local events
 --------------------------------------------------------------------------------
 
 Author: Diogo L.O.C. (locdiogo@gmail.com)
 
 
-Last Date: 12/2021
+Last Date: 02/2022
 
 
 Project: Monitoramento Sismo-Oceanográfico
@@ -20,34 +20,37 @@ events downloaded from Preliminary Seismic Boletim by Centro de Sismologia da
 USP that are located inside a determined area given by a shapefile.
 
 More information in:
-http://moho.iag.usp.br/eq/bulletin/
-
-Dataset in:
-http://moho.iag.usp.br/boletim/boletim_txt/boletim2000.txt
-and
-http://moho.iag.usp.br/boletim/boletim_txt/boletim2001p.txt
+http://moho.iag.usp.br/eq/latest
 
 Inputs:
 LOCAL_CSV_FILE
 
+
 An example of LOCAL_CSV_FILE download in:
-http://moho.iag.usp.br/boletim/boletim_txt/boletim2001p.txt is shown bellow:
+http://moho.iag.usp.br/eq/latest
 
- YEAR MMDD HHMMSS  LAT. LONG.  ERR ST DEPTH MAG. T CAT Io  AREA LOCALITY   COMMENTS
- 2001 0107 035015  -17.70 -44.70  10 MG   0.  3.4  1  I   -       Pirapora     (UnB)
- 2001 0123 092131  -05.28 -39.42  50 CE   0.  3.3  1  I   -       Quixeramobim (IAG,UFRN)
- 2001 0221 152021  -11.28 -74.51  10 PU  33.  5.5  0  I   2       Central Peru (IRIS)AC-IIMM
- 2001 0226 204200  -04.41 -38.29  05 CE   0.  3.7  1  I   -       Cascavel     (IAG,UnB)
-
+evid;origin;longitude;latitude;depth;magnitude;magnitudet;region;author;mode
+usp2020mums;2020-06-30T23:35:40.31Z;-66.721;-23.861;203.5;4.1;mb;"Jujuy Province, Argentina";jroberto;M
+usp2020muij;2020-06-30T21:21:44.662Z;-69.448;-25.673;10.0;4.7;mb;"Northern Chile";cleusa;M
+usp2020mtqe;2020-06-30T12:10:54.829Z;-66.554;-23.669;208.1;4.5;mb;"Jujuy Province, Argentina";cleusa;M
+usp2020mtgy;2020-06-30T07:31:46.66Z;-66.742;-23.558;231.0;3.9;mb;"Jujuy Province, Argentina";cleusa;M
+usp2020mskk;2020-06-29T20:07:40.43Z;-40.434;-3.896;0.0;1.9;MLv;"Groairas/CE";jroberto;M
+usp2020mrlp;2020-06-29T07:36:22.4Z;-40.199;-3.409;0.0;1.4;mR;"Santana do Acaraú/CE";jroberto;M
+usp2020mrkj;2020-06-29T06:59:14.529Z;-40.278;-3.350;0.0;1.3;mR;"Santana do Acaraú/CE";jroberto;M
+usp2020mrhl;2020-06-29T05:29:47.46Z;-63.906;-18.941;78.3;3.9;mb;"Central Bolivia";jroberto;M
+usp2020mrgr;2020-06-29T05:06:31.226Z;-63.787;-18.674;10.0;4.6;mb;"Central Bolivia";jroberto;M
+usp2020mrbx;2020-06-29T02:42:26.453Z;-71.789;-15.723;124.6;4.6;mb;"Southern Peru";cleusa;M
 
 Data description:
-    YEAR: year of the event
-    MMDD: month and day of the event
-    HHMMSS: hour,minute second of the event
-    LAT: latitude of the event
-    LONG: longitude of the event
-    DEPTH: depth of the event
-    MAG: magnitude of the event
+    evid: event name
+    origin: year-month-dayThour:minute:second of the event
+    longitude: latitude of the event
+    latitude: longitude of the event
+    depth: depth of the event
+    magnitude: magnitude of the event
+
+    see http://moho.iag.usp.br/eq/bulletin and http://moho.iag.usp.br/eq/latest
+    for more informations
     ...
 
 
@@ -66,6 +69,7 @@ JSON file with event description:
     evlo: longitude of the event
     evdp: depth of the event
     mag: magnitude of the event
+
 
 Examples of Usage (in command line):
    >> python get_LOCAL_EVENT_INFORMATION.py

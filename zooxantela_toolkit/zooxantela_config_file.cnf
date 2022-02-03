@@ -38,6 +38,7 @@
 #======
 
 # directory of raw files
+#DIR_DATA = /home/diogoloc/dados_posdoc/ON_MAR/data/
 DIR_DATA = /home/diogoloc/dados_posdoc/ON_MAR/obs_data_MSEED/
 
 # directory of raw status files
@@ -59,10 +60,11 @@ OUTPUT_EV_DIR = /home/diogoloc/dados_posdoc/ON_MAR/EVENTS/
 XML_FILE = /home/diogoloc/dados_posdoc/ON_MAR/XML_ON_OBS_CC/
 
 #STA CSV FILE path
+#STA_CSV_FILE  = /home/diogoloc/dados_posdoc/ON_MAR/sta_coord/RSIS_ZOOXANTELA.txt
 STA_CSV_FILE  = /home/diogoloc/dados_posdoc/ON_MAR/sta_coord/OBS_ZOOXANTELA.txt
 
 #Local events FILE path
-LOCAL_CSV_FILE  = /home/diogoloc/dados_posdoc/ON_MAR/local_events/boletim2001p.txt
+LOCAL_CSV_FILE  = /home/diogoloc/SIG_dados/Projeto_ON_MAR/brasil_terremoto_lista_USP/sisbra_v2022Jan27/catalogo_07_2019_to_07_2020.csv
 
 #Shapefile  boundary states
 BOUNDARY_STATES_SHP = /home/diogoloc/SIG_dados/Projeto_ON_MAR/shapefile/brasil_estados/brasil_estados.shp
