@@ -47,7 +47,10 @@ import cartopy.crs as ccrs
 from cartopy.io.shapereader import Reader
 import cartopy.feature as cfeature
 
-from sklearn.linear_model import LinearRegression
+from sklearn.preprocessing import PolynomialFeatures
+from sklearn.pipeline import make_pipeline
+from sklearn.linear_model import LinearRegression,HuberRegressor,TheilSenRegressor
+from sklearn.metrics import mean_squared_error
 
 from pyasdf import ASDFDataSet
 
@@ -65,7 +68,7 @@ MSEED_DIR_STA = '/home/diogoloc/dados_posdoc/ON_MAR/data/'
 
 # Shapefile  boundary states input
 
-BOUNDARY_STATES_SHP = '/home/diogoloc/SIG_dados/Projeto_ON_MAR/shapefile/brasil_estados/brasil_estados.shp'
+BOUNDARY_STATES_SHP = '/home/diogoloc/SIG_dados/Projeto_ON_MAR/shapefile/Brasil_unidades_federativas/UFEBRASIL.shp'
 
 # -------------------------------
 
@@ -109,8 +112,9 @@ WINDOW_LENGTH = 3600
 #max time window (s) for cross-correlation
 SHIFT_LEN = 1800
 
-PERIOD_BANDS = [[5, 10], [10, 30], [50, 100]]
+PERIOD_BANDS = [[7, 25], [20, 50], [50, 100]]
 # (these bands focus on periods 7, 20 and 70 seconds)
+PERIOD_BANDS2 = [[20, 50]]
 
 # default parameters to define the signal and noise windows used to
 # estimate the SNR:
@@ -135,6 +139,7 @@ NEW_SAMPLING_RATE = 2
 
 ONESEC = datetime.timedelta(seconds=1)
 ONEDAY = datetime.timedelta(days=1)
+TENDAY = datetime.timedelta(days=10)
 
 # -------------------------------
 
@@ -214,10 +219,10 @@ def obscorr_window(data1,time_data1,data2,time_data2,dist,vmin,vmax):
     trace1 = data1[signal_window1]
     trace2 = data2[signal_window2]
 
-    cc = obscorr(trace1,trace2,1000)
+    cc = obscorr(trace1,trace2,np.max([len(trace1),len(trace2)]))
     shift, coefficient = xcorr_max(cc)
 
-    return shift, coefficient
+    return shift/NEW_SAMPLING_RATE, coefficient
 
 #-------------------------------------------------------------------------------
 
@@ -1735,9 +1740,9 @@ def Calculating_clock_drift_func(ipair):
                     ax0.xaxis.set_minor_locator(days_minor)
                     ax0.yaxis.set_major_locator(MultipleLocator(100))
                     ax0.yaxis.set_minor_locator(MultipleLocator(25))
-                    ax0.set_ylabel('Drift ('+str(1/NEW_SAMPLING_RATE)+'s)')
+                    ax0.set_ylabel('Erro do Relógios (s)')
                     ax0.set_title(chan_lst[z])
-                    ax0.set_ylim(-200,200)
+                    ax0.set_ylim(-100,100)
 
                     # -------------------------------------------------------------------------------------------------------------
                     slope, intercept, r, p, std_err = stats.linregress(x, y)
@@ -1775,7 +1780,7 @@ def Calculating_clock_drift_func(ipair):
                     ax0.xaxis.set_minor_locator(days_minor)
                     ax0.yaxis.set_major_locator(MultipleLocator(100))
                     ax0.yaxis.set_minor_locator(MultipleLocator(25))
-                    ax0.set_ylabel('Drift ('+str(1/NEW_SAMPLING_RATE)+'s)')
+                    ax0.set_ylabel('Erro do Relógio (s)')
                     ax0.set_title(chan_lst[z])
                     ax0.set_ylim(-200,200)
 
@@ -2418,7 +2423,7 @@ print('============================================================')
 print('Plotting Staked cross-correlations by interstation distance:')
 print('============================================================')
 print('\n')
-'''
+
 start_time = time.time()
 plot_stacked_cc_interstation_distance('CROSS_CORR_10_DAYS_STACKED_FILES')
 print("--- %.2f execution time (min) ---" % ((time.time() - start_time)/60))
@@ -2427,7 +2432,7 @@ print("--- %.2f execution time (min) ---" % ((time.time() - start_time)/60))
 start_time = time.time()
 plot_stacked_cc_interstation_distance_per_obs_short('CROSS_CORR_10_DAYS_STACKED_FILES')
 print("--- %.2f execution time (min) ---" % ((time.time() - start_time)/60))
-'''
+
 print('\n')
 print('========================')
 print('Clock Drift Calculating:')
@@ -2475,7 +2480,7 @@ for iOBS in OBS_LST:
                 pbar.update()
     print("--- %.2f execution time (min) ---" % ((time.time() - start_time)/60))
 
-
+'''
 print('\n')
 print('===============================')
 print('Total Clock Drift for each OBS:')
@@ -2498,7 +2503,7 @@ for i,j in enumerate(clock_drift_files_lst):
         clock_drift_files.append(j)
 
 for iOBS in OBS_LST:
-    for iband, per_bands in enumerate(PERIOD_BANDS):
+    for iband, per_bands in enumerate(PERIOD_BANDS2):
 
         clock_drift_df_lst = [pd.read_feather(j) for i,j in enumerate(clock_drift_files) if iOBS in j]
         # ----------------------------------------------------------------------------------------------------
@@ -2510,7 +2515,7 @@ for iOBS in OBS_LST:
         # --------------------------------------------
 
         fig = plt.figure(figsize=(20, 15))
-        fig.suptitle('Clock-drift: '+iOBS,fontsize=20)
+        fig.suptitle('Deriva do Relógio: '+iOBS,fontsize=20)
         fig.autofmt_xdate()
 
         # ----------------------------------------------------------------------------------------------------
@@ -2565,67 +2570,55 @@ for iOBS in OBS_LST:
         # ----------------------------------------------------------------------------------------------------
         chan_lst = ['HHE-HHE','HHE-HHN','HHE-HHZ','HHN-HHN','HHN-HHE','HHN-HHZ','HHZ-HHE','HHZ-HHN','HHZ-HHZ']
 
+        clock_drift_date_to_plot_total = []
+        clock_drift_data_to_plot_coefficient_total = []
+        clock_drift_data_to_plot_shift_total = []
         for z,i in enumerate(chan_lst):
             clock_drift_date_to_plot = np.array([item for sublist in df[i+' date ['+str(per_bands[0])+'-'+str(per_bands[1])+' s]'].tolist() for item in sublist])
             clock_drift_data_to_plot_coefficient = np.array([abs(num) for num in [item for sublist in df[i+' coefficient ['+str(per_bands[0])+'-'+str(per_bands[1])+' s]'].tolist() for item in sublist]])
             clock_drift_data_to_plot_shift = np.array([item for sublist in df[i+' shift ['+str(per_bands[0])+'-'+str(per_bands[1])+' s]'].tolist() for item in sublist])
-
             # ----------------------------------------------------------------------------------------------------
             ax0 = fig.add_subplot(gs[z,1])
             ax0.xaxis.set_major_locator(months)
             ax0.xaxis.set_major_formatter(yearsFmt)
             ax0.xaxis.set_minor_locator(days_minor)
-            ax0.yaxis.set_major_locator(MultipleLocator(100))
-            ax0.yaxis.set_minor_locator(MultipleLocator(25))
-            #ax0.set_ylabel('Drift ('+str(1/NEW_SAMPLING_RATE)+'s)')
-            ax0.set_ylabel('Drift (s)')
+            ax0.yaxis.set_major_locator(MultipleLocator(50))
+            ax0.yaxis.set_minor_locator(MultipleLocator(10))
+            ax0.set_ylabel('Erro do '+'\n'+'Relógio (s)')
             ax0.set_title(chan_lst[z]+' ['+str(per_bands[0])+'-'+str(per_bands[1])+' s]')
-            ax0.set_ylim(-200,200)
+            ax0.set_ylim(-50,50)
             ax0.set_xlim(clock_drift_date_to_plot[0],clock_drift_date_to_plot[-1])
 
             # -------------------------------------------------------------------------------------------------------------
-            mask = clock_drift_data_to_plot_coefficient >= data_coefficient_mean_85
-            mask_ = clock_drift_data_to_plot_coefficient < data_coefficient_mean_85
+            data_coefficient_6 = 0.5
+            mask = clock_drift_data_to_plot_coefficient >= data_coefficient_6
+            mask_ = clock_drift_data_to_plot_coefficient < data_coefficient_6
             # -------------------------------------------------------------------------------------------------------------
-            if len(clock_drift_date_to_plot[mask]) > 1:
-                #Simple Linear Regression With scikit-learn
+            data_coefficient_80 = 0.85
+            mask80 = clock_drift_data_to_plot_coefficient >= data_coefficient_80
+            # -------------------------------------------------------------------------------------------------------------
 
-                #Provide data:
-                x = np.array(range(len(clock_drift_date_to_plot[mask]))).reshape((-1, 1))
-                y = clock_drift_data_to_plot_shift[mask]
+            if len(clock_drift_date_to_plot[mask]) > 5:
 
-                #Create a model and fit it:
-                model = LinearRegression()
+                clock_drift_date_to_plot_total.append(clock_drift_date_to_plot[mask80])
+                clock_drift_data_to_plot_coefficient_total.append(clock_drift_data_to_plot_coefficient[mask80])
+                clock_drift_data_to_plot_shift_total.append(clock_drift_data_to_plot_shift[mask80])
 
-                #It’s time to start using the model. First, you need to call .fit() on model:
-                model.fit(x, y)
+                #calculating the mean of cc coefficient and the std of the clock drift
+                data_coefficient_mean = np.mean(clock_drift_data_to_plot_coefficient[mask])
+                clock_drift_data_to_plot_shift_mean = np.std(clock_drift_data_to_plot_shift[mask])
 
-                #Get results:
-                #coefficient of determination
-                r_sq = model.score(x, y)
-                #intercept:
-                intercept = model.intercept_
-                #slope:
-                slope = model.coef_[0]
-
-                x_pred = np.arange(start=clock_drift_date_to_plot[0],stop=clock_drift_date_to_plot[-1],step=ONEDAY)
-                #Predict response (y_pred = model.intercept_ + model.coef_ * x):
-                y_pred = model.predict(np.array(range(len(x_pred))).reshape((-1, 1)))
-
-                ax0.plot(x_pred, y_pred/NEW_SAMPLING_RATE,'--k',alpha=0.7)
-
-                # these are matplotlib.patch.Patch properties
                 props = dict(boxstyle='round', facecolor='white', alpha=0.5)
-                ax0.text(0.9, 0.8, '$CC_{av}:$'+str(round(data_coefficient_mean,2)), horizontalalignment='center',verticalalignment='center', transform=ax0.transAxes,bbox=props)
+                ax0.text(0.9, 0.7, '$CC_{av}:$'+str(round(data_coefficient_mean,2))+'\n'+'$\sigma:$'+str(round(clock_drift_data_to_plot_shift_mean,2))+' s', horizontalalignment='center',verticalalignment='center', transform=ax0.transAxes,bbox=props)
 
             else:
                 pass
 
             # -------------------------------------------------------------------------------------------------------------
 
-            im = ax0.scatter(clock_drift_date_to_plot[mask],clock_drift_data_to_plot_shift[mask]/NEW_SAMPLING_RATE,c=clock_drift_data_to_plot_coefficient[mask],marker='o',edgecolors=None,cmap='viridis_r',s=20,vmin=0,vmax=1,alpha=0.9)
+            im = ax0.scatter(clock_drift_date_to_plot[mask],clock_drift_data_to_plot_shift[mask],c=clock_drift_data_to_plot_coefficient[mask],marker='o',edgecolors=None,cmap='viridis_r',s=10,vmin=0.5,vmax=1,alpha=0.9)
 
-            ax0.scatter(clock_drift_date_to_plot[mask_],clock_drift_data_to_plot_shift[mask_]/NEW_SAMPLING_RATE,c=clock_drift_data_to_plot_coefficient[mask_],marker='o',edgecolors=None,cmap='viridis_r',s=2,vmin=0,vmax=1,alpha=0.1)
+            ax0.scatter(clock_drift_date_to_plot[mask_],clock_drift_data_to_plot_shift[mask_],c=clock_drift_data_to_plot_coefficient[mask_],marker='o',edgecolors=None,cmap='viridis_r',s=2,vmin=0.5,vmax=1,alpha=0.3)
 
             if z == 0:
 
@@ -2637,11 +2630,142 @@ for iOBS in OBS_LST:
                                    bbox_transform=ax0.transAxes,
                                    borderpad=0,
                                    )
-                plt.colorbar(im, cax=axins, orientation="horizontal", ticklocation='top')
+                plt.colorbar(im, cax=axins, orientation="horizontal", ticklocation='top',label='CC Pearson')
 
         # -------------------------------------------------------------------------------------------------------------
         output_figure_CLOCK_DRIFT = CLOCK_DRIFT_OUTPUT+'CLOCK_DRIFT_TOTAL_FIGURES/'
         os.makedirs(output_figure_CLOCK_DRIFT,exist_ok=True)
         fig.savefig(output_figure_CLOCK_DRIFT+'CLOCK_DRIFT_TOTAL_'+iOBS+'_'+str(per_bands[0])+'_'+str(per_bands[1])+'s.png',dpi=300)
         plt.close()
-'''
+
+        # --------------------------------------------------
+        # Creating the figure and plotting Clock-drift total
+        # --------------------------------------------------
+
+        fig = plt.figure(figsize=(20, 15))
+        fig.suptitle('Deriva do Relógio: '+iOBS,fontsize=20)
+        fig.autofmt_xdate()
+
+        # ----------------------------------------------------------------------------------------------------
+
+        gs = gridspec.GridSpec(4, 4,wspace=0.5, hspace=0.8)
+        map_loc = fig.add_subplot(gs[0:3,:],projection=ccrs.PlateCarree())
+        LLCRNRLON_LARGE = -52
+        URCRNRLON_LARGE = -38
+        LLCRNRLAT_LARGE = -30
+        URCRNRLAT_LARGE = -12
+        # ----------------------------------------------------------------------------------------------------
+
+        map_loc.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE])
+        map_loc.yaxis.set_ticks_position('both')
+        map_loc.xaxis.set_ticks_position('both')
+
+        map_loc.set_xticks(np.arange(LLCRNRLON_LARGE,URCRNRLON_LARGE+3,3), crs=ccrs.PlateCarree())
+        map_loc.set_yticks(np.arange(LLCRNRLAT_LARGE,URCRNRLAT_LARGE+3,3), crs=ccrs.PlateCarree())
+        map_loc.tick_params(labelbottom=True, labeltop=True, labelleft=True, labelright=True, labelsize=12)
+        map_loc.grid(True,which='major',color='gray',linewidth=0.5,linestyle='--')
+
+        reader_1_SHP = Reader(BOUNDARY_STATES_SHP)
+        shape_1_SHP = list(reader_1_SHP.geometries())
+        plot_shape_1_SHP = cfeature.ShapelyFeature(shape_1_SHP, ccrs.PlateCarree())
+        map_loc.add_feature(plot_shape_1_SHP, facecolor='none', edgecolor='k',linewidth=0.5,zorder=-1)
+        # Use the cartopy interface to create a matplotlib transform object
+        # for the Geodetic coordinate system. We will use this along with
+        # matplotlib's offset_copy function to define a coordinate system which
+        # translates the text by 25 pixels to the left.
+        geodetic_transform = ccrs.Geodetic()._as_mpl_transform(map_loc)
+        text_transform = offset_copy(geodetic_transform, units='dots', y=10,x=20)
+
+        # ----------------------------------------------------------------------------------------------------
+        for ista,staname in enumerate(df['sta_1'].tolist()):
+            map_loc.plot([df['loc_sta1'][ista][1],df['loc_sta2'][ista][1]],[df['loc_sta1'][ista][0],df['loc_sta2'][ista][0]],c='k',alpha=0.5,transform=ccrs.PlateCarree())
+            map_loc.scatter(df['loc_sta1'][ista][1],df['loc_sta1'][ista][0], marker='^',s=200,c='k',edgecolors='w', transform=ccrs.PlateCarree())
+            map_loc.scatter(df['loc_sta2'][ista][1],df['loc_sta2'][ista][0], marker='^',s=200,c='k',edgecolors='w', transform=ccrs.PlateCarree())
+
+            if iOBS in df['sta_1'][ista]:
+                map_loc.text(df['loc_sta1'][ista][1],df['loc_sta1'][ista][0], iOBS,color='r',fontsize=12,verticalalignment='center', horizontalalignment='right',transform=text_transform)
+
+            if iOBS in df['sta_2'][ista]:
+                map_loc.text(df['loc_sta2'][ista][1],df['loc_sta2'][ista][0], iOBS,color='r',fontsize=12,verticalalignment='center', horizontalalignment='right',transform=text_transform)
+
+        # ----------------------------------------------------------------------------------------------------
+
+        days_major = DayLocator(interval=5)   # every 5 day
+        days_minor = DayLocator(interval=1)   # every day
+        months = MonthLocator(interval=2)  # every month
+        yearsFmt = DateFormatter('%b-%Y')
+
+        # ----------------------------------------------------------------------------------------------------
+        clock_drift_date_to_plot_total1 = np.array([item for sublist in clock_drift_date_to_plot_total for item in sublist])
+        clock_drift_data_to_plot_coefficient_total1 = np.array([item for sublist in clock_drift_data_to_plot_coefficient_total for item in sublist])
+        clock_drift_data_to_plot_shift_total1 = np.array([item for sublist in clock_drift_data_to_plot_shift_total for item in sublist])
+        # ----------------------------------------------------------------------------------------------------
+        clock_drift_data_to_plot_shift_total1_std = np.std(clock_drift_data_to_plot_shift_total1)
+        clock_drift_data_to_plot_shift_total1_mean = np.mean(clock_drift_data_to_plot_shift_total1)
+        mask_std = (clock_drift_data_to_plot_shift_total1 >= clock_drift_data_to_plot_shift_total1_mean-clock_drift_data_to_plot_shift_total1_std) & (clock_drift_data_to_plot_shift_total1 <= clock_drift_data_to_plot_shift_total1_mean+clock_drift_data_to_plot_shift_total1_std)
+
+        clock_drift_date_to_plot_total = clock_drift_date_to_plot_total1[mask_std]
+        clock_drift_data_to_plot_coefficient_total = clock_drift_data_to_plot_coefficient_total1[mask_std]
+        clock_drift_data_to_plot_shift_total = clock_drift_data_to_plot_shift_total1[mask_std]
+
+        # ----------------------------------------------------------------------------------------------------
+
+        ax0 = fig.add_subplot(gs[3,:])
+        ax0.xaxis.set_major_locator(months)
+        ax0.xaxis.set_major_formatter(yearsFmt)
+        ax0.xaxis.set_minor_locator(days_minor)
+        ax0.yaxis.set_major_locator(MultipleLocator(20))
+        ax0.yaxis.set_minor_locator(MultipleLocator(5))
+        ax0.set_ylabel('Erro do '+'\n'+'Relógio (s)')
+        ax0.set_ylim(-20,20)
+        ax0.set_xlim(clock_drift_date_to_plot_total.min(),clock_drift_date_to_plot_total.max())
+
+        #Simple Linear Regression With scikit-learn
+        #Provide data:
+        x = np.array(range(len(clock_drift_date_to_plot_total))).reshape((-1, 1))
+        y = clock_drift_data_to_plot_shift_total
+
+        start_time = np.array(clock_drift_date_to_plot[mask]).min()
+        stop_time = np.array(clock_drift_date_to_plot[mask]).max()
+
+        x_pred = np.arange(start=clock_drift_date_to_plot_total.min(),stop=clock_drift_date_to_plot_total.max(),step=TENDAY)
+
+        #model = make_pipeline(PolynomialFeatures(1), HuberRegressor(alpha=.0001,epsilon=3))
+        #model = make_pipeline(PolynomialFeatures(1), TheilSenRegressor(n_jobs=12,max_iter=500))
+
+        #model = HuberRegressor(alpha=.0001,epsilon=1.3)
+        model = TheilSenRegressor(n_jobs=12,max_iter=500)
+        model.fit(x, y)
+        y_pred = model.predict(np.array(range(len(x_pred))).reshape((-1, 1)))
+        #slope:
+        slope = model.coef_[0]*1000
+
+
+        ax0.plot(x_pred, y_pred,'--k',alpha=0.75)
+
+        #calculating the mean of cc coefficient and the std of the clock drift
+        data_coefficient_total_mean = np.mean(clock_drift_data_to_plot_coefficient_total)
+        clock_drift_data_to_plot_shift_total_mean = np.std(clock_drift_data_to_plot_shift_total)
+
+        props = dict(boxstyle='round', facecolor='white', alpha=0.5)
+        ax0.text(0.9, 0.8, '$CC_{av}:$'+str(round(data_coefficient_total_mean,2))+'\n'+'$\sigma:$'+str(round(clock_drift_data_to_plot_shift_total_mean,2))+' s'+'\n'+'$r:$'+str(round(slope,2))+' ms/dia', horizontalalignment='center',verticalalignment='center', transform=ax0.transAxes,bbox=props)
+
+        # -------------------------------------------------------------------------------------------------------------
+
+        im = ax0.scatter(clock_drift_date_to_plot_total,clock_drift_data_to_plot_shift_total,c=clock_drift_data_to_plot_coefficient_total,marker='o',edgecolors=None,cmap='viridis_r',s=15,vmin=0.5,vmax=1,alpha=0.9)
+
+        axins = inset_axes(ax0,
+                               width="30%",  # width = 10% of parent_bbox width
+                               height="10%",  # height : 5%
+                               loc='upper left',
+                               bbox_to_anchor=(0.7,0.2, 1, 1),
+                               bbox_transform=ax0.transAxes,
+                               borderpad=0,
+                               )
+        plt.colorbar(im, cax=axins, orientation="horizontal", ticklocation='top', label='CC Pearson')
+
+        # -------------------------------------------------------------------------------------------------------------
+        output_figure_CLOCK_DRIFT = CLOCK_DRIFT_OUTPUT+'CLOCK_DRIFT_TOTAL_FIGURES/'
+        os.makedirs(output_figure_CLOCK_DRIFT,exist_ok=True)
+        fig.savefig(output_figure_CLOCK_DRIFT+'CLOCK_DRIFT_TOTAL_'+iOBS+'_all.png',dpi=300)
+        plt.close()

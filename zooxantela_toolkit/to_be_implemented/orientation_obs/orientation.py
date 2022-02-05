@@ -65,7 +65,7 @@ MSEED_DIR_STA = '/run/user/1000/gvfs/smb-share:server=hatabackup.local,share=dad
 
 # Stations and OBSs information
 
-OBS_LST = ['OBS17','OBS18','OBS20','OBS22']
+OBS_lst = ['OBS17','OBS18','OBS20','OBS22']
 
 STATIONS_LST = ['ABR01','DUB01','MAN01','OBS20','OBS22','TER01','ALF01','GDU01','NAN01','TIJ01','CAJ01','GUA01','OBS17','PET01','TRI01','CAM01','JAC01','OBS18','RIB01','VAS01','CMC01','MAJ01','SLP01','PARB','CNLB','BSFB']
 STATIONS_LST = sorted(STATIONS_LST)
@@ -1605,15 +1605,16 @@ print('\n')
 
 #Collecting daily list of cross-correlations
 crosscorr_pairs= sorted(glob.glob(JSON_FILES+'CROSS_CORR_10_DAYS_STACKED_FILES/**/*.json'))
-
+for i in crosscorr_pairs:
+    print(i)
 #Separating according to pairs name
-OBS_lst = ['OBS17','OBS18','OBS20','OBS20']
 OBS_pairs = []
-
 for i,j in enumerate(OBS_lst):
+    print(j)
     temp = [sta for sta in crosscorr_pairs if j in sta]
     OBS_pairs.append(temp)
 
+'''
 for i,j in enumerate(OBS_pairs):
     HHE_HHE_lst = []
     HHN_HHN_lst = []
@@ -1676,7 +1677,7 @@ for i,j in enumerate(OBS_pairs):
         for i in HHE_HHE_lst:
             print(i)
 
-'''
+
         # Separating OBSs pairs per channel:
 
         if OBS_lst[i]+'_HHE' in pair and OBS_lst[i]+'_HHE.'+OBS_lst[i]+'_HHZ' not in pair:

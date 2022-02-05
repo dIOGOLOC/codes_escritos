@@ -121,13 +121,14 @@ for mid,mfile in enumerate(markes_file):
 event_dic_time_lst = []
 for d in event_dic_lst:
 	df = pd.DataFrame(d)
-
 	station_lst = sorted(list(set(df['station'].values)))
-
+	print(df)
+	print(station_lst)
 	dic_sta_lst = []
 	for sta in station_lst:
 		df_sta = df[df['station'] == sta]
-
+		print(sta)
+		print(df_sta)
 		df_P = df_sta[(df_sta['phase'] == 'P') | (df_sta['phase'] == 'P')]
 		df_S = df_sta[(df_sta['phase'] == 'S') | (df_sta['phase'] == 'S')]
 
@@ -137,7 +138,10 @@ for d in event_dic_lst:
 		S_P_time = (time_S - time_P).total_seconds()
 
 		datetime_event_year = df_P['datetime'].dt.strftime('%Y').values[0]
+		print(df_P['datetime'].dt.strftime('%Y').values)
 		datetime_event_julday = df_P['datetime'].dt.strftime('%j').values[0]
+
+		print('---')
 
 		# ------------------------------------------
 		# Retrieving mseed files
