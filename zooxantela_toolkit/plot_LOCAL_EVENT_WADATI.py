@@ -7,7 +7,7 @@
 Author: Diogo L.O.C. (locdiogo@gmail.com)
 
 
-Last Date: 12/2021
+Last Date: 02/2022
 
 
 Project: Monitoramento Sismo-Oceanográfico
@@ -40,6 +40,8 @@ from multiprocessing import Pool
 from glob import glob
 
 from obspy import read,read_inventory, UTCDateTime, Stream
+from obspy.geodetics import gps2dist_azimuth
+
 from matplotlib.dates import YearLocator, MonthLocator, DayLocator, DateFormatter
 import matplotlib.dates as mdates
 import matplotlib.gridspec as gridspec
@@ -54,7 +56,10 @@ import cartopy.feature as cfeature
 import cartopy.io.img_tiles as cimgt
 from cartopy.mpl.ticker import LongitudeFormatter, LatitudeFormatter,LatitudeLocator,LongitudeLocator
 
-from sklearn.linear_model import LinearRegression
+from sklearn.preprocessing import PolynomialFeatures
+from sklearn.pipeline import make_pipeline
+from sklearn.linear_model import LinearRegression,HuberRegressor,TheilSenRegressor
+from sklearn.metrics import mean_squared_error
 
 # ------------------------------------------------------------------------------
 from visual_py.event_plot import plot_event_data,plot_map_event_data,plot_map_event_data_hydrophone
@@ -112,23 +117,20 @@ for mid,mfile in enumerate(markes_file):
 				'longitude': coordinates_lst.longitude,
 				'event_name': event_name,
 				}
-
 		dic_lst.append(dic)
 
 	event_dic_lst.append(dic_lst)
 
 # ------------------------------------------------------------------------------
 event_dic_time_lst = []
-for d in event_dic_lst:
+for d in tqdm(event_dic_lst,desc='Dic loop'):
 	df = pd.DataFrame(d)
 	station_lst = sorted(list(set(df['station'].values)))
-	print(df)
-	print(station_lst)
+
 	dic_sta_lst = []
 	for sta in station_lst:
+
 		df_sta = df[df['station'] == sta]
-		print(sta)
-		print(df_sta)
 		df_P = df_sta[(df_sta['phase'] == 'P') | (df_sta['phase'] == 'P')]
 		df_S = df_sta[(df_sta['phase'] == 'S') | (df_sta['phase'] == 'S')]
 
@@ -138,10 +140,7 @@ for d in event_dic_lst:
 		S_P_time = (time_S - time_P).total_seconds()
 
 		datetime_event_year = df_P['datetime'].dt.strftime('%Y').values[0]
-		print(df_P['datetime'].dt.strftime('%Y').values)
 		datetime_event_julday = df_P['datetime'].dt.strftime('%j').values[0]
-
-		print('---')
 
 		# ------------------------------------------
 		# Retrieving mseed files
@@ -218,7 +217,7 @@ for times_dictionary in event_dic_time_lst:
 	Y = times_dictionary['S-P'].to_numpy().reshape(-1, 1)
 
 	#Create a model and fit it:
-	model = LinearRegression()
+	model = TheilSenRegressor(n_jobs=12,max_iter=500)
 
 	#It’s time to start using the model. First, you need to call .fit() on model:
 	model.fit(X, Y)
@@ -230,12 +229,13 @@ for times_dictionary in event_dic_time_lst:
 	intercept = model.intercept_
 	#slope:
 	slope = model.coef_[0]
-	Vp_Vs = round(slope[0]+1,2)
+	Vp_Vs = round(slope+1,2)
 
 	#Predict response (y_pred = model.intercept_ + model.coef_ * x):
 	x_0 = intercept/slope
+
 	print('--------------------------------------------')
-	print('Event time origin:',UTCDateTime(X_min)+x_0[0])
+	print('Event time origin:',UTCDateTime(X_min)+x_0)
 	print('--------------------------------------------')
 
 	y_pred = model.predict(X)
@@ -256,17 +256,18 @@ for times_dictionary in event_dic_time_lst:
 	# MAP
 	# -----------------------------------------------------------------------
 
-	fig = plt.figure(figsize=(10, 10))
+	fig = plt.figure(figsize=(7, 7))
 	gs = gridspec.GridSpec(nrows=1, ncols=1)
 
 	#-------------------------------------------
 	crs = ccrs.PlateCarree(central_longitude=-40)
 	map_loc = fig.add_subplot(gs[0],projection=crs)
+	map_loc.set_title('Data: '+UTCDateTime(X_min).strftime('%d/%m/%Y - %H:%M:%S'),fontsize=20)
 
-	LLCRNRLON_LARGE = -52
-	URCRNRLON_LARGE = -28
+	LLCRNRLON_LARGE = -50
+	URCRNRLON_LARGE = -35
 	LLCRNRLAT_LARGE = -30
-	URCRNRLAT_LARGE = -12
+	URCRNRLAT_LARGE = -15
 
 	map_loc.set_extent([LLCRNRLON_LARGE,URCRNRLON_LARGE,LLCRNRLAT_LARGE,URCRNRLAT_LARGE],crs=ccrs.PlateCarree())
 	# Create a Stamen Terrain instance.
@@ -316,18 +317,12 @@ for times_dictionary in event_dic_time_lst:
 
 	#Plotting station
 	map_loc.scatter(times_dictionary['longitude'].to_numpy(), times_dictionary['latitude'].to_numpy(), marker='^',s=200,c='k',edgecolors='w', transform=ccrs.PlateCarree())
-
 	map_loc.scatter(evlo, evla, marker='*',s=200,c='r',edgecolors='k', transform=ccrs.PlateCarree())
-
-	#Plotting station name
-	#for i,j in enumerate(times_dictionary['longitude'].to_numpy()):
-		#map_loc.text(times_dictionary['longitude'].to_numpy()[i], times_dictionary['latitude'].to_numpy()[i], times_dictionary['station'].to_numpy()[i],fontsize=12,verticalalignment='center', horizontalalignment='right',transform=text_transform,bbox=dict(facecolor='white',edgecolor='none', alpha=0.5, boxstyle='round'))
 
 	#Saving figure
 	folder_name = OUTPUT_FIGURE_DIR+'EVENTS/Local/Map/'
 	os.makedirs(folder_name,exist_ok=True)
 	fig.savefig(folder_name+'MAP_Event_circle_'+sta_ev_name+'.png')
-
 
 	# -------------------------------------------
 	# WADATI DIAGRAM
@@ -340,9 +335,9 @@ for times_dictionary in event_dic_time_lst:
 	for i,j in enumerate(times_dictionary['time_P'].to_numpy()):
 		ax1.scatter(X_date[i],times_dictionary['S-P'].to_numpy()[i],marker='+',s=50,c='k')
 
-	ax1.set_ylabel('S-P time (s)',fontsize=14)
-	ax1.set_xlabel('P arrival time (s) after '+X_min.strftime('%H:%M:%S'),fontsize=14)
-	ax1.set_title('Wadati Diagram - day: '+times_dictionary['time_P'].to_numpy()[0].strftime('%d/%m/%Y'),fontsize=14)
+	ax1.set_ylabel('Tempo S-P (s)',fontsize=14)
+	ax1.set_xlabel('Tempo de chegada da onda P (s) após '+X_min.strftime('%H:%M:%S'),fontsize=14)
+	ax1.set_title('Diagrama de Wadati - data: '+times_dictionary['time_P'].to_numpy()[0].strftime('%d/%m/%Y'),fontsize=14)
 
 	ax1.plot(X,y_pred,c='gray',ls='--',lw=1,alpha=0.7,zorder=-1)
 	ax1.text(0.1, 0.9,'Vp/Vs:'+str(Vp_Vs)+'\n'+'\n'+'R²:'+str(r_sq),horizontalalignment='center',verticalalignment='center',weight='bold',bbox=dict(facecolor='white',edgecolor='k', alpha=0.5, boxstyle='round'),transform=ax1.transAxes)
@@ -359,7 +354,7 @@ for times_dictionary in event_dic_time_lst:
 	# SESIMOGRAMS and MARKERS
 	# -------------------------------------------
 
-	fig = plt.figure(figsize=(30, 10))
+	fig = plt.figure(figsize=(20, 10))
 	gs = gridspec.GridSpec(nrows=1, ncols=3)
 
 	axs0 = fig.add_subplot(gs[0])
@@ -378,24 +373,40 @@ for times_dictionary in event_dic_time_lst:
 		inset_ax = axs0.inset_axes([0,axis_size[idx], 1, inset_size])
 		data_to_plot = times_dictionary['HHZ'].to_numpy()[i][0].trim(starttime=times_dictionary['time_P'].to_numpy()[i]-5, endtime=times_dictionary['time_S'].to_numpy()[i]+30)
 		data_to_plot.taper(max_percentage=0.1, type="hann")
-		data_to_plot.filter('bandpass',freqmin=4, freqmax=20)
+		data_to_plot.filter('bandpass',freqmin=4, freqmax=16)
 		data_y = data_to_plot.data
-		data_x = data_to_plot.times('matplotlib')
+		data_x_utc = data_to_plot.times('utcdatetime')-times_dictionary['time_P'].to_numpy()[i]
+		data_x = data_x_utc
 
+
+		#plotting data
 		inset_ax.plot(data_x,data_y,c='k',ls='-',lw=1)
 
-		inset_ax.text(x=(times_dictionary['time_P'].to_numpy()[i]-0.2).matplotlib_date,y=max(data_y)-(max(data_y)*0.1),s='P',bbox=dict(facecolor='white', alpha=0.7,edgecolor='w'))
-		inset_ax.text(x=(times_dictionary['time_S'].to_numpy()[i]-0.2).matplotlib_date,y=max(data_y)-(max(data_y)*0.1),s='S',bbox=dict(facecolor='white', alpha=0.7,edgecolor='w'))
-		inset_ax.axvline(x=(times_dictionary['time_P'].to_numpy()[i]).matplotlib_date,ymin=0, ymax=1,c='r',lw=1,ls='--')
-		inset_ax.axvline(x=(times_dictionary['time_S'].to_numpy()[i]).matplotlib_date,ymin=0, ymax=1,c='r',lw=1,ls='--')
+		inset_ax.axvline(x=(times_dictionary['time_S'].to_numpy()[i]-times_dictionary['time_P'].to_numpy()[i]),ymin=0, ymax=1,c='r',lw=3,ls='--')
+		inset_ax.axvline(x=0,ymin=0, ymax=1,c='k',lw=1,ls='--')
 
-		inset_ax.set_xlim((times_dictionary['time_P'].to_numpy()[i]-5).matplotlib_date,(times_dictionary['time_S'].to_numpy()[i]+30).matplotlib_date)
-		inset_ax.text(-0.05, 0.5, times_dictionary['station'].to_numpy()[i],horizontalalignment='center',verticalalignment='center',bbox=dict(facecolor='grey', alpha=0.6,edgecolor='w'),transform=inset_ax.transAxes)
-		inset_ax.axis('off')
-	axs0.axis('off')
+		inset_ax.set_xlim(-3,80)
+		inset_ax.set_ylabel(times_dictionary['station'].to_numpy()[i],fontsize=15)
+		inset_ax.set_yticks([])
+		inset_ax.set_xticks([])
 
-	#axs0.set_yticks([])
-	axs0.set_title('HHZ (filter: 4-16 Hz)',fontsize=15)
+		#------------------------------------------------------------
+		epi_dist, az, baz  = gps2dist_azimuth(times_dictionary['evla'].to_numpy()[i], times_dictionary['evlo'].to_numpy()[i], times_dictionary['latitude'].to_numpy()[i], times_dictionary['longitude'].to_numpy()[i], a=6378137.0, f=0.0033528106647474805)
+		epi_dist = epi_dist / 1000
+		#------------------------------------------------------------
+
+		inset_ax.text(0.9, 0.85, str(round(epi_dist))+' km',horizontalalignment='center',fontsize=15,verticalalignment='center',bbox=dict(facecolor='none', alpha=0.6,edgecolor='w'),transform=inset_ax.transAxes)
+
+	axs0.axvline(x=0,ymin=0, ymax=1,c='k',lw=1,ls='--')
+	axs0.set_xlim(-3,80)
+	axs0.set_yticks([])
+	axs0.set_title('HHZ (filter: 4-16 Hz)',fontsize=20)
+	axs0.set_xlabel('Tempo após a onda P (s)',fontsize=20)
+
+    # format the ticks
+	axs0.xaxis.set_major_locator(MultipleLocator(20))
+	axs0.xaxis.set_minor_locator(MultipleLocator(5))
+	axs0.xaxis.set_tick_params(labelsize=15)
 
 	# -------------------------------------------
 
@@ -415,24 +426,41 @@ for times_dictionary in event_dic_time_lst:
 		inset_ax = axs1.inset_axes([0,axis_size[idx], 1, inset_size])
 		data_to_plot = times_dictionary['HHN'].to_numpy()[i][0].trim(starttime=times_dictionary['time_P'].to_numpy()[i]-5, endtime=times_dictionary['time_S'].to_numpy()[i]+30)
 		data_to_plot.taper(max_percentage=0.1, type="hann")
-		data_to_plot.filter('bandpass',freqmin=4, freqmax=20)
+		data_to_plot.filter('bandpass',freqmin=4, freqmax=16)
 		data_y = data_to_plot.data
-		data_x = data_to_plot.times('matplotlib')
+		data_x_utc = data_to_plot.times('utcdatetime')-times_dictionary['time_P'].to_numpy()[i]
+		data_x = data_x_utc
 
 		inset_ax.plot(data_x,data_y,c='k',ls='-',lw=1)
 
-		inset_ax.text(x=(times_dictionary['time_P'].to_numpy()[i]-0.2).matplotlib_date,y=max(data_y)-(max(data_y)*0.1),s='P',bbox=dict(facecolor='white', alpha=0.7,edgecolor='w'))
-		inset_ax.text(x=(times_dictionary['time_S'].to_numpy()[i]-0.2).matplotlib_date,y=max(data_y)-(max(data_y)*0.1),s='S',bbox=dict(facecolor='white', alpha=0.7,edgecolor='w'))
-		inset_ax.axvline(x=(times_dictionary['time_P'].to_numpy()[i]).matplotlib_date,ymin=0, ymax=1,c='r',lw=1,ls='--')
-		inset_ax.axvline(x=(times_dictionary['time_S'].to_numpy()[i]).matplotlib_date,ymin=0, ymax=1,c='r',lw=1,ls='--')
+		#plotting data
+		inset_ax.plot(data_x,data_y,c='k',ls='-',lw=1)
+		inset_ax.axvline(x=(times_dictionary['time_S'].to_numpy()[i]-times_dictionary['time_P'].to_numpy()[i]),ymin=0, ymax=1,c='r',lw=3,ls='--')
+		inset_ax.axvline(x=0,ymin=0, ymax=1,c='k',lw=1,ls='--')
 
-		inset_ax.set_xlim((times_dictionary['time_P'].to_numpy()[i]-5).matplotlib_date,(times_dictionary['time_S'].to_numpy()[i]+30).matplotlib_date)
-		inset_ax.text(-0.05, 0.5, times_dictionary['station'].to_numpy()[i],horizontalalignment='center',verticalalignment='center',bbox=dict(facecolor='grey', alpha=0.6,edgecolor='w'),transform=inset_ax.transAxes)
-		inset_ax.axis('off')
-	axs1.axis('off')
+		inset_ax.set_xlim(-3,80)
+		inset_ax.set_ylabel(times_dictionary['station'].to_numpy()[i],fontsize=15)
+		inset_ax.set_yticks([])
+		inset_ax.set_xticks([])
 
-	#axs1.set_yticks([])
-	axs1.set_title('HHN (filter: 4-16 Hz)',fontsize=15)
+		#------------------------------------------------------------
+		epi_dist, az, baz  = gps2dist_azimuth(times_dictionary['evla'].to_numpy()[i], times_dictionary['evlo'].to_numpy()[i], times_dictionary['latitude'].to_numpy()[i], times_dictionary['longitude'].to_numpy()[i], a=6378137.0, f=0.0033528106647474805)
+		epi_dist = epi_dist / 1000
+		#------------------------------------------------------------
+
+		inset_ax.text(0.9, 0.85, str(round(epi_dist))+' km',horizontalalignment='center',fontsize=15,verticalalignment='center',bbox=dict(facecolor='none', alpha=0.6,edgecolor='w'),transform=inset_ax.transAxes)
+
+
+	axs1.axvline(x=0,ymin=0, ymax=1,c='k',lw=1,ls='--')
+	axs1.set_xlim(-3,80)
+	axs1.set_yticks([])
+	axs1.set_title('HHN (filter: 4-16 Hz)',fontsize=20)
+	axs1.set_xlabel('Tempo após a onda P (s)',fontsize=20)
+
+    # format the ticks
+	axs1.xaxis.set_major_locator(MultipleLocator(20))
+	axs1.xaxis.set_minor_locator(MultipleLocator(5))
+	axs1.xaxis.set_tick_params(labelsize=15)
 
 	# -------------------------------------------
 
@@ -452,29 +480,40 @@ for times_dictionary in event_dic_time_lst:
 		inset_ax = axs2.inset_axes([0,axis_size[idx], 1, inset_size])
 		data_to_plot = times_dictionary['HHE'].to_numpy()[i][0].trim(starttime=times_dictionary['time_P'].to_numpy()[i]-5, endtime=times_dictionary['time_S'].to_numpy()[i]+30)
 		data_to_plot.taper(max_percentage=0.1, type="hann")
-		data_to_plot.filter('bandpass',freqmin=4, freqmax=20)
+		data_to_plot.filter('bandpass',freqmin=4, freqmax=16)
 		data_y = data_to_plot.data
-		data_x = data_to_plot.times('matplotlib')
+		data_x_utc = data_to_plot.times('utcdatetime')-times_dictionary['time_P'].to_numpy()[i]
+		data_x = data_x_utc
 
 		inset_ax.plot(data_x,data_y,c='k',ls='-',lw=1)
 
-		inset_ax.text(x=(times_dictionary['time_P'].to_numpy()[i]-0.2).matplotlib_date,y=max(data_y)-(max(data_y)*0.1),s='P',bbox=dict(facecolor='white', alpha=0.7,edgecolor='w'))
-		inset_ax.text(x=(times_dictionary['time_S'].to_numpy()[i]-0.2).matplotlib_date,y=max(data_y)-(max(data_y)*0.1),s='S',bbox=dict(facecolor='white', alpha=0.7,edgecolor='w'))
-		inset_ax.axvline(x=(times_dictionary['time_P'].to_numpy()[i]).matplotlib_date,ymin=0, ymax=1,c='r',lw=1,ls='--')
-		inset_ax.axvline(x=(times_dictionary['time_S'].to_numpy()[i]).matplotlib_date,ymin=0, ymax=1,c='r',lw=1,ls='--')
+		#plotting data
+		inset_ax.plot(data_x,data_y,c='k',ls='-',lw=1)
+		inset_ax.axvline(x=(times_dictionary['time_S'].to_numpy()[i]-times_dictionary['time_P'].to_numpy()[i]),ymin=0, ymax=1,c='r',lw=3,ls='--')
+		inset_ax.axvline(x=0,ymin=0, ymax=1,c='k',lw=1,ls='--')
 
-		inset_ax.set_xlim((times_dictionary['time_P'].to_numpy()[i]-5).matplotlib_date,(times_dictionary['time_S'].to_numpy()[i]+30).matplotlib_date)
-		inset_ax.text(-0.05, 0.5, times_dictionary['station'].to_numpy()[i],horizontalalignment='center',verticalalignment='center',bbox=dict(facecolor='grey', alpha=0.6,edgecolor='w'),transform=inset_ax.transAxes)
-		inset_ax.axis('off')
-	axs2.axis('off')
+		inset_ax.set_xlim(-3,80)
+		inset_ax.set_ylabel(times_dictionary['station'].to_numpy()[i],fontsize=15)
+		inset_ax.set_yticks([])
+		inset_ax.set_xticks([])
 
-	#axs2.set_yticks([])
-	axs2.set_title('HHE (filter: 4-16 Hz)',fontsize=15)
+		#------------------------------------------------------------
+		epi_dist, az, baz  = gps2dist_azimuth(times_dictionary['evla'].to_numpy()[i], times_dictionary['evlo'].to_numpy()[i], times_dictionary['latitude'].to_numpy()[i], times_dictionary['longitude'].to_numpy()[i], a=6378137.0, f=0.0033528106647474805)
+		epi_dist = epi_dist / 1000
+		#------------------------------------------------------------
+
+		inset_ax.text(0.9, 0.85, str(round(epi_dist))+' km',horizontalalignment='center',fontsize=15,verticalalignment='center',bbox=dict(facecolor='none', alpha=0.6,edgecolor='w'),transform=inset_ax.transAxes)
+
+	axs2.axvline(x=0,ymin=0, ymax=1,c='k',lw=1,ls='--')
+	axs2.set_xlim(-3,80)
+	axs2.set_yticks([])
+	axs2.set_title('HHE (filter: 4-16 Hz)',fontsize=20)
+	axs2.set_xlabel('Tempo após a onda P (s)',fontsize=20)
 
 	# format the ticks
-	#ax2.xaxis.set_major_locator(minutes)
-	#ax2.xaxis.set_major_formatter(years_fmt)
-	#ax2.xaxis.set_minor_locator(seconds)
+	axs2.xaxis.set_major_locator(MultipleLocator(20))
+	axs2.xaxis.set_minor_locator(MultipleLocator(5))
+	axs2.xaxis.set_tick_params(labelsize=15)
 
 	folder_name = OUTPUT_FIGURE_DIR+'EVENTS/Local/Seismogram/'
 	os.makedirs(folder_name,exist_ok=True)

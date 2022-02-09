@@ -106,8 +106,8 @@ ONEDAY = datetime.timedelta(days=1)
 # Filtering by date
 # =================
 
-FIRSTDAY = '2019,12,07,00'
-LASTDAY = '2019,12,08,00'
+FIRSTDAY = '2020,03,25,00'
+LASTDAY = '2020,03,26,00'
 
 fday = UTCDateTime(FIRSTDAY)
 lday = UTCDateTime(LASTDAY)
@@ -141,9 +141,9 @@ for iperid,period_date in enumerate(tqdm(INTERVAL_PERIOD_DATE,desc='File loop'))
 
     st = Stream()
     for file in obs_day_files:
-        if 'HHX' not in file and 'OBS19' not in file and 'OBS22' not in file and 'OBS20' not in file:
+        #if 'HHX' not in file and 'OBS19' not in file and 'OBS22' not in file and 'OBS20' not in file:
         #if 'HHX' not in file and 'OBS19' not in file:
-        #if 'HHX' not in file:
+        if 'HHX' in file:
             st.append(read(file)[0])
 
     st.trim(starttime=INTERVAL_PERIOD[iperid], endtime=INTERVAL_PERIOD[iperid]+HOUR12)

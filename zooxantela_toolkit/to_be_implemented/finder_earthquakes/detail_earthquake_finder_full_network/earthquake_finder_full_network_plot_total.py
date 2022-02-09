@@ -59,7 +59,7 @@ from obspy.signal.trigger import classic_sta_lta, trigger_onset, coincidence_tri
 # Configuration file
 # ====================================================================================================
 
-EARTHQUAKE_FINDER_FILES = '/home/diogoloc/dados_posdoc/ON_MAR/EARTHQUAKE_NETWORK_FINDER_OUTPUT/FIGURAS/ON/EVENTS_FILTERED/'
+EARTHQUAKE_FINDER_FILES = '/run/user/1000/gvfs/smb-share:server=hatabackup.local,share=on_mar/EARTHQUAKE_FINDER_NETWORK_OUTPUT/FIGURAS/ON.OBS17.HHZ/AIRGUN_PATTERN_SELECTED/'
 
 MSEED_DIR_STA = '/home/diogoloc/dados_posdoc/ON_MAR/data/'
 
@@ -106,6 +106,7 @@ print('\n')
 # initializing list of stations by scanning name of miniseed files
 
 dates_earthquakes = filelist(basedir=EARTHQUAKE_FINDER_FILES)
+print(len(dates_earthquakes))
 
 print('\n')
 print('====================')
@@ -170,7 +171,7 @@ days1.MAXTICKS = 10000
 fig, ax = plt.subplots(nrows=1, ncols=1,figsize=(20,10))
 
 data_x_axis = check_datetime_in_period(datetime_lista,dates_earthquakes)
-ax.set_title('Eventos Encontrados',fontsize=25)
+ax.set_title('SDE Selecionados',fontsize=25)
 im = ax.imshow(data_x_axis,extent = [xlim_initial,xlim_final,0,24],cmap=plt.cm.binary,interpolation=None, vmin=0, vmax=1)
 ax.set_xlim(datetime.datetime(UTCDateTime(INITIAL_DATE).year,UTCDateTime(INITIAL_DATE).month,UTCDateTime(INITIAL_DATE).day),datetime.datetime(UTCDateTime(FINAL_DATE).year,UTCDateTime(FINAL_DATE).month,UTCDateTime(FINAL_DATE).day))
 ax.yaxis.set_major_locator(MultipleLocator(3))
@@ -189,4 +190,4 @@ ax.grid(b=True, which='minor', color='k', linestyle='-')
 plt.setp(ax.xaxis.get_majorticklabels(), fontsize=10, rotation=30)
 
 os.makedirs(EARTHQUAKE_FINDER_OUTPUT,exist_ok=True)
-fig.savefig(EARTHQUAKE_FINDER_OUTPUT+'Eventos_encontrados.png',dpi=300,bbox_inches='tight',pad_inches=0.1)
+fig.savefig(EARTHQUAKE_FINDER_OUTPUT+'Eventos_selecionados.png',dpi=300,bbox_inches='tight',pad_inches=0.1)
