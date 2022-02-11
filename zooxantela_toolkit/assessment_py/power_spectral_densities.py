@@ -7,7 +7,7 @@ Function to estimate/plot probabilistic power spectral densities for each file
 Author: Diogo L.O.C. (locdiogo@gmail.com)
 
 
-Last Date: 12/2021
+Last Date: 02/2022
 
 
 Project: Monitoramento Sismo-Oceanográfico
@@ -150,17 +150,25 @@ def plot_PSD_hydrophone(directory):
     fig.ppsd.max_percentage = 30
     fig.ppsd.color_limits = (0, 30)
 
-    title = "%s   %s -- %s  (%i/%i segments)"
-    title = title % (ppsd.id,UTCDateTime(ns=ppsd._times_processed[0]).date,
-                             UTCDateTime(ns=ppsd._times_processed[-1]).date,
-                             ppsd.current_histogram_count,len(ppsd._times_processed))
+    if LABEL_LANG == 'br':
+        ax.set_xlabel('Período [s]')
+        ax.set_ylabel('Amplitude [$m^2/s^4/Hz$] [dB]')
+        title = "%s   %s -- %s  (%i/%i segmentos)"
+        title = title % (ppsd.id,UTCDateTime(ns=ppsd._times_processed[0]).date,
+                        UTCDateTime(ns=ppsd._times_processed[-1]).date,
+                        ppsd.current_histogram_count,len(ppsd._times_processed))
 
-    ax.set_title(title)
+    else:
+        ax.set_xlabel('Period [s]')
+        ax.set_ylabel('Amplitude [$m^2/s^4/Hz$] [dB]')
+        title = "%s   %s -- %s  (%i/%i segments)"
+        title = title % (ppsd.id,UTCDateTime(ns=ppsd._times_processed[0]).date,
+                        UTCDateTime(ns=ppsd._times_processed[-1]).date,
+                        ppsd.current_histogram_count,len(ppsd._times_processed))
     ax.semilogx()
-    ax.set_xlabel('Period [s]')
+    ax.set_title(title)
     ax.set_xlim(period_lim)
     ax.set_ylim(AMP_PSD_HYDROPHONE_MIN, AMP_PSD_HYDROPHONE_MAX)
-    ax.set_ylabel('Amplitude [$m^2/s^4/Hz$] [dB]')
     ax.xaxis.set_major_formatter(FormatStrFormatter("%g"))
 
     data = (ppsd.current_histogram*100.0/(ppsd.current_histogram_count or 1))
@@ -189,8 +197,11 @@ def plot_PSD_hydrophone(directory):
 def plot_PPSD_by_period_sensor(directory_data):
 
     data_lista = []
+    if LABEL_LANG == 'br':
+        print('Procurando por dados na pasta: '+directory_data)
 
-    print('Looking for data in the directory = '+directory_data)
+    else:
+        print('Looking for data in the directory: '+directory_data)
 
     for root, dirs, files in os.walk(directory_data):
         for name in files:
@@ -202,7 +213,12 @@ def plot_PPSD_by_period_sensor(directory_data):
 
     dataframe_lista = []
     #create a empty dataframe with pandas
-    print("Extracting data from PPSD header")
+    if LABEL_LANG == 'br':
+        print("Extraindo dados do cabeçalho do PPSD.")
+
+    else:
+        print("Extracting data from PPSD header.")
+
 
     for j in tqdm(data_lista):
         #Reading header from data
@@ -328,7 +344,11 @@ def plot_PPSD_by_period_sensor(directory_data):
 
 
         plt.setp(ax[k].xaxis.get_majorticklabels(), fontsize=10, rotation=30)
-        ax[-1].set_xlabel('Time', fontsize=20)
+        if LABEL_LANG == 'br':
+            ax[-1].set_xlabel('Data', fontsize=20)
+
+        else:
+            ax[-1].set_xlabel('Time', fontsize=20)
 
         #criando a localização da barra de cores:
         axins = inset_axes(ax[0],
@@ -351,8 +371,11 @@ def plot_PPSD_by_period_sensor(directory_data):
 def plot_PPSD_by_period_hydrophone(directory_data):
 
     data_lista = []
+    if LABEL_LANG == 'br':
+        print('Procurando dados na pasta: '+directory_data)
 
-    print('Looking for data in the directory = '+directory_data)
+    else:
+        print('Looking for data in the directory: '+directory_data)
 
     for root, dirs, files in os.walk(directory_data):
         for name in files:
@@ -364,7 +387,11 @@ def plot_PPSD_by_period_hydrophone(directory_data):
 
     dataframe_lista = []
     #create a empty dataframe with pandas
-    print("Extracting data from PPSD header")
+    if LABEL_LANG == 'br':
+        print("Extraindo dados do cabeçalho do PPSD.")
+
+    else:
+        print("Extracting data from PPSD header.")
 
     for j in tqdm(data_lista):
         #Reading header from data
@@ -489,7 +516,11 @@ def plot_PPSD_by_period_hydrophone(directory_data):
 
 
         plt.setp(ax.xaxis.get_majorticklabels(), fontsize=10, rotation=30)
-        ax.set_xlabel('Time', fontsize=20)
+        if LABEL_LANG == 'br':
+            ax.set_xlabel('Data', fontsize=20)
+
+        else:
+            ax.set_xlabel('Time', fontsize=20)
 
         #criando a localização da barra de cores:
         axins = inset_axes(ax,

@@ -74,6 +74,13 @@ def select_and_parse_config_file(basedir='.', ext='cnf', verbose=True):
 config = select_and_parse_config_file(basedir='.', ext='cnf', verbose=True)
 
 # -----
+# lang
+# -----
+
+#choose between portuguese (br) or english (en):
+LABEL_LANG = config.get('lang', 'LABEL_LANG')
+
+# -----
 # paths
 # -----
 

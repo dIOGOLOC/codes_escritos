@@ -8,7 +8,7 @@
 Author: Diogo L.O.C. (locdiogo@gmail.com)
 
 
-Last Date: 12/2021
+Last Date: 02/2022
 
 
 Project: Monitoramento Sismo-Oceanográfico
@@ -49,7 +49,7 @@ from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 
 
 from parameters_py.config import (
-					OUTPUT_FIGURE_DIR,DIR_DATA,XML_FILE,INITIAL_DATE,FINAL_DATE,USER,HOST,PORT,INSTITUTION
+					OUTPUT_FIGURE_DIR,DIR_DATA,XML_FILE,INITIAL_DATE,FINAL_DATE,USER,HOST,PORT,INSTITUTION,LABEL_LANG
 				   )
 
 # ==============================
@@ -59,8 +59,11 @@ from parameters_py.config import (
 def plot_date_file(FIG_FOLDER_OUTPUT,directory_data,XML_FILE):
 
     data_lista = []
+    if LABEL_LANG == 'br':
+        print('Procurando por dados no diretório: '+directory_data)
 
-    print('Looking for data in the directory = '+directory_data)
+    else:
+        print('Looking for data in the directory: '+directory_data)
 
     for root, dirs, files in os.walk(directory_data):
         for name in files:
@@ -71,7 +74,11 @@ def plot_date_file(FIG_FOLDER_OUTPUT,directory_data,XML_FILE):
     dataframe_lista = []
     #create a empty dataframe with pandas
     for i,j in enumerate(data_lista):
-        print("Extracting data from header "+str(i+1)+" of "+str(len(data_lista)))
+        if LABEL_LANG == 'br':
+            print("Extraindo os data do cabeçalho: "+str(i+1)+" of "+str(len(data_lista)))
+
+        else:
+            print("Extracting data from header: "+str(i+1)+" of "+str(len(data_lista)))
 
         #Reading header from data
         st = obspy.read(j)
@@ -109,10 +116,6 @@ def plot_date_file(FIG_FOLDER_OUTPUT,directory_data,XML_FILE):
 
 
         dataframe_lista.append(pd.DataFrame([[network],[station],[channel],[DATETIME],[NUMBER_HOUR]], index=['NETWORK', 'STATION', 'CHANNEL', 'DATETIME','NUMBER_HOUR']).T)
-        print(pd.DataFrame([[network],[station],[channel],[DATETIME],[NUMBER_HOUR]], index=['NETWORK', 'STATION', 'CHANNEL', 'DATETIME','NUMBER_HOUR']).T)
-        print()
-        print()
-
         #Dataframe ending
         #----------------------------
 
@@ -205,7 +208,11 @@ def plot_date_file(FIG_FOLDER_OUTPUT,directory_data,XML_FILE):
 
 
         plt.setp(ax[k].xaxis.get_majorticklabels(), fontsize=10, rotation=30)
-        ax[-1].set_xlabel('Time', fontsize=20)
+        if LABEL_LANG == 'br':
+            ax[-1].set_xlabel('Tempo', fontsize=20)
+
+        else:
+            ax[-1].set_xlabel('Time', fontsize=20)
 
         #criando a localização da barra de cores:
         axins = inset_axes(ax[0],
@@ -237,11 +244,14 @@ def get_date_file_via_client(FIG_FOLDER_OUTPUT,STATION_NAME):
     #Varredura na lista com dias e lendo o cabeçalho dos arquivos
     for i,j in enumerate(data_lista):
         try:
-            print("Extracting data from header "+str(i+1)+" of "+str(len(data_lista)))
+            if LABEL_LANG == 'br':
+                print("Extraindo os data do cabeçalho: "+str(i+1)+" of "+str(len(data_lista)))
+
+            else:
+                print("Extracting data from header: "+str(i+1)+" of "+str(len(data_lista)))
 
             #Lendo o cabeçalho da forma de onda diária do arclink
             st = client.get_waveforms(NETWORK_CODE,STATION_NAME,LOCATION,CHANNEL_CODE,j,j+86400)
-            print(st)
 
             #----------------------------
             #Começo do dicionário
@@ -276,7 +286,12 @@ def get_date_file_via_client(FIG_FOLDER_OUTPUT,STATION_NAME):
 
 
         except:
-            print('No data to: '+str(j))
+            if LABEL_LANG == 'br':
+                print('Sem dados para: '+str(j))
+
+            else:
+                print('No data to: '+str(j))
+
 
             time_dic[str(j)]['DATETIME'] = str(j.year)+','+str(j.month)+','+str(j.day)
             for q,w in enumerate(np.arange(24)):
@@ -352,8 +367,14 @@ def get_date_file_via_client(FIG_FOLDER_OUTPUT,STATION_NAME):
     ax.tick_params(which='minor', length=4)
     ax.tick_params(which='major', length=10)
     ax.set_ylim(0,24)
-    ax.set_ylabel('Hora do Dia')
-    ax.set_xlabel('Tempo')
+
+    if LABEL_LANG == 'br':
+        ax.set_ylabel('Hora')
+        ax.set_xlabel('Tempo')
+    else:
+        ax.set_ylabel('Hour')
+        ax.set_xlabel('Time')
+
     ax.grid(b=True, which='major', color='k', linestyle='-')
     ax.grid(b=True, which='minor', color='k', linestyle='-')
     plt.setp(ax.xaxis.get_majorticklabels(), fontsize=10, rotation=30)

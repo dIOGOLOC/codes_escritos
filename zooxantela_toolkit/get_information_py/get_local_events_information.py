@@ -87,10 +87,13 @@ from parameters_py.config import (
 					LOCAL_EVENT_START_DATE,LOCAL_EVENT_FINAL_DATE,LOCAL_EV_MAGNITUDE_MIN
 				   )
 
+if LABEL_LANG == 'br':
+    print('Obtendo Parâmetros dos eventos locais')
+    print('\n')
 
-
-print('Get Local Events Parameters')
-print('\n')
+else:
+    print('Getting Parameters of the  local events')
+    print('\n')
 
 local_event_info_txt = np.genfromtxt(LOCAL_CSV_FILE,dtype='str',skip_header=1,usecols=[1,2,3,4,5],delimiter=";")
 dic_local_event = {
@@ -112,21 +115,39 @@ for i,j in enumerate(local_event_info_txt):
 
         if datetime.fromisoformat(LOCAL_EVENT_START_DATE) <= time <= datetime.fromisoformat(LOCAL_EVENT_FINAL_DATE) and polygon.contains(point) == True and float(j[4]) >= LOCAL_EV_MAGNITUDE_MIN:
             dic_local_event['ev_timeUTC'].append(time_str)
-            print('Event '+str(i+1)+' - '+str(time_str))
+            if LABEL_LANG == 'br':
+                print('Evento '+str(i+1)+' - '+str(time_str))
+
+            else:
+                print('Event '+str(i+1)+' - '+str(time_str))
+
             dic_local_event['evla'].append(float(j[2]))
             dic_local_event['evlo'].append(float(j[1]))
             dic_local_event['evdp'].append(float(j[3]))
             dic_local_event['mag'].append(float(j[4]))
 
     except:
-        print('Error in Local event time '+' - line '+str(i+1)+' or Point out of the study area')
+        if LABEL_LANG == 'br':
+            print('Erro no tempo do evento local '+' - linha '+str(i+1)+' ou evento fora da área de estudo.')
 
-print('\n')
-print('Number of Events: '+str(len(dic_local_event['mag'])))
-print('\n')
+        else:
+            print('Error in Local event time '+' - line '+str(i+1)+' or evento out of the study area.')
 
-print('Saving Event Parameters in JSON file')
-print('\n')
+if LABEL_LANG == 'br':
+    print('\n')
+    print('Número de eventos locais: '+str(len(dic_local_event['mag'])))
+    print('\n')
+
+    print('Salvando os arquivos dos eventos (JSON).')
+    print('\n')
+else:
+    print('\n')
+    print('Number of Events: '+str(len(dic_local_event['mag'])))
+    print('\n')
+
+    print('Saving files of the local events (JSON).')
+    print('\n')
+
 
 os.makedirs(OUTPUT_JSON_FILE_DIR,exist_ok=True)
 

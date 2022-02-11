@@ -8,7 +8,7 @@
 Author: Diogo L.O.C. (locdiogo@gmail.com)
 
 
-Last Date: 12/2021
+Last Date: 02/2022
 
 
 Project: Monitoramento Sismo-Oceanográfico
@@ -54,9 +54,15 @@ from parameters_py.config import (
 # Retrieving .SAC files
 # =====================
 
-print('\n')
-print('Retrieving Events files')
-print('\n')
+
+if LABEL_LANG == 'br':
+    print('\n')
+    print('Procurando os arquivos dos eventos locais.')
+    print('\n')
+else:
+    print('\n')
+    print('Collecting local events files.')
+    print('\n')
 
 EVENT_dir = []
 
@@ -150,7 +156,12 @@ for i,j in enumerate(lst_eventsZ):
 # Ploting EVENT files
 # ===================
 
-print('Ploting Station x Event')
+if LABEL_LANG == 'br':
+    print('Plotando Estação x Evento')
+
+else:
+    print('Ploting Station x Event')
+
 start_time = time.time()
 
 for i,j in enumerate(lst_eventsZ):
@@ -158,8 +169,13 @@ for i,j in enumerate(lst_eventsZ):
 
 
 #-------------------------------------------------------------------------------------------------------------------
-'''
 
+
+if LABEL_LANG == 'br':
+    print('Plotando Hidrofone x Evento')
+
+else:
+    print('Ploting Hydrophone x Event')
 
 #--------------------------------------------------------------------------------------------------------------------
 for i,j in enumerate(lst_eventsX):
@@ -170,4 +186,3 @@ for i,j in enumerate(lst_eventsX):
 
 print("--- %.2f execution time (min) ---" % ((time.time() - start_time)/60))
 print('\n')
-'''

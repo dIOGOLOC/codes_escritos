@@ -54,16 +54,22 @@ from assessment_py.status_assessment import filelist,get_status_file_GURALP,list
 
 
 from parameters_py.config import (
-					OUTPUT_FIGURE_DIR,DIR_DATA,DIR_STATUS,NUM_PROCESS
+					OUTPUT_FIGURE_DIR,DIR_DATA,DIR_STATUS,NUM_PROCESS,LABEL_LANG
 					)
 
 
 # ============================
 # Retrieving GCF status files
 # ============================
-print('\n')
-print('Retrieving GCF status files')
-print('\n')
+if LABEL_LANG == 'br':
+    print('Obtendo arquivos de funcionamento GCF.')
+    print('\n')
+
+else:
+    print('\n')
+    print('Getting GCF status files.')
+    print('\n')
+
 
 files = filelist(DIR_STATUS)
 
@@ -76,9 +82,14 @@ me_folder = [i for i in files if "me" in i]
 # ==================================
 # Separating GCF status files by day
 # ==================================
+if LABEL_LANG == 'br':
+    print('Separando os arquivos por dia.')
+    print('\n')
 
-print('Separating GCF status files by day')
-print('\n')
+else:
+    print('Separating GCF status files by day.')
+    print('\n')
+
 
 daily_lst_m8 = list_split_day(m8_folder)
 daily_lst_m9 = list_split_day(m9_folder)
@@ -89,41 +100,65 @@ daily_lst_me = list_split_day(me_folder)
 # ================================
 # Multiprocessing GCF status files
 # ================================
+if LABEL_LANG == 'br':
+    print('Multiprocessamento dos arquivos de funcionamento GCF.')
+    print('\n')
 
-print('Multiprocessing GCF status files')
+else:
+    print('Multiprocessing GCF status files.')
+    print('\n')
+
 start_time = time.time()
-print('\n')
 #--------------------------------------------------------------------------------------------------------------------
-print('Channel: m8')
+if LABEL_LANG == 'br':
+    print('Canal: m8')
+
+else:
+    print('Channel: m8')
+    print('\n')
+
 result_m8 = []
 pool = Pool(processes=NUM_PROCESS)
 for result in tqdm(pool.imap_unordered(func=get_status_file_GURALP, iterable=daily_lst_m8), total=len(daily_lst_m8)):
-	result_m8.append(result)
-print('\n')
+    result_m8.append(result)
 #--------------------------------------------------------------------------------------------------------------------
 
-print('Channel: m9')
+if LABEL_LANG == 'br':
+    print('Canal: m9')
+
+else:
+    print('Channel: m9')
+    print('\n')
+
 result_m9 = []
 pool = Pool(processes=NUM_PROCESS)
 for result in tqdm(pool.imap_unordered(func=get_status_file_GURALP, iterable=daily_lst_m9), total=len(daily_lst_m9)):
-	result_m9.append(result)
-print('\n')
+    result_m9.append(result)
 #--------------------------------------------------------------------------------------------------------------------
 
-print('Channel: ma')
+if LABEL_LANG == 'br':
+    print('Canal: ma')
+
+else:
+    print('Channel: ma')
+    print('\n')
+
 result_ma = []
 pool = Pool(processes=NUM_PROCESS)
 for result in tqdm(pool.imap_unordered(func=get_status_file_GURALP, iterable=daily_lst_ma), total=len(daily_lst_ma)):
-	result_ma.append(result)
-print('\n')
+    result_ma.append(result)
 #--------------------------------------------------------------------------------------------------------------------
+if LABEL_LANG == 'br':
+    print('Canal: me')
 
-print('Channel: me')
+else:
+    print('Channel: me')
+    print('\n')
+
 result_me = []
 pool = Pool(processes=NUM_PROCESS)
 for result in tqdm(pool.imap_unordered(func=get_status_file_GURALP, iterable=daily_lst_me), total=len(daily_lst_me)):
-	result_me.append(result)
-print('\n')
+    result_me.append(result)
 #--------------------------------------------------------------------------------------------------------------------
 
 print("--- %.2f execution time (min) ---" % ((time.time() - start_time)/60))

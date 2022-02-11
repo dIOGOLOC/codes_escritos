@@ -20,6 +20,7 @@
 # e.g., 'analysis.cnf', 'caninana_config.cnf', 'myconfig.cnf', 'test.cnf'...
 #
 # The parameters are divided in several sections:
+# - [lang]            : default language (br/en)
 # - [paths]           : default paths to input/output folders
 # - [ppsd]            : parameters to estimate and plot PPSD
 # - [local_evt]       : parameters to compare local event data
@@ -32,6 +33,13 @@
 # https://wiki.python.org/moin/ConfigParser
 #
 # ------------------------------------------------------------------------------
+
+#======
+[lang]
+#======
+
+#choose between portuguese (br) or english (en):
+LABEL_LANG = br
 
 #======
 [paths]

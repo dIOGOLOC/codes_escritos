@@ -6,7 +6,7 @@
 Author: Diogo L.O.C. (locdiogo@gmail.com)
 
 
-Last Date: 12/2021
+Last Date: 02/2022
 
 
 Project: Monitoramento Sismo-Oceanográfico
@@ -58,9 +58,16 @@ from parameters_py.config import (
 				   )
 
 
+if LABEL_LANG == 'br':
+    print('\n')
+    print('Obtendo Parâmetros das estações')
+    print('\n')
 
-print('Get Station Information')
-print('\n')
+else:
+    print('\n')
+    print('Getting Parameters of the stations')
+    print('\n')
+
 
 sta_name =  np.genfromtxt(STA_CSV_FILE,dtype='str',skip_header=1,delimiter=';')
 
@@ -89,17 +96,28 @@ for i,j in enumerate(sta_name):
 	sta_event['EDAY'].append(j[8])
 
 
+if LABEL_LANG == 'br':
+    print('Número de estações: '+str(len(sta_event['KSTNM'])))
+    print('\n')
 
-print('Number of Stations: '+str(len(sta_event['KSTNM'])))
-print('\n')
+    for i,j in enumerate(sta_event['KSTNM']):
+        print('Estação: '+j)
+        print('\n')
 
-for i,j in enumerate(sta_event['KSTNM']):
-	print('Station: '+j)
-	print('\n')
+    print('\n')
+    print('Salvando os arquivo das estações (JSON):')
+    print('\n')
+else:
+    print('Number of Stations: '+str(len(sta_event['KSTNM'])))
+    print('\n')
 
-print('\n')
-print('Saving Station Information in JSON file:')
-print('\n')
+    for i,j in enumerate(sta_event['KSTNM']):
+        print('Station: '+j)
+        print('\n')
+
+    print('\n')
+    print('Saving the station files (JSON):')
+    print('\n')
 
 os.makedirs(OUTPUT_JSON_FILE_DIR,exist_ok=True)
 with open(OUTPUT_JSON_FILE_DIR+'STA_dic.json', 'w') as fp:
