@@ -73,27 +73,27 @@ sta_name =  np.genfromtxt(STA_CSV_FILE,dtype='str',skip_header=1,delimiter=';')
 
 sta_event = {
 
-		'LOC':[],
-		'SENSOR':[],
-		'KNETWK':[],
-		'KSTNM':[],
-		'STLA':[],
-		'STLO':[],
-		'STEL':[],
-		'FDAY':[],
-		'EDAY':[],
-	    }
+        'LOC':[],
+        'SENSOR':[],
+        'KNETWK':[],
+        'KSTNM':[],
+        'STLA':[],
+        'STLO':[],
+        'STEL':[],
+        'FDAY':[],
+        'EDAY':[],
+        }
 
 for i,j in enumerate(sta_name):
-	sta_event['LOC'].append(j[0])
-	sta_event['SENSOR'].append(j[1])
-	sta_event['KNETWK'].append(j[2])
-	sta_event['KSTNM'].append(j[3])
-	sta_event['STLA'].append(float(j[4]))
-	sta_event['STLO'].append(float(j[5]))
-	sta_event['STEL'].append(float(j[6]))
-	sta_event['FDAY'].append(j[7])
-	sta_event['EDAY'].append(j[8])
+    sta_event['LOC'].append(j[0])
+    sta_event['SENSOR'].append(j[1])
+    sta_event['KNETWK'].append(j[2])
+    sta_event['KSTNM'].append(j[3])
+    sta_event['STLA'].append(float(j[4]))
+    sta_event['STLO'].append(float(j[5]))
+    sta_event['STEL'].append(float(j[6]))
+    sta_event['FDAY'].append(j[7])
+    sta_event['EDAY'].append(j[8])
 
 
 if LABEL_LANG == 'br':
@@ -121,4 +121,4 @@ else:
 
 os.makedirs(OUTPUT_JSON_FILE_DIR,exist_ok=True)
 with open(OUTPUT_JSON_FILE_DIR+'STA_dic.json', 'w') as fp:
-	json.dump(sta_event, fp)
+    json.dump(sta_event, fp)

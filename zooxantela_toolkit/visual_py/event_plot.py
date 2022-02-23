@@ -6,7 +6,7 @@
 Author: Diogo L.O.C. (locdiogo@gmail.com)
 
 
-Last Date: 12/2021
+Last Date: 02/2022
 
 
 Project: Monitoramento Sismo-Oceanográfico
@@ -206,22 +206,40 @@ def plot_event_data(event_lst, inv, event_name,folder_name,lf,hf):
 		fig, axes = plt.subplots(len(st),2, sharex=True,figsize=(20, 15))
 
 		cols = ['Raw Data', 'Filterd Data ('+str(lf)+' Hz to '+str(hf)+' Hz)']
+		cols_br = ['Dado bruto', 'Dado filtrado ('+str(lf)+' Hz to '+str(hf)+' Hz)']
 
 		for ax, col in zip(axes[0], cols):
 			ax.set_title(col)
+			if LABEL_LANG == 'br':
+				ax.set_title(cols_br)
+
+			else:
+				ax.set_title(col)
 
 		for i,j in enumerate(st):
 			axes[i,0].plot(j.times(),j.data,'k')
 			axes[i,0].set_xlim(5,100)
-		axes[i,0].set_xlabel('Time after P (s)')
+
+		if LABEL_LANG == 'br':
+			axes[i,0].set_xlabel('Tempos após P (s)')
+
+		else:
+			axes[i,0].set_xlabel('Time after P (s)')
 
 		for i,j in enumerate(st):
 			j.filter('bandpass',freqmin=lf, freqmax=hf)
 			axes[i,1].set_xlim(5,100)
 			axes[i,1].plot(j.times(),j.data,'k')
 			axes[i,1].text(100.5,0,j.stats.station)
-		axes[i,1].set_xlabel('Time after P (s)')
-		fig.suptitle('Event - '+event_name)
+
+		if LABEL_LANG == 'br':
+			axes[i,1].set_xlabel('Tempos após P (s)')
+			fig.suptitle('Evento: '+event_name)
+
+		else:
+			axes[i,1].set_xlabel('Time after P (s)')
+			fig.suptitle('Event: '+event_name)
+
 		os.makedirs(OUTPUT_FIGURE_DIR+'EVENTS/'+folder_name,exist_ok=True)
 		fig.savefig(OUTPUT_FIGURE_DIR+'EVENTS/'+folder_name+'Event - '+event_name+'.png')
 		plt.tight_layout()
@@ -240,22 +258,36 @@ def plot_event_data(event_lst, inv, event_name,folder_name,lf,hf):
 		fig, axes = plt.subplots(1,2, sharex=True,figsize=(20, 15))
 
 		cols = ['Raw Data', 'Filterd Data ('+str(lf)+' Hz to '+str(hf)+' Hz)']
+		cols_br = ['Dado bruto', 'Dado filtrado ('+str(lf)+' Hz to '+str(hf)+' Hz)']
 
 		for i,j in enumerate(st):
 			axes[0].plot(j.times(),j.data,'k')
 			axes[0].set_xlim(5,100)
-		axes[0].set_xlabel('Time after P (s)')
-		axes[0].set_title(cols[0])
+
+		if LABEL_LANG == 'br':
+			axes[0].set_xlabel('Tempos após P (s)')
+			axes[0].set_title(cols_br[0])
+
+		else:
+			axes[0].set_xlabel('Time after P (s)')
+			axes[0].set_title(cols[0])
 
 		for i,j in enumerate(st):
 			j.filter('bandpass',freqmin=lf, freqmax=hf)
 			axes[1].set_xlim(5,100)
 			axes[1].plot(j.times(),j.data,'k')
 			axes[1].text(100.5,0,j.stats.station)
-		axes[1].set_xlabel('Time after P (s)')
-		axes[1].set_title(cols[1])
 
-		fig.suptitle('Event - '+event_name)
+		if LABEL_LANG == 'br':
+			axes[1].set_xlabel('Tempos após P (s)')
+			axes[1].set_title(cols_br[1])
+			fig.suptitle('Evento: '+event_name)
+
+		else:
+			axes[1].set_xlabel('Time after P (s)')
+			axes[1].set_title(cols[1])
+			fig.suptitle('Event: '+event_name)
+
 		os.makedirs(OUTPUT_FIGURE_DIR+'EVENTS/'+folder_name,exist_ok=True)
 		fig.savefig(OUTPUT_FIGURE_DIR+'EVENTS/'+folder_name+'Event - '+event_name+'.png')
 		plt.tight_layout()
@@ -399,7 +431,12 @@ def plot_map_event_data(event_lstZ,event_lstN,event_lstE,event_name,folder_name,
 
 				ax.set_xlim((stZ[j].times("utcdatetime")[0]-100).matplotlib_date,(stZ[j].times("utcdatetime")[0]+300).matplotlib_date)
 				ax.set_yticks([])
-				ax.set_title(stZ[j].id+' - dist='+str(int(round(stZ[j].stats.sac.dist)))+' km',fontsize=15)
+
+				if LABEL_LANG == 'br':
+					ax.set_title(stZ[j].id+' - dist='+str(int(round(stZ[j].stats.sac.dist)))+' km',fontsize=15)
+
+				else:
+					ax.set_title(stZ[j].id+' - dist='+str(int(round(stZ[j].stats.sac.dist)))+' km',fontsize=15)
 
 				# format the ticks
 				ax.xaxis.set_major_locator(minutes)
@@ -453,7 +490,11 @@ def plot_map_event_data(event_lstZ,event_lstN,event_lstE,event_name,folder_name,
 
 		fig, axes = plt.subplots(nrows=len(stZ), ncols=3, sharex='col',figsize=(20, 20))
 		event_date = event_name.split('.')
-		fig.suptitle('Dia do Evento - '+UTCDateTime(year=int(event_date[0]),julday=int(event_date[1])).strftime('%d/%m/%Y')+' - Magnitude:'+str(stZ[0].stats.sac.mag),fontsize=20)
+		if LABEL_LANG == 'br':
+			fig.suptitle('Dia do Evento: '+UTCDateTime(year=int(event_date[0]),julday=int(event_date[1])).strftime('%d/%m/%Y')+' - Magnitude:'+str(stZ[0].stats.sac.mag),fontsize=20)
+
+		else:
+			fig.suptitle('Event day: '+UTCDateTime(year=int(event_date[0]),julday=int(event_date[1])).strftime('%d/%m/%Y')+' - Magnitude:'+str(stZ[0].stats.sac.mag),fontsize=20)
 
 		#-------------------------------------------
 
@@ -624,7 +665,13 @@ def plot_map_event_data_hydrophone(event_lstX,event_name,folder_name,lf,hf):
 
 		fig, axes = plt.subplots(nrows=len(stZ), ncols=1, sharex='col',figsize=(20, 20))
 		event_date = event_name.split('.')
-		fig.suptitle('Dia do Evento - '+UTCDateTime(year=int(event_date[0]),julday=int(event_date[1])).strftime('%d/%m/%Y')+' - Magnitude:'+str(stZ[0].stats.sac.mag),fontsize=20)
+
+		if LABEL_LANG == 'br':
+			fig.suptitle('Dia do Evento - '+UTCDateTime(year=int(event_date[0]),julday=int(event_date[1])).strftime('%d/%m/%Y')+' - Magnitude:'+str(stZ[0].stats.sac.mag),fontsize=20)
+
+		else:
+			fig.suptitle('Event day: '+UTCDateTime(year=int(event_date[0]),julday=int(event_date[1])).strftime('%d/%m/%Y')+' - Magnitude:'+str(stZ[0].stats.sac.mag),fontsize=20)
+
 
 		#-------------------------------------------
 

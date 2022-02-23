@@ -209,7 +209,7 @@ def plot_date_file(FIG_FOLDER_OUTPUT,directory_data,XML_FILE):
 
         plt.setp(ax[k].xaxis.get_majorticklabels(), fontsize=10, rotation=30)
         if LABEL_LANG == 'br':
-            ax[-1].set_xlabel('Tempo', fontsize=20)
+            ax[-1].set_xlabel('Data', fontsize=20)
 
         else:
             ax[-1].set_xlabel('Time', fontsize=20)
@@ -370,7 +370,7 @@ def get_date_file_via_client(FIG_FOLDER_OUTPUT,STATION_NAME):
 
     if LABEL_LANG == 'br':
         ax.set_ylabel('Hora')
-        ax.set_xlabel('Tempo')
+        ax.set_xlabel('Data')
     else:
         ax.set_ylabel('Hour')
         ax.set_xlabel('Time')

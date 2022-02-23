@@ -78,6 +78,7 @@ print('\n')
 print('Retrieving MARKERS for each event')
 print('\n')
 
+
 markes_file = sorted(glob(OUTPUT_EV_DIR+'Local/NETWORK_MSEED_FILES/**/*_markers'))
 
 event_dic_lst = []

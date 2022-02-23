@@ -161,7 +161,7 @@ def plot_PSD_PQLX(files2_lst,init_date2,fin_date2,channel):
 	ax.set_xlabel('Período [s]') #ptbr
 	ax.set_xlim(period_lim)
 	ax.set_ylim(AMP_PSD_MIN, AMP_PSD_MAX)
-	ax.set_ylabel('Amplitude [$m^2/s^4/Hz$] [dB]')
+	ax.set_ylabel('Potência [$m^2/s^4/Hz$] [dB]')
 	ax.xaxis.set_major_formatter(FormatStrFormatter("%g"))
 
 	files2_obs17 = files2_lst[0]
@@ -264,7 +264,7 @@ def plot_PSD_PQLX_all(files2_lst,init_date2,fin_date2,channel):
         ax[i].xaxis.set_major_formatter(FormatStrFormatter("%g"))
 
         if ax[i] not in [ax2,ax3,ax5]:
-            ax[i].set_ylabel('Amplitude [$m^2/s^4/Hz$] [dB]')
+            ax[i].set_ylabel('Potência [$m^2/s^4/Hz$] [dB]')
         else:
             pass
 
@@ -276,7 +276,7 @@ def plot_PSD_PQLX_all(files2_lst,init_date2,fin_date2,channel):
 
         if ax[i] not in [ax1,ax2,ax4,ax5]:
             ax[i].tick_params(labelbottom=True, labeltop=False, labelright=True)
-            ax[i].set_ylabel('Amplitude [$m^2/s^4/Hz$] [dB]')
+            ax[i].set_ylabel('Potência [$m^2/s^4/Hz$] [dB]')
             ax[i].yaxis.set_label_position("right")
         else:
             pass

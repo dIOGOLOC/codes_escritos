@@ -83,9 +83,9 @@ from shapely.geometry import Point, shape
 
 
 from parameters_py.config import (
-					OUTPUT_JSON_FILE_DIR,LOCAL_CSV_FILE,SHP_AREA_DELIMITER,
-					LOCAL_EVENT_START_DATE,LOCAL_EVENT_FINAL_DATE,LOCAL_EV_MAGNITUDE_MIN
-				   )
+                                OUTPUT_JSON_FILE_DIR,LOCAL_CSV_FILE,SHP_AREA_DELIMITER,
+                                LOCAL_EVENT_START_DATE,LOCAL_EVENT_FINAL_DATE,LOCAL_EV_MAGNITUDE_MIN
+                                )
 
 if LABEL_LANG == 'br':
     print('Obtendo Parâmetros dos eventos locais')
@@ -97,11 +97,11 @@ else:
 
 local_event_info_txt = np.genfromtxt(LOCAL_CSV_FILE,dtype='str',skip_header=1,usecols=[1,2,3,4,5],delimiter=";")
 dic_local_event = {
-		'ev_timeUTC':[],
-		'evla':[],
-		'evlo':[],
-		'evdp':[],
-		'mag':[]}
+        'ev_timeUTC':[],
+        'evla':[],
+        'evlo':[],
+        'evdp':[],
+        'mag':[]}
 
 for i,j in enumerate(local_event_info_txt):
     try:
@@ -152,4 +152,4 @@ else:
 os.makedirs(OUTPUT_JSON_FILE_DIR,exist_ok=True)
 
 with open(OUTPUT_JSON_FILE_DIR+'LOCAL_EVENT_dic.json', 'w') as fp:
-	json.dump(dic_local_event, fp)
+    json.dump(dic_local_event, fp)

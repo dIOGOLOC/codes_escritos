@@ -6,7 +6,7 @@
 Author: Diogo L.O.C. (locdiogo@gmail.com)
 
 
-Last Date: 12/2021
+Last Date: 02/2022
 
 
 Project: Monitoramento Sismo-Oceanográfico
@@ -97,8 +97,12 @@ def cut_download_data_by_event(knetwk,kstnm,stla,stlo,evla,evlo,evdp,evmag,ev_ti
 
 		event_directory = OUTPUT_EV_DIR+'Local/'+knetwk+'/'+kstnm+'/'+'{:04}'.format(op.UTCDateTime(ev_timeUTC).year)+'/'+'{:03}'.format(op.UTCDateTime(ev_timeUTC).julday)+'/'+'{:04}'.format(op.UTCDateTime(ev_timeUTC).year)+'.'+'{:03}'.format(op.UTCDateTime(ev_timeUTC).julday)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).hour)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).minute)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).second)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).microsecond)[:3]
 		os.makedirs(event_directory, exist_ok=True)
-		print('Event Directory - ',event_directory)
 
+		if LABEL_LANG == 'br':
+			print('Diretório do evetno: ',event_directory)
+
+		else:
+			print('Event Directory: ',event_directory)
 
 		sacHHX = SACTrace(data=stE[0].data, **headerHHX)
 		sacHHX.write(event_directory+'/'+knetwk+'.'+kstnm+'.'+'{:04}'.format(op.UTCDateTime(ev_timeUTC).year)+'.'+'{:03}'.format(op.UTCDateTime(ev_timeUTC).julday)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).hour)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).minute)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).second)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).microsecond)[:3]+'.E')
@@ -138,7 +142,11 @@ def cut_download_data_by_event(knetwk,kstnm,stla,stlo,evla,evlo,evdp,evmag,ev_ti
 		sacHHZ = SACTrace(data=stZ[0].data, **headerHHZ)
 		sacHHZ.write(event_directory+'/'+knetwk+'.'+kstnm+'.'+'{:04}'.format(op.UTCDateTime(ev_timeUTC).year)+'.'+'{:03}'.format(op.UTCDateTime(ev_timeUTC).julday)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).hour)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).minute)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).second)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).microsecond)[:3]+'.Z')
 	except:
-		print('No event to: '+knetwk+'.'+kstnm)
+	if LABEL_LANG == 'br':
+		print('Sem evento: '+knetwk+'.'+kstnm)
+
+	else:
+		print('No event: '+knetwk+'.'+kstnm)
 
 def cut_data_by_local_event(knetwk,kstnm,stla,stlo,evla,evlo,evdp,evmag,ev_timeUTC):
 	data_sta = DIR_DATA+knetwk+'/'+kstnm+'/'
@@ -169,8 +177,11 @@ def cut_data_by_local_event(knetwk,kstnm,stla,stlo,evla,evlo,evdp,evmag,ev_timeU
 				#Creating Event Directory
 				event_directory = OUTPUT_EV_DIR+'Local/'+knetwk+'/'+kstnm+'/'+'{:04}'.format(op.UTCDateTime(ev_timeUTC).year)+'/'+'{:03}'.format(op.UTCDateTime(ev_timeUTC).julday)+'/'+'{:04}'.format(op.UTCDateTime(ev_timeUTC).year)+'.'+'{:03}'.format(op.UTCDateTime(ev_timeUTC).julday)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).hour)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).minute)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).second)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).microsecond)[:3]
 				os.makedirs(event_directory, exist_ok=True)
-				print('Event Directory - ',event_directory)
+				if LABEL_LANG == 'br':
+					print('Diretório do evetno: ',event_directory)
 
+				else:
+					print('Event Directory: ',event_directory)
 				headerHHE = {
 							'kstnm': kstnm, 'kcmpnm': 'HHE','knetwk':knetwk,
 							'stla': float(stla), 'stlo': float(stlo),
@@ -239,4 +250,8 @@ def cut_data_by_local_event(knetwk,kstnm,stla,stlo,evla,evlo,evdp,evmag,ev_timeU
 				sacHHX = SACTrace(data=stX[0].data, **headerHHX)
 				sacHHX.write(event_directory+'/'+knetwk+'.'+kstnm+'.'+'{:04}'.format(op.UTCDateTime(ev_timeUTC).year)+'.'+'{:03}'.format(op.UTCDateTime(ev_timeUTC).julday)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).hour)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).minute)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).second)+'.'+'{:02}'.format(op.UTCDateTime(ev_timeUTC).microsecond)[:3]+'.X')
 		except:
-			print('No event to: '+knetwk+'.'+kstnm)
+				if LABEL_LANG == 'br':
+					print('Sem evento: '+knetwk+'.'+kstnm)
+
+				else:
+					print('No event: '+knetwk+'.'+kstnm)
