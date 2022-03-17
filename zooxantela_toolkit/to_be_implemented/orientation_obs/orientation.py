@@ -149,7 +149,7 @@ TENDAY = datetime.timedelta(days=10)
 
 # MULTIPROCESSING
 
-num_processes = 12
+num_processes = 8
 
 # =================
 # Filtering by date
@@ -2450,7 +2450,6 @@ for iOBS in OBS_LST:
     # -------------------------------------------
     JSON_FILES = '/run/user/1000/gvfs/smb-share:server=hatabackup.local,share=dados_posdoc/ON_MAR/ORIENTATION_OUTPUT/JSON_FILES/'
 
-    #crosscorr_pairs = sorted(glob.glob(ASDF_FILES+'CROSS_CORR_10_DAYS_STACKED_FILES/**/*.h5', recursive=True))
     crosscorr_pairs = sorted(glob.glob(JSON_FILES+'CROSS_CORR_10_DAYS_STACKED_FILES/**/*.json', recursive=True))
 
     # --------------------------------

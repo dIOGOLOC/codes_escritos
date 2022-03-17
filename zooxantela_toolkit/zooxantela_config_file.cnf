@@ -47,8 +47,8 @@ LABEL_LANG = br
 
 # directory of raw files
 #DIR_DATA = /home/diogoloc/dados_posdoc/ON_MAR/data/
-DIR_DATA = /run/user/1000/gvfs/smb-share:server=hatabackup.local,share=dados_posdoc/ON_MAR/data/
-#DIR_DATA = /home/diogoloc/dados_posdoc/ON_MAR/obs_data_MSEED/
+#DIR_DATA = /run/user/1000/gvfs/smb-share:server=hatabackup.local,share=dados_posdoc/ON_MAR/data/
+DIR_DATA = /home/diogoloc/dados_posdoc/ON_MAR/obs_data_MSEED/
 
 # directory of raw status files
 DIR_STATUS = /home/diogoloc/dados_posdoc/ON_MAR/obs_data/STATUS_FILE/
