@@ -64,15 +64,15 @@ from pyasdf import ASDFDataSet
 
 # Folders input
 
-MSEED_DIR_OBS = '/home/diogoloc/dados_posdoc/ON_MAR/obs_data_MSEED/'
+MSEED_DIR_OBS = '/media/diogoloc/Backup/dados_posdoc/ON_MAR/obs_data_MSEED/'
 
-MSEED_DIR_STA = '/home/diogoloc/dados_posdoc/ON_MAR/data/'
+MSEED_DIR_STA = '/media/diogoloc/Backup/dados_posdoc/ON_MAR/data/'
 
 # -------------------------------
 
 # Shapefile  boundary states input
 
-BOUNDARY_STATES_SHP = '/home/diogoloc/SIG_dados/Projeto_ON_MAR/shapefile/Brasil_unidades_federativas/UFEBRASIL.shp'
+BOUNDARY_STATES_SHP = '/media/diogoloc/Backup/dados_posdoc/SIG_dados/Projeto_ON_MAR/shapefile/brasil_estados/UFEBRASIL.shp'
 
 # -------------------------------
 
@@ -83,7 +83,7 @@ OBS_LST = ['OBS17','OBS18','OBS20','OBS22']
 STATIONS_LST = ['ABR01','DUB01','MAN01','OBS20','OBS22','TER01','ALF01','GDU01','NAN01','TIJ01','CAJ01','GUA01','OBS17','PET01','TRI01','CAM01','JAC01','OBS18','RIB01','VAS01','CMC01','MAJ01','SLP01','PARB','CNLB','BSFB']
 STATIONS_LST = sorted(STATIONS_LST)
 
-STATIONXML_DIR = '/home/diogoloc/dados_posdoc/ON_MAR/XML_ON_OBS_CC/'
+STATIONXML_DIR = '/media/diogoloc/Backup/dados_posdoc/ON_MAR/XML_ON_OBS_CC/'
 
 CHANNEL_LST = ['HHZ.D','HHN.D','HHE.D','HH1.D','HH2.D']
 
@@ -91,11 +91,11 @@ CHANNEL_LST = ['HHZ.D','HHN.D','HHE.D','HH1.D','HH2.D']
 
 # Folders output
 
-ORIENTATION_OUTPUT = '/home/diogoloc/dados_posdoc/ON_MAR/ORIENTATION_OUTPUT/FIGURAS/'
+ORIENTATION_OUTPUT = '/media/diogoloc/Backup/dados_posdoc/ON_MAR/ORIENTATION_OUTPUT/FIGURAS/'
 
-ASDF_FILES = '/home/diogoloc/dados_posdoc/ON_MAR/CLOCK_DRIFT_OUTPUT/ASDF_FILES/'
+ASDF_FILES = '/media/diogoloc/Backup/dados_posdoc/ON_MAR/CLOCK_DRIFT_OUTPUT/ASDF_FILES/'
 
-FEATHER_FILES = '/home/diogoloc/dados_posdoc/ON_MAR/CLOCK_DRIFT_OUTPUT/FEATHER_FILES/'
+FEATHER_FILES = '/media/diogoloc/Backup/dados_posdoc/ON_MAR/CLOCK_DRIFT_OUTPUT/FEATHER_FILES/'
 
 # -------------------------------
 #create figures?
@@ -135,7 +135,7 @@ NOISE_WINDOW_SIZE = 700.0
 minspectSNR = 1
 
 #RESAMPLING
-NEW_SAMPLING_RATE = 2
+NEW_SAMPLING_RATE = 20
 
 # -------------------------------
 
@@ -2448,9 +2448,8 @@ for iOBS in OBS_LST:
     # -------------------------------------------
     # Collecting daily list of cross-correlations
     # -------------------------------------------
-    JSON_FILES = '/run/user/1000/gvfs/smb-share:server=hatabackup.local,share=dados_posdoc/ON_MAR/ORIENTATION_OUTPUT/JSON_FILES/'
 
-    crosscorr_pairs = sorted(glob.glob(JSON_FILES+'CROSS_CORR_10_DAYS_STACKED_FILES/**/*.json', recursive=True))
+    crosscorr_pairs = sorted(glob.glob(ASDF_FILES+'CROSS_CORR_10_DAYS_STACKED_FILES/**/*.h5', recursive=True))
 
     # --------------------------------
     # Separating according to OBS name
@@ -2465,21 +2464,11 @@ for iOBS in OBS_LST:
     crosscorr_pairs_name_lst = []
     for i in crosscorr_pairs_obs:
         # splitting subdir/basename
-        '''
         subdir, filename = os.path.split(i)
         nameslst = filename.split("_20")[0]
 
         name_sta1 = nameslst.split('_')[-2].split('..')[0]
         name_sta2 = nameslst.split('_')[-1].split('..')[0]
-
-        '''
-        # splitting subdir/basename
-        subdir, filename = os.path.split(i)
-        nameslst = filename.split("_20")[0]
-
-        name_sta1 = nameslst.split('_')[-1].split('-')[0].split('.')[0]
-        name_sta2 = nameslst.split('_')[-1].split('-')[1].split('.json')[0].split('.')[0]
-
 
         if name_sta1 != name_sta2:
             crosscorr_pairs_name_lst.append(name_sta1+'_'+name_sta2)
@@ -2504,7 +2493,7 @@ for iOBS in OBS_LST:
         for i in crosscorr_pairs_obs:
 
             if pair_sta_1 and pair_sta_2 in i:
-                '''
+
                 # splitting subdir/basename
                 subdir, filename = os.path.split(i)
                 nameslst = filename.split("_20")[0]
@@ -2517,20 +2506,6 @@ for iOBS in OBS_LST:
 
                 channel_sta1 = nameslst.split('_')[-2].split('..')[1]
                 channel_sta2 = nameslst.split('_')[-1].split('..')[1].split('.h5')[0]
-                '''
-
-                # splitting subdir/basename
-                subdir, filename = os.path.split(i)
-                nameslst = filename.split("_20")[0].split('_')[-1]
-
-                name_pair1 = nameslst.split('-')[0]
-                name_pair2 = nameslst.split('-')[-1].split('.json')[0]
-
-                name1 = nameslst.split('-')[0].split('.')[0]
-                name2 = nameslst.split('-')[-1].split('.')[0]
-
-                channel_sta1 = nameslst.split('-')[0].split('.')[1]
-                channel_sta2 = nameslst.split('-')[-1].split('.')[1].split('.json')[0]
 
                 if pair_sta_1 == name1 and pair_sta_2 == name2:
                     # ------------------------------------------------------------------------------------------------------
@@ -2546,28 +2521,6 @@ for iOBS in OBS_LST:
 
         for k in range(len(HHE_HHZ_lst)):
 
-            tr2_data = np.array(json.load(open(HHE_HHZ_lst[k]))['crosscorr_daily_10data'])
-            tr2_data_filtered = bandpass(tr2_data, 1/50, 1/20, NEW_SAMPLING_RATE, corners=4, zerophase=False)
-
-            tr1_data = np.array(json.load(open(HHN_HHZ_lst[k]))['crosscorr_daily_10data'])
-            tr1_data_filtered = bandpass(tr1_data, 1/50, 1/20, NEW_SAMPLING_RATE, corners=4, zerophase=False)
-
-            trZ_data = np.array(json.load(open(HHZ_HHZ_lst[k]))['crosscorr_daily_10data'])
-            trZ_data_filtered = bandpass(trZ_data,1/50, 1/20, NEW_SAMPLING_RATE, corners=4, zerophase=False)
-            trZ_time = np.array(json.load(open(HHZ_HHZ_lst[k]))['crosscorr_daily_causal_time'])
-
-            dist_pair = np.array(json.load(open(HHZ_HHZ_lst[k]))['dist'])
-
-            n = len(trZ_time)
-            mid = int((n-1)/2)
-
-            # calculating symmetric component of cross-correlation
-            trZ_time = trZ_time[mid:]
-            tr2_data_filtered = (tr2_data_filtered[mid:] + tr2_data_filtered[mid+1::-1]) / 2.0
-            tr1_data_filtered = (tr1_data_filtered[mid:] + tr1_data_filtered[mid+1::-1]) / 2.0
-            trZ_data_filtered = (trZ_data_filtered[mid:] + trZ_data_filtered[mid+1::-1]) / 2.0
-
-            '''
             #ASDF files
             tr2_data_file = ASDFDataSet(HHE_HHZ_lst[k], mode='r')
             tr1_data_file = ASDFDataSet(HHN_HHZ_lst[k], mode='r')
@@ -2580,10 +2533,10 @@ for iOBS in OBS_LST:
             name_sta2_2= tr2_data_file.auxiliary_data.CrossCorrelationStacked.list()[1]
 
             #interstation distance:
-            dist_pair = tr2_data_file.auxiliary_data.CrossCorrelationStacked[name_sta1_2][name_sta2_2].parameters['dist']
+            dist_pair = tr2_data_file.auxiliary_data.CrossCorrelationStacked[name_sta1_2][name_sta2_2]['data'].parameters['dist']
 
-            data_causal_2 = tr2_data_file.auxiliary_data.CrossCorrelationStacked[name_sta1_2][name_sta2_2].data[::]
-            data_acausal_2 = tr2_data_file.auxiliary_data.CrossCorrelationStacked[name_sta1_2][name_sta2_2].data[::]
+            data_causal_2 = tr2_data_file.auxiliary_data.CrossCorrelationStacked[name_sta1_2][name_sta2_2]['data'].data[::]
+            data_acausal_2 = tr2_data_file.auxiliary_data.CrossCorrelationStacked[name_sta2_2][name_sta1_2]['data'].data[::]
 
             crosscorr_stack_data_2 = (data_acausal_2 + data_causal_2) / 2.0
             tr2_data_filtered = bandpass(crosscorr_stack_data_2, 1/50, 1/20, NEW_SAMPLING_RATE, corners=4, zerophase=False)
@@ -2594,8 +2547,8 @@ for iOBS in OBS_LST:
             name_sta1_1 = tr1_data_file.auxiliary_data.CrossCorrelationStacked.list()[0]
             name_sta2_1= tr1_data_file.auxiliary_data.CrossCorrelationStacked.list()[1]
 
-            data_causal_1 = tr1_data_file.auxiliary_data.CrossCorrelationStacked[name_sta1_1][name_sta2_1].data[::]
-            data_acausal_1 = tr1_data_file.auxiliary_data.CrossCorrelationStacked[name_sta1_1][name_sta2_1].data[::]
+            data_causal_1 = tr1_data_file.auxiliary_data.CrossCorrelationStacked[name_sta1_1][name_sta2_1]['data'].data[::]
+            data_acausal_1 = tr1_data_file.auxiliary_data.CrossCorrelationStacked[name_sta2_1][name_sta1_1]['data'].data[::]
 
             crosscorr_stack_data_1 = (data_acausal_1 + data_causal_1) / 2.0
             tr1_data_filtered = bandpass(crosscorr_stack_data_1, 1/50, 1/20, NEW_SAMPLING_RATE, corners=4, zerophase=False)
@@ -2606,13 +2559,17 @@ for iOBS in OBS_LST:
             name_sta1_Z = trZ_data_file.auxiliary_data.CrossCorrelationStacked.list()[0]
             name_sta2_Z= trZ_data_file.auxiliary_data.CrossCorrelationStacked.list()[1]
 
-            data_causal_Z = trZ_data_file.auxiliary_data.CrossCorrelationStacked[name_sta1_Z][name_sta2_Z].data[::]
-            data_acausal_Z = trZ_data_file.auxiliary_data.CrossCorrelationStacked[name_sta1_Z][name_sta2_Z].data[::]
-            trZ_time = trZ_data_file.auxiliary_data.CrossCorrelationStacked[name_sta1_Z][name_sta2_Z].parameters['crosscorr_stack_time']
+            data_causal_Z = trZ_data_file.auxiliary_data.CrossCorrelationStacked[name_sta1_Z][name_sta2_Z]['data'].data[::]
+            data_acausal_Z = trZ_data_file.auxiliary_data.CrossCorrelationStacked[name_sta2_Z][name_sta1_Z]['data'].data[::]
+
+            trZ_time_causal_Z = trZ_data_file.auxiliary_data.CrossCorrelationStacked[name_sta1_Z][name_sta2_Z]['time'].data[::]
+            trZ_time_acausal_Z = trZ_data_file.auxiliary_data.CrossCorrelationStacked[name_sta2_Z][name_sta1_Z]['time'].data[::]
+
+            trZ_time = trZ_time_causal_Z
 
             crosscorr_stack_data_Z = (data_acausal_Z + data_causal_Z) / 2.0
             trZ_data_filtered = bandpass(crosscorr_stack_data_Z, 1/50, 1/20, NEW_SAMPLING_RATE, corners=4, zerophase=False)
-            '''
+
             #-------------------------------------------------------------------------------------------------------------------------------
             # Calculating Hilbert transform of vertical trace data
             trZ_H_data_filtered = np.imag(hilbert(trZ_data_filtered))
