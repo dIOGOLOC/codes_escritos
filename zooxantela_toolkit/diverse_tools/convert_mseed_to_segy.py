@@ -20,16 +20,16 @@ from obspy.io.segy.core import _read_segy
 # ==================
 
 # StationXML folder input
-XML_FILES_INPUT = '/home/diogoloc/dados_posdoc/ON_MAR/XML_OBS/'
+XML_FILES_INPUT = '/home/diogoloc/dados_posdoc/ON_MAR/XML_ON_OBS_CC/'
 
 # Folders input
-MSEED_FILES_INPUT = '/home/diogoloc/dados_posdoc/ON_MAR/OBS_Dados/'
+MSEED_FILES_INPUT = '/home/diogoloc/dados_posdoc/ON_MAR/obs_data_MSEED/'
 
 # Folders output
-SEGY_FILES_OUTPUT = '/home/diogoloc/dados_posdoc/ON_MAR/obs_data_SEGY/ON/'
+SEGY_FILES_OUTPUT = '/home/diogoloc/dados_posdoc/ON_MAR/obs_data_SEGY/'
 
 #Number of threads
-num_processes = 1
+num_processes = 8
 
 # ========
 # Function
@@ -39,42 +39,48 @@ num_processes = 1
 def convert_fast(input):
     input_file = input[0]
     output_file = input[1]+input[2]
-    XML_FILE_NAME = '.'.join(input[1].split('/')[-4:-2])+'.xml'
+    XML_FILE_NAME = input[2].split('..')[0]+'.xml'
     stationxml_file = read_inventory(XML_FILES_INPUT+XML_FILE_NAME)
 
-    #os.makedirs(input[1],exist_ok=True)
-    mseed_stream = read(input_file)
-    stream_starttime = mseed_stream[0].stats.starttime
-    mseed_stream[0].stats.starttime = UTCDateTime(stream_starttime.year,stream_starttime.month,stream_starttime.day,stream_starttime.hour,stream_starttime.minute,stream_starttime.second)
-    mseed_stream[0].data = np.float32(mseed_stream[0].data)
+    if os.path.isfile(output_file):
+        pass
 
-    mseed_stream[0].stats.network = stationxml_file[0].code
-    mseed_stream[0].stats.station = stationxml_file[0][0].code
+    else:
 
-    mseed_stream[0].stats.coordinates = AttribDict()
-    mseed_stream[0].stats.coordinates.elevation = stationxml_file.get_coordinates('.'.join(input[1].split('/')[-4:-2])+'..HHZ')['elevation']
-    mseed_stream[0].stats.coordinates.latitude = stationxml_file.get_coordinates('.'.join(input[1].split('/')[-4:-2])+'..HHZ')['latitude']
-    mseed_stream[0].stats.coordinates.longitude = stationxml_file.get_coordinates('.'.join(input[1].split('/')[-4:-2])+'..HHZ')['longitude']
+        os.makedirs(input[1],exist_ok=True)
+        mseed_stream = read(input_file)
+        stream_starttime = mseed_stream[0].stats.starttime
+        mseed_stream[0].stats.starttime = UTCDateTime(stream_starttime.year,stream_starttime.month,stream_starttime.day,stream_starttime.hour,stream_starttime.minute,stream_starttime.second)
+        mseed_stream[0].data = np.float32(mseed_stream[0].data)
 
-    mseed_stream.slide(window_length=320, step=320)
-    print(mseed_stream)
-    mseed_stream.write(output_file, format='SEGY',data_encoding=1,byteorder=sys.byteorder)
+        mseed_stream[0].stats.network = stationxml_file[0].code
+        mseed_stream[0].stats.station = stationxml_file[0][0].code
+
+        mseed_stream[0].stats.coordinates = AttribDict()
+        mseed_stream[0].stats.coordinates.elevation = stationxml_file.get_coordinates(input[2].split('..')[0]+'..HHZ')['elevation']
+        mseed_stream[0].stats.coordinates.latitude = stationxml_file.get_coordinates(input[2].split('..')[0]+'..HHZ')['latitude']
+        mseed_stream[0].stats.coordinates.longitude = stationxml_file.get_coordinates(input[2].split('..')[0]+'..HHZ')['longitude']
+
+        mseed_streams = Stream()
+        for k in mseed_stream.slide(window_length=300, step=300,offset=0, include_partial_windows=True, nearest_sample=True):
+            mseed_streams += k
+        mseed_streams.write(output_file, format='SEGY')
 
 # =======
 # Program
 # =======
 
-MSEED_FILES = sorted(glob.glob(MSEED_FILES_INPUT+'**/**/*.gcf'))
-MSEED_FILES = MSEED_FILES[:5]
+MSEED_FILES = sorted(glob.glob(MSEED_FILES_INPUT+'**/**/**/**/*'))
 
 input_lst = []
 
 for in_file in MSEED_FILES:
-    name_file = in_file.split('/')[-1].split('.gcf')[0]
-    name_folder = in_file.split('/')[-3:-1]
+    # splitting subdir/basename
+    name_folder1, name_file = os.path.split(in_file)
+
+    name_folder = name_folder1.split('/')[-3:]
 
     input_lst.append([in_file,SEGY_FILES_OUTPUT+'/'.join(name_folder)+'/',name_file+'.segy'])
-
 
 #MULTIPROCESSING
 
