@@ -58,25 +58,25 @@ from obspy.signal.trigger import classic_sta_lta, trigger_onset, coincidence_tri
 # Configuration file
 # ====================================================================================================
 
-MSEED_DIR_OBS = '/media/diogoloc/Backup/dados_posdoc/ON_MAR/obs_data_MSEED/'
+MSEED_DIR_OBS = '/media/diogoloc/Backup/dados_posdoc/ON_MAR/obs_data_MSEED/data/'
 
-MSEED_DIR_STA = '/media/diogoloc/Backup/dados_posdoc/ON_MAR/data/2019/'
+MSEED_DIR_STA = '/media/diogoloc/Backup/dados_posdoc/ON_MAR/RSBR_data/data/'
 
 STATIONXML_DIR = '/media/diogoloc/Backup/dados_posdoc/ON_MAR/XML_ON_OBS_CC/'
 
-EARTHQUAKE_FINDER_OUTPUT = '/media/diogoloc/Backup/dados_posdoc/ON_MAR/EARTHQUAKE_FINDER_NETWORK_OUTPUT/FIGURAS/'
+EARTHQUAKE_FINDER_OUTPUT = '/home/diogoloc/dados_posdoc/ON_MAR/EARTHQUAKE_FINDER_NETWORK_OUTPUT/FIGURAS/'
 
-ASDF_FILES = '/media/diogoloc/Backup/dados_posdoc/ON_MAR/EARTHQUAKE_FINDER_NETWORK_OUTPUT/ASDF_FILES/'
+ASDF_FILES = '/home/diogoloc/dados_posdoc/ON_MAR/EARTHQUAKE_FINDER_NETWORK_OUTPUT/ASDF_FILES/'
 
 FIRSTDAY = '2019-08-01'
-LASTDAY = '2019-12-31'
+LASTDAY = '2020-07-01'
 
-FILTER_DATA = [2,16]
+FILTER_DATA = [2,45]
 
 NETWORK = 'ON'
 
-STATIONS_LST = ['TIJ01','DUB01','RIB01','GUA01','PET01','CAM01','ABR01','VAS01']
-OBSS_LST = ['OBS17','OBS18','OBS20']
+STATIONS_LST = ['DUB01','VAS01']
+OBSS_LST = ['OBS17','OBS18','OBS20','OBS22']
 
 CHANNEL = 'HHZ'
 
@@ -93,7 +93,7 @@ THROFF = 2
 EVENT_LENGTH_MIN = 1.0
 
 PEM = 5
-PET = 5
+PET = 10
 
 # ========================
 # Constants and parameters
@@ -110,7 +110,7 @@ ONEDAY = datetime.timedelta(days=1)
 # MULTIPROCESSING
 # ================
 
-num_processes = 4
+num_processes = 8
 
 # =================
 # Filtering by date
@@ -140,21 +140,6 @@ def filelist(basedir,interval_period_date):
     files = [i for i in files if CHANNEL in i]
 
     return sorted(files)
-
-#-------------------------------------------------------------------------------
-
-def rotate_dir(tr1, tr2, direc):
-
-    d = -direc*np.pi/180.+np.pi/2.
-    rot_mat = np.array([[np.cos(d), -np.sin(d)],
-                        [np.sin(d), np.cos(d)]])
-
-    v12 = np.array([tr2, tr1])
-    vxy = np.tensordot(rot_mat, v12, axes=1)
-    tr_2 = vxy[0, :]
-    tr_1 = vxy[1, :]
-
-    return tr_1
 
 #-------------------------------------------------------------------------------
 def classic_sta_lta_py(a, nsta, nlta):
@@ -323,25 +308,29 @@ def find_events(input_list_FIND_EVENT):
 # Main program
 # ============
 
-print('===============================')
-print('Scanning name of miniseed files')
-print('===============================')
+print('=======================')
+print('Scanning miniseed files')
+print('=======================')
 print('\n')
 
-# initializing list of stations by scanning name of miniseed files
-
-lst_INLAND1 = glob.glob(MSEED_DIR_STA+NETWORK+'/*')
-lst_INLAND = []
+# Using glob to scanning the root folder (structure: root/YEAR/NETWORK/STATION/CHANNEL/files)
+lst_INLAND1 = sorted(glob.glob(MSEED_DIR_STA+'/*/*/*'))
+lst_INLAND2 = []
 for sta in STATIONS_LST:
-    lst_INLAND.append([i for i in lst_INLAND1 if sta in i][0])
-print('Total of INLAND stations = '+str(len(lst_INLAND)))
+    lst_INLAND2.append([i for i in lst_INLAND1 if sta in i])
 
-lst_OBS1 = glob.glob(MSEED_DIR_OBS+NETWORK+'/*')
-lst_OBS = []
+print('Total of INLAND stations = '+str(len(lst_INLAND2)))
+lst_INLAND = [item for sublist in lst_INLAND2 for item in sublist]
+
+lst_OBS1 = sorted(glob.glob(MSEED_DIR_OBS+'/*/*/*'))
+lst_OBS2 = []
 for sta in OBSS_LST:
-    lst_OBS.append([i for i in lst_OBS1 if sta in i][0])
-print('Total of OBS stations = '+str(len(lst_OBS)))
+    lst_OBS2.append([i for i in lst_OBS1 if sta in i])
+print('Total of OBS stations = '+str(len(lst_OBS2)))
+lst_OBS = [item for sublist in lst_OBS2 for item in sublist]
 
+
+# Using filelist function for selecting files inside the time interval settled
 files_INLAND = []
 for i,j in enumerate(lst_INLAND):
     files_INLAND.append(filelist(basedir=j+'/'+CHANNEL+'.D/',interval_period_date=INTERVAL_PERIOD_DATE))
@@ -350,6 +339,8 @@ files_OBS = []
 for i,j in enumerate(lst_OBS):
     files_OBS.append(filelist(basedir=j+'/'+CHANNEL+'.D/',interval_period_date=INTERVAL_PERIOD_DATE))
 
+
+# Merging the files according the time:
 files_INTERVAL_PERIOD_DATE_INLAND = []
 for i,j in enumerate(INTERVAL_PERIOD_DATE):
     temp2 = []
