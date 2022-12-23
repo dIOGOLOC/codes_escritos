@@ -1,0 +1,69 @@
+#_ano_mmdd_hhmmss.s_latit_longit_err_st_depth_mag_tm_CAT_Io___Af__localidades____________Col90_(fonte)_obser
+ 1746 1028 2030L     --   --       0 MT    0. 0.0 -1  E   -       Peru                   Terremoto em Lima-Peru
+ 1877 1126 1705L   -04.23 -69.94   0 AM    0. 0.0 -1  E   2       Tabatinga              (O_Monitor-BA 1878-01-13) terremoto do Peru
+ 1906 0819 --        0.00   0.00   0 CH   0.  8.4  0  E   -       MT                     Ms8.4 CHILE CENTRAL
+ 1922 0116 23L       0.00   0.00   0 CO   0.  7.9  0  E   -       R.Branco PVelho Manaus COLOMBIA M7.9 1922.01.17 (Folha_do_Acre 1922-01-19; O_Jornal-MA 1922-01-20 e 23)
+ 1928 0409 1434L     0.00   0.00   0 AC   0.  6.9  0  E   -       XAPURI                 PERU-BOLIVIA
+ 1929 ---- --        0.00   0.00   0 AC   0.  6.9  0  E   -       RIO BRANCO             PERU ?  M6.9
+ 1931 0702 --        0.00   0.00   0 AC   0.  6.2  0  E   -       CRUZ. DO SUL           PERU-BRASIL
+ 1941 0403 1230L     0.00   0.00   0 AR   0.  6.5  0  E   -       SAO PAULO              ARGENTINA-BOLIVIA
+ 1947 1101 1158L     0.00   0.00   0 AC   0.  7.3  0  E   -       CRUZ.DO SUL            PERU M7.3; sent. Ben.Constant; AM
+ 1948 1101 --        0.00   0.00   0 AC   0.  7.3  0  E   -       XAPURI                 PERU ? M7.3; 1947 ??
+ 1950 0814 20L     -27.25 -62.50   0 AR   0.  7.3  0  E   -       SAO_PAULO Santos       Argentina M 7.3 prof.=630km
+ 1950 1209 1844L     0.00   0.00   0 AR   0.  8.3  0  E   -       SAO PAULO              CHILE-ARGENTINA M8.3 (Correio Paulistano 1950-12-10)
+ 1957 1129 1926L     0.00   0.00   0 CH   0.  7.8  0  E   -       SAO PAULO              NORTE DO CHILE M7.8
+ 1967 0210 --        0.00   0.00   0 CO   0.  6.3  0  E   -       MANAUS                 COLOMBIA
+ 1967 0216 --        0.00   0.00   0 AC   0.  6.8  0  E   -       AC                     PERU-BRASIL M6.8 ?
+ 1970 0801 1720      0.00   0.00   0 CO   0.  7.1  0  E   -       SAO PAULO              SUL DA COLOMBIA
+ 1971 0709 0320      0.00   0.00   0 CH   0.  6.6  0  E   -       SAO PAULO              CHILE CENTRAL
+ 1973 1025 1420      0.00   0.00   0 AR   0.  6.1  0  E   -       SAO PAULO              BOLIVIA-ARGENTINA
+ 1973 1119 1130      0.00   0.00   0 AR   0.  5.8  0  E   -       SAO PAULO              NE ARGENTINA
+ 1976 1130 2150      0.00   0.00   0 CH   0.  6.5  0  E   -       SAO PAULO              NORTE DO CHILE
+ 1977 1123 0940      0.00   0.00   0 AR   0.  6.3  0  E   -       SAO PAULO              S.JUAN; ARGENTINA
+ 1982 0210 2042      0.00   0.00   0 AR   0.  5.9  0  E   -       SAO PAULO              Norte da ARGENTINA
+ 1983 1004 185213    0.00   0.00   0 CH   0.  6.4  0  E   -       SAO PAULO              N. CHILE
+ 1983 1221 120506    0.00   0.00   0 AR   0.  6.2  0  E   -       SAO PAULO              ARGENTINA
+ 1984 1101 0450      0.00   0.00   0  -   0.  6.5  0  E   -       NORDESTE               (USGS) ATLANTICO 6.5MB 7.1MS
+ 1987 0305 0917      0.00   0.00   0 CH   0.  6.5  0  E   -       SAO PAULO              Chile
+ 1987 0401 014805    0.00   0.00   0 AR   0.  6.2  0  E   -       Sao Paulo              Argentina
+ 1987 0901 0426      0.00   0.00   0 AR   0.  6.0  0  E   -       SAO PAULO              Argentina
+ 1991 0623 212229  -26.80 -63.35   0 AR 558.  6.4  0  E   -       Argentina              (USGS) Porto Alegre II-MM
+ 1991 0623 231446  -26.94 -63.27   0 AR 578.  5.6  0  E   -       Argentina              (USGS) Porto Alegre I-MM
+ 1993 0524 235128  -23.20 -66.70  20 AR 238.  6.6  0  E   -       Argentina              (USGS)Sao Paulo IIMM
+ 1993 0608 231741  -31.56 -69.23  20 AR 113.  6.5  0  E   -       Argentina              (USGS) Sao Paulo II MM
+ 1993 1030 175903  -31.70 -68.23  20 AR 107.  5.9  0  E   -       Argentina              (USGS) S.Paulo IIMM
+ 1994 0429 071130  -28.30 -63.25  20 AR 562.  6.3  0  E   -       Argentina              (USGS) Parana IIMM
+ 1994 0510 063628  -28.50 -63.10   5 AR 600.  6.4  0  E   -       Argentina              (USGS) Campinas II MM
+ 1994 0609 003316  -13.84 -67.55  20 BO 631.  7.0  0  E   -       Bolivia                (USGS 8.3Mw) Brasil IV MM
+ 1994 0819 100252  -26.64 -63.42  20 AR 564.  6.4  0  E   -       Argentina              (USGS) Sao Paulo IMM
+ 1997 0123 021523  -21.95 -65.58   5 AR 280.  6.4  0  E   -       Argent./Bol.           (USGS) S.Paulo IMM
+ 1997 0402 061434   11.47 -61.19  30  -  73.  6.1  0  E   -       Ilhas Winward          (ISC) sentido Roraima
+ 1997 1015 010808  -30.98 -71.19  30 CH  33.  7.1  0  E   -       Chile                  (USGS)S.Paulo IMM
+ 1997 1103 192242  -30.80 -71.00  30 CH  50.  7.1  0  E   -       Chile                  (USGS) S.Paulo I MM
+ 1997 1128 225803  -13.40 -68.80  30 BO 590.  6.3  0  E   -       Peru-Bolivia           (USGS) R.Branco II MM
+ 1999 0915 030124  -20.93 -67.28  30 BO 218.  6.0  0  E   -       Bolivia                (IAG) Sao Paulo I MM
+ 2000 0423 093116  -28.20 -62.90  10 AR 610.  6.9  0  E   -       Argentina              (USGS)Parana/SP I MM
+ 2000 0512 184324  -22.99 -66.74  10 AR 244.  6.2  0  E   -       Argentina              (USGS)Sao Paulo I MM
+ 2000 1030 030710   17.60 -61.30  50  -   0.  5.6  0  E   -       Leeward Is.            (IAG; USGS) BoaVista/RR II MM
+ 2001 0221 152022  -11.20 -74.40  50 AC   0.  5.5  0  E   -       Central Peru           (IAG;USGS) Rio Branco/AC IIMM
+ 2001 0629 183551  -19.45 -66.17  50 BO   0.  5.8  0  E   -       Bolivia                (IAG; USGS)Rondonia IIMM
+ 2005 0321 122352  -24.93 -63.36  30 AR 558.  6.9  0  E   -       Salta-Argent           (USGS) Sao Paulo-IMM
+ 2005 0613 224434  -19.93 -69.03  30 CH 117.  7.9  0  E   -       Chile                  (USGS) Marilia-SP-II-IIIMM
+ 2005 1117 192649  -22.36 -67.85  30 BO 105.  6.9  0  E   -       Bolivia                (USGS) SaoPaulo-IIMM
+ 2006 0605 062708    1.02 -28.16   0 RN   0.  6.0  0  E   -       Mid-Atlantic           (USGS) Fern.Nor.-VIII MM; Ondas de 5m?
+ 2006 0929 130826   10.91 -61.65   0  -  53.  6.1  0  E   -       TrinidTobago           (USGS) Manaus-AM-IIMM
+ 2006 1113 012634  -26.08 -63.29   0 AR 550.  6.7  0  E   -       St.DelEstero           (USGS) Brasil-RS-IVMM
+ 2007 1114 154053  -22.19 -69.84  10 CH  60.  7.7  0  E   -       Chile                  (USGS) Brasil-SP;PR;DF-IIMM
+ 2007 1121 125502  -25.02 -68.24  10 AR  97.  5.8  0  E   -       Salta;Argentina        (USGS) Brasil-SP-IMM
+ 2010 0227 063414  -35.91 -72.73  05 AR  10.  8.8  0  E 1-2       Maule-Chile            (USGS) sentido-SP-PR-RS
+ 2011 0824 174611  -07.64 -74.51  10 AC 145.  7.0  0  E 2-3       Northern Peru          (USGS) sentido AC-AM
+ 2011 0902 134711  -28.42 -63.15  10 AR 593.  6.7  0  E 1-2       Santiago del Estero    (USGS) sentido PR-RS-SP-DF-GO
+ 2011 1006 111229  -24.18 -64.25  10 AR  10.  6.2  0  E   1       Jujuy                  (USGS) sentido RS
+ 2011 1122 184817  -15.36 -65.13  10 BO 556.  6.6  0  E   -       Beni-Bolivia           (USGS) sentido SP-MG-DF-RO
+ 2012 0402 180146   00.82 -26.71  10 PE  10.  5.1  0  E   -       C.M.Atl.Ridge          (USGS) prox.F.Noronha
+ 2012 0523 175028   00.84 -27.64  10 PE  14.  5.3  1  E   -       C.M.Atl.Ridge          (USGS) Arq.S.Pedro-SPaulo;F.Noronha
+ 2012 0528 050723  -28.06 -63.08  10 AR 588.  6.7  0  E   -       Santiago Del Estero    (USGS) sentido PR I-II
+ 2012 0712 040413  -00.48 -19.83  10 PE  10.  5.0  1  E   -       C.Mid-Atlantic Ridge   (USGS) Perto F.Noronha
+ 2013 0222 120158  -27.93 -63.14  10 AR 580.  6.1  0  E 1-2       Santiago Del Estero    (GS;mb-SC3; sentido PR)
+ 2018 0402 134033  -20.69 -63.05  30 BO 555.  6.8  0  E   -       Bolivia                (USGS: 6.8Mw) sentido S.Paulo Brasília BH RS SC PR
+#_ano_mmdd_hhmmss.s_latit_longit_err_st_depth_mag_tm_CAT_Io___Af__localidades____________Col90_(fonte)_obser
