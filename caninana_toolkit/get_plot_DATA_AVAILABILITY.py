@@ -7,10 +7,11 @@ Script to get raw DATA availability
 import os
 import json
 import obspy
+from obspy import UTCDateTime
 import datetime
 from multiprocessing import Pool
-
-
+import glob
+import tqdm
 
 
 # ==============================
@@ -21,7 +22,7 @@ from visual_py.data_availability import get_date_file,plot_data_mosaic
 
 
 from parameters_py.config import (
-					OUTPUT_JSON_FILE_DIR,DIR_DATA,MP_PROCESSES,OUTPUT_FIGURE_DIR,EXAMPLE_OF_FILE
+					OUTPUT_JSON_FILE_DIR,DIR_DATA,MP_PROCESSES,OUTPUT_FIGURE_DIR
 				   )
 				   
 
@@ -56,62 +57,23 @@ print('\n')
 
 input_list = [[]]*len(kstnm)
 
-for i,j in enumerate(datalogger_keys):
-
-	if  j.split(',')[0] == 'Nanometrics':
-		datafile_lst = [] 
-		for root, dirs, files in os.walk(DIR_DATA):
-			for directories in dirs:
-				datafile_name = os.path.join(root, directories)
-				
-				if '/'+kstnm[i]+'/' in datafile_name and len(datafile_name.split('/')) == len(EXAMPLE_OF_FILE.split('/')):
-						datafile_lst.append(datafile_name)
-		datafile_lstS = sorted(datafile_lst)
-		
-		print(' Number of days = '+ str(len(datafile_lstS)))		
-		
-		# ==============================
-		#  Creating stations Input lists
-		# ==============================
-
-		print('Creating stations input lists')
-		print('\n')
-
-		input_list[i] = [
-					[l] for l in datafile_lstS
-					]
-		print('==============================')
-
-
-	if  j.split(',')[0] == 'REF TEK':
-		datafile_lst = [] 
-		for root, dirs, files in os.walk(DIR_DATA):
-			for directories in dirs:
-				datafile_name = os.path.join(root, directories)
-				if '/'+kstnm[i]+'/' in datafile_name and len(datafile_name.split('/')) == len(EXAMPLE_OF_FILE.split('/')):
-					datafile_lst.append(datafile_name)
-		datafile_lstS = sorted(datafile_lst)
-
-		print(' Number of days = '+ str(len(datafile_lstS)))
-
-		# ==============================
-		#  Creating stations Input lists
-		# ==============================
-
-		print('Creating stations input lists')
-		print('\n')
-
-		input_list[i] = [
-					[l] for l in datafile_lstS
-					]
-		print('==============================')
-		
+for i,j in enumerate(kstnm):
+	datafileS = glob.glob('*/*/*/*/*', root_dir=DIR_DATA)
+	datafile_lst = []
+	for datafile_name in datafileS:
+		if kstnm[i] in datafile_name:
+			datafile_lst.append(DIR_DATA+datafile_name)
+	
+	
+	input_list[i] = [
+					[l] for l in sorted(datafile_lst)
+					]	
+	print(' Number of days = '+ str(len(datafile_lst)))		
+	print('==============================')
 
 # ==============
 #  Get time Data 
 # ==============
-
-
 
 print('Get time Data  for each station')
 print('\n')
@@ -120,7 +82,7 @@ os.makedirs(OUTPUT_JSON_FILE_DIR,exist_ok=True)
 pool = Pool(MP_PROCESSES)
 result_dic = {'kstnm':[],'data':[]}
 for x,y in enumerate(input_list):
-	result_dic['data'].append(pool.starmap(parallel_get_data, y))
+	result_dic['data'].append(pool.starmap(parallel_get_data, tqdm.tqdm(y,total=len(y))))
 	result_dic['kstnm'].append(kstnm[x])
 
 with open(OUTPUT_JSON_FILE_DIR+'TIME_dic.json', 'w') as fp:

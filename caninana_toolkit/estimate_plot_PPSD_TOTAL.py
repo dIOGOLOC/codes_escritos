@@ -8,10 +8,7 @@ import obspy
 import datetime
 import random
 from multiprocessing import Pool
-
-
-
-
+import tqdm
 # ==============================
 # Generating DATA availability
 # ==============================
@@ -25,18 +22,6 @@ from visual_py.plot_PSD_DATA import plot_PPSD_TOTAL_data
 from parameters_py.config import (
 					OUTPUT_JSON_FILE_DIR,DIR_DATA,MP_PROCESSES,NETWORK_CODE,OUTPUT_PSD_DIR,DAY_PERCENTAGE
 				   )
-
-# ===================================
-#  Function to call get data function
-# ===================================
-
-def parallel_copy_data(lst):
-
-	result = get_date_file(input_list=lst)
-
-	if result != 1:
-		return result
-
 
 # Importing stations list
 
@@ -73,9 +58,7 @@ print('Get Data for calculating PPSD for each station')
 print('\n')
 pool_trim = Pool(MP_PROCESSES)
 for i,j in enumerate(input_list):
-	calc_PSD_result = pool_trim.starmap(calc_PSD, j)
-
-
+	calc_PSD_result = pool_trim.starmap(calc_PSD,tqdm.tqdm(j, total=len(j)))
 
 # ===========================
 # Finding stations PPSD data

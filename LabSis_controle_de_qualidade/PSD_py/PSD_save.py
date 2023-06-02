@@ -41,52 +41,52 @@ def calc_PSD(data):
 	print(inv)
 
 	for i,j in enumerate(data):
-	    st = read(j)
-	    st.merge()
+		st = read(j)
+		st.merge()
 
-	    time_data = st[0].stats.starttime
-	    time_data_year = '{:04}'.format(time_data.year)
-	    time_data_julday = '{:03}'.format(time_data.julday)
-	    time_data_hour = '{:02}'.format(time_data.hour)
-	    time_data_minute = '{:02}'.format(time_data.minute)
+		time_data = st[0].stats.starttime
+		time_data_year = '{:04}'.format(time_data.year)
+		time_data_julday = '{:03}'.format(time_data.julday)
+		time_data_hour = '{:02}'.format(time_data.hour)
+		time_data_minute = '{:02}'.format(time_data.minute)
 
-	    sta_name = st[0].stats.station
-	    sta_channel = st[0].stats.channel
-	    print('Calculating PPSD: station: '+sta_name+' / channel: '+sta_channel+' / '+str(i+1)+' of '+str(len(data)))
+		sta_name = st[0].stats.station
+		sta_channel = st[0].stats.channel
+		print('Calculating PPSD: station: '+sta_name+' / channel: '+sta_channel+' / '+str(i+1)+' of '+str(len(data)))
 
-	    ppsd = PPSD(st[0].stats, metadata=inv)
-	    ppsd.add(st)
+		ppsd = PPSD(st[0].stats, metadata=inv)
+		ppsd.add(st)
 
-	    os.makedirs(OUTPUT_PSD_DIR+time_data_year+'/'+sta_name+'/'+sta_channel+'.PPSD'+'/',exist_ok=True)
-	    print(OUTPUT_PSD_DIR+time_data_year+'/'+sta_name+'/'+sta_channel+'.PPSD'+'/'+sta_name+'..'+sta_channel+'.PPSD'+'.'+time_data_year+'.'+time_data_julday+'.npz')
-	    ppsd.save_npz(OUTPUT_PSD_DIR+time_data_year+'/'+sta_name+'/'+sta_channel+'.PPSD'+'/'+sta_name+'..'+sta_channel+'.PPSD'+'.'+time_data_year+'.'+time_data_julday+'.npz')
+		os.makedirs(OUTPUT_PSD_DIR+time_data_year+'/'+sta_name+'/'+sta_channel+'.PPSD'+'/',exist_ok=True)
+		print(OUTPUT_PSD_DIR+time_data_year+'/'+sta_name+'/'+sta_channel+'.PPSD'+'/'+sta_name+'..'+sta_channel+'.PPSD'+'.'+time_data_year+'.'+time_data_julday+'.npz')
+		ppsd.save_npz(OUTPUT_PSD_DIR+time_data_year+'/'+sta_name+'/'+sta_channel+'.PPSD'+'/'+sta_name+'..'+sta_channel+'.PPSD'+'.'+time_data_year+'.'+time_data_julday+'.npz')
 
 
 def calc_PSD_client(sta_name):
     
-    client = Client(user=USER,host=HOST, port=PORT, institution=INSTITUTION)
+	client = Client(user=USER,host=HOST, port=PORT, institution=INSTITUTION)
 
-    data_lista = np.arange(obspy.UTCDateTime(INITIAL_DATE),obspy.UTCDateTime(FINAL_DATE),86400) 
+	data_lista = np.arange(obspy.UTCDateTime(INITIAL_DATE),obspy.UTCDateTime(FINAL_DATE),86400) 
 
-    for i,j in enumerate(data_lista):
-	    st = client.get_waveforms(NETWORK_CODE,sta_name,LOCATION,CHANNEL_CODE,j,j+86400)
-	    st.merge()
+	for i,j in enumerate(data_lista):
+		st = client.get_waveforms(NETWORK_CODE,sta_name,LOCATION,CHANNEL_CODE,j,j+86400)
+		st.merge()
 
-	    st[0].stats.station = sta_name
-	    st[0].stats.network = NETWORK_CODE
-	    st[0].stats.location = LOCATION
+		st[0].stats.station = sta_name
+		st[0].stats.network = NETWORK_CODE
+		st[0].stats.location = LOCATION
 		
-	    time_data = st[0].stats.starttime
-	    time_data_year = '{:04}'.format(time_data.year)
-	    time_data_julday = '{:03}'.format(time_data.julday)
-	    time_data_hour = '{:02}'.format(time_data.hour)
-	    time_data_minute = '{:02}'.format(time_data.minute)
+		time_data = st[0].stats.starttime
+		time_data_year = '{:04}'.format(time_data.year)
+		time_data_julday = '{:03}'.format(time_data.julday)
+		time_data_hour = '{:02}'.format(time_data.hour)
+		time_data_minute = '{:02}'.format(time_data.minute)
 
-	    sta_channel = st[0].stats.channel
-	    print('Calculating PPSD: station: '+sta_name+' / channel: '+sta_channel+' / '+str(i+1)+' of '+str(len(data_lista)))
+		sta_channel = st[0].stats.channel
+		print('Calculating PPSD: station: '+sta_name+' / channel: '+sta_channel+' / '+str(i+1)+' of '+str(len(data_lista)))
 		
-	    ppsd = PPSD(st[0].stats, metadata=inv)
-	    ppsd.add(st) 
-	    os.makedirs(OUTPUT_PSD_DIR+time_data_year+'/'+sta_name+'/'+st[0].stats.channel+'.PPSD'+'/',exist_ok=True)
-	    print(OUTPUT_PSD_DIR+time_data_year+'/'+sta_name+'/'+st[0].stats.channel+'.PPSD'+'/'+NETWORK_CODE+'.'+sta_name+'..'+st[0].stats.channel+'.PPSD'+'.'+time_data_year+'.'+time_data_julday+'.npz')
-	    ppsd.save_npz(OUTPUT_PSD_DIR+time_data_year+'/'+sta_name+'/'+st[0].stats.channel+'.PPSD'+'/'+NETWORK_CODE+'.'+sta_name+'..'+st[0].stats.channel+'.PPSD'+'.'+time_data_year+'.'+time_data_julday+'.npz')
+		ppsd = PPSD(st[0].stats, metadata=inv)
+		ppsd.add(st) 
+		os.makedirs(OUTPUT_PSD_DIR+time_data_year+'/'+sta_name+'/'+st[0].stats.channel+'.PPSD'+'/',exist_ok=True)
+		print(OUTPUT_PSD_DIR+time_data_year+'/'+sta_name+'/'+st[0].stats.channel+'.PPSD'+'/'+NETWORK_CODE+'.'+sta_name+'..'+st[0].stats.channel+'.PPSD'+'.'+time_data_year+'.'+time_data_julday+'.npz')
+		ppsd.save_npz(OUTPUT_PSD_DIR+time_data_year+'/'+sta_name+'/'+st[0].stats.channel+'.PPSD'+'/'+NETWORK_CODE+'.'+sta_name+'..'+st[0].stats.channel+'.PPSD'+'.'+time_data_year+'.'+time_data_julday+'.npz')

@@ -103,9 +103,6 @@ MP_PROCESSES = config.getint('xml', 'MP_PROCESSES')
 # PPSD
 # --------
 
-#Example of the raw data directory
-EXAMPLE_OF_FILE = config.get('PPSD', 'EXAMPLE_OF_FILE')
-
 # Percentage fo the days to process and plot the PPSD?
 DAY_PERCENTAGE = config.getfloat('PPSD', 'DAY_PERCENTAGE')
 

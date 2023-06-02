@@ -15,19 +15,18 @@
 #
 ###############################################################################
 
-
 #======
 [PATH]
 #======
 
 #STA CSV FILE path
-STA_CSV_FILE  = /home/diogoloc/dados_posdoc/ON_MAR/sta_coord/OBS_FAST_XML.txt
+STA_CSV_FILE  = /home/diogoloc/dados_posdoc/project_ilhas_oceanicas/station_coordinates/cood_ilha_xml.txt
 
 #Directory to save XML File
-OUTPUT_XML_FILE_DIR = /home/diogoloc/dados_posdoc/ON_MAR/XML_OBS/
+OUTPUT_XML_FILE_DIR = /home/diogoloc/dados_posdoc/project_ilhas_oceanicas/XML/
 
 #Directory to save JSON Files
-OUTPUT_JSON_FILE_DIR = /home/diogoloc/dados_posdoc/ON_MAR/JSON_FILES/
+OUTPUT_JSON_FILE_DIR = /home/diogoloc/dados_posdoc/project_ilhas_oceanicas/XML/JSON_FILES/
 
 #=====
 [XML]
@@ -37,7 +36,7 @@ OUTPUT_JSON_FILE_DIR = /home/diogoloc/dados_posdoc/ON_MAR/JSON_FILES/
 NETWORK_CODE = ON
 
 #Name of the deployer
-SOURCE = ON lab
+SOURCE = RSIS lab
 
 #Lotation code
 LOCATION = 
@@ -46,7 +45,7 @@ LOCATION =
 NETWORK_DESCRIPTION = Station installed by ON
 
 #Start date of the Network for XML
-START_DATE = 2006,1,1
+START_DATE = 2010,1,1
 
 #Sampling Rate of the seismogram
 SAMPLING_RATE = 100

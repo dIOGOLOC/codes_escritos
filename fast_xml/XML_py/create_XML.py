@@ -80,7 +80,7 @@ for i,j in enumerate(kstnm):
 
 	if len(sensor_keys[i]) != 0 and len(accer_keys[i]) == 0 and len(hydrophone_keys[i]) == 0:
 
-	    sta = Station(
+		sta = Station(
 		# This is the station code according to the SEED standard.
 		code=j,
 		latitude=float(stla[i]),
@@ -89,7 +89,7 @@ for i,j in enumerate(kstnm):
 		creation_date=obspy.UTCDateTime(START_DATE),
 		site=Site(name=NETWORK_DESCRIPTION))
 	    
-	    cha_HHZ = Channel(
+		cha_HHZ = Channel(
 		# This is the channel code according to the SEED standard.
 		code="HHZ",
 		# This is the location code according to the SEED standard.
@@ -103,7 +103,7 @@ for i,j in enumerate(kstnm):
 		dip=-90.0,
 		sample_rate=SAMPLING_RATE)
 
-	    cha_HHE = Channel(
+		cha_HHE = Channel(
 		# This is the channel code according to the SEED standard.
 		code="HHE",
 		# This is the location code according to the SEED standard.
@@ -117,7 +117,7 @@ for i,j in enumerate(kstnm):
 		dip=0.0,
 		sample_rate=SAMPLING_RATE)
 
-	    cha_HHN = Channel(
+		cha_HHN = Channel(
 		# This is the channel code according to the SEED standard.
 		code="HHN",
 		# This is the location code according to the SEED standard.
@@ -133,19 +133,19 @@ for i,j in enumerate(kstnm):
 	    
 	    # Now tie it all together.
 
-	    response = nrl.get_response(sensor_keys = sensor_keys[i].split('*'),datalogger_keys = datalogger_keys[i].split('*'))
+		response = nrl.get_response(sensor_keys = sensor_keys[i].split('*'),datalogger_keys = datalogger_keys[i].split('*'))
 
-	    cha_HHZ.response = response
-	    cha_HHN.response = response
-	    cha_HHE.response = response
-	    channel_sta = [cha_HHZ,cha_HHN,cha_HHE]
-	    for k in channel_sta:
-	    	sta.channels.append(k)
-	    net.stations.append(sta)
+		cha_HHZ.response = response
+		cha_HHN.response = response
+		cha_HHE.response = response
+		channel_sta = [cha_HHZ,cha_HHN,cha_HHE]
+		for k in channel_sta:
+			sta.channels.append(k)
+		net.stations.append(sta)
 
 	if len(sensor_keys[i]) == 0 and len(accer_keys[i]) != 0 and len(hydrophone_keys[i]) == 0:
 
-	    sta = Station(
+		sta = Station(
 		# This is the station code according to the SEED standard.
 		code=j,
 		latitude=float(stla[i]),
@@ -154,7 +154,7 @@ for i,j in enumerate(kstnm):
 		creation_date=obspy.UTCDateTime(START_DATE),
 		site=Site(name=NETWORK_DESCRIPTION))
 	    
-	    cha_HNZ = Channel(
+		cha_HNZ = Channel(
 		# This is the channel code according to the SEED standard.
 		code="HNZ",
 		# This is the location code according to the SEED standard.
@@ -168,7 +168,8 @@ for i,j in enumerate(kstnm):
 		dip=-90.0,
 		sample_rate=SAMPLING_RATE)
 
-	    cha_HNE = Channel(
+
+		cha_HNE = Channel(
 		# This is the channel code according to the SEED standard.
 		code="HNE",
 		# This is the location code according to the SEED standard.
@@ -182,7 +183,7 @@ for i,j in enumerate(kstnm):
 		dip=0.0,
 		sample_rate=SAMPLING_RATE)
 
-	    cha_HNN = Channel(
+		cha_HNN = Channel(
 		# This is the channel code according to the SEED standard.
 		code="HNN",
 		# This is the location code according to the SEED standard.
@@ -198,19 +199,19 @@ for i,j in enumerate(kstnm):
 	    
 	    # Now tie it all together.
 
-	    response = nrl.get_response(sensor_keys = accer_keys[i].split('*'),datalogger_keys = datalogger_keys[i].split('*'))
+		response = nrl.get_response(sensor_keys = accer_keys[i].split('*'),datalogger_keys = datalogger_keys[i].split('*'))
 
-	    cha_HNZ.response = response
-	    cha_HNN.response = response
-	    cha_HNE.response = response
-	    channel_sta = [cha_HNZ,cha_HNN,cha_HNE]
-	    for k in channel_sta:
-	    	sta.channels.append(k)
-	    net.stations.append(sta)
+		cha_HNZ.response = response
+		cha_HNN.response = response
+		cha_HNE.response = response
+		channel_sta = [cha_HNZ,cha_HNN,cha_HNE]
+		for k in channel_sta:
+			sta.channels.append(k)
+		net.stations.append(sta)
 
 	if len(sensor_keys[i]) != 0 and len(accer_keys[i]) != 0 and len(hydrophone_keys[i]) == 0:
 
-	    sta = Station(
+		sta = Station(
 		# This is the station code according to the SEED standard.
 		code=j,
 		latitude=float(stla[i]),
@@ -219,7 +220,7 @@ for i,j in enumerate(kstnm):
 		creation_date=obspy.UTCDateTime(START_DATE),
 		site=Site(name=NETWORK_DESCRIPTION))
 	    
-	    cha_HNZ = Channel(
+		cha_HNZ = Channel(
 		# This is the channel code according to the SEED standard.
 		code="HNZ",
 		# This is the location code according to the SEED standard.
@@ -233,7 +234,7 @@ for i,j in enumerate(kstnm):
 		dip=-90.0,
 		sample_rate=SAMPLING_RATE)
 
-	    cha_HNE = Channel(
+		cha_HNE = Channel(
 		# This is the channel code according to the SEED standard.
 		code="HNE",
 		# This is the location code according to the SEED standard.
@@ -247,7 +248,7 @@ for i,j in enumerate(kstnm):
 		dip=0.0,
 		sample_rate=SAMPLING_RATE)
 
-	    cha_HNN = Channel(
+		cha_HNN = Channel(
 		# This is the channel code according to the SEED standard.
 		code="HNN",
 		# This is the location code according to the SEED standard.
@@ -261,7 +262,7 @@ for i,j in enumerate(kstnm):
 		dip=0.0,
 		sample_rate=SAMPLING_RATE)
 
-	    cha_HHZ = Channel(
+		cha_HHZ = Channel(
 		# This is the channel code according to the SEED standard.
 		code="HHZ",
 		# This is the location code according to the SEED standard.
@@ -275,7 +276,7 @@ for i,j in enumerate(kstnm):
 		dip=-90.0,
 		sample_rate=SAMPLING_RATE)
 
-	    cha_HHE = Channel(
+		cha_HHE = Channel(
 		# This is the channel code according to the SEED standard.
 		code="HHE",
 		# This is the location code according to the SEED standard.
@@ -289,7 +290,7 @@ for i,j in enumerate(kstnm):
 		dip=0.0,
 		sample_rate=SAMPLING_RATE)
 
-	    cha_HHN = Channel(
+		cha_HHN = Channel(
 		# This is the channel code according to the SEED standard.
 		code="HHN",
 		# This is the location code according to the SEED standard.
@@ -305,24 +306,24 @@ for i,j in enumerate(kstnm):
 	
 	    # Now tie it all together.
 
-	    response = nrl.get_response(sensor_keys = sensor_keys[i].split('*'),datalogger_keys = datalogger_keys[i].split('*'))
-	    response_accer = nrl.get_response(sensor_keys = accer_keys[i].split('*'),datalogger_keys = datalogger_keys[i].split('*'))
+		response = nrl.get_response(sensor_keys = sensor_keys[i].split('*'),datalogger_keys = datalogger_keys[i].split('*'))
+		response_accer = nrl.get_response(sensor_keys = accer_keys[i].split('*'),datalogger_keys = datalogger_keys[i].split('*'))
 
-	    cha_HNZ.response = response_accer
-	    cha_HNN.response = response_accer
-	    cha_HNE.response = response_accer
+		cha_HNZ.response = response_accer
+		cha_HNN.response = response_accer
+		cha_HNE.response = response_accer
 
-	    cha_HHZ.response = response
-	    cha_HHN.response = response
-	    cha_HHE.response = response
-	    channel_sta = [cha_HHZ,cha_HHN,cha_HHE,cha_HNZ,cha_HNN,cha_HNE]
-	    for k in channel_sta:
-	    	sta.channels.append(k)
-	    net.stations.append(sta)
+		cha_HHZ.response = response
+		cha_HHN.response = response
+		cha_HHE.response = response
+		channel_sta = [cha_HHZ,cha_HHN,cha_HHE,cha_HNZ,cha_HNN,cha_HNE]
+		for k in channel_sta:
+			sta.channels.append(k)
+		net.stations.append(sta)
 
 	if len(sensor_keys[i]) != 0 and len(accer_keys[i]) == 0 and len(hydrophone_keys[i]) != 0:
 
-	    sta = Station(
+		sta = Station(
 		# This is the station code according to the SEED standard.
 		code=j,
 		latitude=float(stla[i]),
@@ -330,8 +331,8 @@ for i,j in enumerate(kstnm):
 		elevation=float(stel[i]),
 		creation_date=obspy.UTCDateTime(START_DATE),
 		site=Site(name=NETWORK_DESCRIPTION))
-	    
-	    cha_HHX = Channel(
+
+		cha_HHX = Channel(
 		# This is the channel code according to the SEED standard.
 		code="HHX",
 		# This is the location code according to the SEED standard.
@@ -345,7 +346,7 @@ for i,j in enumerate(kstnm):
 		dip=-90.0,
 		sample_rate=SAMPLING_RATE)
 
-	    cha_HHZ = Channel(
+		cha_HHZ = Channel(
 		# This is the channel code according to the SEED standard.
 		code="HHZ",
 		# This is the location code according to the SEED standard.
@@ -359,7 +360,7 @@ for i,j in enumerate(kstnm):
 		dip=-90.0,
 		sample_rate=SAMPLING_RATE)
 
-	    cha_HHE = Channel(
+		cha_HHE = Channel(
 		# This is the channel code according to the SEED standard.
 		code="HHE",
 		# This is the location code according to the SEED standard.
@@ -373,7 +374,7 @@ for i,j in enumerate(kstnm):
 		dip=0.0,
 		sample_rate=SAMPLING_RATE)
 
-	    cha_HHN = Channel(
+		cha_HHN = Channel(
 		# This is the channel code according to the SEED standard.
 		code="HHN",
 		# This is the location code according to the SEED standard.
@@ -389,19 +390,19 @@ for i,j in enumerate(kstnm):
 	
 	    # Now tie it all together.
 
-	    response = nrl.get_response(sensor_keys = sensor_keys[i].split('*'),datalogger_keys = datalogger_keys[i].split('*'))
-	    response_hydro = nrl.get_response(sensor_keys = hydrophone_keys[i].split('*'),datalogger_keys = datalogger_keys[i].split('*'))
+		response = nrl.get_response(sensor_keys = sensor_keys[i].split('*'),datalogger_keys = datalogger_keys[i].split('*'))
+		response_hydro = nrl.get_response(sensor_keys = hydrophone_keys[i].split('*'),datalogger_keys = datalogger_keys[i].split('*'))
 
-	    cha_HHX.response = response_hydro
+		cha_HHX.response = response_hydro
 
 
-	    cha_HHZ.response = response
-	    cha_HHN.response = response
-	    cha_HHE.response = response
-	    channel_sta = [cha_HHZ,cha_HHN,cha_HHE,cha_HHX]
-	    for k in channel_sta:
-	    	sta.channels.append(k)
-	    net.stations.append(sta)
+		cha_HHZ.response = response
+		cha_HHN.response = response
+		cha_HHE.response = response
+		channel_sta = [cha_HHZ,cha_HHN,cha_HHE,cha_HHX]
+		for k in channel_sta:
+			sta.channels.append(k)
+		net.stations.append(sta)
 
 inv.networks.append(net)  
 os.makedirs(OUTPUT_XML_FILE_DIR,exist_ok=True)
