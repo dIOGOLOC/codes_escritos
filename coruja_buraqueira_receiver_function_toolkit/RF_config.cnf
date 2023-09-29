@@ -37,10 +37,10 @@ STA_CSV_FILE  = /home/diogoloc/dados_posdoc/ON_MAR/sta_coord/rsis_lat_lon_elev_d
 GAUSSIAN_FILTER = 2.5
 
 #RADIAL RF EXTENSION
-RADIAL_EXT = .eqr
+RADIAL_EXT = .RFR.sac
 
 #TRANSVERSAL RF EXTENSION
-TRANSVERSAL_EXT = .eqt
+TRANSVERSAL_EXT = .RFT.sac
 
 
 #=========
