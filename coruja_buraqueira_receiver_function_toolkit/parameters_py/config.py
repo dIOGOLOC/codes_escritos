@@ -7,7 +7,6 @@ parts of the program.
 import configparser
 import os
 import glob
-import json
 
 
 def select_and_parse_config_file(basedir='.', ext='cnf', verbose=True):
@@ -58,8 +57,8 @@ DIR_SAC = config.get('paths', 'DIR_SAC')
 # directory of selected RF files
 DIR_SEL_SAC = config.get('paths', 'DIR_SEL_SAC')
 
-#Directory to save JSON Files
-OUTPUT_JSON_FILE_DIR =  config.get('paths', 'OUTPUT_JSON_FILE_DIR')
+#Directory to save FEATHER Files
+OUTPUT_FEATHER_FILE_DIR =  config.get('paths', 'OUTPUT_FEATHER_FILE_DIR')
 
 #Stations CSV FILE path
 STA_CSV_FILE  =  config.get('paths', 'STA_CSV_FILE')
@@ -94,10 +93,6 @@ ZERO_AMP_MIN = config.getfloat('quality', 'ZERO_AMP_MIN')
 
 #Trace check (minimium amplitude of trace)
 ZERO_AMP_MAX = config.getfloat('quality', 'ZERO_AMP_MAX')
-
-
-#Percent recoveries of the observed radial component
-RF_PERCENT = config.getfloat('quality', 'RF_PERCENT')
 
 #Minimum event distance 
 EV_GCARC_MIN = config.getfloat('quality', 'EV_GCARC_MIN')

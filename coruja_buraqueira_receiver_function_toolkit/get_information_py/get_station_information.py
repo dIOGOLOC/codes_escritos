@@ -5,10 +5,10 @@ Script to collect information from stations csv file
 
 import numpy as np
 import os
-import json
+import pandas as pd
 
 from parameters_py.config import (
-					OUTPUT_JSON_FILE_DIR,STA_CSV_FILE
+					OUTPUT_FEATHER_FILE_DIR,STA_CSV_FILE
 				   )
 
 
@@ -44,9 +44,9 @@ for i,j in enumerate(sta_event['KSTNM']):
 
 print('\n')
 
-print('Saving Station Information in JSON file')
+print('Saving Station Information in FEATHER file')
 print('\n')
 
-os.makedirs(OUTPUT_JSON_FILE_DIR,exist_ok=True)
-with open(OUTPUT_JSON_FILE_DIR+'STA_dic.json', 'w') as fp:
-	json.dump(sta_event, fp)
+os.makedirs(OUTPUT_FEATHER_FILE_DIR,exist_ok=True)
+df = pd.DataFrame.from_dict(sta_event)
+df.to_feather(OUTPUT_FEATHER_FILE_DIR+'STA_dic.feather')

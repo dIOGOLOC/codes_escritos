@@ -22,19 +22,23 @@
 #======
 
 # directory of raw RF files
-DIR_SAC = /home/diogoloc/dados_posdoc/ON_MAR/STATION_EVENT/
+#DIR_SAC = /home/diogoloc/dados_posdoc/ON_MAR/STATION_EVENT/
+DIR_SAC = /run/media/dIOGOLOC/8d2362fc-3b46-49a7-a864-19b2a6ad097b/diogoloc/dados_posdoc/project_ilhas_oceanicas/OUTPUT/EVENTS/
 
 # directory of selected RF files
-DIR_SEL_SAC =  /home/diogoloc/dados_posdoc/ON_MAR/RF_SELECT_STATION_EVENT/
+#DIR_SEL_SAC = /home/diogoloc/dados_posdoc/ON_MAR/RF_SELECT_STATION_EVENT/
+DIR_SEL_SAC = /run/media/dIOGOLOC/8d2362fc-3b46-49a7-a864-19b2a6ad097b/diogoloc/dados_posdoc/project_ilhas_oceanicas/OUTPUT/RF_SELECT_STATION_EVENT/
 
-#Directory to save JSON Files
-OUTPUT_JSON_FILE_DIR = /home/diogoloc/dados_posdoc/ON_MAR/JSON_FILES/
+#Directory to save FEATHER Files
+#OUTPUT_FEATHER_FILE_DIR = /home/diogoloc/dados_posdoc/ON_MAR/FEATHER_FILES/
+OUTPUT_FEATHER_FILE_DIR = /run/media/dIOGOLOC/8d2362fc-3b46-49a7-a864-19b2a6ad097b/diogoloc/dados_posdoc/project_ilhas_oceanicas/OUTPUT/FEATHER/
 
 #STA CSV FILE path
-STA_CSV_FILE  = /home/diogoloc/dados_posdoc/ON_MAR/sta_coord/rsis_lat_lon_elev_download.txt
+#STA_CSV_FILE  = /home/diogoloc/dados_posdoc/ON_MAR/sta_coord/rsis_lat_lon_elev_download.txt
+STA_CSV_FILE  = /run/media/dIOGOLOC/8d2362fc-3b46-49a7-a864-19b2a6ad097b/diogoloc/dados_posdoc/project_ilhas_oceanicas/STA_COORD/rsis_lat_lon_elev_download.txt
 
 #Gaussian Filter
-GAUSSIAN_FILTER = 2.5
+GAUSSIAN_FILTER = 2.0
 
 #RADIAL RF EXTENSION
 RADIAL_EXT = .RFR.sac
@@ -51,22 +55,19 @@ TRANSVERSAL_EXT = .RFT.sac
 CODA_TRACE_CHECK = 40
 
 #Trace check (coda minimium amplitude of trace)
-CODA_TRACE_CHECK_AMP_MIN = -0.2
+CODA_TRACE_CHECK_AMP_MIN = -0.0
 
 #Trace check (coda maximum amplitude of trace)
-CODA_TRACE_CHECK_AMP_MAX = 0.2
+CODA_TRACE_CHECK_AMP_MAX = 1
 
 #Trace check (Standard Deviation Multiplier)
-CODA_TRACE_CHECK_MULT = 10
+CODA_TRACE_CHECK_MULT = 20
 
 #Minimum data amplitude threshold
 ZERO_AMP_MIN = 0.2
 
 #Maximum data amplitude threshold 
-ZERO_AMP_MAX = 0.8
-
-#min percent recoveries of the observed radial component
-RF_PERCENT = 70
+ZERO_AMP_MAX = 1
 
 #Minimum event distance 
 EV_GCARC_MIN = 30
@@ -75,7 +76,7 @@ EV_GCARC_MIN = 30
 EV_GCARC_MAX = 95
 
 #Minimum event magnitude 
-EV_MAGNITUDE_MB = 5.5
+EV_MAGNITUDE_MB = 5.0
 
 #Time to trim the seismogram before P-wave arrival
 CUT_BEFORE_P = 10
@@ -84,7 +85,7 @@ CUT_BEFORE_P = 10
 CUT_AFTER_P = 100
 
 #Sampling Rate of the traces
-SAMPLING_RATE = 10
+SAMPLING_RATE = 100
 
 #=====
 [plot]

@@ -7,7 +7,7 @@ import obspy
 import os
 from obspy.taup import TauPyModel
 from obspy.geodetics import kilometer2degrees
-import json
+import pandas as pd
 from multiprocessing import Pool
 
 
@@ -22,7 +22,7 @@ from visual_py.plot_raw_data import plot_station_raw_RF
 # ==================================================
 
 from parameters_py.config import (
-					OUTPUT_JSON_FILE_DIR,GAUSSIAN_FILTER
+					OUTPUT_FEATHER_FILE_DIR,GAUSSIAN_FILTER
 				   )
 
 
@@ -31,59 +31,20 @@ from parameters_py.config import (
 # ============================================
 
 print('\n')
-print('Looking for STATIONS data in JSON file in '+OUTPUT_JSON_FILE_DIR)
+print('Looking for STATIONS data in FEATHER file in '+OUTPUT_FEATHER_FILE_DIR)
 print('\n')
 
-JSON_FILE = 'RF_dic_'+str(GAUSSIAN_FILTER)
+FEATHER_FILE = 'RF_dic_'+str(GAUSSIAN_FILTER)
 
-JSON_FILE_NAME = JSON_FILE.replace(".", "_")
+FEATHER_FILE_NAME = FEATHER_FILE.replace(".", "_")
 
-filename_RF = OUTPUT_JSON_FILE_DIR+JSON_FILE_NAME+'.json'
-dic_RF = json.load(open(filename_RF))
+filename_RF = OUTPUT_FEATHER_FILE_DIR+FEATHER_FILE_NAME+'.feather'
+dic_RF = pd.read_feather(filename_RF)
 
-dataR = dic_RF['dataR']
-dataT = dic_RF['dataT']
-dataR_time = dic_RF['dataR_time']
-npts = dic_RF['npts']
-kstnm = dic_RF['kstnm']
-nzyear = dic_RF['nzyear']
-nzjday = dic_RF['nzjday']
-nzhour = dic_RF['nzhour']
-nzmin = dic_RF['nzmin']
-nzmsec = dic_RF['nzmsec']
-evla = dic_RF['evla']
-evlo = dic_RF['evlo']
-evdp = dic_RF['evdp']
-mag = dic_RF['mag']
-stla = dic_RF['stla']
-stlo = dic_RF['stlo']
-user0 = dic_RF['user0']
-user5 = dic_RF['user5']
-user8 = dic_RF['user8']
-dist = dic_RF['dist']
-az = dic_RF['az']
-baz = dic_RF['baz']
-gcarc = dic_RF['gcarc']
-b = dic_RF['b']
-e = dic_RF['e']
+filename_STA = OUTPUT_FEATHER_FILE_DIR+'STA_dic.feather'
 
-filename_STA = OUTPUT_JSON_FILE_DIR+'STA_dic.json'
-
-dic_STA = json.load(open(filename_STA))
-kstnm_STA = dic_STA['KSTNM']
-
-# ==============================
-#  Creating stations Input lists
-# ==============================
-input_list = [[]]*len(kstnm_STA)
-print('Creating stations input lists')
-print('\n')
-
-for i,j in enumerate(kstnm_STA):
-	print('Creating input list: '+j)
-	print('\n')
-	input_list[i] = [dataR[k] for k,l in enumerate(kstnm)  if l == j]
-print('\n')
+dic_STA = pd.read_feather(filename_STA)
+kstnm_STA = dic_STA['KSTNM'].values
 
 # ==============
 #  Plotting data
@@ -92,14 +53,13 @@ print('\n')
 print('Plotting data')
 print('\n')
 
-for i,j in enumerate(input_list):
+for i,j in enumerate(kstnm_STA):
 	print('Plotting data to: '+kstnm_STA[i])
 	print('\n')
-	try:
-		plot_station_raw_RF(j,dataR_time[i],kstnm_STA[i])
-	except:
-		print("NO DATA IN STATION = "+kstnm_STA[i])
-		print('\n')
+
+	df_kstnm = dic_RF[dic_RF['kstnm'] == j]
+
+	plot_station_raw_RF(df_kstnm)
 
 print('Plotting finished!')
 
