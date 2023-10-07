@@ -14,7 +14,7 @@ import pandas as pd
 # Importing RF data script_py 
 # =====================================
 
-from visual_py.plot_raw_data import plot_station_raw_RF_TRACE
+from visual_py.plot_raw_data import plot_station_quadrant_RF_TRACE
 
 # ==================================================
 #  Importing some parameters from configuration file 
@@ -58,7 +58,7 @@ for i,j in enumerate(kstnm_STA):
 
 	df_kstnm = dic_RF[dic_RF['kstnm'] == j]
 
-	plot_station_raw_RF_TRACE(df_kstnm)
+	plot_station_quadrant_RF_TRACE(df_kstnm)
 
 print('Plotting finished!')
 

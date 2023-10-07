@@ -8,7 +8,7 @@ import os
 import pandas as pd
 
 from parameters_py.config import (
-					OUTPUT_FEATHER_FILE_DIR,STA_CSV_FILE
+					OUTPUT_DIR,STA_CSV_FILE
 				   )
 
 
@@ -47,6 +47,6 @@ print('\n')
 print('Saving Station Information in FEATHER file')
 print('\n')
 
-os.makedirs(OUTPUT_FEATHER_FILE_DIR,exist_ok=True)
+os.makedirs(OUTPUT_DIR+'FEATHER/',exist_ok=True)
 df = pd.DataFrame.from_dict(sta_event)
-df.to_feather(OUTPUT_FEATHER_FILE_DIR+'STA_dic.feather')
+df.to_feather(OUTPUT_DIR+'FEATHER/'+'STA_dic.feather')

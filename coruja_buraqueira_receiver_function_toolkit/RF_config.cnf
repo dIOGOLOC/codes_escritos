@@ -22,19 +22,12 @@
 #======
 
 # directory of raw RF files
-#DIR_SAC = /home/diogoloc/dados_posdoc/ON_MAR/STATION_EVENT/
 DIR_SAC = /run/media/dIOGOLOC/8d2362fc-3b46-49a7-a864-19b2a6ad097b/diogoloc/dados_posdoc/project_ilhas_oceanicas/OUTPUT/EVENTS/
 
-# directory of selected RF files
-#DIR_SEL_SAC = /home/diogoloc/dados_posdoc/ON_MAR/RF_SELECT_STATION_EVENT/
-DIR_SEL_SAC = /run/media/dIOGOLOC/8d2362fc-3b46-49a7-a864-19b2a6ad097b/diogoloc/dados_posdoc/project_ilhas_oceanicas/OUTPUT/RF_SELECT_STATION_EVENT/
-
-#Directory to save FEATHER Files
-#OUTPUT_FEATHER_FILE_DIR = /home/diogoloc/dados_posdoc/ON_MAR/FEATHER_FILES/
-OUTPUT_FEATHER_FILE_DIR = /run/media/dIOGOLOC/8d2362fc-3b46-49a7-a864-19b2a6ad097b/diogoloc/dados_posdoc/project_ilhas_oceanicas/OUTPUT/FEATHER/
+#Directory to save outputs
+OUTPUT_DIR = /run/media/dIOGOLOC/8d2362fc-3b46-49a7-a864-19b2a6ad097b/diogoloc/dados_posdoc/project_ilhas_oceanicas/OUTPUT/
 
 #STA CSV FILE path
-#STA_CSV_FILE  = /home/diogoloc/dados_posdoc/ON_MAR/sta_coord/rsis_lat_lon_elev_download.txt
 STA_CSV_FILE  = /run/media/dIOGOLOC/8d2362fc-3b46-49a7-a864-19b2a6ad097b/diogoloc/dados_posdoc/project_ilhas_oceanicas/STA_COORD/rsis_lat_lon_elev_download.txt
 
 #Gaussian Filter
@@ -52,19 +45,19 @@ TRANSVERSAL_EXT = .RFT.sac
 #=========
 
 #Trace check (coda amplitude starts in (seconds))
-CODA_TRACE_CHECK = 40
+CODA_TRACE_CHECK = 30
 
 #Trace check (coda minimium amplitude of trace)
-CODA_TRACE_CHECK_AMP_MIN = -0.0
+CODA_TRACE_CHECK_AMP_MIN = -0.3
 
 #Trace check (coda maximum amplitude of trace)
-CODA_TRACE_CHECK_AMP_MAX = 1
+CODA_TRACE_CHECK_AMP_MAX = 0.3
 
 #Trace check (Standard Deviation Multiplier)
-CODA_TRACE_CHECK_MULT = 20
+CODA_TRACE_CHECK_MULT = 5
 
 #Minimum data amplitude threshold
-ZERO_AMP_MIN = 0.2
+ZERO_AMP_MIN = 0.1
 
 #Maximum data amplitude threshold 
 ZERO_AMP_MAX = 1
@@ -95,4 +88,4 @@ SAMPLING_RATE = 100
 
 X_LIM_MIN = -5
 
-X_LIM_MAX = 40
+X_LIM_MAX = 60

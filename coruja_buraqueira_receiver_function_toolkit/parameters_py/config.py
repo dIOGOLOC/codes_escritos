@@ -54,11 +54,8 @@ config = select_and_parse_config_file(basedir='.', ext='cnf', verbose=True)
 # directory of raw sac files
 DIR_SAC = config.get('paths', 'DIR_SAC')
 
-# directory of selected RF files
-DIR_SEL_SAC = config.get('paths', 'DIR_SEL_SAC')
-
-#Directory to save FEATHER Files
-OUTPUT_FEATHER_FILE_DIR =  config.get('paths', 'OUTPUT_FEATHER_FILE_DIR')
+#Directory to save outuputs
+OUTPUT_DIR =  config.get('paths', 'OUTPUT_DIR')
 
 #Stations CSV FILE path
 STA_CSV_FILE  =  config.get('paths', 'STA_CSV_FILE')
