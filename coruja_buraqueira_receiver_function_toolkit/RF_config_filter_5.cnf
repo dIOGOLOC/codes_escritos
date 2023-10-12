@@ -1,0 +1,90 @@
+###############################################################################
+#
+# This is an example of configuration file, wherein global paths and parameters
+# related to the analysis of receiver functions are defined. At least one file 
+# should reside in the folder in which you intend to run your scripts. 
+# The configuration file(s) can have any name, as long as the extension is 'cnf':
+# e.g., 'RF_analysis.cnf', 'RF_config.cnf', 'myconfig.cnf', 'test.cnf'...
+#
+# The parameters are divided in several sections:
+# - [paths]                : default paths to input/output folders
+# - [quality]              : parameters to control receiver functions quality
+# - [plot]                 : parameters to plot receiver functions
+#
+# Before using the scripts, you should at least make sure that the paths in 
+# section [paths] are consistent with your own files and folders organization. 
+#
+###############################################################################
+
+
+#======
+[paths]
+#======
+
+# directory of raw RF files
+DIR_SAC = /run/media/dIOGOLOC/8d2362fc-3b46-49a7-a864-19b2a6ad097b/diogoloc/dados_posdoc/project_ilhas_oceanicas/OUTPUT/EVENTS/
+
+#Directory to save outputs
+OUTPUT_DIR = /run/media/dIOGOLOC/8d2362fc-3b46-49a7-a864-19b2a6ad097b/diogoloc/dados_posdoc/project_ilhas_oceanicas/OUTPUT/
+
+#STA CSV FILE path
+STA_CSV_FILE  = /run/media/dIOGOLOC/8d2362fc-3b46-49a7-a864-19b2a6ad097b/diogoloc/dados_posdoc/project_ilhas_oceanicas/STA_COORD/rsis_lat_lon_elev_download.txt
+
+#Gaussian Filter
+GAUSSIAN_FILTER = 5.0
+
+#RADIAL RF PATTERN
+RADIAL_EXT = .RFR.
+
+#TRANSVERSAL RF PATTERN
+TRANSVERSAL_EXT = .RFT.
+
+#=========
+[quality]
+#=========
+
+#Trace check (coda amplitude starts in (seconds))
+CODA_TRACE_CHECK = 20
+
+#Trace check (coda minimium amplitude of trace)
+CODA_TRACE_CHECK_AMP_MIN = -1
+
+#Trace check (coda maximum amplitude of trace)
+CODA_TRACE_CHECK_AMP_MAX = 1
+
+#Trace check (Standard Deviation Multiplier)
+CODA_TRACE_CHECK_MULT = 5
+
+#Minimum data amplitude threshold
+ZERO_AMP_MIN = 0.1
+
+#Maximum data amplitude threshold 
+ZERO_AMP_MAX = 5
+
+#Minimum event distance 
+EV_GCARC_MIN = 30
+
+#Maximum event distance 
+EV_GCARC_MAX = 95
+
+#Minimum event magnitude 
+EV_MAGNITUDE_MB = 5.0
+
+#Time to trim the seismogram before P-wave arrival
+CUT_BEFORE_P = 10
+
+#Time to trim the seismogram after P-wave arrival
+CUT_AFTER_P = 100
+
+#Sampling Rate of the traces
+SAMPLING_RATE = 100
+
+#=====
+[plot]
+#=====
+
+#Plot X limits
+
+X_LIM_MIN = -5
+
+X_LIM_MAX = 60

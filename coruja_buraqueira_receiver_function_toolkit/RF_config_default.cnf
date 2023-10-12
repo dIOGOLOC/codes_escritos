@@ -31,14 +31,13 @@ OUTPUT_DIR = /run/media/dIOGOLOC/8d2362fc-3b46-49a7-a864-19b2a6ad097b/diogoloc/d
 STA_CSV_FILE  = /run/media/dIOGOLOC/8d2362fc-3b46-49a7-a864-19b2a6ad097b/diogoloc/dados_posdoc/project_ilhas_oceanicas/STA_COORD/rsis_lat_lon_elev_download.txt
 
 #Gaussian Filter
-GAUSSIAN_FILTER = 2.0
+GAUSSIAN_FILTER = 5.0
 
-#RADIAL RF EXTENSION
-RADIAL_EXT = .RFR.sac
+#RADIAL RF PATTERN
+RADIAL_EXT = .RFR.
 
-#TRANSVERSAL RF EXTENSION
-TRANSVERSAL_EXT = .RFT.sac
-
+#TRANSVERSAL RF PATTERN
+TRANSVERSAL_EXT = .RFT.
 
 #=========
 [quality]

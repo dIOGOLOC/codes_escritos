@@ -33,8 +33,9 @@ def selection_rf(in_lst):
 
     data_RF = obspy.read(in_lst[0])
     data_RF_T = obspy.read(in_lst[1])
-      
-    data_name = in_lst[0].split('/')[-1]
+
+    dir_name_RFR, data_name_RF = os.path.split(in_lst[0])
+    dir_name_RFT, data_name_RF_T = os.path.split(in_lst[1])
 
     if len(data_RF[0].data) > CUT_AFTER_P*SAMPLING_RATE and data_RF[0].stats.sac.mag > EV_MAGNITUDE_MB:
 
@@ -55,27 +56,33 @@ def selection_rf(in_lst):
 
         if (
             #Gaussian Filter
-            data_RF[0].stats.sac.internal0 == GAUSSIAN_FILTER and
+            #data_RF[0].stats.sac.internal0 == GAUSSIAN_FILTER and
                   
             #Minimum data amplitude threshold 
-            data_RF[0].data.min() >= -6*ZERO_AMP_MIN and
+            #data_RF[0].data.min() >= -6*ZERO_AMP_MIN and
 
             #Maximum data amplitude threshold 
-            data_RF[0].data.max() <= ZERO_AMP_MAX and
+            #data_RF[0].data.max() <= ZERO_AMP_MAX and
 
             #Origin amplitude larger than zero
-            ZERO_AMP_MIN <= amp_mid <= ZERO_AMP_MAX and all(elem > 0 for elem in data_RF[0].data[P_arrival_start:P_arrival_end]) and
+            #ZERO_AMP_MIN <= amp_mid <= ZERO_AMP_MAX and all(elem > 0 for elem in data_RF[0].data[P_arrival_start:P_arrival_end]) and
+            ZERO_AMP_MIN <= amp_mid <= ZERO_AMP_MAX and all(elem > 0 for elem in data_RF[0].data[P_arrival_start:P_arrival_end])
 
             #Maximum coda amplitude threshold 
-            amp_Coda.max() <= mean_amp_Coda + CODA_TRACE_CHECK_MULT*std_amp_Coda and
+            #amp_Coda.max() <= mean_amp_Coda + CODA_TRACE_CHECK_MULT*std_amp_Coda and
 
             #Minimum coda amplitude threshold 
-            amp_Coda.min() >= mean_amp_Coda - CODA_TRACE_CHECK_MULT*std_amp_Coda
+            #amp_Coda.min() >= mean_amp_Coda - CODA_TRACE_CHECK_MULT*std_amp_Coda
             ):
                     
-                RF_directory = OUTPUT_DIR+'RF_SELECT_STATION_EVENT/'+str(GAUSSIAN_FILTER)+'/'+data_RF[0].stats.sac.kstnm+'/'
+                RF_directory = OUTPUT_DIR+'RF_SELECT_STATION_EVENT/'+str(GAUSSIAN_FILTER)+'/'+data_RF[0].stats.sac.knetwk+'.'+data_RF[0].stats.sac.kstnm+'/'
                 os.makedirs(RF_directory,exist_ok=True)
-                shutil.copy2(in_lst[0],RF_directory+data_name)
+
+                RF_name_RFR = data_name_RF.split(data_RF[0].stats.sac.knetwk+'.'+data_RF[0].stats.sac.kstnm+'.')[1].split('.RFR')[0][:-4]+'_P_R.sac'
+                RF_name_RFT = data_name_RF_T.split(data_RF[0].stats.sac.knetwk+'.'+data_RF[0].stats.sac.kstnm+'.')[1].split('.RFT')[0][:-4]+'_P_T.sac'
+
+                shutil.copy2(in_lst[0],RF_directory+RF_name_RFR)
+                shutil.copy2(in_lst[1],RF_directory+RF_name_RFT)
                                     
                 df = pd.DataFrame([[data_RF[0].data[:int(CUT_AFTER_P*SAMPLING_RATE)].tolist()],
                                         [np.linspace(-CUT_BEFORE_P, CUT_AFTER_P,len(data_RF[0].data[:int(CUT_AFTER_P*SAMPLING_RATE)])).tolist()],
@@ -93,7 +100,7 @@ def selection_rf(in_lst):
                                         [float(data_RF[0].stats.sac.mag)],
                                         [float(data_RF[0].stats.sac.stla)],
                                         [float(data_RF[0].stats.sac.stlo)],
-                                        [float(data_RF[0].stats.sac.internal0)],
+                                        [GAUSSIAN_FILTER],
                                         [float(data_RF[0].stats.sac.dist)],
                                         [float(data_RF[0].stats.sac.az)],
                                         [float(data_RF[0].stats.sac.baz)],
@@ -123,7 +130,7 @@ def selection_rf(in_lst):
                                         [float(data_RF[0].stats.sac.mag)],
                                         [float(data_RF[0].stats.sac.stla)],
                                         [float(data_RF[0].stats.sac.stlo)],
-                                        [float(data_RF[0].stats.sac.internal0)],
+                                        [GAUSSIAN_FILTER],
                                         [float(data_RF[0].stats.sac.dist)],
                                         [float(data_RF[0].stats.sac.az)],
                                         [float(data_RF[0].stats.sac.baz)],
@@ -149,7 +156,7 @@ datalist = []
 datalistS = []
 for root, dirs, files in os.walk(DIR_SAC):
     for datafile in files:
-        if datafile.endswith(RADIAL_EXT):
+        if RADIAL_EXT+str(GAUSSIAN_FILTER)+'.' in datafile:
             datalist.append(os.path.join(root, datafile))
 
 datalistS = sorted(datalist)
@@ -160,7 +167,7 @@ datalistT = []
 datalistST = []
 for root, dirs, files in os.walk(DIR_SAC):
     for datafile in files:
-        if datafile.endswith(TRANSVERSAL_EXT):
+        if TRANSVERSAL_EXT+str(GAUSSIAN_FILTER)+'.' in datafile:
             datalistT.append(os.path.join(root, datafile))
 
 datalistST = sorted(datalistT)
@@ -191,6 +198,8 @@ FEATHER_FILE_NAME = FEATHER_FILE.replace(".", "_")
 dataframe_RF_final.to_feather(OUTPUT_DIR+'FEATHER/'+FEATHER_FILE_NAME+'.feather')
 
 '''
+
+### NEED TO IMPLEMENT #SOME CRAZY ERROR 
 print('Multiprocessing the dataset:')
 print('\n')
 
