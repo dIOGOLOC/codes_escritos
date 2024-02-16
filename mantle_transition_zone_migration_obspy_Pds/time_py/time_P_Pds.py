@@ -48,8 +48,16 @@ print('\n')
 # ======================================
 
 
-def travel_time_calculation_Pds(number,ev_depth,ev_lat,ev_long,st_lat,st_long,JSON_FOLDER):
+def travel_time_calculation_Pds(input):
 
+	number = input[0]
+	ev_depth = input[1]
+	ev_lat = input[2]
+	ev_long = input[3]
+	st_lat = input[4]
+	st_long = input[5]
+	JSON_FOLDER = input[6]
+	
 	arrivals = model_THICKNESS_km.get_travel_times_geo(source_depth_in_km=ev_depth, 
 														source_latitude_in_deg=ev_lat, 
 														source_longitude_in_deg=ev_long, 
@@ -57,19 +65,10 @@ def travel_time_calculation_Pds(number,ev_depth,ev_lat,ev_long,st_lat,st_long,JS
 														receiver_longitude_in_deg=st_long, 
 														phase_list=PHASES)
 
-	print('source_depth_in_km = '+str(ev_depth))
-	print('source_latitude_in_deg = '+str(ev_lat))
-	print('source_longitude_in_deg = '+str(ev_long))
-	print('receiver_latitude_in_deg = '+str(st_lat))
-	print('receiver_longitude_in_deg = '+str(st_long))
-
 	Pds_dic = {"arrivals": []}
 	for j in arrivals:
 		phase_dic = {"phase": j.name,"time": j.time, "rayparam": j.ray_param,'ev_lat': ev_lat,'ev_long': ev_long,'st_lat': st_lat,'st_long': st_long}
 		Pds_dic["arrivals"].append(phase_dic)
-	
-	print('Saving Pds Travel Times in JSON file')
-	print('\n')
 
 	with open(JSON_FOLDER+'Pds_dic_'+str(number)+'.json', 'w') as fp:
 		json.dump(Pds_dic, fp)

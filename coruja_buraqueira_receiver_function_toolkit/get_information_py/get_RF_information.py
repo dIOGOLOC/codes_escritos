@@ -10,6 +10,7 @@ import obspy
 import shutil
 from tqdm import tqdm
 import pandas as pd
+import glob 
 from multiprocessing import Pool
 
 from parameters_py.config import (
@@ -54,10 +55,7 @@ def selection_rf(in_lst):
         mean_amp_Coda = np.mean(amp_Coda_mask)
         std_amp_Coda = abs(np.std(amp_Coda_mask))
 
-        if (
-            #Gaussian Filter
-            #data_RF[0].stats.sac.internal0 == GAUSSIAN_FILTER and
-                  
+        if (           
             #Minimum data amplitude threshold 
             #data_RF[0].data.min() >= -6*ZERO_AMP_MIN and
 
@@ -150,33 +148,12 @@ def selection_rf(in_lst):
 print('Get RF Parameters')
 print('\n')
 
-#### Radial ####
-
-datalist = []
-datalistS = []
-for root, dirs, files in os.walk(DIR_SAC):
-    for datafile in files:
-        if RADIAL_EXT+str(GAUSSIAN_FILTER)+'.' in datafile:
-            datalist.append(os.path.join(root, datafile))
-
-datalistS = sorted(datalist)
-
-#### Transversal ####
-
-datalistT = []
-datalistST = []
-for root, dirs, files in os.walk(DIR_SAC):
-    for datafile in files:
-        if TRANSVERSAL_EXT+str(GAUSSIAN_FILTER)+'.' in datafile:
-            datalistT.append(os.path.join(root, datafile))
-
-datalistST = sorted(datalistT)
+PRF_folders = sorted(glob.glob(DIR_SAC+'*'))
 
 #### Creatint the input list for multiprocessing ####
 
-input_lst = []
-for i,j in enumerate(datalistS):
-	input_lst.append([j,datalistST[i]])
+print(PRF_folders)
+
       
 pandas_RF_lst = []
 for i in tqdm(input_lst):

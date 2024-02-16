@@ -11,7 +11,7 @@ import json
 from multiprocessing import Pool
 import glob
 import time
-
+from tqdm import tqdm
 
 # =====================================
 # Importing travel times scritp_py 
@@ -29,17 +29,6 @@ from parameters_py.mgconfig import (
 					URCRNRLON_SMALL,LLCRNRLAT_SMALL,URCRNRLAT_SMALL,PROJECT_LAT,PROJECT_LON,
 					BOUNDARY_1_SHP,BOUNDARY_2_SHP,EXT_FIG,DPI_FIG,MP_PROCESSES,OUTPUT_DIR,DEPTH_TARGET
 				   )
-
-
-# ======================================
-# Function to estimate Pds travel times  
-# ======================================
-
-def parallel_travel_times_Pds(number,ev_depth,ev_lat,ev_long,st_lat,st_long):
-	travel_time_calculation_Pds(number=number,ev_depth=ev_depth,ev_lat=ev_lat,ev_long=ev_long,st_lat=st_lat,st_long=st_long,JSON_FOLDER=travel_times_pds)
-	print('Saving travel times Pds number = '+str(number)+' of '+str(len(event_depth)))
-	print('\n')
-
 
 # ============================================
 # Importing station dictionary from JSON file 
@@ -99,7 +88,7 @@ print('\n')
 print('Creating Input list')
 print('\n')
 
-input_list = [[i+1,event_depth[i],event_lat[i],event_long[i],sta_lat[i],sta_long[i]] for i,j in enumerate(event_depth)]
+input_list = [[i+1,event_depth[i],event_lat[i],event_long[i],sta_lat[i],sta_long[i],travel_times_pds] for i,j in enumerate(event_depth)]
 
 # =============================
 # Calculating Pds Travel Times
@@ -109,9 +98,12 @@ print('Calculating Pds Travel Times')
 print('\n')
 
 start_time = time.time()
-pool_Pds = Pool(MP_PROCESSES)
-pool_Pds.starmap(parallel_travel_times_Pds, input_list)
-pool_Pds.close()
+with Pool(processes=MP_PROCESSES) as p:
+	max_ = len(input_list)
+	with tqdm(total=max_,desc='Calculating Pds travel times  ') as pbar:
+		for i, _ in enumerate(p.imap_unordered(travel_time_calculation_Pds,input_list)):
+			pbar.update()
+
 print("--- %.2f execution time (min) ---" % ((time.time() - start_time)/60))
 
 print('Pds Travel Times estimated!')

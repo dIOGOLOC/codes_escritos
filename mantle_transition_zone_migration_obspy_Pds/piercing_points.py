@@ -22,6 +22,7 @@ import json
 from multiprocessing import Pool
 import time
 import glob
+from tqdm import tqdm
 
 
 # =====================================
@@ -151,9 +152,12 @@ print('Calculating Piercing Points to '+PHASES[0])
 print('\n')
 
 start_time = time.time()
-pool_410 = Pool(MP_PROCESSES)
-pool_410.starmap(parallel_piercing_points, input_list_410)
-pool_410.close()
+with Pool(processes=MP_PROCESSES) as p:
+	max_ = len(input_list_410)
+	with tqdm(total=max_,desc='Calculating Piercing Points') as pbar:
+		for i, _ in enumerate(p.imap_unordered(parallel_piercing_points,input_list_410)):
+			pbar.update()
+
 print("--- %.2f execution time (min) ---" % ((time.time() - start_time)/60))
 print(PHASES[0]+' Piercing Points estimated!')
 print('\n')
@@ -189,9 +193,12 @@ print('Calculating Piercing Points to '+PHASES[1])
 print('\n')
 
 start_time = time.time()
-pool_530 = Pool(MP_PROCESSES)
-pool_530.starmap(parallel_piercing_points, input_list_TARGET)
-pool_530.close()
+with Pool(processes=MP_PROCESSES) as p:
+	max_ = len(input_list_TARGET)
+	with tqdm(total=max_,desc='Calculating Piercing Points') as pbar:
+		for i, _ in enumerate(p.imap_unordered(parallel_piercing_points,input_list_TARGET)):
+			pbar.update()
+
 print("--- %.2f execution time (min) ---" % ((time.time() - start_time)/60))
 print(PHASES[1]+' Piercing Points estimated!')
 print('\n')
@@ -226,9 +233,12 @@ print('Calculating Piercing Points to '+PHASES[2])
 print('\n')
 
 start_time = time.time()
-pool_660 = Pool(MP_PROCESSES)
-pool_660.starmap(parallel_piercing_points, input_list_660)
-pool_660.close()
+with Pool(processes=MP_PROCESSES) as p:
+	max_ = len(input_list_660)
+	with tqdm(total=max_,desc='Calculating Piercing Points') as pbar:
+		for i, _ in enumerate(p.imap_unordered(parallel_piercing_points,input_list_660)):
+			pbar.update()
+
 print("--- %.2f execution time (min) ---" % ((time.time() - start_time)/60))
 print(PHASES[2]+' Piercing Points estimated!')
 print('\n')

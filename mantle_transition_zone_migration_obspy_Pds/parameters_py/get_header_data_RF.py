@@ -6,7 +6,7 @@ import os
 from obspy.taup import TauPyModel
 from obspy.geodetics import kilometer2degrees
 import json
-from scipy.signal import triang
+from tqdm import tqdm
 
 from parameters_py.mgconfig import (
 					RF_DIR,RF_EXT,MODEL_FILE_NPZ,MIN_DEPTH,MAX_DEPTH,INTER_DEPTH,NUMBER_PP_PER_BIN,
@@ -26,7 +26,7 @@ for root, dirs, files in os.walk(RF_DIR):
 ev_listS = sorted(ev_list)
 
 ev = obspy.Stream()
-for i,j in enumerate(ev_listS):
+for i,j in tqdm(enumerate(ev_listS), total=len(ev_listS)):
 	ev += obspy.read(j)
 
 
@@ -47,7 +47,7 @@ sta_dic = {
 	'sta_time':[]
 	}
 
-for i,j in enumerate(ev):
+for i,j in tqdm(enumerate(ev), total=len(ev)):
 	if j.stats.sac.gcarc > 30:
 		#check if the event depth is in km 
 		if j.stats.sac.evdp > 1000:

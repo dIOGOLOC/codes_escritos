@@ -22,22 +22,22 @@
 #======
 
 # directory of raw RF files
-DIR_SAC = /run/media/dIOGOLOC/8d2362fc-3b46-49a7-a864-19b2a6ad097b/diogoloc/dados_posdoc/project_ilhas_oceanicas/OUTPUT/EVENTS/
+DIR_SAC = /media/sysop/8d2362fc-3b46-49a7-a864-19b2a6ad097b/diogoloc/dados_posdoc/MTZ_2024/PRF_SEISPY_DATA/
 
 #Directory to save outputs
-OUTPUT_DIR = /run/media/dIOGOLOC/8d2362fc-3b46-49a7-a864-19b2a6ad097b/diogoloc/dados_posdoc/project_ilhas_oceanicas/OUTPUT/
+OUTPUT_DIR = media/sysop/8d2362fc-3b46-49a7-a864-19b2a6ad097b/diogoloc/dados_posdoc/MTZ_2024/OUTPUT/
 
 #STA CSV FILE path
-STA_CSV_FILE  = /run/media/dIOGOLOC/8d2362fc-3b46-49a7-a864-19b2a6ad097b/diogoloc/dados_posdoc/project_ilhas_oceanicas/STA_COORD/rsis_lat_lon_elev_download.txt
+STA_CSV_FILE  = /media/sysop/8d2362fc-3b46-49a7-a864-19b2a6ad097b/diogoloc/dados_posdoc/MTZ_2024/STA_COORD/cood_rede_BP_MTZ.txt
 
 #Gaussian Filter
-GAUSSIAN_FILTER = 5.0
+GAUSSIAN_FILTER = 0.5
 
 #RADIAL RF PATTERN
-RADIAL_EXT = .RFR.
+RADIAL_EXT = _P_R.sac
 
 #TRANSVERSAL RF PATTERN
-TRANSVERSAL_EXT = .RFT.
+TRANSVERSAL_EXT = _P_T.sac
 
 #=========
 [quality]
@@ -74,10 +74,10 @@ EV_MAGNITUDE_MB = 5.0
 CUT_BEFORE_P = 10
 
 #Time to trim the seismogram after P-wave arrival
-CUT_AFTER_P = 100
+CUT_AFTER_P = 160
 
 #Sampling Rate of the traces
-SAMPLING_RATE = 100
+SAMPLING_RATE = 10
 
 #=====
 [plot]
@@ -87,4 +87,4 @@ SAMPLING_RATE = 100
 
 X_LIM_MIN = -5
 
-X_LIM_MAX = 60
+X_LIM_MAX = 10
