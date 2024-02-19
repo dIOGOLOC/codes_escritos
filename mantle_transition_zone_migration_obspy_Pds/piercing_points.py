@@ -41,14 +41,6 @@ from parameters_py.mgconfig import (
 					URCRNRLON_SMALL,LLCRNRLAT_SMALL,URCRNRLAT_SMALL,PROJECT_LAT,PROJECT_LON,
 					BOUNDARY_1_SHP,BOUNDARY_2_SHP,EXT_FIG,DPI_FIG,MP_PROCESSES,OUTPUT_DIR,DEPTH_TARGET
 				   )
-# =====================================
-# Function to estimate piercing points  
-# =====================================
-
-def parallel_piercing_points(number,PHASE,ev_depth,ev_lat,ev_long,st_lat,st_long,phase_folder):
-	arrivals_calculation(number=number,fase=PHASE,ev_depth=ev_depth,ev_lat=ev_lat,ev_long=ev_long,st_lat=st_lat,st_long=st_long,phase_folder=phase_folder)
-	print('Event '+str(number)+' of '+str(len(event_depth)))
-	print('\n')
 
 # ============================================
 # Importing station dictionary from JSON file 
@@ -155,7 +147,7 @@ start_time = time.time()
 with Pool(processes=MP_PROCESSES) as p:
 	max_ = len(input_list_410)
 	with tqdm(total=max_,desc='Calculating Piercing Points') as pbar:
-		for i, _ in enumerate(p.imap_unordered(parallel_piercing_points,input_list_410)):
+		for i, _ in enumerate(p.imap_unordered(arrivals_calculation,input_list_410)):
 			pbar.update()
 
 print("--- %.2f execution time (min) ---" % ((time.time() - start_time)/60))
@@ -196,7 +188,7 @@ start_time = time.time()
 with Pool(processes=MP_PROCESSES) as p:
 	max_ = len(input_list_TARGET)
 	with tqdm(total=max_,desc='Calculating Piercing Points') as pbar:
-		for i, _ in enumerate(p.imap_unordered(parallel_piercing_points,input_list_TARGET)):
+		for i, _ in enumerate(p.imap_unordered(arrivals_calculation,input_list_TARGET)):
 			pbar.update()
 
 print("--- %.2f execution time (min) ---" % ((time.time() - start_time)/60))
@@ -236,7 +228,7 @@ start_time = time.time()
 with Pool(processes=MP_PROCESSES) as p:
 	max_ = len(input_list_660)
 	with tqdm(total=max_,desc='Calculating Piercing Points') as pbar:
-		for i, _ in enumerate(p.imap_unordered(parallel_piercing_points,input_list_660)):
+		for i, _ in enumerate(p.imap_unordered(arrivals_calculation,input_list_660)):
 			pbar.update()
 
 print("--- %.2f execution time (min) ---" % ((time.time() - start_time)/60))

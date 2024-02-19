@@ -60,11 +60,11 @@ OUTPUT_DIR = /home/sysop/dados_posdoc/MTZ_2024/OUTPUT/MTZ_NO_FILTER_PP/
 #   tectonic provinces
 
 
-BOUNDARY_1_SHP = /media/sysop/8d2362fc-3b46-49a7-a864-19b2a6ad097b/diogoloc/dados_posdoc/SIG_Dados/shapes/bacia_parnaiba/bacia_parnaiba.shp
+BOUNDARY_1_SHP = /home/sysop/dados_posdoc/SIG_Dados/shapes/bacia_parnaiba/bacia_parnaiba.shp
 
-BOUNDARY_2_SHP = /media/sysop/8d2362fc-3b46-49a7-a864-19b2a6ad097b/diogoloc/dados_posdoc/SIG_Dados/shapes/Estados/Brasil.shp
+BOUNDARY_2_SHP = /home/sysop/dados_posdoc/SIG_Dados/shapes/Estados/Brasil.shp
 
-TECTO_SHP = /media/sysop/8d2362fc-3b46-49a7-a864-19b2a6ad097b/diogoloc/dados_posdoc/SIG_Dados/shapes/bacia_parnaiba/bacia_parnaiba.shp
+TECTO_SHP = /home/sysop/dados_posdoc/SIG_Dados/shapes/bacia_parnaiba/bacia_parnaiba.shp
 
 # Lat and Lon of large maps and small maps
 # center (lat/lon) of the map
@@ -135,7 +135,7 @@ INTER_DEPTH = 10
 FILTER_BY_SHAPEFILE = False
 
 #Shapefile containing lines or polygons representing grid boundary
-SHAPEFILE_GRID = /media/sysop/8d2362fc-3b46-49a7-a864-19b2a6ad097b/diogoloc/dados_posdoc/SIG_Dados/shapes/bacia_parnaiba/bacia_parnaiba.shp
+SHAPEFILE_GRID = /home/sysop/dados_posdoc/SIG_Dados/shapes/bacia_parnaiba/bacia_parnaiba.shp
 
 # grid bin per degree
 GRID_PP_MULT = 0.25

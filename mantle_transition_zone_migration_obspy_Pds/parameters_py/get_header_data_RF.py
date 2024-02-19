@@ -60,7 +60,7 @@ for i,j in tqdm(enumerate(ev), total=len(ev)):
 		sta_dic['event_mag'].append(round(float(j.stats.sac.mag),3))
 		sta_dic['event_gcarc'].append(round(float(j.stats.sac.gcarc),3))
 		sta_dic['event_sta'].append(j.stats.station)
-		sta_dic['event_ray'].append(round(float(j.stats.sac.user8),3))
+		sta_dic['event_ray'].append(round(float(j.stats.sac.user0),3))
 		sta_dic['sta_lat'].append(round(float(j.stats.sac.stla),3))
 		sta_dic['sta_long'].append(round(float(j.stats.sac.stlo),3))
 		sta_dic['sta_data'].append(j.data[100:2700].tolist())

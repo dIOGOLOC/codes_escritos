@@ -31,7 +31,16 @@ model_THICKNESS_km = TauPyModel(model=MODEL_FILE_NPZ)
 # Creating Function
 # ==================
 
-def arrivals_calculation(number,fase,ev_depth,ev_lat,ev_long,st_lat,st_long,phase_folder):
+def arrivals_calculation(input):
+
+	number = input[0]
+	fase = input[1]
+	ev_depth = input[2]
+	ev_lat = input[3]
+	ev_long = input[4]
+	st_lat = input[5]
+	st_long = input[6]
+	phase_folder = input[7]
 
 	piercing_points = model_THICKNESS_km.get_pierce_points_geo(source_depth_in_km=ev_depth, 
 														source_latitude_in_deg=ev_lat, 
