@@ -377,8 +377,7 @@ for i,j in enumerate(RF_data_profile_Pds):
 	plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
 	map_MTZ_thickness.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 
-	bounds = np.arange(200, 300+colormap_segmentation, colormap_segmentation)
-	norm_map_MTZ_thickness = mpl.colors.BoundaryNorm(boundaries=bounds, ncolors=colormap.N)
+	norm_map_MTZ_thickness = Normalize(vmin=200,vmax=300)
 
 	for t,y in enumerate(lons):
 		if math.isnan(RF_DEPTH_mtz_thickness_Pds[t]) == False:

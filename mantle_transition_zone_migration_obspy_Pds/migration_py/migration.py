@@ -32,7 +32,7 @@ from scipy import interpolate
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from matplotlib.patches import Circle,Rectangle
 import math
-
+from tqdm import tqdm
 
 
 
@@ -588,15 +588,9 @@ def nested_dict():
 
 RF_BOOTSTRAP_ESTIMATION_Pds = nested_dict()
 
-for _k in range(BOOTSTRAP_INTERATOR):
-	print('Bootstrap estimation '+str(_k+1))
-
+for _k in tqdm(range(BOOTSTRAP_INTERATOR),total=BOOTSTRAP_INTERATOR,desc='Bootstrap estimation'):
 	for i,j in enumerate(RF_data_raw_Pds):
 		if len(j) >= NUMBER_PP_PER_BIN and RF_STA_number_raw[i] >= NUMBER_STA_PER_BIN:
-
-			print('Grid point number: '+str(i))
-			print('lat: '+str(grid_sel_y[i]))
-			print('lon: '+str(grid_sel_x[i]))
 
 			RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['lon'] = grid_sel_x[i]
 			RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['lat'] = grid_sel_y[i]
@@ -666,9 +660,6 @@ for _k in range(BOOTSTRAP_INTERATOR):
 
 				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['LVZ_mean'] = np.nan
 				
-			print('LVZ Pds = '+str(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['LVZ_mean']))
-
-
 			if lst_410_amp_Pds > 0:
 
 				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['410_mean'] = lst_410_depth_Pds
@@ -677,9 +668,6 @@ for _k in range(BOOTSTRAP_INTERATOR):
 
 				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['410_mean'] = np.nan
 				
-			print('410 Pds Depth = '+str(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['410_mean']))
-
-
 			if lst_520_amp_Pds > 0:
 
 				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['520_mean'] = lst_520_depth_Pds
@@ -688,8 +676,6 @@ for _k in range(BOOTSTRAP_INTERATOR):
 
 				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['520_mean'] = np.nan
 				
-			print('520 Pds Depth = '+str(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['520_mean']))
-
 			if lst_660_depth_Pds > 0:
 
 				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['660_mean'] = lst_660_depth_Pds
@@ -697,9 +683,6 @@ for _k in range(BOOTSTRAP_INTERATOR):
 			else:
 
 				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['660_mean'] = np.nan
-
-			print('660 km Pds Depth = '+str(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['660_mean']))
-
 
 			if abs(lst_LVZ_700_amp_Pds) > 0:
 
@@ -709,9 +692,6 @@ for _k in range(BOOTSTRAP_INTERATOR):
 
 				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['LVZ_700_mean'] = np.nan
 				
-			print('LVZ 700 Pds = '+str(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['LVZ_700_mean']))
-
-
 			######## Estimating MTZ thickness and difference between MTZ and Model thickness ########
 
 			if  lst_410_amp_Pds > 0  and lst_660_depth_Pds > 0:
@@ -721,10 +701,7 @@ for _k in range(BOOTSTRAP_INTERATOR):
 			else: 
 
 				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['thickness_MTZ_mean'] = np.nan
-
-			print('MTZ Pds thickness = '+str(RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['thickness_MTZ_mean']))
-			print('\n')
-				
+			
 ###################################################################################################################
 
 print('Allocating results and Stacking Pds data')

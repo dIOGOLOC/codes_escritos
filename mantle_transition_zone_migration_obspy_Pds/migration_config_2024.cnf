@@ -147,10 +147,10 @@ DIST_GRID_PP = 0.15
 RF_FREQUENCY = 0.24
 
 #number of piercing points per bin
-NUMBER_PP_PER_BIN = 10
+NUMBER_PP_PER_BIN = 30
 
 #number of stations RF per bin
-NUMBER_STA_PER_BIN = 1
+NUMBER_STA_PER_BIN = 3
 
 #Depth Target
 DEPTH_TARGET = 530
