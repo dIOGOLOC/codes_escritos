@@ -5,8 +5,9 @@ import obspy
 import os
 from obspy.taup import TauPyModel
 from obspy.geodetics import kilometer2degrees
-import json
+import pyarrow.feather as feather
 from tqdm import tqdm
+import pandas as pd
 
 from parameters_py.mgconfig import (
 					RF_DIR,RF_EXT,MODEL_FILE_NPZ,MIN_DEPTH,MAX_DEPTH,INTER_DEPTH,NUMBER_PP_PER_BIN,
@@ -73,5 +74,7 @@ STA_DIR = OUTPUT_DIR+'MODEL_INTER_DEPTH_'+str(INTER_DEPTH)+'_DEPTH_TARGET_'+str(
 
 os.makedirs(STA_DIR,exist_ok=True)
 
-with open(STA_DIR+'sta_dic.json', 'w') as fp:
-	json.dump(sta_dic, fp)
+sta_df = pd.DataFrame.from_dict(sta_dic)
+
+file_feather_name = STA_DIR+'sta_dic.feather'
+feather.write_feather(sta_df, file_feather_name)

@@ -6,8 +6,10 @@ import obspy
 import os
 from obspy.taup import TauPyModel
 from obspy.geodetics import kilometer2degrees
-import json
 from multiprocessing import Pool
+import pyarrow.feather as feather
+import pandas as pd
+
 
 from parameters_py.mgconfig import (
 					RF_DIR,RF_EXT,MODEL_FILE_NPZ,MIN_DEPTH,MAX_DEPTH,INTER_DEPTH,NUMBER_PP_PER_BIN,
@@ -56,5 +58,7 @@ def arrivals_calculation(input):
 				'lon':piercing_points[0].pierce['lon'].tolist()
 			}
 
-	with open(phase_folder+'PP_dic'+str(number)+'.json', 'w') as fp:
-		json.dump(PP_dic, fp)
+	PP_df = pd.DataFrame.from_dict(PP_dic)
+
+	file_feather_name = phase_folder+'PP_dic'+str(number)+'.feather'
+	feather.write_feather(PP_df, file_feather_name)

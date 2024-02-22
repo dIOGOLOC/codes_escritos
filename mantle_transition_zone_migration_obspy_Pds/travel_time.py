@@ -7,11 +7,13 @@ import obspy
 import os
 from obspy.taup import TauPyModel
 from obspy.geodetics import kilometer2degrees
-import json
 from multiprocessing import Pool
 import glob
 import time
 from tqdm import tqdm
+import pandas as pd
+import pyarrow.feather as feather
+
 
 # =====================================
 # Importing travel times scritp_py 
@@ -30,32 +32,32 @@ from parameters_py.mgconfig import (
 					BOUNDARY_1_SHP,BOUNDARY_2_SHP,EXT_FIG,DPI_FIG,MP_PROCESSES,OUTPUT_DIR,DEPTH_TARGET
 				   )
 
-# ============================================
-# Importing station dictionary from JSON file 
-# ============================================
+# ==============================================
+# Importing station dictionary from FEATHER file 
+# ==============================================
 
 STA_DIR = OUTPUT_DIR+'MODEL_INTER_DEPTH_'+str(INTER_DEPTH)+'_DEPTH_TARGET_'+str(DEPTH_TARGET)+'/'+'Stations'+'/'
 
 print('\n')
-print('Looking for receiver functions data in JSON file in '+STA_DIR)
+print('Looking for receiver functions data in FEATHER file in '+STA_DIR)
 print('\n')
 
 
-filename_STA = STA_DIR+'sta_dic.json'
+filename_STA = STA_DIR+'sta_dic.feather'
 
-sta_dic = json.load(open(filename_STA))
+sta_dic = pd.read_feather(filename_STA)  
 
-event_depth = sta_dic['event_depth']
-event_lat = sta_dic['event_lat']
-event_long = sta_dic['event_long']
-event_dist = sta_dic['event_dist']
-event_gcarc = sta_dic['event_gcarc']
-event_sta = sta_dic['event_sta']
-event_ray = sta_dic['event_ray']
-sta_lat = sta_dic['sta_lat']
-sta_long = sta_dic['sta_long']
-sta_data = sta_dic['sta_data']
-sta_time = sta_dic['sta_time']
+event_depth = sta_dic['event_depth'].tolist()
+event_lat = sta_dic['event_lat'].tolist()
+event_long = sta_dic['event_long'].tolist()
+event_dist = sta_dic['event_dist'].tolist()
+event_gcarc = sta_dic['event_gcarc'].tolist()
+event_sta = sta_dic['event_sta'].tolist()
+event_ray = sta_dic['event_ray'].tolist()
+sta_lat = sta_dic['sta_lat'].tolist()
+sta_long = sta_dic['sta_long'].tolist()
+sta_data = sta_dic['sta_data'].tolist()
+sta_time = sta_dic['sta_time'].tolist()
 
 # ==================================================
 # Importing earth model from obspy.taup.TauPyModel 
@@ -100,7 +102,7 @@ print('\n')
 start_time = time.time()
 with Pool(processes=MP_PROCESSES) as p:
 	max_ = len(input_list)
-	with tqdm(total=max_,desc='Calculating Pds travel times  ') as pbar:
+	with tqdm(total=max_,desc='Calculating Pds travel times') as pbar:
 		for i, _ in enumerate(p.imap_unordered(travel_time_calculation_Pds,input_list)):
 			pbar.update()
 
@@ -113,12 +115,14 @@ print('\n')
 # Saving Pds Travel Times
 # =============================
 
-# Importing STATION-EVENT Pds dictionary from JSON file 
+# Importing STATION-EVENT Pds dictionary from FEATHER file 
 
-filename_pds_json = sorted(glob.glob(travel_times_pds+'*'))
-filename_pds_json_raw_float = [float(i.split('.')[0].split('Pds_dic_')[1]) for i in filename_pds_json]  
-idx = np.argsort(filename_pds_json_raw_float) 	
-arrivals = [json.load(open(filename_pds_json[i]))['arrivals'] for i in idx]
+filename_pds_feather = sorted(glob.glob(travel_times_pds+'*'))
+filename_pds_feather_raw_float = [float(i.split('.')[0].split('Pds_dic_')[1]) for i in filename_pds_feather]  
+idx = np.argsort(filename_pds_feather_raw_float)
+
+arrivals = [pd.read_feather(filename_pds_feather[i])['arrivals'] for i in idx]
+
 
 TT_dic_Pds = {'time':[],'depth':[],'rayparam':[],'ev_lat': [],'ev_long': [],'st_lat': [],'st_long': []}
 for i,j in enumerate(arrivals):
@@ -130,10 +134,11 @@ for i,j in enumerate(arrivals):
 	TT_dic_Pds['st_lat'].append([arrivals[i][k]['st_lat'] for k,l in enumerate(j) if arrivals[i][k]['time']-arrivals[i][0]['time'] > 1]) 
 	TT_dic_Pds['st_long'].append([arrivals[i][k]['st_long'] for k,l in enumerate(j) if arrivals[i][k]['time']-arrivals[i][0]['time'] > 1]) 
 
-
-#Saving Piercing Points in JSON file
-print('Saving Pds Travel Times in JSON file')
+#Saving Piercing Points in FEATHER file
+print('Saving Pds Travel Times in FEATHER file')
 print('\n')
 
-with open(Travel_times_folder+'Pds_dic.json', 'w') as fp:
-	json.dump(TT_dic_Pds, fp)
+TT_df_Pds = pd.DataFrame.from_dict(TT_dic_Pds)
+
+file_feather_name = Travel_times_folder+'Pds_dic.feather'
+feather.write_feather(TT_df_Pds, file_feather_name)

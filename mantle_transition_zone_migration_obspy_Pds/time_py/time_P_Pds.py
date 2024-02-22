@@ -1,9 +1,10 @@
 import numpy as np
 import obspy
 import os
+import pandas as pd
 from obspy.taup import TauPyModel
 from obspy.geodetics import kilometer2degrees
-import json
+import pyarrow.feather as feather
 
 
 from parameters_py.mgconfig import (
@@ -56,7 +57,7 @@ def travel_time_calculation_Pds(input):
 	ev_long = input[3]
 	st_lat = input[4]
 	st_long = input[5]
-	JSON_FOLDER = input[6]
+	FEATHER_FOLDER = input[6]
 	
 	arrivals = model_THICKNESS_km.get_travel_times_geo(source_depth_in_km=ev_depth, 
 														source_latitude_in_deg=ev_lat, 
@@ -70,5 +71,7 @@ def travel_time_calculation_Pds(input):
 		phase_dic = {"phase": j.name,"time": j.time, "rayparam": j.ray_param,'ev_lat': ev_lat,'ev_long': ev_long,'st_lat': st_lat,'st_long': st_long}
 		Pds_dic["arrivals"].append(phase_dic)
 
-	with open(JSON_FOLDER+'Pds_dic_'+str(number)+'.json', 'w') as fp:
-		json.dump(Pds_dic, fp)
+	Pds_df = pd.DataFrame.from_dict(Pds_dic)
+
+	file_feather_name = FEATHER_FOLDER+'Pds_dic_'+str(number)+'.feather'
+	feather.write_feather(Pds_df, file_feather_name)

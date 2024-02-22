@@ -18,11 +18,12 @@ import obspy
 import os
 from obspy.taup import TauPyModel
 from obspy.geodetics import kilometer2degrees
-import json
 from multiprocessing import Pool
 import time
 import glob
 from tqdm import tqdm
+import pyarrow.feather as feather
+import pandas as pd
 
 
 # =====================================
@@ -42,31 +43,32 @@ from parameters_py.mgconfig import (
 					BOUNDARY_1_SHP,BOUNDARY_2_SHP,EXT_FIG,DPI_FIG,MP_PROCESSES,OUTPUT_DIR,DEPTH_TARGET
 				   )
 
-# ============================================
-# Importing station dictionary from JSON file 
-# ============================================
+# ==============================================
+# Importing station dictionary from FEATHER file 
+# ==============================================
 
 STA_DIR = OUTPUT_DIR+'MODEL_INTER_DEPTH_'+str(INTER_DEPTH)+'_DEPTH_TARGET_'+str(DEPTH_TARGET)+'/'+'Stations'+'/'
 
 print('\n')
-print('Looking for receiver functions data in JSON file in '+STA_DIR)
+print('Looking for receiver functions data in FEATHER file in '+STA_DIR)
 print('\n')
 
-filename_STA = STA_DIR+'sta_dic.json'
 
-sta_dic = json.load(open(filename_STA))
+filename_STA = STA_DIR+'sta_dic.feather'
 
-event_depth = sta_dic['event_depth']
-event_lat = sta_dic['event_lat']
-event_long = sta_dic['event_long']
-event_dist = sta_dic['event_dist']
-event_gcarc = sta_dic['event_gcarc']
-event_sta = sta_dic['event_sta']
-event_ray = sta_dic['event_ray']
-sta_lat = sta_dic['sta_lat']
-sta_long = sta_dic['sta_long']
-sta_data = sta_dic['sta_data']
-sta_time = sta_dic['sta_time']
+sta_dic = pd.read_feather(filename_STA)  
+
+event_depth = sta_dic['event_depth'].tolist()
+event_lat = sta_dic['event_lat'].tolist()
+event_long = sta_dic['event_long'].tolist()
+event_dist = sta_dic['event_dist'].tolist()
+event_gcarc = sta_dic['event_gcarc'].tolist()
+event_sta = sta_dic['event_sta'].tolist()
+event_ray = sta_dic['event_ray'].tolist()
+sta_lat = sta_dic['sta_lat'].tolist()
+sta_long = sta_dic['sta_long'].tolist()
+sta_data = sta_dic['sta_data'].tolist()
+sta_time = sta_dic['sta_time'].tolist()
 
 # ==================================================
 # Importing earth model from obspy.taup.TauPyModel 
@@ -159,9 +161,8 @@ print('\n')
 # Saving Piercing Points P410s
 # =============================
 
-filename_pds_json_P410s = sorted(glob.glob(Phase_P410s_folder+'*'))
-
-PP_dic_P410s_files = [json.load(open(i)) for i in filename_pds_json_P410s]
+filename_pds_FEATHER_P410s = sorted(glob.glob(Phase_P410s_folder+'*'))
+PP_dic_P410s_files = [pd.read_feather(i) for i in filename_pds_FEATHER_P410s]
 
 PP_dic_P410s = {'depth':[],'time':[],'lat':[],'lon':[]}
 
@@ -172,10 +173,11 @@ for i,j in enumerate(PP_dic_P410s_files):
 	PP_dic_P410s['lon'].append(j['lon']) 
 
 
-print('Saving Piercing Points in JSON file')
+print('Saving Piercing Points in FEATHER file')
 
-with open(PP_DIR+'PP_'+PHASES[0]+'_dic.json', 'w') as fp:
-	json.dump(PP_dic_P410s, fp)
+PP_dic_P410s_df = pd.DataFrame.from_dict(PP_dic_P410s)
+file_feather_name_P410s = PP_DIR+'PP_'+PHASES[0]+'_dic.feather'
+feather.write_feather(PP_dic_P410s_df, file_feather_name_P410s)
 
 # ===================================
 # Calculating TARGET Piercing Points
@@ -199,9 +201,8 @@ print('\n')
 # Saving Piercing Points TARGET
 # =============================
 
-filename_pds_json_TARGET_Ps = sorted(glob.glob(Phase_TARGET_Ps_folder+'*'))
-
-PP_dic_TARGET_Ps_files = [json.load(open(i)) for i in filename_pds_json_TARGET_Ps]
+filename_pds_FEATHER_TARGET_Ps = sorted(glob.glob(Phase_TARGET_Ps_folder+'*'))
+PP_dic_TARGET_Ps_files = [pd.read_feather(i) for i in filename_pds_FEATHER_TARGET_Ps]
 
 PP_dic_TARGET_Ps = {'depth':[],'time':[],'lat':[],'lon':[]}
 
@@ -211,11 +212,11 @@ for i,j in enumerate(PP_dic_TARGET_Ps_files):
 	PP_dic_TARGET_Ps['lat'].append(j['lat']) 
 	PP_dic_TARGET_Ps['lon'].append(j['lon']) 
 
+print('Saving Piercing Points in FEATHER file')
 
-print('Saving Piercing Points in JSON file')
-
-with open(PP_DIR+'PP_'+PHASES[1]+'_dic.json', 'w') as fp:
-	json.dump(PP_dic_TARGET_Ps, fp)
+PP_dic_TARGET_Ps_df = pd.DataFrame.from_dict(PP_dic_TARGET_Ps)
+file_feather_name_target = PP_DIR+'PP_'+PHASES[1]+'_dic.feather'
+feather.write_feather(PP_dic_TARGET_Ps_df, file_feather_name_target)
 
 # ===================================
 # Calculating P660s Piercing Points
@@ -239,9 +240,8 @@ print('\n')
 # Saving Piercing Points P660s
 # =============================
 
-filename_pds_json_P660s = sorted(glob.glob(Phase_P660s_folder+'*'))
-
-PP_dic_P660s_files = [json.load(open(i)) for i in filename_pds_json_P660s]
+filename_pds_FEATHER_P660s = sorted(glob.glob(Phase_P660s_folder+'*'))
+PP_dic_P660s_files = [pd.read_feather(i) for i in filename_pds_FEATHER_P660s]
 
 PP_dic_P660s = {'depth':[],'time':[],'lat':[],'lon':[]}
 
@@ -252,7 +252,8 @@ for i,j in enumerate(PP_dic_P660s_files):
 	PP_dic_P660s['lon'].append(j['lon']) 
 
 
-print('Saving Piercing Points in JSON file')
+print('Saving Piercing Points in FEATHER file')
 
-with open(PP_DIR+'PP_'+PHASES[2]+'_dic.json', 'w') as fp:
-	json.dump(PP_dic_P660s, fp)
+PP_dic_P660s_df = pd.DataFrame.from_dict(PP_dic_P660s)
+file_feather_name_P660s = PP_DIR+'PP_'+PHASES[2]+'_dic.feather'
+feather.write_feather(PP_dic_P660s_df, file_feather_name_P660s)
