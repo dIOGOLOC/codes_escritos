@@ -19,7 +19,6 @@ import shapefile
 from scipy.stats import mode
 from matplotlib.ticker import MultipleLocator, FormatStrFormatter
 from cartopy.mpl.ticker import LongitudeFormatter, LatitudeFormatter
-import json
 import random
 from matplotlib.colors import Normalize
 from numpy import ma
@@ -33,8 +32,8 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 from matplotlib.patches import Circle,Rectangle
 import math
 from tqdm import tqdm
-
-
+import pyarrow.feather as feather
+import pandas as pd
 
 from parameters_py.mgconfig import (
 					RF_EXT,MODEL_FILE_NPZ,MIN_DEPTH,MAX_DEPTH,INTER_DEPTH,SHAPEFILE_GRID,FILTER_BY_SHAPEFILE,
@@ -103,23 +102,24 @@ print('\n')
 
 STA_DIR = OUTPUT_DIR+'MODEL_INTER_DEPTH_'+str(INTER_DEPTH)+'_DEPTH_TARGET_'+str(DEPTH_TARGET)+'/'+'Stations'+'/'
 
-print('Looking for Receiver Functions data in JSON file in '+STA_DIR)
+print('Looking for Receiver Functions data in FEATHER file in '+STA_DIR)
 print('\n')
-filename_STA = STA_DIR+'sta_dic.json'
 
-sta_dic = json.load(open(filename_STA))
+filename_STA = STA_DIR+'sta_dic.feather'
 
-event_depth = sta_dic['event_depth']
-event_lat = sta_dic['event_lat']
-event_long = sta_dic['event_long']
-event_dist = sta_dic['event_dist']
-event_gcarc = sta_dic['event_gcarc']
-event_sta = sta_dic['event_sta']
-event_ray = sta_dic['event_ray']
-sta_lat = sta_dic['sta_lat']
-sta_long = sta_dic['sta_long']
-sta_data = sta_dic['sta_data']
-sta_time = sta_dic['sta_time']
+sta_dic = pd.read_feather(filename_STA)  
+
+event_depth = sta_dic['event_depth'].tolist()
+event_lat = sta_dic['event_lat'].tolist()
+event_long = sta_dic['event_long'].tolist()
+event_dist = sta_dic['event_dist'].tolist()
+event_gcarc = sta_dic['event_gcarc'].tolist()
+event_sta = sta_dic['event_sta'].tolist()
+event_ray = sta_dic['event_ray'].tolist()
+sta_lat = sta_dic['sta_lat'].tolist()
+sta_long = sta_dic['sta_long'].tolist()
+sta_data = sta_dic['sta_data'].tolist()
+sta_time = sta_dic['sta_time'].tolist()
 
 print('Creating the Earth layered model')
 print('\n')
@@ -137,41 +137,39 @@ print('\n')
 PP_DIR = OUTPUT_DIR+'MODEL_INTER_DEPTH_'+str(INTER_DEPTH)+'_DEPTH_TARGET_'+str(DEPTH_TARGET)+'/'+'Piercing_Points'+'/'
 
 
-filename_1 = PP_DIR+'PP_'+PHASES[0]+'_dic.json'
+filename_1 = PP_DIR+'PP_'+PHASES[0]+'_dic.feather'
 
-PP_1_dic = json.load(open(filename_1))
+PP_1_dic = pd.read_feather(filename_1)
 
-
-PP_time_1 = PP_1_dic['time']
-PP_lat_1 = PP_1_dic['lat']
-PP_lon_1 = PP_1_dic['lon']
-PP_depth_1 = PP_1_dic['depth']
+PP_time_1 = PP_1_dic['time'].tolist()
+PP_lat_1 = PP_1_dic['lat'].tolist()
+PP_lon_1 = PP_1_dic['lon'].tolist()
+PP_depth_1 = PP_1_dic['depth'].tolist()
 
 
 print('Importing Pds Piercing Points for '+PHASES[1])
 print('\n')
 
-filename_med = PP_DIR+'PP_'+PHASES[1]+'_dic.json'
+filename_med = PP_DIR+'PP_'+PHASES[1]+'_dic.feather'
 
-PP_med_dic = json.load(open(filename_med))
+PP_med_dic = pd.read_feather(filename_med)
 
-PP_time_med = PP_med_dic['time']
-PP_lat_med = PP_med_dic['lat']
-PP_lon_med = PP_med_dic['lon']
-PP_depth_med = PP_med_dic['depth']
-
+PP_time_med = PP_med_dic['time'].tolist()
+PP_lat_med = PP_med_dic['lat'].tolist()
+PP_lon_med = PP_med_dic['lon'].tolist()
+PP_depth_med = PP_med_dic['depth'].tolist()
 
 print('Importing Pds Piercing Points for '+PHASES[2])
 print('\n')
 
-filename_2 = PP_DIR+'PP_'+PHASES[2]+'_dic.json'
+filename_2 = PP_DIR+'PP_'+PHASES[2]+'_dic.feather'
 
-PP_2_dic = json.load(open(filename_2))
+PP_2_dic = pd.read_feather(filename_2)
 
-PP_time_2 = PP_2_dic['time']
-PP_lat_2 = PP_2_dic['lat']
-PP_lon_2 = PP_2_dic['lon']
-PP_depth_2 = PP_2_dic['depth'] 
+PP_time_2 = PP_2_dic['time'].tolist()
+PP_lat_2 = PP_2_dic['lat'].tolist()
+PP_lon_2 = PP_2_dic['lon'].tolist()
+PP_depth_2 = PP_2_dic['depth'].tolist()
 
 print('P410s Piercing Points')
 print('\n')
@@ -179,15 +177,11 @@ print('\n')
 pp_1_lat  = [[]]*len(PP_lon_1)
 pp_1_long  = [[]]*len(PP_lon_1)
 
-
 for i,j in enumerate(PP_lon_1):
 	for k,l in enumerate(j):
 		if LLCRNRLON_LARGE<= l <= URCRNRLON_LARGE and PP_depth_1[i][k] == 410:
 				pp_1_lat[i] = PP_lat_1[i][k]
 				pp_1_long[i] = l
-
-pp_1_lat = [i for i in pp_1_lat if type(i) == float ]
-pp_1_long = [i for i in pp_1_long if type(i) == float ]
 
 print('P'+str(DEPTH_TARGET)+'s Piercing Points')
 print('\n')
@@ -202,28 +196,27 @@ for i,j in enumerate(PP_lon_med):
 				pp_med_lat[i] = PP_lat_med[i][k]
 				pp_med_long[i] = l
 				pp_time_DEPTH_TARGET[i] = PP_time_med[i][-1] - PP_time_med[i][k]
-
-pp_med_lat = [i for i in pp_med_lat if type(i) == float ]
-pp_med_long = [i for i in pp_med_long if type(i) == float ]
-pp_time_DEPTH_TARGET = [i for i in pp_time_DEPTH_TARGET if type(i) == float ]
-
+		
 print('P660s Piercing Points')
 print('\n')
 
 pp_2_lat  = [[]]*len(PP_lon_2)
 pp_2_long  = [[]]*len(PP_lon_2)
 
-
 for i,j in enumerate(PP_lon_2):
 	for k,l in enumerate(j):
 		if LLCRNRLON_LARGE <= l <= URCRNRLON_LARGE and PP_depth_2[i][k] == 660:
-			if PP_lon_2[i][k]  != [] and PP_lat_2[i][k] != []:
-				pp_2_lat[i] = PP_lat_2[i][k]
-				pp_2_long[i] = l
+			pp_2_lat[i] = PP_lat_2[i][k]
+			pp_2_long[i] = l
 
-pp_2_lat = [i for i in pp_2_lat if type(i) == float ]
-pp_2_long = [i for i in pp_2_long if type(i) == float ]
+			#if PP_lon_2[i][k]  != [] and PP_lat_2[i][k] != []:
+			#	pp_2_lat[i] = PP_lat_2[i][k]
+			#	pp_2_long[i] = l
+			
 
+
+pp_2_lat = [i for i in pp_2_lat if isinstance(i, (int, float))]
+pp_2_long = [i for i in pp_2_long if isinstance(i, (int, float))]
 
 print('Calculating MEAN FIRST FRESNEL ZONE RADIUS')
 print('DEPTH TARGET MEAN TIME: '+str(np.mean(pp_time_DEPTH_TARGET)))
@@ -456,19 +449,19 @@ print('\n')
 
 PdS_DIR = OUTPUT_DIR+'MODEL_INTER_DEPTH_'+str(INTER_DEPTH)+'_DEPTH_TARGET_'+str(DEPTH_TARGET)+'/'+'Phases'+'/'
 
-filename_Pds = PdS_DIR+'Pds_dic.json'
+filename_Pds = PdS_DIR+'Pds_dic.feather'
 
-PdS_Dic = json.load(open(filename_Pds))
+PdS_Dic = pd.read_feather(filename_Pds)
 
 depth_str_to_float_Pds = []
 for i,j in enumerate(PdS_Dic['depth']):
 	depth_str_to_float_Pds.append([float(l) for l in j])
 
-Pds_time = PdS_Dic['time']
-Pds_st_lat = PdS_Dic['st_lat']
-Pds_st_lon = PdS_Dic['st_long']
-Pds_ev_lat = PdS_Dic['ev_lat']
-Pds_ev_lon = PdS_Dic['ev_long']
+Pds_time = PdS_Dic['time'].tolist()
+Pds_st_lat = PdS_Dic['st_lat'].tolist()
+Pds_st_lon = PdS_Dic['st_long'].tolist()
+Pds_ev_lat = PdS_Dic['ev_lat'].tolist()
+Pds_ev_lon = PdS_Dic['ev_long'].tolist()
 Pds_depth = depth_str_to_float_Pds
 
 ###################################################################################################################
@@ -944,7 +937,7 @@ fig_PP.savefig(RESULTS_FOLDER+'PP_FINAL_GRID.'+EXT_FIG,dpi=DPI_FIG)
 
 #############################################################################################################################################################################################
 
-print('Saving Selected Piercing Points in JSON file')
+print('Saving Selected Piercing Points in FEATHER file')
 print('\n')
 
 PP_SELEC_DIR = OUTPUT_DIR+'MODEL_INTER_DEPTH_'+str(INTER_DEPTH)+'_DEPTH_TARGET_'+str(DEPTH_TARGET)+'/'+'SELECTED_BINNED_DATA'+'/'
@@ -969,8 +962,6 @@ SELECTED_BINNED_DATA_dic = {
 	'RF_BOOTSTRAP_DEPTH_mean_520_Pds':[],
 	'RF_BOOTSTRAP_DEPTH_mean_2_Pds':[],
 	'RF_BOOTSTRAP_DEPTH_mean_LVZ_700_Pds':[]
-
-
 	}
 
 for i,j in enumerate(RF_BOOTSTRAP_DATA_Pds):
@@ -1016,5 +1007,6 @@ for i,j in enumerate(RF_BOOTSTRAP_DATA_Pds):
 	
 RESULTS_FOLDER_BINS = PP_SELEC_DIR+'/'+'RESULTS_NUMBER_PP_PER_BIN_'+str(NUMBER_PP_PER_BIN)+'_NUMBER_STA_PER_BIN_'+str(NUMBER_STA_PER_BIN)+'/'
 os.makedirs(RESULTS_FOLDER_BINS,exist_ok=True)
-with open(RESULTS_FOLDER_BINS+'SELECTED_BINNED.json', 'w') as fp:
-	json.dump(SELECTED_BINNED_DATA_dic, fp)
+
+SELECTED_BINNED_DATA_dic_df = pd.DataFrame.from_dict(SELECTED_BINNED_DATA_dic)
+feather.write_feather(SELECTED_BINNED_DATA_dic_df, RESULTS_FOLDER_BINS+'SELECTED_BINNED.feather')

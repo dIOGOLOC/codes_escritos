@@ -14,11 +14,11 @@ from mpl_toolkits.mplot3d import Axes3D
 import cartopy.crs as ccrs
 from cartopy.io.shapereader import Reader
 import cartopy.feature as cfeature
-from fatiando import gridder, utils
 import scipy.io
 import matplotlib.cm as cm
 from matplotlib.ticker import MultipleLocator, FormatStrFormatter
-import json
+import pyarrow.feather as feather
+import pandas as pd
 import matplotlib.gridspec as gridspec
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from matplotlib.patches import Circle,Rectangle
@@ -43,73 +43,74 @@ print('\n')
 STA_DIR = OUTPUT_DIR+'MODEL_INTER_DEPTH_'+str(INTER_DEPTH)+'_DEPTH_TARGET_'+str(DEPTH_TARGET)+'/'+'Stations'+'/'
 
 
-print('Looking for receiver functions data in JSON file in '+STA_DIR)
+print('Looking for Receiver Functions data in FEATHER file in '+STA_DIR)
 print('\n')
 
-filename_STA = STA_DIR+'sta_dic.json'
+filename_STA = STA_DIR+'sta_dic.feather'
 
-sta_dic = json.load(open(filename_STA))
+sta_dic = pd.read_feather(filename_STA)  
 
-event_depth = sta_dic['event_depth']
-event_lat = sta_dic['event_lat']
-event_long = sta_dic['event_long']
-event_dist = sta_dic['event_dist']
-event_gcarc = sta_dic['event_gcarc']
-event_sta = sta_dic['event_sta']
-event_ray = sta_dic['event_ray']
-sta_lat = sta_dic['sta_lat']
-sta_long = sta_dic['sta_long']
-sta_data = sta_dic['sta_data']
-sta_time = sta_dic['sta_time']
+event_depth = sta_dic['event_depth'].tolist()
+event_lat = sta_dic['event_lat'].tolist()
+event_long = sta_dic['event_long'].tolist()
+event_dist = sta_dic['event_dist'].tolist()
+event_gcarc = sta_dic['event_gcarc'].tolist()
+event_sta = sta_dic['event_sta'].tolist()
+event_ray = sta_dic['event_ray'].tolist()
+sta_lat = sta_dic['sta_lat'].tolist()
+sta_long = sta_dic['sta_long'].tolist()
+sta_data = sta_dic['sta_data'].tolist()
+sta_time = sta_dic['sta_time'].tolist()
 
 print('Importing selected binned data')
 print('\n')
 
 PP_SELEC_DIR = OUTPUT_DIR+'MODEL_INTER_DEPTH_'+str(INTER_DEPTH)+'_DEPTH_TARGET_'+str(DEPTH_TARGET)+'/'+'SELECTED_BINNED_DATA'+'/'
 
+
 RESULTS_FOLDER_BINS = PP_SELEC_DIR+'/'+'RESULTS_NUMBER_PP_PER_BIN_'+str(NUMBER_PP_PER_BIN)+'_NUMBER_STA_PER_BIN_'+str(NUMBER_STA_PER_BIN)+'/'
-filename = RESULTS_FOLDER_BINS+'SELECTED_BINNED.json'
+filename = RESULTS_FOLDER_BINS+'SELECTED_BINNED.feather'
 
-SELECTED_BINNED_DATA_dic = json.load(open(filename))
+SELECTED_BINNED_DATA_dic = pd.read_feather(filename)  
 
-lats = SELECTED_BINNED_DATA_dic['lat']
-lons = SELECTED_BINNED_DATA_dic['lon']
+lats = SELECTED_BINNED_DATA_dic['lat'].tolist()
+lons = SELECTED_BINNED_DATA_dic['lon'].tolist()
 
-RF_number = SELECTED_BINNED_DATA_dic['len_Pds']
+RF_number = SELECTED_BINNED_DATA_dic['len_Pds'].tolist()
 
-RF_stacking_Pds = SELECTED_BINNED_DATA_dic['data_Pds']
-RF_stacking_Pds_std = SELECTED_BINNED_DATA_dic['data_Pds_std']
+RF_stacking_Pds = SELECTED_BINNED_DATA_dic['data_Pds'].tolist()
+RF_stacking_Pds_std = SELECTED_BINNED_DATA_dic['data_Pds_std'].tolist()
 
-RF_stacking_Pds_BOOTSTRAP = SELECTED_BINNED_DATA_dic['data_BOOTSTRAP_Pds']
+RF_stacking_Pds_BOOTSTRAP = SELECTED_BINNED_DATA_dic['data_BOOTSTRAP_Pds'].tolist()
 
-RF_BOOTSTRAP_DEPTH_mean_LVZ_Pds = SELECTED_BINNED_DATA_dic['RF_BOOTSTRAP_DEPTH_mean_LVZ_Pds']
+RF_BOOTSTRAP_DEPTH_mean_LVZ_Pds = SELECTED_BINNED_DATA_dic['RF_BOOTSTRAP_DEPTH_mean_LVZ_Pds'].tolist()
 
-RF_BOOTSTRAP_DEPTH_mean_1_Pds = SELECTED_BINNED_DATA_dic['RF_BOOTSTRAP_DEPTH_mean_1_Pds']
+RF_BOOTSTRAP_DEPTH_mean_1_Pds = SELECTED_BINNED_DATA_dic['RF_BOOTSTRAP_DEPTH_mean_1_Pds'].tolist()
 
-RF_BOOTSTRAP_DEPTH_mean_520_Pds = SELECTED_BINNED_DATA_dic['RF_BOOTSTRAP_DEPTH_mean_520_Pds']
+RF_BOOTSTRAP_DEPTH_mean_520_Pds = SELECTED_BINNED_DATA_dic['RF_BOOTSTRAP_DEPTH_mean_520_Pds'].tolist()
 
-RF_BOOTSTRAP_DEPTH_mean_2_Pds = SELECTED_BINNED_DATA_dic['RF_BOOTSTRAP_DEPTH_mean_2_Pds']
+RF_BOOTSTRAP_DEPTH_mean_2_Pds = SELECTED_BINNED_DATA_dic['RF_BOOTSTRAP_DEPTH_mean_2_Pds'].tolist()
 
-RF_BOOTSTRAP_DEPTH_mean_LVZ_700_Pds = SELECTED_BINNED_DATA_dic['RF_BOOTSTRAP_DEPTH_mean_LVZ_700_Pds']
+RF_BOOTSTRAP_DEPTH_mean_LVZ_700_Pds = SELECTED_BINNED_DATA_dic['RF_BOOTSTRAP_DEPTH_mean_LVZ_700_Pds'].tolist()
 
 
-RF_DEPTH_mean_LVZ_Pds = SELECTED_BINNED_DATA_dic['mean_LVZ_Pds']
-RF_DEPTH_std_LVZ_Pds = SELECTED_BINNED_DATA_dic['std_LVZ_Pds']
+RF_DEPTH_mean_LVZ_Pds = SELECTED_BINNED_DATA_dic['mean_LVZ_Pds'].tolist()
+RF_DEPTH_std_LVZ_Pds = SELECTED_BINNED_DATA_dic['std_LVZ_Pds'].tolist()
 
-RF_DEPTH_mean_1_Pds = SELECTED_BINNED_DATA_dic['mean_1_Pds']
-RF_DEPTH_std_1_Pds = SELECTED_BINNED_DATA_dic['std_1_Pds']
+RF_DEPTH_mean_1_Pds = SELECTED_BINNED_DATA_dic['mean_1_Pds'].tolist()
+RF_DEPTH_std_1_Pds = SELECTED_BINNED_DATA_dic['std_1_Pds'].tolist()
 
-RF_DEPTH_mean_520_Pds = SELECTED_BINNED_DATA_dic['mean_520_Pds']
-RF_DEPTH_std_520_Pds = SELECTED_BINNED_DATA_dic['std_520_Pds']
+RF_DEPTH_mean_520_Pds = SELECTED_BINNED_DATA_dic['mean_520_Pds'].tolist()
+RF_DEPTH_std_520_Pds = SELECTED_BINNED_DATA_dic['std_520_Pds'].tolist()
 
-RF_DEPTH_mean_2_Pds = SELECTED_BINNED_DATA_dic['mean_2_Pds']
-RF_DEPTH_std_2_Pds = SELECTED_BINNED_DATA_dic['std_2_Pds']
+RF_DEPTH_mean_2_Pds = SELECTED_BINNED_DATA_dic['mean_2_Pds'].tolist()
+RF_DEPTH_std_2_Pds = SELECTED_BINNED_DATA_dic['std_2_Pds'].tolist()
 
-RF_DEPTH_mean_LVZ_700_Pds = SELECTED_BINNED_DATA_dic['mean_LVZ_700_Pds']
-RF_DEPTH_std_LVZ_700_Pds = SELECTED_BINNED_DATA_dic['std_LVZ_700_Pds']
+RF_DEPTH_mean_LVZ_700_Pds = SELECTED_BINNED_DATA_dic['mean_LVZ_700_Pds'].tolist()
+RF_DEPTH_std_LVZ_700_Pds = SELECTED_BINNED_DATA_dic['std_LVZ_700_Pds'].tolist()
 
-RF_DEPTH_mtz_thickness_Pds = SELECTED_BINNED_DATA_dic['mtz_thickness_Pds']
-RF_DEPTH_mtz_thickness_Pds_std = SELECTED_BINNED_DATA_dic['mtz_thickness_Pds_std']
+RF_DEPTH_mtz_thickness_Pds = SELECTED_BINNED_DATA_dic['mtz_thickness_Pds'].tolist()
+RF_DEPTH_mtz_thickness_Pds_std = SELECTED_BINNED_DATA_dic['mtz_thickness_Pds_std'].tolist()
 
 print('Calculating earth model layers')
 print('\n')
@@ -196,7 +197,7 @@ plt.show()
 
 PP_FIGURE = OUTPUT_DIR+'MODEL_INTER_DEPTH_'+str(INTER_DEPTH)+'_DEPTH_TARGET_'+str(DEPTH_TARGET)+'/'+'Figures'+'/'
 
-RESULTS_FOLDER = PP_FIGURE+'/'+'RESULTS_NUMBER_PP_PER_BIN_'+str(NUMBER_PP_PER_BIN)+'_NUMBER_STA_PER_BIN_'+str(NUMBER_STA_PER_BIN)+'/'
+RESULTS_FOLDER = PP_FIGURE+'/'+'RESULTS_NUMBER_PP_PER_BIN_'+str(NUMBER_PP_PER_BIN)+'_NUMBER_STA_PER_BIN_'+str(NUMBER_STA_PER_BIN)+'/CROSS_SECTION_COLOR_BOOTSTRAP/'
 os.makedirs(RESULTS_FOLDER,exist_ok=True)
 fig.savefig(RESULTS_FOLDER+'SELECTED_BINNED_DATA_CROSS_SECTION_Pds_Ppds_bootstrap_points.'+EXT_FIG,dpi=DPI_FIG)
 

@@ -29,13 +29,13 @@
 # In the current version of the program, you just need to set the directory and
 # the suffix of the files organized inside their directory as:
 # FILENAME.fileextention, e.g., like:
-# .../a_1/BDCO/2015/251/2015.8.13.2/SYN.BDCO.2015.8.13.2.T:a=1.0.eqr
-# the directory is a_1 and the extention is '.eqr'
+# .../a_1/BDCO/2015/251/2015.8.13.2/SYN.BDCO.2015.8.13.2_P_R.sac
+# the directory is a_1 and the extention is '_P_R.sac'
 # file per event and per station.
 
 
 # dir of receiver functions
-RF_DIR = /home/sysop/dados_posdoc/MTZ_2024/PRF_SEISPY_DATA/
+RF_DIR = /home/sysop/dados_posdoc/MTZ_2024/PRF_SEISPY_DATA_YES_FILTER_PP/
 
 # extension of receiver functions
 RF_EXT = _P_R.sac
@@ -44,7 +44,7 @@ RF_EXT = _P_R.sac
 MODEL_FILE_NPZ = /home/sysop/diogogit/codes_escritos/mantle_transition_zone_migration_obspy_Pds/velocity_model/iasp91_10.npz
 
 # dir of OUTPUTs
-OUTPUT_DIR = /home/sysop/dados_posdoc/MTZ_2024/OUTPUT/MTZ_NO_FILTER_PP/
+OUTPUT_DIR = /home/sysop/dados_posdoc/MTZ_2024/OUTPUT/MTZ_YES_FILTER_PP/
 
 #=====
 [maps]
@@ -147,10 +147,10 @@ DIST_GRID_PP = 0.15
 RF_FREQUENCY = 0.24
 
 #number of piercing points per bin
-NUMBER_PP_PER_BIN = 10
+NUMBER_PP_PER_BIN = 30
 
 #number of stations RF per bin
-NUMBER_STA_PER_BIN = 1
+NUMBER_STA_PER_BIN = 4
 
 #Depth Target
 DEPTH_TARGET = 530

@@ -167,13 +167,13 @@ PP_dic_P410s_files = [pd.read_feather(i) for i in filename_pds_FEATHER_P410s]
 PP_dic_P410s = {'depth':[],'time':[],'lat':[],'lon':[]}
 
 for i,j in enumerate(PP_dic_P410s_files):
-	PP_dic_P410s['time'].append(j['time'])
-	PP_dic_P410s['depth'].append(j['depth'])
-	PP_dic_P410s['lat'].append(j['lat']) 
-	PP_dic_P410s['lon'].append(j['lon']) 
-
+	PP_dic_P410s['time'].append(j['time'].tolist())
+	PP_dic_P410s['depth'].append(j['depth'].tolist())
+	PP_dic_P410s['lat'].append(j['lat'].tolist()) 
+	PP_dic_P410s['lon'].append(j['lon'].tolist()) 
 
 print('Saving Piercing Points in FEATHER file')
+print('\n')
 
 PP_dic_P410s_df = pd.DataFrame.from_dict(PP_dic_P410s)
 file_feather_name_P410s = PP_DIR+'PP_'+PHASES[0]+'_dic.feather'
@@ -207,12 +207,13 @@ PP_dic_TARGET_Ps_files = [pd.read_feather(i) for i in filename_pds_FEATHER_TARGE
 PP_dic_TARGET_Ps = {'depth':[],'time':[],'lat':[],'lon':[]}
 
 for i,j in enumerate(PP_dic_TARGET_Ps_files):
-	PP_dic_TARGET_Ps['time'].append(j['time'])
-	PP_dic_TARGET_Ps['depth'].append(j['depth'])
-	PP_dic_TARGET_Ps['lat'].append(j['lat']) 
-	PP_dic_TARGET_Ps['lon'].append(j['lon']) 
+	PP_dic_TARGET_Ps['time'].append(j['time'].tolist())
+	PP_dic_TARGET_Ps['depth'].append(j['depth'].tolist())
+	PP_dic_TARGET_Ps['lat'].append(j['lat'].tolist()) 
+	PP_dic_TARGET_Ps['lon'].append(j['lon'].tolist()) 
 
 print('Saving Piercing Points in FEATHER file')
+print('\n')
 
 PP_dic_TARGET_Ps_df = pd.DataFrame.from_dict(PP_dic_TARGET_Ps)
 file_feather_name_target = PP_DIR+'PP_'+PHASES[1]+'_dic.feather'
@@ -246,10 +247,10 @@ PP_dic_P660s_files = [pd.read_feather(i) for i in filename_pds_FEATHER_P660s]
 PP_dic_P660s = {'depth':[],'time':[],'lat':[],'lon':[]}
 
 for i,j in enumerate(PP_dic_P660s_files):
-	PP_dic_P660s['time'].append(j['time'])
-	PP_dic_P660s['depth'].append(j['depth'])
-	PP_dic_P660s['lat'].append(j['lat']) 
-	PP_dic_P660s['lon'].append(j['lon']) 
+	PP_dic_P660s['time'].append(j['time'].tolist())
+	PP_dic_P660s['depth'].append(j['depth'].tolist())
+	PP_dic_P660s['lat'].append(j['lat'].tolist()) 
+	PP_dic_P660s['lon'].append(j['lon'].tolist()) 
 
 
 print('Saving Piercing Points in FEATHER file')
