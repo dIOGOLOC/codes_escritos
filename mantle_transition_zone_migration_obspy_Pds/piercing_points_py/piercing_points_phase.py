@@ -9,6 +9,7 @@ from obspy.geodetics import kilometer2degrees
 from multiprocessing import Pool
 import pyarrow.feather as feather
 import pandas as pd
+import gc
 
 
 from parameters_py.mgconfig import (
@@ -62,3 +63,10 @@ def arrivals_calculation(input):
 
 	file_feather_name = phase_folder+'PP_dic'+str(number)+'.feather'
 	feather.write_feather(PP_df, file_feather_name)
+
+	#deleting references
+	del PP_dic
+	del PP_df
+
+	#triggering collection
+	gc.collect()

@@ -146,23 +146,31 @@ shape_2_SHP = list(reader_2_SHP.geometries())
 plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
 ax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 
-norm_410 = mpl.colors.Normalize(vmin=200,vmax=300,clip=True)
+
+n=41
+x = 0.5
+upper = plt.cm.seismic(np.linspace(0, x, n)[::-1])
+white = plt.cm.seismic(np.ones(18)*0.5)
+lower= plt.cm.seismic(np.linspace(1-x, 1, n)[::-1])
+colors = np.vstack((lower, white,upper))
+tmap = matplotlib.colors.LinearSegmentedColormap.from_list('map_white', colors)
+norm_MTZ = mpl.colors.Normalize(vmin=200,vmax=300,clip=True)
 
 for i,j in enumerate(lons):
-#	if math.isnan(RF_DEPTH_mtz_thickness_Pds[i]) == False and math.isnan(RF_DEPTH_mean_1_Pds[i]) == False  and math.isnan(RF_DEPTH_mean_1_Pds[i]) == False and  math.isnan(RF_DEPTH_mean_LVZ_Pds[i]) == False and math.isnan(RF_DEPTH_mean_520_Pds[i]) == False:
-	if math.isnan(RF_DEPTH_mtz_thickness_Pds[i]) == False and math.isnan(RF_DEPTH_mean_1_Pds[i]) == False  and math.isnan(RF_DEPTH_mean_1_Pds[i]) == False and  math.isnan(RF_DEPTH_mean_LVZ_Pds[i]) == False:
-		circulo_410 = Circle(radius=DIST_GRID_PP,xy=(lons[i],lats[i]),color=colormap(norm_410(RF_DEPTH_mtz_thickness_Pds[i])), ec='k',transform=ccrs.Geodetic(),zorder=3)
-		ax.add_patch(circulo_410)
-		circulo_410.pickable()
-		circulo_410.set_picker(True)
+	if math.isnan(RF_DEPTH_mtz_thickness_Pds[i]) == False and math.isnan(RF_DEPTH_mean_1_Pds[i]) == False  and math.isnan(RF_DEPTH_mean_1_Pds[i]) == False and  math.isnan(RF_DEPTH_mean_LVZ_Pds[i]) == False and math.isnan(RF_DEPTH_mean_520_Pds[i]) == False:
+	#if math.isnan(RF_DEPTH_mtz_thickness_Pds[i]) == False and math.isnan(RF_DEPTH_mean_1_Pds[i]) == False  and math.isnan(RF_DEPTH_mean_1_Pds[i]) == False and  math.isnan(RF_DEPTH_mean_LVZ_Pds[i]) == False:
+		circulo_MTZ = Circle(radius=DIST_GRID_PP,xy=(lons[i],lats[i]),color=tmap(norm_MTZ(RF_DEPTH_mtz_thickness_Pds[i])), ec='k',transform=ccrs.Geodetic(),zorder=3)
+		ax.add_patch(circulo_MTZ)
+		circulo_MTZ.pickable()
+		circulo_MTZ.set_picker(True)
 
 ax.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor='grey',transform=ccrs.PlateCarree())
 
 #______________________________________________________________________
 
-sm_410 = plt.cm.ScalarMappable(cmap=colormap,norm=norm_410)
-sm_410._A = []
-fig.colorbar(sm_410,ax=ax,orientation='horizontal',shrink=0.8)
+sm_MTZ = plt.cm.ScalarMappable(cmap=colormap,norm=norm_MTZ)
+sm_MTZ._A = []
+fig.colorbar(sm_MTZ,ax=ax,orientation='horizontal',shrink=0.8)
 
 plt.title('Pick four points for bootstrapping cross-section and them close the windows', y=1.08)
 

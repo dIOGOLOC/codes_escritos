@@ -19,7 +19,7 @@ import cartopy.feature as cfeature
 import scipy.io
 import matplotlib.cm as cm
 from matplotlib.ticker import MultipleLocator, FormatStrFormatter, AutoMinorLocator
-import json
+import pandas as pd
 import matplotlib.gridspec as gridspec
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from scipy import interpolate
@@ -51,25 +51,24 @@ print('\n')
 
 STA_DIR = OUTPUT_DIR+'MODEL_INTER_DEPTH_'+str(INTER_DEPTH)+'_DEPTH_TARGET_'+str(DEPTH_TARGET)+'/'+'Stations'+'/'
 
-
 print('Looking for receiver functions data in JSON file in '+STA_DIR)
 print('\n')
 
-filename_STA = STA_DIR+'sta_dic.json'
+filename_STA = STA_DIR+'sta_dic.feather'
 
-sta_dic = json.load(open(filename_STA))
+sta_dic = pd.read_feather(filename_STA)  
 
-event_depth = sta_dic['event_depth']
-event_lat = sta_dic['event_lat']
-event_long = sta_dic['event_long']
-event_dist = sta_dic['event_dist']
-event_gcarc = sta_dic['event_gcarc']
-event_sta = sta_dic['event_sta']
-event_ray = sta_dic['event_ray']
-sta_lat = sta_dic['sta_lat']
-sta_long = sta_dic['sta_long']
-sta_data = sta_dic['sta_data']
-sta_time = sta_dic['sta_time']
+event_depth = sta_dic['event_depth'].tolist()
+event_lat = sta_dic['event_lat'].tolist()
+event_long = sta_dic['event_long'].tolist()
+event_dist = sta_dic['event_dist'].tolist()
+event_gcarc = sta_dic['event_gcarc'].tolist()
+event_sta = sta_dic['event_sta'].tolist()
+event_ray = sta_dic['event_ray'].tolist()
+sta_lat = sta_dic['sta_lat'].tolist()
+sta_long = sta_dic['sta_long'].tolist()
+sta_data = sta_dic['sta_data'].tolist()
+sta_time = sta_dic['sta_time'].tolist()
 
 print('Looking for selected binned data')
 print('\n')
@@ -80,11 +79,11 @@ PP_SELEC_DIR = OUTPUT_DIR+'MODEL_INTER_DEPTH_'+str(INTER_DEPTH)+'_DEPTH_TARGET_'
 lst_json_file = []
 for root, dirs, files in os.walk(PP_SELEC_DIR):
     for file in files:
-        if file.endswith(".json"):
+        if file.endswith(".feather"):
              lst_json_file.append(os.path.join(root, file))
 
 lst_json_file_PP = [int(i.split('NUMBER_PP_PER_BIN_')[1].split('_NUMBER_STA_PER_BIN_')[0]) for i in lst_json_file ]
-lst_json_file_STA =  [int(i.split('_NUMBER_STA_PER_BIN_')[1].split('/SELECTED_BINNED.json')[0]) for i in lst_json_file ]
+lst_json_file_STA =  [int(i.split('_NUMBER_STA_PER_BIN_')[1].split('/SELECTED_BINNED.feather')[0]) for i in lst_json_file ]
 
 ind = np.lexsort((lst_json_file_PP,lst_json_file_STA))
 
@@ -108,27 +107,24 @@ RF_DEPTH_std_2_Pds =  []
 RF_DEPTH_mtz_thickness_Pds =  []
 RF_DEPTH_mtz_thickness_Pds_std =  []
 
-
 for i,j in enumerate(sort_lst_json):
 
-	SELECTED_BINNED_DATA_dic = json.load(open(j))
+	SELECTED_BINNED_DATA_dic = pd.read_feather(j)
 
-	lats.append(SELECTED_BINNED_DATA_dic['lat'])
-	lons.append(SELECTED_BINNED_DATA_dic['lon'])
+	lats.append(SELECTED_BINNED_DATA_dic['lat'].tolist())
+	lons.append(SELECTED_BINNED_DATA_dic['lon'].tolist())
 
-	RF_DEPTH_mean_1_Pds.append(SELECTED_BINNED_DATA_dic['mean_1_Pds'])
-	RF_DEPTH_std_1_Pds.append(SELECTED_BINNED_DATA_dic['std_1_Pds'])
+	RF_DEPTH_mean_1_Pds.append(SELECTED_BINNED_DATA_dic['mean_1_Pds'].tolist())
+	RF_DEPTH_std_1_Pds.append(SELECTED_BINNED_DATA_dic['std_1_Pds'].tolist())
 
-	RF_DEPTH_mean_2_Pds.append(SELECTED_BINNED_DATA_dic['mean_2_Pds'])
-	RF_DEPTH_std_2_Pds.append(SELECTED_BINNED_DATA_dic['std_2_Pds'])
+	RF_DEPTH_mean_2_Pds.append(SELECTED_BINNED_DATA_dic['mean_2_Pds'].tolist())
+	RF_DEPTH_std_2_Pds.append(SELECTED_BINNED_DATA_dic['std_2_Pds'].tolist())
 
-	RF_DEPTH_mtz_thickness_Pds.append(SELECTED_BINNED_DATA_dic['mtz_thickness_Pds'])
-	RF_DEPTH_mtz_thickness_Pds_std.append(SELECTED_BINNED_DATA_dic['mtz_thickness_Pds_std'])
+	RF_DEPTH_mtz_thickness_Pds.append(SELECTED_BINNED_DATA_dic['mtz_thickness_Pds'].tolist())
+	RF_DEPTH_mtz_thickness_Pds_std.append(SELECTED_BINNED_DATA_dic['mtz_thickness_Pds_std'].tolist())
 
 
-PP_FIGURE = OUTPUT_DIR+'MODEL_INTER_DEPTH_'+str(INTER_DEPTH)+'_DEPTH_TARGET_'+str(DEPTH_TARGET)+'/'+'Figures'+'/'
-
-RESULTS_FOLDER = PP_FIGURE
+RESULTS_FOLDER = OUTPUT_DIR+'MODEL_INTER_DEPTH_'+str(INTER_DEPTH)+'_DEPTH_TARGET_'+str(DEPTH_TARGET)+'/'+'Figures'+'/'
 os.makedirs(RESULTS_FOLDER,exist_ok=True)
 
 ###################################################################################################################
@@ -197,22 +193,20 @@ def plot_mosaic_MTZ(mosaic_lst,mosaic_lst_name,mosaic_lst_label):
 			colors = np.vstack((lower, white, upper))
 			tmap = mpl.colors.LinearSegmentedColormap.from_list('map_white', colors)
 
-
-			bounds = np.arange(200, 300+INTER_DEPTH, INTER_DEPTH)
-			norm_660 = mpl.colors.BoundaryNorm(boundaries=bounds, ncolors=colormap.N)
+			norm_map_MTZ = Normalize(vmin=200,vmax=300)
 
 			for i,j in enumerate(lons[k]):
 				if math.isnan(mosaic_lst[k][i]) == False:
-					retangulo_660 = Circle(radius=DIST_GRID_PP,xy=(lons[k][i], lats[k][i]),color=tmap(norm_660(mosaic_lst[k][i])), ec='k',linewidth=0.2,transform=ccrs.Geodetic(),zorder=2)
+					retangulo_660 = Circle(radius=DIST_GRID_PP,xy=(lons[k][i], lats[k][i]),color=tmap(norm_map_MTZ(mosaic_lst[k][i])), ec='k',linewidth=0.2,transform=ccrs.Geodetic(),zorder=2)
 					ax.add_patch(retangulo_660)
 				else: 
 					pass
 		#______________________________________________________________________
 
-		sm_660 = plt.cm.ScalarMappable(cmap=tmap,norm=norm_660)
-		sm_660._A = []
+		#sm_MTZ = plt.cm.ScalarMappable(cmap=tmap,norm=norm_map_MTZ)
+		#sm_MTZ._A = []
 
-		fig.colorbar(sm_660,  ax=axes.flat, orientation='horizontal',shrink=0.5,fraction=0.05,label=mosaic_lst_label)
+		#fig.colorbar(sm_MTZ,  ax=axes.flat, orientation='horizontal',shrink=0.5,fraction=0.05,label=mosaic_lst_label)
 
 		fig.savefig(RESULTS_FOLDER+mosaic_lst_name+'_mosaic.'+EXT_FIG,dpi=DPI_FIG)
 
@@ -256,8 +250,7 @@ def plot_mosaic_660(mosaic_lst,mosaic_lst_name,mosaic_lst_label):
 			colors = np.vstack((lower, white, upper))
 			tmap = mpl.colors.LinearSegmentedColormap.from_list('map_white', colors)
 
-			bounds = np.arange(610, 710+INTER_DEPTH, INTER_DEPTH)
-			norm_660 = mpl.colors.BoundaryNorm(boundaries=bounds, ncolors=colormap.N)
+			norm_660 = Normalize(vmin=610,vmax=710)
 
 			for i,j in enumerate(lons[k]):
 				if math.isnan(mosaic_lst[k][i]) == False:
@@ -267,10 +260,10 @@ def plot_mosaic_660(mosaic_lst,mosaic_lst_name,mosaic_lst_label):
 					pass
 		#______________________________________________________________________
 
-		sm_660 = plt.cm.ScalarMappable(cmap=tmap,norm=norm_660)
-		sm_660._A = []
+		#sm_660 = plt.cm.ScalarMappable(cmap=tmap,norm=norm_660)
+		#sm_660._A = []
 		
-		fig.colorbar(sm_660,  ax=axes.flat, orientation='horizontal',shrink=0.5,fraction=0.05,label=mosaic_lst_label)
+		#fig.colorbar(sm_660,  ax=axes.flat, orientation='horizontal',shrink=0.5,fraction=0.05,label=mosaic_lst_label)
 
 		fig.savefig(RESULTS_FOLDER+mosaic_lst_name+'_mosaic.'+EXT_FIG,dpi=DPI_FIG)
 
@@ -313,23 +306,20 @@ def plot_mosaic_410(mosaic_lst,mosaic_lst_name,mosaic_lst_label):
 			colors = np.vstack((lower, white, upper))
 			tmap = mpl.colors.LinearSegmentedColormap.from_list('map_white', colors)
 
-			bounds = np.arange(360, 460+INTER_DEPTH, INTER_DEPTH)
-			norm_660 = mpl.colors.BoundaryNorm(boundaries=bounds, ncolors=colormap.N)
-
-
+			norm_410 = Normalize(vmin=360,vmax=460)
 
 			for i,j in enumerate(lons[k]):
 				if math.isnan(mosaic_lst[k][i]) == False:
-					retangulo_660 = Circle(radius=DIST_GRID_PP,xy=(lons[k][i], lats[k][i]),color=tmap(norm_660(mosaic_lst[k][i])), ec='k',linewidth=0.2,transform=ccrs.Geodetic(),zorder=2)
-					ax.add_patch(retangulo_660)
+					retangulo_410 = Circle(radius=DIST_GRID_PP,xy=(lons[k][i], lats[k][i]),color=tmap(norm_410(mosaic_lst[k][i])), ec='k',linewidth=0.2,transform=ccrs.Geodetic(),zorder=2)
+					ax.add_patch(retangulo_410)
 				else: 
 					pass
 		#______________________________________________________________________
 
-		sm_660 = plt.cm.ScalarMappable(cmap=tmap,norm=norm_660)
-		sm_660._A = []
+		#sm_410 = plt.cm.ScalarMappable(cmap=tmap,norm=norm_410)
+		#sm_410._A = []
 
-		fig.colorbar(sm_660,  ax=axes.flat, orientation='horizontal',shrink=0.5,fraction=0.05,label=mosaic_lst_label)
+		#fig.colorbar(sm_410,  ax=axes.flat, orientation='horizontal',shrink=0.5,fraction=0.05,label=mosaic_lst_label)
 
 
 		fig.savefig(RESULTS_FOLDER+mosaic_lst_name+'_mosaic.'+EXT_FIG,dpi=DPI_FIG)

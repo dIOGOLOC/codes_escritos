@@ -5,6 +5,7 @@ import pandas as pd
 from obspy.taup import TauPyModel
 from obspy.geodetics import kilometer2degrees
 import pyarrow.feather as feather
+import gc
 
 
 from parameters_py.mgconfig import (
@@ -75,3 +76,10 @@ def travel_time_calculation_Pds(input):
 
 	file_feather_name = FEATHER_FOLDER+'Pds_dic_'+str(number)+'.feather'
 	feather.write_feather(Pds_df, file_feather_name)
+
+	#deleting references
+	del Pds_dic
+	del Pds_df
+
+	#triggering collection
+	gc.collect()

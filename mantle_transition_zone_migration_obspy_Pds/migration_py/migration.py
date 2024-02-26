@@ -183,6 +183,10 @@ for i,j in enumerate(PP_lon_1):
 				pp_1_lat[i] = PP_lat_1[i][k]
 				pp_1_long[i] = l
 
+pp_1_lat = [i for i in pp_1_lat if isinstance(i, (int, float))]
+pp_1_long = [i for i in pp_1_long if isinstance(i, (int, float))]
+
+
 print('P'+str(DEPTH_TARGET)+'s Piercing Points')
 print('\n')
 
@@ -196,7 +200,12 @@ for i,j in enumerate(PP_lon_med):
 				pp_med_lat[i] = PP_lat_med[i][k]
 				pp_med_long[i] = l
 				pp_time_DEPTH_TARGET[i] = PP_time_med[i][-1] - PP_time_med[i][k]
-		
+
+pp_med_lat = [i for i in pp_med_lat if isinstance(i, (int, float))]
+pp_med_long = [i for i in pp_med_long if isinstance(i, (int, float))]
+pp_time_DEPTH_TARGET = [i for i in pp_time_DEPTH_TARGET if isinstance(i, (int, float))]
+
+
 print('P660s Piercing Points')
 print('\n')
 
@@ -209,17 +218,12 @@ for i,j in enumerate(PP_lon_2):
 			pp_2_lat[i] = PP_lat_2[i][k]
 			pp_2_long[i] = l
 
-			#if PP_lon_2[i][k]  != [] and PP_lat_2[i][k] != []:
-			#	pp_2_lat[i] = PP_lat_2[i][k]
-			#	pp_2_long[i] = l
-			
-
-
 pp_2_lat = [i for i in pp_2_lat if isinstance(i, (int, float))]
 pp_2_long = [i for i in pp_2_long if isinstance(i, (int, float))]
 
 print('Calculating MEAN FIRST FRESNEL ZONE RADIUS')
-print('DEPTH TARGET MEAN TIME: '+str(np.mean(pp_time_DEPTH_TARGET)))
+print('DEPTH TARGET MEAN TIME: ',np.mean(pp_time_DEPTH_TARGET))
+
 
 FRESNEL_ZONE_RADIUS_km = (Vp_depth_DEPTH_TARGET/2)* np.sqrt(np.mean(pp_time_DEPTH_TARGET) / RF_FREQUENCY)
 FRESNEL_ZONE_RADIUS = kilometer2degrees(FRESNEL_ZONE_RADIUS_km)
@@ -696,8 +700,9 @@ for _k in tqdm(range(BOOTSTRAP_INTERATOR),total=BOOTSTRAP_INTERATOR,desc='Bootst
 				RF_BOOTSTRAP_ESTIMATION_Pds[_k][i]['thickness_MTZ_mean'] = np.nan
 			
 ###################################################################################################################
-
+print('\n')
 print('Allocating results and Stacking Pds data')
+print('\n')
 
 RF_lat = []
 RF_lon = []
