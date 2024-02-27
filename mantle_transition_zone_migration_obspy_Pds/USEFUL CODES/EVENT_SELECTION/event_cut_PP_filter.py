@@ -68,10 +68,10 @@ from cartopy.mpl.ticker import LongitudeFormatter, LatitudeFormatter,LatitudeLoc
 # =====
 
 # directory of raw files
-DIR_DATA = '/media/sysop/8d2362fc-3b46-49a7-a864-19b2a6ad097b/diogoloc/dados_posdoc/MTZ_2024/DATA_MTZ/DATA_2024_NO_PP_FILTER/'
+DIR_DATA = '/home/sysop/dados_posdoc/MTZ_2024/DATA_MTZ/DATA_2024_NO_PP_FILTER/'
 
 #Directory to save EVENT data
-OUTPUT_EV_DIR = '/media/sysop/8d2362fc-3b46-49a7-a864-19b2a6ad097b/diogoloc/dados_posdoc/MTZ_2024/DATA_MTZ/'
+OUTPUT_EV_DIR = '//home/sysop/dados_posdoc/MTZ_2024/DATA_MTZ/'
 
 # =====
 # event
@@ -234,7 +234,7 @@ ev_folders = glob.glob(DIR_DATA+'*/*/*/*')
 print('PP phase filter for each station')
 print('\n')
 
-with Pool(processes=8) as p:
+with Pool(processes=20) as p:
 	max_ = len(ev_folders)
 	with tqdm(total=max_,desc='Filtering') as pbar:
 		for i, _ in enumerate(p.imap_unordered(cut_data_by_event,ev_folders)):

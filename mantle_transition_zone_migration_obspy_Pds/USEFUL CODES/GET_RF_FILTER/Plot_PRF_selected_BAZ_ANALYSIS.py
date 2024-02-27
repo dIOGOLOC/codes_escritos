@@ -15,10 +15,10 @@ import pandas as pd
 # # Pastas com as entradas e saídas
 
 #INPUT FOLDER (Pasta com as RFs)
-INPUT_DIR = '/media/sysop/8d2362fc-3b46-49a7-a864-19b2a6ad097b/diogoloc/dados_posdoc/MTZ_2024/PRF_SEISPY_DATA_YES_PP_FILTER/BP.TUTU/'
+INPUT_DIR = '/home/sysop/dados_posdoc/MTZ_2024/PRF_SEISPY_DATA_YES_PP_FILTER/BP.TUTU/'
 
 #OUTPUT FOLDER (Pasta para salvar a figura)
-OUTPUT_DIR = '/media/sysop/8d2362fc-3b46-49a7-a864-19b2a6ad097b/diogoloc/dados_posdoc/MTZ_2024/OUTPUT/'
+OUTPUT_DIR = '/home/sysop/dados_posdoc/MTZ_2024/OUTPUT/'
 
 
 # # Lendo as Funções do Receptor

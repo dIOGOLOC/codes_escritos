@@ -48,10 +48,10 @@ from matplotlib.transforms import offset_copy
 # =====
 
 #Directory to get RF data
-INPUT_RF_DIR = '/media/sysop/8d2362fc-3b46-49a7-a864-19b2a6ad097b/diogoloc/dados_posdoc/MTZ_2024/DATA_MTZ/DATA_2024_YES_PP_FILTER/'
+INPUT_RF_DIR = '/home/sysop/dados_posdoc/MTZ_2024/DATA_MTZ/DATA_2024_YES_PP_FILTER/'
 
 #Directory to save RF data
-OUTPUT_RF_DIR = '/media/sysop/8d2362fc-3b46-49a7-a864-19b2a6ad097b/diogoloc/dados_posdoc/MTZ_2024/PRF_SEISPY_DATA_YES_PP_FILTER/'
+OUTPUT_RF_DIR = '/home/sysop/dados_posdoc/MTZ_2024/PRF_SEISPY_DATA_YES_PP_FILTER/'
 
 # ======
 # inputs
@@ -164,7 +164,7 @@ PRF_folders = sorted(glob.glob(INPUT_RF_DIR+'*/*/*/*/PRF_'+str(GAUSSIAN_FILTER)+
 # RF CALC
 # =======
 
-with Pool(processes=8) as p:
+with Pool(processes=20) as p:
 	max_ = len(PRF_folders)
 	with tqdm(total=max_,desc='RF processing') as pbar:
 		for i, _ in enumerate(p.imap_unordered(RF_calc,PRF_folders)):

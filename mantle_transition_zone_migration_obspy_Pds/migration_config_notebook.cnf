@@ -35,7 +35,7 @@
 
 
 # dir of receiver functions
-RF_DIR = /home/sysop/dados_posdoc/MTZ_2024/PRF_SEISPY_DATA_NO_FILTER_PP/
+RF_DIR = /home/sysop/dados_posdoc/MTZ_2024/PRF_SEISPY_DATA_YES_FILTER_PP/
 
 # extension of receiver functions
 RF_EXT = _P_R.sac
@@ -44,7 +44,7 @@ RF_EXT = _P_R.sac
 MODEL_FILE_NPZ = /home/sysop/diogogit/codes_escritos/mantle_transition_zone_migration_obspy_Pds/velocity_model/iasp91_10.npz
 
 # dir of OUTPUTs
-OUTPUT_DIR = /home/sysop/dados_posdoc/MTZ_2024/OUTPUT/MTZ_NO_FILTER_PP/
+OUTPUT_DIR = /home/sysop/dados_posdoc/MTZ_2024/OUTPUT/MTZ_YES_FILTER_PP/
 
 #=====
 [maps]

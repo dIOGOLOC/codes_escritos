@@ -71,7 +71,7 @@ from cartopy.mpl.ticker import LongitudeFormatter, LatitudeFormatter,LatitudeLoc
 # =====
 
 #Directory to save EVENT data
-OUTPUT_EV_DIR = '/media/sysop/8d2362fc-3b46-49a7-a864-19b2a6ad097b/diogoloc/dados_posdoc/MTZ_2024/DATA_MTZ/DATA_2024_YES_PP_FILTER/'
+OUTPUT_EV_DIR = '/home/sysop/dados_posdoc/MTZ_2024/DATA_MTZ/DATA_2024_YES_PP_FILTER/'
 
 # =====
 # event
@@ -139,7 +139,7 @@ EVENT_folders = sorted(glob.glob(OUTPUT_EV_DIR+'*/*/*/*'))
 # RF CALC
 # =======
 
-with Pool(processes=8) as p:
+with Pool(processes=20) as p:
 	max_ = len(EVENT_folders)
 	with tqdm(total=max_,desc='RF processing') as pbar:
 		for i, _ in enumerate(p.imap_unordered(RF_calc,EVENT_folders)):
