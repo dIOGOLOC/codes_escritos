@@ -120,7 +120,7 @@ def cut_data_by_event(input):
         arrivalsPP =  model.get_travel_times(source_depth_in_km=stE[0].stats.sac.evdp, distance_in_degree=stE[0].stats.sac.gcarc, phase_list=["PP"])
         arrPP = arrivalsPP[0]	
 
-        time_PP = arrPP.time - arr.time + CUT_BEFORE_P
+        time_PP = arrPP.time - arr.time
 
         #Creating Event Directory
         event_directory = OUTPUT_EV_DIR+'DATA_2024_YES_PP_FILTER/'+'/'.join(ev_files[0].split('/DATA_2024_NO_PP_FILTER/')[-1].split('/')[:-1])+'/'
@@ -128,15 +128,15 @@ def cut_data_by_event(input):
         
         data_stE = []
         for k,l in enumerate(stE[0].times()):
-            if  l < time_PP - 30:
+            if  l < time_PP - 10:
                 data_stE.append(stE[0].data[k])
-            elif time_PP - 30.0 <= l <= time_PP - 5.0:
-                data_stE.append(stE[0].data[k] * np.exp(-0.2*(l - time_PP + 30.0)))
+            elif time_PP - 10.0 <= l <= time_PP - 5.0:
+                data_stE.append(stE[0].data[k] * np.exp(-0.2*(l - time_PP + 10.0)))
             elif time_PP - 5.0 <= l <= time_PP + 5.0: 
                 data_stE.append(stE[0].data[k] * 0.0)
-            elif time_PP + 5.0 <= l <= time_PP + 30.0: 
-                data_stE.append(stE[0].data[k] * np.exp(-0.2*(-l + time_PP + 30.0)))
-            elif l > time_PP + 30.0: 
+            elif time_PP + 5.0 <= l <= time_PP + 10.0: 
+                data_stE.append(stE[0].data[k] * np.exp(-0.2*(-l + time_PP + 10.0)))
+            elif l > time_PP + 10.0: 
                 data_stE.append(stE[0].data[k])
                         
         headerHHE = {
@@ -159,15 +159,15 @@ def cut_data_by_event(input):
 
         data_stN = []
         for k,l in enumerate(stN[0].times()):
-            if  l < time_PP - 30:
+            if  l < time_PP - 10:
                 data_stN.append(stN[0].data[k])
-            elif time_PP - 30.0 <= l <= time_PP - 5.0:
-                data_stN.append(stN[0].data[k] * np.exp(-0.2*(l - time_PP + 30.0)))
+            elif time_PP - 10.0 <= l <= time_PP - 5.0:
+                data_stN.append(stN[0].data[k] * np.exp(-0.2*(l - time_PP + 10.0)))
             elif time_PP - 5.0 <= l <= time_PP + 5.0: 
                 data_stN.append(stN[0].data[k] * 0.0)
-            elif time_PP + 5.0 <= l <= time_PP + 30.0: 
-                data_stN.append(stN[0].data[k] * np.exp(-0.2*(-l + time_PP + 30.0)))
-            elif l > time_PP + 30.0: 
+            elif time_PP + 5.0 <= l <= time_PP + 10.0: 
+                data_stN.append(stN[0].data[k] * np.exp(-0.2*(-l + time_PP + 10.0)))
+            elif l > time_PP + 10.0: 
                 data_stN.append(stN[0].data[k])
 
         headerHHN = {
@@ -190,15 +190,15 @@ def cut_data_by_event(input):
 
         data_stZ = []
         for k,l in enumerate(stZ[0].times()):
-            if  l < time_PP - 30:
+            if  l < time_PP - 10:
                 data_stZ.append(stZ[0].data[k])
-            elif time_PP - 30.0 <= l <= time_PP - 5.0:
-                data_stZ.append(stZ[0].data[k] * np.exp(-0.2*(l - time_PP + 30.0)))
+            elif time_PP - 10.0 <= l <= time_PP - 5.0:
+                data_stZ.append(stZ[0].data[k] * np.exp(-0.2*(l - time_PP + 10.0)))
             elif time_PP - 5.0 <= l <= time_PP + 5.0: 
                 data_stZ.append(stZ[0].data[k] * 0.0)
-            elif time_PP + 5.0 <= l <= time_PP + 30.0: 
-                data_stZ.append(stZ[0].data[k] * np.exp(-0.2*(-l + time_PP + 30.0)))
-            elif l > time_PP + 30.0: 
+            elif time_PP + 5.0 <= l <= time_PP + 10.0: 
+                data_stZ.append(stZ[0].data[k] * np.exp(-0.2*(-l + time_PP + 10.0)))
+            elif l > time_PP + 10.0: 
                 data_stZ.append(stZ[0].data[k])
         
         headerHHZ = {

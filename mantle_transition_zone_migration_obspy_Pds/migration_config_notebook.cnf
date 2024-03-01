@@ -35,7 +35,7 @@
 
 
 # dir of receiver functions
-RF_DIR = /home/sysop/dados_posdoc/MTZ_2024/PRF_SEISPY_DATA_YES_FILTER_PP/
+RF_DIR = /home/sysop/dados_posdoc/MTZ_2024/PRF_selected_YES_PP_FILTER/
 
 # extension of receiver functions
 RF_EXT = _P_R.sac
@@ -143,11 +143,11 @@ GRID_PP_MULT = 0.25
 # grid bin radius (degree)
 DIST_GRID_PP = 0.15
 
-# Receiver Function Frequency (Hz)
+# Receiver Function Frequency (Hz) (see http://eqseis.geosc.psu.edu/cammon/HTML/RftnDocs/seq01.html)
 RF_FREQUENCY = 0.24
 
 #number of piercing points per bin
-NUMBER_PP_PER_BIN = 30
+NUMBER_PP_PER_BIN = 10
 
 #number of stations RF per bin
 NUMBER_STA_PER_BIN = 3

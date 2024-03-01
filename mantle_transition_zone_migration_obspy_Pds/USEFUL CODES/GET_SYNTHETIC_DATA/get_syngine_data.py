@@ -7,89 +7,89 @@ from obspy.clients.syngine import Client as SyngineClient
 from obspy.taup import TauPyModel
 from tqdm import tqdm
 import sys
+from multiprocessing import Pool
 
 # ========== 
 # INPUT DATA
 # ========== 
 
-INPUT_DATA = '/home/sysop/dados_posdoc/MTZ_2024/PRF_SEISPY_DATA_NO_FILTER_PP/'
+INPUT_DATA = '/home/sysop/dados_posdoc/MTZ_2024/PRF_selected_YES_PP_FILTER_POST/'
 
-OUTPUT_DATA = '/home/sysop/dados_posdoc/MTZ_2024/SYNTHETIC_DATA_MTZ/'
+OUTPUT_DATA = '/home/sysop/dados_posdoc/DATA_MTZ/MTZ_2024/DATA_2024_SYNTHETIC/'
 
 # -----------
 # GET FR DATA
 # -----------
 
-PRF_folders = sorted(glob.glob(INPUT_DATA+'*/*_P_R.sac'))
+PRF_files = sorted(glob.glob(INPUT_DATA+'*/*_P_R.sac'))
 
 # ---------------
 # READING FR DATA
 # ---------------
 
-ev = obspy.Stream()
-for i,j in enumerate(PRF_folders):
-    ev += obspy.read(j,headonly=True)
+def read_down_save_syn(RF_file):
+    #reading the data
+    RF_ = obspy.read(RF_file,headonly=True)[0]
 
-# ------------------
-# ALLOCATING FR DATA
-# ------------------
-    
-eventid_lst = []
-lat_lst = []
-long_lst = []
-sta_lst = []
+    #adjusting for a error time
+    model_time = TauPyModel(model="iasp91")
+    arrivals = model_time.get_travel_times(source_depth_in_km=RF_.stats.sac.evdp, distance_in_degree= RF_.stats.sac.gcarc, phase_list=["P"])
+    arr = arrivals[0]
+    event_time_o = arr.time-10
+    event_time = RF_.stats.starttime - event_time_o
 
-for i,j in tqdm(enumerate(ev),total=len(ev),desc='Getting the GCMT event name'):
-    event_time = obspy.UTCDateTime(year=j.stats.sac.nzyear, julday=j.stats.sac.nzjday)
     event_DD = '{:02}'.format(event_time.day)
     event_MM = '{:02}'.format(event_time.month)
-    event_YYYY = j.stats.sac.nzyear
-    event_hh = '{:02}'.format(j.stats.sac.nzhour)
-    event_mm = '{:02}'.format(j.stats.sac.nzmin)
-    event_julday = j.stats.sac.nzjday
-    event_depth = j.stats.sac.evdp
-    event_lat = j.stats.sac.evla
-    event_long = j.stats.sac.evlo
-    event_dist = j.stats.sac.dist
-    event_gcarc = j.stats.sac.gcarc
-    event_sta = j.stats.station
-    sta_lat = j.stats.sac.stla
-    sta_long = j.stats.sac.stlo
+    event_YYYY = event_time.year
+    event_hh = '{:02}'.format(event_time.hour)
+    event_mm = '{:02}'.format(event_time.minute)
+    event_sta = RF_.stats.station
+    event_ray = arr.ray_param/6371
+    sta_lat = RF_.stats.sac.stla
+    sta_long = RF_.stats.sac.stlo
 
-    lat_lst.append(sta_lat)
-    long_lst.append(sta_long)
-    sta_lst.append(event_sta)
+    eventid = 'GCMT:C'+str(event_YYYY)+str(event_MM)+str(event_DD)+str(event_hh)+str(event_mm)+'A'
 
-    eventid_lst.append('GCMT:C'+str(event_YYYY)+str(event_MM)+str(event_DD)+str(event_hh)+str(event_mm)+'A')
-
-# --------------------------
-# DOWNLOADING SYNTHETIC DATA
-# --------------------------
+    # --------------------------
+    # DOWNLOADING SYNTHETIC DATA
+    # --------------------------
     
-print(eventid_lst[-10:-1])
+    c_s = SyngineClient()
+    model = "iasp91_2s"
 
-c_s = SyngineClient()
-model = "iasp91_2s"
-
-for k,l in tqdm(enumerate(eventid_lst),total=len(eventid_lst),desc='Downloading Synthetic data'):
     try:
-        st_synth = obspy.Stream(c_s.get_waveforms(model=model,receiverlatitude=lat_lst[k],receiverlongitude=long_lst[k],networkcode='BP',stationcode=sta_lst[k],
-                                                eventid=eventid_lst[k],dt="0.1",units="velocity",starttime="P-10", endtime="P+260",format='saczip'))
+
+        st_synth = obspy.Stream(c_s.get_waveforms(model=model,receiverlatitude=sta_lat,receiverlongitude=sta_long,networkcode='BP',stationcode=event_sta,
+                                                eventid=eventid,dt="0.1",units="velocity",starttime="P-10", endtime="P+260",format='saczip'))
     
-
-
         for r,t in enumerate(st_synth):
             evdp = t.stats.sac.evdp
             gcarc = t.stats.sac.gcarc
 
-            model_time = TauPyModel(model="iasp91")
-            arrivals = model_time.get_travel_times(source_depth_in_km=evdp, distance_in_degree=gcarc, phase_list=["P"])
-            arr = arrivals[0]
             j = t.stats.starttime
-            t.stats.sac.user0 = arr.ray_param/6371
+            
+            t.stats.sac.user0 = event_ray
+
             folder_loc_string = OUTPUT_DATA+t.stats.station+'/'+str(j.year)+'/'+str("{0:0=3d}".format(j.julday))+'/'+str(j.year)+'.'+str(j.julday)+'.'+str(j.hour)+'.'+str(j.minute)+'.'+str(j.second)+'.'+str(j.microsecond)
             os.makedirs(folder_loc_string,exist_ok=True)
             t.write(folder_loc_string+'/SYN.'+t.stats.network+'.'+t.stats.station+'.'+str(j.year)+'.'+str(j.hour)+'.'+str(j.minute)+'.'+str(j.second)+'.'+str(j.microsecond)+'.'+t.stats.channel[-1],format='SAC')
 
     except:
-        print('Problema no Evento: '+eventid_lst[k])
+        print('Problema no Evento: '+eventid)
+# -------------------------------------------------------------------------------------------
+        
+
+# ===================
+# Download event data
+# ===================
+
+print('Download event data for each station via syngine')
+print('\n')
+
+with Pool(processes=20) as p:
+	max_ = len(PRF_files)
+	with tqdm(total=max_,desc='GCMT synthetic event download') as pbar:
+		for i, _ in enumerate(p.imap_unordered(read_down_save_syn,PRF_files)):
+			pbar.update()
+
+print('Finished!')

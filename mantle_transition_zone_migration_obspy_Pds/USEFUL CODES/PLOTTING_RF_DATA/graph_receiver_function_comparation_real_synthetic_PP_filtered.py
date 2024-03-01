@@ -14,19 +14,14 @@ from tqdm import tqdm
 import pandas as pd
 import glob
 import multiprocessing
-
-ev_listr_real = []
-for root, dirs, files in os.walk('/home/sysop/dados_posdoc/MTZ_2024/PRF_SEISPY_DATA_NO_FILTER_PP/'):
-    for datafile in files:
-        if datafile.endswith('_P_R.sac'):
-            ev_listr_real.append(os.path.join(root, datafile))
-
+import cartopy.crs as ccrs
+import cartopy.feature as cfeature
 # - - - - - - - - - - - - - - - - - - - - - -
 # Finding RF files with and without PP filer
 # - - - - - - - - - - - - - - - - - - - - - -
 
-ev_listr_NO_FILTER = sorted(glob.glob('/home/sysop/dados_posdoc/MTZ_2024/PRF_selected_NO_PP_FILTER/*/*_P_R.sac'))[:10]
-ev_listr_YES_FILTER = sorted(glob.glob('/home/sysop/dados_posdoc/MTZ_2024/PRF_selected_YES_PP_FILTER/*/*_P_R.sac'))[:10]
+ev_listr_NO_FILTER = sorted(glob.glob('/home/sysop/dados_posdoc/MTZ_2024/PRF_selected_YES_PP_FILTER_POST/*/*_P_R.sac'))
+ev_listr_YES_FILTER = sorted(glob.glob('/home/sysop/dados_posdoc/MTZ_2024/PRF_selected_YES_PP_FILTER_POST_SYNTHETIC/*/*_P_R.sac'))
 
 # -------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -36,16 +31,16 @@ def calc_P_PP_times(RF_file):
 
     #Calculating the P and PP times:    
     model = TauPyModel(model="iasp91")
-    arrivalsP = model.get_travel_times(source_depth_in_km=b[0].stats.sac.evdp, distance_in_degree=b[0].stats.sac.gcarc, phase_list=["P"])
+    arrivalsP = model.get_travel_times(source_depth_in_km=b[0].stats.sac.evdp/1000, distance_in_degree=b[0].stats.sac.gcarc, phase_list=["P"])
     arrP = arrivalsP[0]
     
-    arrivalsP410 = model.get_travel_times(source_depth_in_km=b[0].stats.sac.evdp, distance_in_degree=b[0].stats.sac.gcarc, phase_list=["P410s"])
+    arrivalsP410 = model.get_travel_times(source_depth_in_km=b[0].stats.sac.evdp/1000, distance_in_degree=b[0].stats.sac.gcarc, phase_list=["P410s"])
     arrP410 = arrivalsP410[0]
 
-    arrivalsP660 = model.get_travel_times(source_depth_in_km=b[0].stats.sac.evdp, distance_in_degree=b[0].stats.sac.gcarc, phase_list=["P660s"])
+    arrivalsP660 = model.get_travel_times(source_depth_in_km=b[0].stats.sac.evdp/1000, distance_in_degree=b[0].stats.sac.gcarc, phase_list=["P660s"])
     arrP660 = arrivalsP660[0]
 
-    arrivalsPP = model.get_travel_times(source_depth_in_km=b[0].stats.sac.evdp, distance_in_degree=b[0].stats.sac.gcarc, phase_list=["PP"])
+    arrivalsPP = model.get_travel_times(source_depth_in_km=b[0].stats.sac.evdp/1000, distance_in_degree=b[0].stats.sac.gcarc, phase_list=["PP"])
     arrPP = arrivalsPP[0]
 
     #Allocating RF data to plot
@@ -54,9 +49,9 @@ def calc_P_PP_times(RF_file):
 				'time':b[0].times(),
 				'ray':b[0].stats.sac.user0,
 				'gcarc':b[0].stats.sac.gcarc,
-				'time_PP':arrPP.time - arrP.time + 10,
-				'time_P410':arrP410.time - arrP.time + 10,
-				'time_P660':arrP660.time - arrP.time + 10                
+				'time_PP':arrPP.time - arrP.time,
+				'time_P410':arrP410.time - arrP.time,
+				'time_P660':arrP660.time - arrP.time                
 			    }
 
     return RF_dic
@@ -78,264 +73,125 @@ num_processos = 20
 # Calcular em paralelo com um número específico de processos e barra de progresso
 resultado_final_YES_FILTER = calcular_em_paralelo(ev_listr_YES_FILTER, num_processos)
 RF_df_YES_FILTER = pd.DataFrame.from_dict(resultado_final_YES_FILTER)
-RF_df_ray_YES_FILTER = RF_df_YES_FILTER.sort_values("ray")
+RF_df_ray_YES_FILTER = RF_df_YES_FILTER.sort_values("gcarc")
 
 resultado_final_NO_FILTER = calcular_em_paralelo(ev_listr_NO_FILTER, num_processos)
 RF_df_NO_FILTER = pd.DataFrame.from_dict(resultado_final_NO_FILTER)
-RF_df_ray_NO_FILTER = RF_df_NO_FILTER.sort_values("ray")
+RF_df_ray_NO_FILTER = RF_df_NO_FILTER.sort_values("gcarc")
+
+RF_NO_FILTER = np.array(RF_df_ray_NO_FILTER['data'].tolist()).T
+RF_YES_FILTER = np.array(RF_df_ray_YES_FILTER['data'].tolist()).T
 
 # -------------------------------------------------------------------------------------------------------------------------------------------------------
+
 fig, (ax,ax1) = plt.subplots(1, 2, figsize=(10, 10))
 
-majorLocatorX = MultipleLocator(300)
-majorLocatorY = MultipleLocator(0.01)
-minorLocatorY = MultipleLocator(20)
-minorLocatorX = MultipleLocator(0.001)
-
+majorLocatorY = MultipleLocator(20)
+majorLocatorX = MultipleLocator(10)
+minorLocatorY = MultipleLocator(10)
+minorLocatorX = MultipleLocator(5)
 
 #Sismograma sem filtro PP
 v=0.01
-Z_real = RF_df_ray_NO_FILTER['data'].values
-for i in Z_real:
-    print(type(i))
-#im = ax.imshow(Z_real,extent=[0,160,RF_df_ray_NO_FILTER['ray'].tolist()[0],RF_df_ray_NO_FILTER['ray'].tolist()[-1]] ,interpolation='bicubic', cmap=cm.cividis,origin='upper', aspect='auto',vmax=v, vmin=-v)
-#im = ax.imshow(Z_real,interpolation='bicubic', cmap=cm.cividis,origin='upper', aspect='auto',vmax=v, vmin=-v)
-#plt.show()
+  
+im = ax.imshow(RF_NO_FILTER,extent=[RF_df_ray_NO_FILTER['gcarc'].tolist()[0],RF_df_ray_NO_FILTER['gcarc'].tolist()[-1],160,-10] ,interpolation='spline16', cmap=cm.viridis,
+               origin='upper', aspect='auto',vmax=v, vmin=-v)
 
-'''
-for i,j in enumerate(RF_df_ray_NO_FILTER['time_PP']):
-    ax.plot(i,(j-30)*10,'.k',markersize=2)
-    ax.plot(i,j*10,'^r',markersize=2)
-    ax.plot(i,(j+30)*10,'.k',markersize=2)
+for i in range(len(RF_df_ray_NO_FILTER['time_PP'])):
+    ax.plot(RF_df_ray_NO_FILTER['gcarc'][i],RF_df_ray_NO_FILTER['time_PP'][i]-10,'.k',markersize=1)
+    ax.plot(RF_df_ray_NO_FILTER['gcarc'][i],RF_df_ray_NO_FILTER['time_PP'][i],'.r',markersize=1)
+    ax.plot(RF_df_ray_NO_FILTER['gcarc'][i],RF_df_ray_NO_FILTER['time_PP'][i]+10,'.k',markersize=1)
     
-ax.set_ylim(0,160)
-ax.set_xlim(RF_df_ray_NO_FILTER['ray'].tolist()[0],RF_df_ray_NO_FILTER['ray'].tolist()[-1])
-ax.xaxis.set_major_locator(majorLocatorX)
+ax.set_ylim(160,0)
+ax.set_xlim(RF_df_ray_NO_FILTER['gcarc'].tolist()[0],RF_df_ray_NO_FILTER['gcarc'].tolist()[-1])
+#ax.xaxis.set_major_locator(majorLocatorX)
 ax.yaxis.set_major_locator(majorLocatorY)
-ax.xaxis.set_minor_locator(minorLocatorX)
+#ax.xaxis.set_minor_locator(minorLocatorX)
 ax.yaxis.set_minor_locator(minorLocatorY)
 ax.set_ylabel('Time after P (s)')
 ax.set_xlabel('Slowness')
-ax.set_title('YES PP PHASE')
-
+ax.set_title('REAL DATA (n='+str(len(RF_df_ray_NO_FILTER['time_PP']))+')')
 ax.grid(True)
 
 #Sismograma com filtro PP
-Z_synth = RF_df_ray_YES_FILTER['data'].values
 
-im = ax.imshow(Z_synth,extent=[0,160,RF_df_ray_YES_FILTER['ray'].tolist()[0],RF_df_ray_YES_FILTER['ray'].tolist()[-1]] ,interpolation='bicubic', cmap=cm.cividis,
+im = ax1.imshow(RF_YES_FILTER,extent=[RF_df_ray_YES_FILTER['gcarc'].tolist()[0],RF_df_ray_YES_FILTER['gcarc'].tolist()[-1],160,-10] ,interpolation='spline16', cmap=cm.viridis,
                 origin='upper', aspect='auto',vmax=v, vmin=-v)
 
-for i,j in enumerate(RF_df_ray_NO_FILTER['ray']):
-    ax1.plot(i,(j-30)*10,'.k',markersize=2)
-    ax1.plot(i,(j)*10,'^r',markersize=2)
-    ax1.plot(i,(j+30)*10,'.k',markersize=2)
+for i in range(len(RF_df_ray_YES_FILTER['time_PP'])):
+    ax1.plot(RF_df_ray_YES_FILTER['gcarc'][i],RF_df_ray_YES_FILTER['time_PP'][i]-10,'.k',markersize=1)
+    ax1.plot(RF_df_ray_YES_FILTER['gcarc'][i],RF_df_ray_YES_FILTER['time_PP'][i],'^r',markersize=1)
+    ax1.plot(RF_df_ray_YES_FILTER['gcarc'][i],RF_df_ray_YES_FILTER['time_PP'][i]+10,'.k',markersize=1)
                
-ax1.set_ylim(0,160)
-ax1.set_xlim(RF_df_ray_NO_FILTER['ray'].tolist()[0],RF_df_ray_NO_FILTER['ray'].tolist()[-1])
-ax1.set_ylabel('Time after P (s)')
-ax1.set_xlabel('Slowness')
-ax1.set_title('NO PP PHASE')
-
+ax1.set_ylim(160,0)
+ax1.set_xlim(RF_df_ray_YES_FILTER['gcarc'].tolist()[0],RF_df_ray_YES_FILTER['gcarc'].tolist()[-1])
 ax1.xaxis.set_major_locator(majorLocatorX)
 ax1.yaxis.set_major_locator(majorLocatorY)
 ax1.xaxis.set_minor_locator(minorLocatorX)
 ax1.yaxis.set_minor_locator(minorLocatorY)
-
-
+ax1.set_ylabel('Time after P (s)')
+ax1.set_xlabel('Slowness')
+ax1.set_title('SYNTHETIC DATA (n='+str(len(RF_df_ray_YES_FILTER['time_PP']))+')')
 ax1.grid(True)
 
 plt.show()
 
-
 # -------------------------------------------------------------------------------------------------------------------------------------------------------
 
 fig, (ax,ax1) = plt.subplots(1, 2, figsize=(10, 10))
+
+majorLocatorY = MultipleLocator(20)
+majorLocatorX = MultipleLocator(10)
+minorLocatorY = MultipleLocator(10)
+minorLocatorX = MultipleLocator(5)
 
 #Sismograma sem filtro PP
 v=0.01
-im = ax.imshow(Z_real.T,extent=[0,160,RP_real[0],RP_real[-1]], interpolation='bicubic', cmap=cm.cividis,
-                origin='upper', aspect='auto',vmax=v, vmin=-v)
+  
+im = ax.imshow(RF_NO_FILTER,extent=[RF_df_ray_NO_FILTER['gcarc'].tolist()[0],RF_df_ray_NO_FILTER['gcarc'].tolist()[-1],160,-10] ,interpolation='spline16', cmap=cm.viridis,
+               origin='upper', aspect='auto',vmax=v, vmin=-v)
 
-for i,j in enumerate(time_P410_wave_corrected_real):
-    ax.plot(i,j*10,'.k',markersize=0.5,alpha=0.75)
-    
-for i,j in enumerate(time_P660_wave_corrected_real):
-    ax.plot(i,j*10,'.k',markersize=0.5,alpha=0.75)
-    
-ax.set_ylim(0,160)
-ax.set_xlim(RP_real[0],RP_real[-1])
+for i in range(len(RF_df_ray_NO_FILTER['time_PP'])):
+    ax.plot(RF_df_ray_NO_FILTER['gcarc'][i],RF_df_ray_NO_FILTER['time_P410'][i],'.k',markersize=0.5,alpha=0.75)
+    ax.plot(RF_df_ray_NO_FILTER['gcarc'][i],RF_df_ray_NO_FILTER['time_P660'][i],'.k',markersize=0.5,alpha=0.75)
+
+print((RF_df_ray_NO_FILTER['time_P410'].values[-1]/10))
+
+ax.text(RF_df_ray_NO_FILTER['gcarc'].values[-1]+(RF_df_ray_NO_FILTER['gcarc'].values[-1]/95),RF_df_ray_NO_FILTER['time_P410'].values[-1]+(RF_df_ray_NO_FILTER['time_P410'].values[-1]/95),'P410s')
+ax.text(RF_df_ray_NO_FILTER['gcarc'].values[-1]+(RF_df_ray_NO_FILTER['gcarc'].values[-1]/95),RF_df_ray_NO_FILTER['time_P660'].values[-1]+(RF_df_ray_NO_FILTER['time_P410'].values[-1]/95),'P660s')
+  
+ax.set_ylim(160,0)
+ax.set_xlim(RF_df_ray_NO_FILTER['gcarc'].tolist()[0],RF_df_ray_NO_FILTER['gcarc'].tolist()[-1])
 ax.xaxis.set_major_locator(majorLocatorX)
 ax.yaxis.set_major_locator(majorLocatorY)
 ax.xaxis.set_minor_locator(minorLocatorX)
 ax.yaxis.set_minor_locator(minorLocatorY)
 ax.set_ylabel('Time after P (s)')
-ax.set_xlabel('Slowness')
-ax.set_title('YES PP PHASE')
-
+ax.set_xlabel('Distance (º)')
+ax.set_title('REAL DATA (n='+str(len(RF_df_ray_NO_FILTER['time_PP']))+')')
 ax.grid(True)
 
 #Sismograma com filtro PP
 
-im = ax1.imshow(Z_synth.T,extent=[0,160,RP_synth[0],RP_synth[-1]],interpolation='bicubic', cmap=cm.viridis,
+im = ax1.imshow(RF_YES_FILTER,extent=[RF_df_ray_YES_FILTER['gcarc'].tolist()[0],RF_df_ray_YES_FILTER['gcarc'].tolist()[-1],160,-10] ,interpolation='spline16', cmap=cm.viridis,
                 origin='upper', aspect='auto',vmax=v, vmin=-v)
 
-for i,j in enumerate(time_P410_wave_corrected_synth):
-    ax1.plot(i,j*10,'.k',markersize=0.5,alpha=0.75)
-    
-for i,j in enumerate(time_P660_wave_corrected_synth):
-    ax1.plot(i,j*10,'.k',markersize=0.5,alpha=0.75)
+for i in range(len(RF_df_ray_YES_FILTER['time_PP'])):
+    ax1.plot(RF_df_ray_YES_FILTER['gcarc'][i],RF_df_ray_YES_FILTER['time_P410'][i],'.k',markersize=0.5,alpha=0.75)
+    ax1.plot(RF_df_ray_YES_FILTER['gcarc'][i],RF_df_ray_YES_FILTER['time_P660'][i],'.k',markersize=0.5,alpha=0.75)
+
+ax1.text(RF_df_ray_YES_FILTER['gcarc'].values[-1]+(RF_df_ray_YES_FILTER['gcarc'].values[-1]/95),RF_df_ray_YES_FILTER['time_P410'].values[-1]+(RF_df_ray_YES_FILTER['time_P410'].values[-1]/95),'P410s')
+ax1.text(RF_df_ray_YES_FILTER['gcarc'].values[-1]+(RF_df_ray_YES_FILTER['gcarc'].values[-1]/95),RF_df_ray_YES_FILTER['time_P660'].values[-1]+(RF_df_ray_YES_FILTER['time_P410'].values[-1]/95),'P660s')
                
-ax.set_ylim(0,160)
-ax.set_xlim(RP_synth[0],RP_synth[-1])
-ax1.set_ylabel('Time after P (s)')
-ax1.set_xlabel('Slowness')
-ax1.set_title('NO PP PHASE')
-
+ax1.set_ylim(160,0)
+ax1.set_xlim(RF_df_ray_YES_FILTER['gcarc'].tolist()[0],RF_df_ray_YES_FILTER['gcarc'].tolist()[-1])
 ax1.xaxis.set_major_locator(majorLocatorX)
 ax1.yaxis.set_major_locator(majorLocatorY)
 ax1.xaxis.set_minor_locator(minorLocatorX)
 ax1.yaxis.set_minor_locator(minorLocatorY)
-
-
-ax1.grid(True)
-plt.show()
-
-
-# -------------------------------------------------------------------------------------------------------------------------------------------------------
-
-fig, (ax,ax1) = plt.subplots(1, 2, figsize=(10, 10))
-
-#Sismograma sem filtro PP
-v=0.01
-im = ax.imshow(Z_real.T,extent=[0,160,RP_real[0],RP_real[-1]], interpolation='bicubic', cmap=cm.cividis,
-                origin='upper', aspect='auto',vmax=v, vmin=-v)
-
-ax.set_ylim(0,160)
-ax.xaxis.set_major_locator(majorLocatorX)
-ax.yaxis.set_major_locator(majorLocatorY)
-ax.xaxis.set_minor_locator(minorLocatorX)
-ax.yaxis.set_minor_locator(minorLocatorY)
-ax.set_ylabel('Time after P (s)')
-ax.set_xlabel('Slowness')
-ax.set_title('YES PP PHASE')
-
-ax.grid(True)
-
-#Sismograma com filtro PP
-
-im = ax1.imshow(Z_synth.T,extent=[0,160,RP_synth[0],RP_synth[-1]],interpolation='bicubic', cmap=cm.viridis,
-                origin='upper', aspect='auto',vmax=v, vmin=-v)
-
-ax1.set_ylim(0,160)
 ax1.set_ylabel('Time after P (s)')
-ax1.set_xlabel('Slowness')
-ax1.set_title('NO PP PHASE')
-
-ax1.xaxis.set_major_locator(majorLocatorX)
-ax1.yaxis.set_major_locator(majorLocatorY)
-ax1.xaxis.set_minor_locator(minorLocatorX)
-ax1.yaxis.set_minor_locator(minorLocatorY)
-
-
-ax1.grid(True)
-
-# -------------------------------------------------------------------------------------------------------------------------------------------------------
-
-fig, (ax,ax1) = plt.subplots(1, 2, figsize=(10, 10))
-
-#Sismograma sem filtro PP
-im = ax.imshow(Z_real.T,extent=[0,160,RP_real[0],RP_real[-1]], interpolation='bicubic', cmap=cm.cividis,
-                origin='upper', aspect='auto',vmax=v, vmin=-v)
-
-for i,j in enumerate(time_P410_wave_corrected_real):
-    ax.plot(i,j*10,'.k',markersize=0.5,alpha=0.75)
-
-    
-for i,j in enumerate(time_P660_wave_corrected_real):
-    ax.plot(i,j*10,'.k',markersize=0.5,alpha=0.75)
-    
-    
-ax.set_ylim(0,160)
-ax.xaxis.set_major_locator(majorLocatorX)
-ax.yaxis.set_major_locator(majorLocatorY)
-ax.xaxis.set_minor_locator(minorLocatorX)
-ax.yaxis.set_minor_locator(minorLocatorY)
-ax.set_ylabel('Time after P (s)')
-ax.set_xlabel('Slowness')
-ax.set_title('Real Data')
-
-ax.grid(True)
-ax.set_yticklabels(["{0:.0f}".format(time_real[i]) for i in np.arange(-100,len(time_real),100)])
-ax.set_xticklabels(["{0:.1f}".format(RP_real[i]*100) for i in np.arange(0,len(RP_real),100)])
-#ax.set_xticklabels(["{0:.1f}".format(GCARC_real[i]) for i in np.arange(0,len(GCARC_real),100)])
-
-#Sismograma com filtro PP
-
-im = ax1.imshow(Z_synth.T,extent=[0,160,RP_synth[0],RP_synth[-1]],interpolation='bicubic', cmap=cm.viridis,
-                origin='upper', aspect='auto',vmax=v, vmin=-v)
-
-for i,j in enumerate(time_P410_wave_corrected_synth):
-    ax1.plot(i,j*10,'.k',markersize=0.5,alpha=0.75)
-    
-for i,j in enumerate(time_P660_wave_corrected_synth):
-    ax1.plot(i,j*10,'.k',markersize=0.5,alpha=0.75)
-
-               
-ax1.set_ylim(0,160)
-ax1.set_ylabel('Time after P (s)')
-ax1.set_xlabel('Slowness')
-ax1.set_title('Synthetic Data')
-
-ax1.xaxis.set_major_locator(majorLocatorX)
-ax1.yaxis.set_major_locator(majorLocatorY)
-ax1.xaxis.set_minor_locator(minorLocatorX)
-ax1.yaxis.set_minor_locator(minorLocatorY)
-
-
-ax1.grid(True)
-
-# -------------------------------------------------------------------------------------------------------------------------------------------------------
-
-fig, (ax,ax1) = plt.subplots(1, 2, figsize=(10, 10))
-
-#Sismograma sem filtro PP
-v=0.008
-im = ax.imshow(Z_real.T, interpolation='none', cmap=cm.viridis,
-                origin='upper', aspect='auto',
-                vmax=v, vmin=-v)
-                #vmax=abs(Z.min()), vmin=Z.min())
-
-
-    
-ax.set_ylim(0,160)
-ax.xaxis.set_major_locator(majorLocatorX)
-ax.yaxis.set_major_locator(majorLocatorY)
-ax.xaxis.set_minor_locator(minorLocatorX)
-ax.yaxis.set_minor_locator(minorLocatorY)
-ax.set_ylabel('Time after P (s)')
-ax.set_xlabel('Slowness')
-ax.set_title('Real Data')
-
-ax.grid(True)
-
-#Sismograma com filtro PP
-
-im = ax1.imshow(Z_synth.T,extent=[0,160,RP_synth[0],RP_synth[-1]],interpolation='bicubic', cmap=cm.viridis,
-                origin='upper', aspect='auto',vmax=v, vmin=-v)
-
-ax1.set_ylim(0,160)
-ax1.set_ylabel('Time after P (s)')
-ax1.set_xlabel('Slowness')
-ax1.set_title('Synthetic Data')
-
-ax1.xaxis.set_major_locator(majorLocatorX)
-ax1.yaxis.set_major_locator(majorLocatorY)
-ax1.xaxis.set_minor_locator(minorLocatorX)
-ax1.yaxis.set_minor_locator(minorLocatorY)
-
-
+ax1.set_xlabel('Distance (º)')
+ax1.set_title('SYNTHETIC DATA (n='+str(len(RF_df_ray_YES_FILTER['time_PP']))+')')
 ax1.grid(True)
 
 plt.show()
-'''

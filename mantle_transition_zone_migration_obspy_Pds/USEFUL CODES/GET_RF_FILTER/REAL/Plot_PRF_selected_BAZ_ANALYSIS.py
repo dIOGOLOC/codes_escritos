@@ -15,7 +15,7 @@ import pandas as pd
 # # Pastas com as entradas e saídas
 
 #INPUT FOLDER (Pasta com as RFs)
-INPUT_DIR = '/home/sysop/dados_posdoc/MTZ_2024/PRF_SEISPY_DATA_YES_PP_FILTER/BP.TUTU/'
+INPUT_DIR = '/home/sysop/dados_posdoc/MTZ_2024/PRF_SEISPY_DATA_YES_PP_FILTER_SYNTHETIC/BP.AR01/'
 
 #OUTPUT FOLDER (Pasta para salvar a figura)
 OUTPUT_DIR = '/home/sysop/dados_posdoc/MTZ_2024/OUTPUT/'
@@ -99,4 +99,4 @@ ax2.set_xlim(-5,160)
 
 ax2.set_title(RF_data.stats.network+'.'+RF_data.stats.station, va='center', fontsize='xx-large')
 
-plt.savefig(OUTPUT_DIR+'FIGURES_YES_PP_FILTER/RF_'+RF_data.stats.network+'_'+RF_data.stats.station+'_ALL_BAZ.png',dpi=300)
+plt.savefig(OUTPUT_DIR+'FIGURES_YES_PP_FILTER_SYN/RF_'+RF_data.stats.network+'_'+RF_data.stats.station+'_ALL_BAZ.png',dpi=300)

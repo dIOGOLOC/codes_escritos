@@ -71,7 +71,7 @@ from cartopy.mpl.ticker import LongitudeFormatter, LatitudeFormatter,LatitudeLoc
 # =====
 
 #Directory to save EVENT data
-OUTPUT_EV_DIR = '/home/sysop/dados_posdoc/MTZ_2024/DATA_MTZ/DATA_2024_YES_PP_FILTER/'
+OUTPUT_EV_DIR = '/home/sysop/dados_posdoc/MTZ_2024/DATA_MTZ/DATA_2024_SYNTHETIC/'
 
 # =====
 # event

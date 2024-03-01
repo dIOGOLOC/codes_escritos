@@ -48,10 +48,10 @@ from matplotlib.transforms import offset_copy
 # =====
 
 #Directory to get RF data
-INPUT_RF_DIR = '/home/sysop/dados_posdoc/MTZ_2024/DATA_MTZ/DATA_2024_YES_PP_FILTER/'
+INPUT_RF_DIR = '/home/sysop/dados_posdoc/MTZ_2024/DATA_MTZ/DATA_2024_SYNTHETIC/'
 
 #Directory to save RF data
-OUTPUT_RF_DIR = '/home/sysop/dados_posdoc/MTZ_2024/PRF_SEISPY_DATA_YES_PP_FILTER/'
+OUTPUT_RF_DIR = '/home/sysop/dados_posdoc/MTZ_2024/PRF_SEISPY_DATA_YES_PP_FILTER_SYNTHETIC/'
 
 # ======
 # inputs
