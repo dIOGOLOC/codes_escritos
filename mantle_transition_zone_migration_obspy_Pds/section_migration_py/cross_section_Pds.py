@@ -447,13 +447,13 @@ for i,j in enumerate(RF_data_profile_Pds):
 
 		if CROSS_SECTION_AXIS == 'x':
 			pefil_pds.set_xticks(np.linspace(pefil_pds.get_xlim()[0],pefil_pds.get_xlim()[1],10))
-			#pefil_pds.set_xticklabels(np.linspace(LLCRNRLON_SMALL,URCRNRLON_SMALL,10))
+			pefil_pds.set_xticklabels(np.array([round(ar,2) for ar in np.linspace(LLCRNRLON_SMALL,URCRNRLON_SMALL,10)]))
 			pefil_pds.set_xlabel('Longitude ($^\circ$)',labelpad=30,fontsize=20)
 			pefil_pds.set_title('Latitude= '+str(AB_lat[i][0])+'$^\circ$', fontsize=20)
 
 		else:
 			pefil_pds.set_xticks(np.linspace(pefil_pds.get_xlim()[0],pefil_pds.get_xlim()[1],10))
-			#pefil_pds.set_xticklabels(np.linspace(LLCRNRLAT_SMALL,URCRNRLAT_SMALL,10))
+			pefil_pds.set_xticklabels(np.array([round(ar,2) for ar in np.linspace(LLCRNRLAT_SMALL,URCRNRLAT_SMALL,10)]))
 			pefil_pds.set_xlabel('Latitude ($^\circ$)',labelpad=30,fontsize=20)
 			pefil_pds.set_title('Longitude = '+str(AB_lon[i][0])+'$^\circ$', fontsize=20)
 
@@ -531,6 +531,6 @@ for i,j in enumerate(RF_data_profile_Pds):
 	diff_MTZ_thickness.grid(True,which='major',color='gray',linewidth=1,linestyle='--')
 	diff_MTZ_thickness.tick_params(labelleft=True,labelright=True,labelbottom=False,labelsize=15)
 
-
 	fig.savefig(RESULTS_FOLDER+'SELECTED_BINNED_DATA_'+CROSS_SECTION_AXIS+'_CROSS_SECTION_Pds_PROFILE_'+str(i+1)+'.'+EXT_FIG,dpi=DPI_FIG)
+	plt.close()
 print('Ending the Cross-section CODE')

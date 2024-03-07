@@ -35,7 +35,7 @@
 
 
 # dir of receiver functions
-RF_DIR = /home/sysop/dados_posdoc/MTZ_2024/PRF_selected_YES_PP_FILTER/
+RF_DIR = /home/sysop/dados_posdoc/MTZ_2024/PRF_selected_YES_PP_FILTER_POST/
 
 # extension of receiver functions
 RF_EXT = _P_R.sac
@@ -44,7 +44,7 @@ RF_EXT = _P_R.sac
 MODEL_FILE_NPZ = /home/sysop/diogogit/codes_escritos/mantle_transition_zone_migration_obspy_Pds/velocity_model/iasp91_10.npz
 
 # dir of OUTPUTs
-OUTPUT_DIR = /home/sysop/dados_posdoc/MTZ_2024/OUTPUT/MTZ_YES_FILTER_PP/
+OUTPUT_DIR = /home/sysop/dados_posdoc/MTZ_2024/OUTPUT/MTZ_YES_FILTER_PP_POST/
 
 #=====
 [maps]
@@ -87,7 +87,7 @@ URCRNRLON_SMALL=-40
 URCRNRLAT_SMALL=-1
 
 #figures extention and dpi
-EXT_FIG=pdf
+EXT_FIG=png
 DPI_FIG=300
 
 #Date event initial  (exemple: 2008-01-01T00:00:00)
@@ -150,7 +150,7 @@ RF_FREQUENCY = 0.24
 NUMBER_PP_PER_BIN = 10
 
 #number of stations RF per bin
-NUMBER_STA_PER_BIN = 3
+NUMBER_STA_PER_BIN = 1
 
 #Depth Target
 DEPTH_TARGET = 530
