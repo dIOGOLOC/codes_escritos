@@ -97,6 +97,20 @@ print('\n')
 
 PHASES = 'P410s','P'+str(DEPTH_TARGET)+'s','P660s'
 
+# ====================
+# Creating Pds list
+# ====================
+
+print('Creating Pds list')
+print('\n')
+
+PHASES = ['P'+str(i)+'s' for i in range(MIN_DEPTH,MAX_DEPTH+INTER_DEPTH,INTER_DEPTH)]
+PHASES.insert(0,'P')
+s = ','
+PHASES_lst = s.join(PHASES)
+print(PHASES_lst)
+print('\n')
+
 # ========================
 # Creating output Folder
 # ========================

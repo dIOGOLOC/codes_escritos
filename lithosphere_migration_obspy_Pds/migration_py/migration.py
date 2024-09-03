@@ -385,18 +385,19 @@ print('\n')
 
 RF_amplitude_time_Pds = [[]]*len(Pds_depth)
 RF_amplitude_depth_Pds = [[]]*len(Pds_depth)
+
 for i,j in enumerate(Pds_depth):
     sta_t_Pds = j
     RF_t_Pds = camadas_terra_10_km
-    RF_amplitude_time_Pds[i] = [Pds_time[i][sta_t_Pds.index(l)] if l in sta_t_Pds else -1 for k,l in enumerate(RF_t_Pds)]
+    RF_amplitude_time_Pds[i] = [Pds_time[i][sta_t_Pds.index(l)] if l in sta_t_Pds else np.nan for k,l in enumerate(RF_t_Pds)]
     RF_amplitude_depth_Pds[i] = [sta_t_Pds[sta_t_Pds.index(l)] for k,l in enumerate(RF_t_Pds) if l in sta_t_Pds]
 
 RF_amplitude_Pds = [[]]*len(RF_amplitude_time_Pds)
-
 for i,j in enumerate(RF_amplitude_time_Pds):
     sta_t_Pds = [round(l,1) for k,l in enumerate(sta_time[i])]
     RF_t_Pds = [round(l,1) for k,l in enumerate(j)]
-    RF_amplitude_Pds[i] = [sta_data[i][sta_t_Pds.index(l)] if l != -1 else 0 for k,l in enumerate(RF_t_Pds)]
+
+    RF_amplitude_Pds[i] = [sta_data[i][sta_t_Pds.index(l)] if l != np.nan else 0 for k,l in enumerate(RF_t_Pds)]
 
 ##################################################################################################################
 

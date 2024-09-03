@@ -161,8 +161,9 @@ shape_2_SHP = list(reader_2_SHP.geometries())
 plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
 ax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 
-bounds = np.arange(30, 50+colormap_segmentation, colormap_segmentation)
-norm_MOHO = mpl.colors.BoundaryNorm(boundaries=bounds, ncolors=colormap.N)
+#bounds = np.arange(30, 50+colormap_segmentation, colormap_segmentation)
+#norm_MOHO = mpl.colors.BoundaryNorm(boundaries=bounds, ncolors=colormap.N)
+norm_MOHO = Normalize(vmin=20,vmax=50)
 
 for i,j in enumerate(lons):
 	if math.isnan(RF_DEPTH_mean_MOHO_Pds[i]) == False:
@@ -182,10 +183,10 @@ ax.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor=
 
 sm_MOHO = plt.cm.ScalarMappable(cmap=tmap,norm=norm_MOHO)
 sm_MOHO._A = []
-cbar_MOHO = fig.colorbar(sm_MOHO,ax=ax,orientation='horizontal',shrink=0.8,label='Thickness of MTZ')
+cbar_MOHO = fig.colorbar(sm_MOHO,ax=ax,orientation='horizontal',shrink=0.8,label='MOHO depth (km)')
 
-cbar_MOHO.set_ticks(np.arange(30, 50+INTER_DEPTH, INTER_DEPTH))
-cbar_MOHO.set_ticklabels(np.arange(30, 50+INTER_DEPTH, INTER_DEPTH))
+cbar_MOHO.set_ticks(np.arange(20, 50+INTER_DEPTH, INTER_DEPTH))
+cbar_MOHO.set_ticklabels(np.arange(20, 50+INTER_DEPTH, INTER_DEPTH))
 
 fig.savefig(RESULTS_FOLDER+'THICKNESS_MOHO.'+EXT_FIG,dpi=DPI_FIG)
 
@@ -210,8 +211,9 @@ plot_shape_2_SHP = cfeature.ShapelyFeature(shape_2_SHP, ccrs.PlateCarree())
 ax.add_feature(plot_shape_2_SHP, facecolor='none', edgecolor='k',linewidth=1)
 ax.gridlines(draw_labels=True)
 
-bounds = np.arange(100, 200+colormap_segmentation, colormap_segmentation)
-norm_LAB = mpl.colors.BoundaryNorm(boundaries=bounds, ncolors=colormap.N)
+#bounds = np.arange(100, 200+colormap_segmentation, colormap_segmentation)
+#norm_LAB = mpl.colors.BoundaryNorm(boundaries=bounds, ncolors=colormap.N)
+norm_LAB = Normalize(vmin=50,vmax=200)
 
 for i,j in enumerate(lons):
 	if math.isnan(RF_DEPTH_mean_LAB_Pds[i]) == False:
@@ -230,10 +232,10 @@ ax.plot(sta_long,sta_lat, '^',markersize=10,markeredgecolor='k',markerfacecolor=
 
 sm_LAB = plt.cm.ScalarMappable(cmap=tmap,norm=norm_LAB)
 sm_LAB._A = []
-cbar_LAB = fig.colorbar(sm_LAB,ax=ax,orientation='horizontal',shrink=0.8,label='520 km Depth')
+cbar_LAB = fig.colorbar(sm_LAB,ax=ax,orientation='horizontal',shrink=0.8,label='LAB depth (km)')
 
-cbar_LAB.set_ticks(np.arange(100, 200+INTER_DEPTH, INTER_DEPTH))
-cbar_LAB.set_ticklabels(np.arange(100, 200+INTER_DEPTH, INTER_DEPTH))
+cbar_LAB.set_ticks(np.arange(50, 200+INTER_DEPTH, INTER_DEPTH))
+cbar_LAB.set_ticklabels(np.arange(50, 200+INTER_DEPTH, INTER_DEPTH))
 
 fig.savefig(RESULTS_FOLDER+'THICKNESS_LAB.'+EXT_FIG,dpi=DPI_FIG)
 

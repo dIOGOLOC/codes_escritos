@@ -1,0 +1,172 @@
+###############################################################################
+#
+# This is an example of configuration file, wherein global paths and parameters
+# related to the migration procedure are defined. At least one configuration file 
+# should reside in the folder in which you intend to run your scripts. 
+# The configuration file(s) can have any name, as long as the extension is 'cnf':
+# e.g., 'migration.cnf', 'migration_config.cnf', 'myconfig.cnf', 'test.cnf'...
+#
+# The parameters are divided in several sections:
+# - [paths]             : default paths to input/output folders
+# - [maps]              : parameters to plot maps
+# - [time]              : parameters to calculate the time
+# - [migration]         : parameters of the migration
+#
+# Before using the scripts, you should at least make sure
+# that the paths in section [paths] and shapefiles in section [maps] are
+# consistent with your own files and folders organization. And, of course, you
+# should make sure to set the phases to calculate the time and piercing points.
+# The other parameters can be fine-tuned later as you analyze your data.
+#
+###############################################################################
+
+#======
+[paths]    
+#======
+
+# directory of receiver functions files.
+# In the current version of the program, you just need to set the directory and
+# the suffix of the files organized inside their directory as:
+# FILENAME.fileextention, e.g., like:
+# .../a_1/BDCO/2015/251/2015.8.13.2/SYN.BDCO.2015.8.13.2.T:a=1.0.eqr
+# the directory is a_1 and the extention is '.eqr'
+# file per event and per station.
+
+
+# Dir of receiver functions
+RF_DIR = /media/sysop/14f7ead0-5dcb-4557-a139-55dbb404d11a/diogoloc/dados_posdoc/PROJETO_ILHAS_OCEANICAS/OUTPUT/hk_RF_selected/RF_SELECT_STATION_EVENT/2.0/ON.TRI01/
+#RF_DIR = /media/sysop/14f7ead0-5dcb-4557-a139-55dbb404d11a/diogoloc/dados_posdoc/PROJETO_ILHAS_OCEANICAS/OUTPUT/EVENTS_SRF_FILES_selected/0.9/ON.TRI01/
+
+
+# Extension of receiver functions
+RF_EXT = _P_R.sac
+
+# Directory of the earth models
+MODEL_FILE_NPZ = /media/sysop/14f7ead0-5dcb-4557-a139-55dbb404d11a/diogoloc/diogoloc_git/codes_escritos/lithosphere_migration_obspy_Pds/velocity_model/iasp91_2.npz
+
+# Dir of OUTPUTs
+OUTPUT_DIR = /media/sysop/14f7ead0-5dcb-4557-a139-55dbb404d11a/diogoloc/dados_posdoc/PROJETO_ILHAS_OCEANICAS/OUTPUT/MIGRATION_FOLDER/PRF/ON.TRI01/
+#OUTPUT_DIR = /media/sysop/14f7ead0-5dcb-4557-a139-55dbb404d11a/diogoloc/dados_posdoc/PROJETO_ILHAS_OCEANICAS/OUTPUT/MIGRATION_FOLDER/SRF/ON.TRI01/
+
+#=====
+[maps]
+#=====
+
+# paths to shapefiles (boundaries, tectonic provinces), used
+# to plot maps:
+#
+# - ``BOUNDARY_SHP`` should be a shapefile containing lines or polygons
+#   representing any boundary (you can also include borders).
+#
+# - ``TECTO_SHP`` should be a shapefile containing polygons representing
+#   tectonic provinces
+
+BOUNDARY_1_SHP = /media/sysop/14f7ead0-5dcb-4557-a139-55dbb404d11a/diogoloc/SIG_dados/Projeto_ON_MAR/shapefile/Abrolhos/abrolhos_bank.shp
+
+BOUNDARY_2_SHP = /media/sysop/14f7ead0-5dcb-4557-a139-55dbb404d11a/diogoloc/SIG_dados/Projeto_ON_MAR/shapefile/brasil_estados/brasil_estados.shp
+
+TECTO_SHP = /media/sysop/14f7ead0-5dcb-4557-a139-55dbb404d11a/diogoloc/SIG_dados/Projeto_ON_MAR/shapefile/Abrolhos/abrolhos_bank.shp
+
+# Lat and Lon of large maps and small maps
+# center (lat/lon) of the map
+
+PROJECT_LAT = -18
+PROJECT_LON = -38.5
+
+# lower and upper corner (lat/lon) of the large map
+
+LLCRNRLON_LARGE=-39.5
+LLCRNRLAT_LARGE=-19
+URCRNRLON_LARGE=-38
+URCRNRLAT_LARGE=-17
+
+# lower and upper corner (lat/lon) of the small map
+
+LLCRNRLON_SMALL=-39.25
+LLCRNRLAT_SMALL=-18.5
+URCRNRLON_SMALL=-38.25
+URCRNRLAT_SMALL=-17.5
+
+# figures extention and dpi
+EXT_FIG=pdf
+DPI_FIG=300
+
+# Date event initial  (exemple: 2008-01-01T00:00:00)
+INITIAL_DATE_EVENT = 2015-01-01T00:00:00
+
+# Date event final  (exemple: 2008-01-01T00:00:00)
+FINAL_DATE_EVENT = 2024-01-01T00:00:00
+
+# CROSS-SECTION AXIS DIRECTION (x or y):
+CROSS_SECTION_AXIS  = y
+
+# Colormap to velocity map (see https://matplotlib.org/examples/color/colormaps_reference.html)
+COLORMAP_VEL = seismic_r
+
+# Colormap to standard deviation map (see https://matplotlib.org/examples/color/colormaps_reference.html)
+COLORMAP_STD = Greys
+
+# Minimum Amplitude in cross-section color
+VMIN = -0.2
+
+# Maximum Amplitude in cross-section color
+VMAX = 0.2
+
+#==================
+[time]
+#==================
+
+# How many concurrent processes at the multiprocessing?
+MP_PROCESSES = 12
+
+# Minimum depth of the migration
+MIN_DEPTH = 0
+
+# Maximum depth of the migration
+MAX_DEPTH = 200
+
+# Depth interval of the migration
+INTER_DEPTH = 10
+
+# Ps or Sp phases
+Ps_OR_Sp_PHASE = Ps
+
+# ==========
+[migration]
+# ==========
+
+# Filter by shapefile the grid? (True or False)
+FILTER_BY_SHAPEFILE = False
+
+# Shapefile containing lines or polygons representing grid boundary
+SHAPEFILE_GRID = /media/sysop/14f7ead0-5dcb-4557-a139-55dbb404d11a/diogoloc/SIG_dados/Projeto_ON_MAR/shapefile/Abrolhos/abrolhos_bank.shp
+
+# Grid bin spacing
+GRID_PP_MULT = 1
+
+# Grid bin radius (degree)
+DIST_GRID_PP = 0.05
+
+# Receiver Function Frequency (Hz/2)
+RF_FREQUENCY = 2.0	
+
+# Number of piercing points per bin
+NUMBER_PP_PER_BIN = 1
+
+# Number of stations RF per bin
+NUMBER_STA_PER_BIN = 1
+
+# Depth MOHO
+DEPTH_MOHO = 20
+
+# Depth LAB
+DEPTH_LAB = 70
+
+# Number of interations to compute bootstrapping
+BOOTSTRAP_INTERATOR = 200
+
+# Depth range (+/-) that we will use to find the maximum amplitude
+DEPTH_RANGE = 10
+
+# Number of confidence bound (CONFIDENCE_BOUND*standard deviation)
+CONFIDENCE_BOUND = 1

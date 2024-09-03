@@ -6,7 +6,6 @@ import os
 from obspy.taup import TauPyModel
 from obspy.geodetics import kilometer2degrees
 import json
-from scipy.signal import triang
 
 from parameters_py.mgconfig import (
 					RF_DIR,RF_EXT,MODEL_FILE_NPZ,MIN_DEPTH,MAX_DEPTH,INTER_DEPTH,NUMBER_PP_PER_BIN,
@@ -60,11 +59,11 @@ for i,j in enumerate(ev):
 		sta_dic['event_mag'].append(round(float(j.stats.sac.mag),3))
 		sta_dic['event_gcarc'].append(round(float(j.stats.sac.gcarc),3))
 		sta_dic['event_sta'].append(j.stats.station)
-		sta_dic['event_ray'].append(round(float(j.stats.sac.user8),3))
+		sta_dic['event_ray'].append(round(float(j.stats.sac.user0),3))
 		sta_dic['sta_lat'].append(round(float(j.stats.sac.stla),3))
 		sta_dic['sta_long'].append(round(float(j.stats.sac.stlo),3))
-		sta_dic['sta_data'].append(j.data[100:1100].tolist())
-		sta_dic['sta_time'].append((j.times()[100:1100]-10).tolist())
+		sta_dic['sta_data'].append(j.data[1000:4000].tolist())
+		sta_dic['sta_time'].append((j.times()[1000:4000]-10).tolist())
 
 print('Saving RF Header data in JSON file')
 print('\n')

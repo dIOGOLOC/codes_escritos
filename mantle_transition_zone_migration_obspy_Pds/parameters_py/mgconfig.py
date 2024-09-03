@@ -116,7 +116,6 @@ COLORMAP_STD = config.get('maps', 'COLORMAP_STD')
 #Minimum Velocity in cross-section color
 VMIN = config.getfloat('maps', 'VMIN')
 
-
 #Maximum Velocity in cross-section color
 VMAX = config.getfloat('maps', 'VMAX')
 
@@ -159,9 +158,6 @@ NUMBER_STA_PER_BIN = config.getint('migration', 'NUMBER_STA_PER_BIN')
 
 #Number of interations to compute bootstrapping
 BOOTSTRAP_INTERATOR = config.getint('migration', 'BOOTSTRAP_INTERATOR')  
-
-#Depth Target
-DEPTH_TARGET = config.getint('migration', 'DEPTH_TARGET') 
 
 #Number that multiply the difference between the cross-section points
 DEPTH_RANGE = config.getfloat('migration', 'DEPTH_RANGE') 

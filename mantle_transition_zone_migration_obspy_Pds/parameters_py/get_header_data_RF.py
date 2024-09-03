@@ -67,7 +67,7 @@ for i,j in tqdm(enumerate(ev), total=len(ev)):
 		sta_dic['sta_data'].append(j.data[100:2700].tolist())
 		sta_dic['sta_time'].append((j.times()[100:2700]-10).tolist())
 
-print('Saving RF Header data in JSON file')
+print('Saving RF Header data in feather file')
 print('\n')
 
 STA_DIR = OUTPUT_DIR+'MODEL_INTER_DEPTH_'+str(INTER_DEPTH)+'_DEPTH_TARGET_'+str(DEPTH_TARGET)+'/'+'Stations'+'/'
